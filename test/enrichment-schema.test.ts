@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DiscoveryResponseSchema } from '../src/domain/schema.js';
 
 describe('enrichment response schema', () => {
-  it('captures Facebook/bio enrichment and ticket details', () => {
+  it('captures Facebook/bio enrichment for an eligible free artist', () => {
     const parsed = DiscoveryResponseSchema.parse({
       identityConfidence: 0.99,
       entityEnrichment: {
@@ -32,40 +32,43 @@ describe('enrichment response schema', () => {
         sourceUrls: ['https://example.com/event'],
         supportActs: [],
         ticketing: {
-          expected: true,
-          status: 'found',
-          ticketUrl: 'https://tickets.example.com/event',
-          provider: 'Example Tickets',
-          priceText: '£15',
-          evidenceUrls: ['https://tickets.example.com/event'],
+          expected: false,
+          status: 'not_applicable',
+          evidenceUrls: [],
+        },
+        admission: {
+          status: 'FREE_CONFIRMED',
+          confidence: 0.99,
+          evidenceUrls: ['https://example.com/event'],
+          reason: 'Official event listing says free entry',
         },
       }],
     });
 
     expect(parsed.entityEnrichment.facebook.status).toBe('matched');
-    expect(parsed.events[0].ticketing.ticketUrl).toContain('tickets.example.com');
+    expect(parsed.events[0].admission.status).toBe('FREE_CONFIRMED');
   });
 
-  it('records an attempted Facebook search even when no match is found', () => {
+  it('supports a cheap reconnaissance placeholder before Facebook enrichment', () => {
     const parsed = DiscoveryResponseSchema.parse({
       identityConfidence: 0.8,
       entityEnrichment: {
         entityType: 'artist',
         name: 'Unknown Local Band',
         facebook: {
-          searched: true,
-          status: 'not_found',
-          confidence: 0.2,
-          evidenceUrls: ['https://example.com/search-evidence'],
+          searched: false,
+          status: 'not_searched',
+          confidence: 0,
+          evidenceUrls: [],
         },
         bio: { evidenceUrls: [] },
-        evidenceUrls: ['https://example.com/search-evidence'],
+        evidenceUrls: ['https://example.com/gig'],
       },
       discoveredEntities: [],
       events: [],
     });
 
-    expect(parsed.entityEnrichment.facebook.searched).toBe(true);
-    expect(parsed.entityEnrichment.facebook.status).toBe('not_found');
+    expect(parsed.entityEnrichment.facebook.searched).toBe(false);
+    expect(parsed.entityEnrichment.facebook.status).toBe('not_searched');
   });
 });
