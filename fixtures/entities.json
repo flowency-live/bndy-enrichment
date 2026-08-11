@@ -1,0 +1,22 @@
+[
+  {"type":"artist","bndyId":"CshlbZ7vzX6Lh4GGf56X","name":"Classic Rockers Duo","town":"Stoke-on-Trent","facebookUrl":"https://www.facebook.com/profile.php?id=61562194970613"},
+  {"type":"artist","bndyId":"d8118c8a-3cae-47ea-890d-7e36eabbc4aa","name":"The Screaming 45's","town":"Newcastle","facebookUrl":"https://www.facebook.com/Screaming45s/"},
+  {"type":"artist","bndyId":"24538f84-5521-4f98-959f-7749a1066e94","name":"Dustbowl Dance","town":"Hampshire","facebookUrl":"https://www.facebook.com/dustbowldancelive/"},
+  {"type":"artist","bndyId":"26bb58d3-52b2-4aea-80eb-c29e90e489e7","name":"Strange Company","town":"Derbyshire","facebookUrl":"https://www.facebook.com/strangecompanypartyband/"},
+  {"type":"artist","bndyId":"092d3e8d-d9a4-4110-8900-4bc51667fa2b","name":"JUST RADIOHEAD","town":"Derbyshire","facebookUrl":"https://www.facebook.com/justradiohead/"},
+  {"type":"artist","bndyId":"b17e4921-9622-40c9-b5b8-e97cbc7738a7","name":"Bras N' Roses","town":"Derbyshire","facebookUrl":"https://www.facebook.com/brasNroses/"},
+  {"type":"artist","bndyId":"a7f1e496-9359-4be8-bf62-383a055826f7","name":"OasisJam","town":"Newcastle","facebookUrl":"https://www.facebook.com/101ne/"},
+  {"type":"artist","bndyId":"b92b6cad-2c04-47cf-863d-b123555968e2","name":"Ultimate Green Day","town":"Stoke-on-Trent","facebookUrl":"https://www.facebook.com/Greendaytributeuk"},
+  {"type":"artist","bndyId":"de7613d6-6e55-4965-9237-b0faf1a1d881","name":"Stoney and the Dogs","town":"Skelmersdale","facebookUrl":"https://www.facebook.com/profile.php?id=61555909461139"},
+  {"type":"artist","bndyId":"fd1aea7d-5840-40a6-a920-6e1c25dc1445","name":"Blind 90","town":"Chester-le-Street","facebookUrl":"https://www.facebook.com/blind90band"},
+  {"type":"venue","bndyId":"b8181b19-bfdf-4c6f-829d-422add0bfd0d","name":"Shavington Social Club","town":"Shavington","facebookUrl":"https://www.facebook.com/shavington.club/"},
+  {"type":"venue","bndyId":"293a694c-fc5e-45d5-a2bb-75420993a10d","name":"Below Decks","town":"Torquay","officialWebsite":"https://belowdecks.co.uk"},
+  {"type":"venue","bndyId":"1bb47088-41f1-406a-8912-929f669bfa09","name":"The Hive at Nenthead","town":"Nenthead","officialWebsite":"https://hivenenthead.co.uk/","facebookUrl":"https://www.facebook.com/TheHiveAtNenthead/"},
+  {"type":"venue","bndyId":"604fd998-0ce9-4d8d-b7f8-d1568ca39c59","name":"The Farmers Union","town":"Exeter","officialWebsite":"https://thefarmersunion.co.uk","facebookUrl":"https://www.facebook.com/TheFarmersUnion/"},
+  {"type":"venue","bndyId":"8d8828d5-549d-469a-b098-311f4dcb1d14","name":"The White Lion","town":"Buckley","officialWebsite":"https://www.whitelionbuckley.com","facebookUrl":"https://www.facebook.com/101414029008000"},
+  {"type":"venue","bndyId":"fb25e68a-e9a4-4b6e-879f-8f0515f0d558","name":"The Spring Arts & Heritage Centre","town":"Havant","officialWebsite":"https://www.thespring.co.uk","facebookUrl":"https://www.facebook.com/thespringhavant/"},
+  {"type":"venue","bndyId":"ef4a3356-0e1b-4508-a10c-864341034d37","name":"The Tavern","town":"Hatton","facebookUrl":"https://www.facebook.com/thetavernhatton/"},
+  {"type":"venue","bndyId":"51fa066f-d3e3-4e0c-9777-b3e2f6b63d2e","name":"Cheshire County Show","town":"Knutsford","officialWebsite":"https://royalcheshireshow.org","facebookUrl":"https://www.facebook.com/royalcheshirecountyshow/"},
+  {"type":"venue","bndyId":"da02e607-3325-487b-9074-dc9f1b733597","name":"The Crompton Arms","town":"Ripley","facebookUrl":"https://www.facebook.com/CromptonArmsRipley/"},
+  {"type":"venue","bndyId":"f578ac89-a8b8-4574-9c90-4a0545e5834c","name":"Masons Arms","town":"New Mills","facebookUrl":"https://www.facebook.com/masonsarmsnewmills/"}
+]

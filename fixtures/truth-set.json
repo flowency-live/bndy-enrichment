@@ -1,0 +1,19 @@
+{
+  "description": "Verified upcoming events for 10 artists from bndy database, August-December 2026",
+  "generatedAt": "2026-08-11",
+  "events": [
+    {"artistName":"Classic Rockers Duo","venueName":"The Woodman","eventDate":"2026-08-22"},
+    {"artistName":"Classic Rockers Duo","venueName":"The Auctioneers Arms","eventDate":"2026-08-30"},
+    {"artistName":"Classic Rockers Duo","venueName":"The Black Cock","eventDate":"2026-09-12"},
+    {"artistName":"Classic Rockers Duo","venueName":"Sir Robert Peel","eventDate":"2026-09-18"},
+    {"artistName":"Classic Rockers Duo","venueName":"Sir Robert Peel","eventDate":"2026-12-18"},
+    {"artistName":"The Screaming 45's","venueName":"The High Crown","eventDate":"2026-10-17"},
+    {"artistName":"JUST RADIOHEAD","venueName":"The Hairy Dog","eventDate":"2026-10-24"},
+    {"artistName":"Strange Company","venueName":"Rolleston Club","eventDate":"2026-11-21"},
+    {"artistName":"Bras N' Roses","venueName":"The Latch Lifter","eventDate":"2026-10-02"},
+    {"artistName":"OasisJam","venueName":"Clousden Hill","eventDate":"2026-10-03"},
+    {"artistName":"OasisJam","venueName":"The Blacksmiths Arms","eventDate":"2026-11-13"},
+    {"artistName":"Ultimate Green Day","venueName":"Eleven","eventDate":"2026-08-21"},
+    {"artistName":"Blind 90","venueName":"The High Crown","eventDate":"2026-08-22"}
+  ]
+}
