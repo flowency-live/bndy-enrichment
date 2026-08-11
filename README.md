@@ -33,6 +33,19 @@ Entity classes are:
 
 Absence of a ticket price is **never** treated as evidence that a gig is free.
 
+## Artist classification enrichment
+
+Eligible artists are classified during the existing rich-enrichment pass, normally without a separate search. Artist-authored Facebook/official-site evidence is weighted highest; Gemini inference is used only when explicit evidence is missing.
+
+The write-facing values match bndy's current controlled fields exactly:
+
+- Genres: `Rock`, `Rock n Roll`, `Grunge`, `Metal`, `Punk`, `Alternative`, `New Wave`, `Pop`, `Indie`, `Britpop`, `Mod`, `Blues`, `R&B`, `Country`, `Americana`, `Folk`, `Soul`, `Funk`, `Motown`, `Electronic`, `Dance`, `Jazz`, `Classical`, `Reggae`, `Latin`, `Other`.
+- Artist Type: `Band`, `Solo Act`, `Duo`, `Trio`, `Group`, `DJ`, `Collective`.
+- Act Type: `Originals`, `Covers`, `Tribute Act`.
+- Acoustic performances: boolean when evidence is sufficient.
+
+Each inferred/declared classification also retains internal confidence, source type and evidence URLs. Sources are ranked as artist-declared, other official source, promoter/venue evidence, then Gemini inference.
+
 ## Current vertical slice
 
 - AWS CDK infrastructure
@@ -43,6 +56,7 @@ Absence of a ticket price is **never** treated as evidence that a gig is free.
 - separate publish/enrichment/graph-expansion disposition
 - commercial/ticketed venue signals
 - commercial entity suppression state in DynamoDB
+- controlled artist genre/type classification with provenance
 - structured event/evidence/enrichment schemas
 - S3 evidence archive scaffold
 - Secrets Manager integration
