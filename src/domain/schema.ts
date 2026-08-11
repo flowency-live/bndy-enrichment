@@ -72,6 +72,14 @@ export const AdmissionSchema = z.object({
 });
 export type Admission = z.infer<typeof AdmissionSchema>;
 
+export const EventProcessingSchema = z.object({
+  publish: z.boolean(),
+  enrichEntities: z.boolean(),
+  expandGraph: z.boolean(),
+  reason: z.string(),
+});
+export type EventProcessing = z.infer<typeof EventProcessingSchema>;
+
 export const EventCandidateSchema = z.object({
   artistName: z.string().min(1),
   venueName: z.string().min(1),
@@ -87,6 +95,7 @@ export const EventCandidateSchema = z.object({
   supportActs: z.array(z.string()).default([]),
   ticketing: TicketingSchema,
   admission: AdmissionSchema,
+  processing: EventProcessingSchema.optional(),
   notes: z.string().nullable().optional(),
 });
 export type EventCandidate = z.infer<typeof EventCandidateSchema>;
@@ -108,9 +117,22 @@ export const EligibilityDecisionSchema = z.object({
   freeEventsSeen: z.number().int().nonnegative(),
   paidEventsSeen: z.number().int().nonnegative(),
   unknownEventsSeen: z.number().int().nonnegative(),
+  ticketedVenue: z.boolean().default(false),
   reason: z.string(),
 });
 export type EligibilityDecision = z.infer<typeof EligibilityDecisionSchema>;
+
+export const CommercialEntitySignalSchema = z.object({
+  entityType: z.enum(['artist', 'venue']),
+  name: z.string().min(1),
+  town: z.string().optional(),
+  ticketed: z.boolean(),
+  autoEnrich: z.literal(false),
+  scanEligible: z.literal(false),
+  evidenceUrls: z.array(z.string().url()).default([]),
+  reason: z.string(),
+});
+export type CommercialEntitySignal = z.infer<typeof CommercialEntitySignalSchema>;
 
 export const DiscoveryResponseSchema = z.object({
   identityConfidence: z.number().min(0).max(1),
@@ -128,7 +150,9 @@ export const DiscoveryResultSchema = z.object({
   entityEnrichment: EntityEnrichmentSchema,
   discoveredEntities: z.array(EntityEnrichmentSchema),
   events: z.array(EventCandidateSchema),
-  rejectedEvents: z.array(EventCandidateSchema).default([]),
+  heldEvents: z.array(EventCandidateSchema).default([]),
+  expansionEligibleEvents: z.array(EventCandidateSchema).default([]),
+  commercialEntities: z.array(CommercialEntitySignalSchema).default([]),
   eligibility: EligibilityDecisionSchema,
   evidence: z.array(EvidenceSchema),
   metrics: z.object({
