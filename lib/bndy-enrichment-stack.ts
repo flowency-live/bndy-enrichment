@@ -81,10 +81,14 @@ export class BndyEnrichmentStack extends cdk.Stack {
       entry: 'src/handlers/scan-planner.ts',
       handler: 'handler',
       timeout: cdk.Duration.seconds(30),
-      environment: { GOOGLE_QUEUE_URL: queue.queueUrl },
+      environment: {
+        GOOGLE_QUEUE_URL: queue.queueUrl,
+        STATE_TABLE: table.tableName,
+      },
       bundling: { minify: true, sourceMap: true },
     });
     queue.grantSendMessages(planner);
+    table.grantReadData(planner);
 
     new events.Rule(this, 'DailyScanRule', {
       schedule: events.Schedule.cron({ minute: '15', hour: '3' }),
