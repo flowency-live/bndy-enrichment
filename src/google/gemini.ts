@@ -27,6 +27,61 @@ export interface GeminiOptions {
   horizonDays?: number;
 }
 
+const genreValues = [
+  'Rock', 'Rock n Roll', 'Grunge', 'Metal', 'Punk', 'Alternative', 'New Wave', 'Pop',
+  'Indie', 'Britpop', 'Mod', 'Blues', 'R&B', 'Country', 'Americana', 'Folk', 'Soul',
+  'Funk', 'Motown', 'Electronic', 'Dance', 'Jazz', 'Classical', 'Reggae', 'Latin', 'Other',
+];
+const artistTypeValues = ['Band', 'Solo Act', 'Duo', 'Trio', 'Group', 'DJ', 'Collective'];
+const actTypeValues = ['Originals', 'Covers', 'Tribute Act'];
+const classificationSourceValues = ['artist_declared', 'official_source', 'promoter_or_venue', 'gemini_inferred'];
+
+const classificationEvidenceProperties = {
+  confidence: { type: 'number', minimum: 0, maximum: 1 },
+  source: { type: 'string', enum: classificationSourceValues },
+  evidenceUrls: { type: 'array', items: { type: 'string' } },
+  rawText: { type: 'string' },
+};
+
+const artistProfileProperties = {
+  genres: { type: 'array', items: { type: 'string', enum: genreValues } },
+  genreEvidence: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: {
+        genre: { type: 'string', enum: genreValues },
+        ...classificationEvidenceProperties,
+      },
+      required: ['genre', 'confidence', 'source', 'evidenceUrls'],
+    },
+  },
+  artistType: { type: 'string', enum: artistTypeValues },
+  artistTypeEvidence: {
+    type: 'object',
+    properties: classificationEvidenceProperties,
+    required: ['confidence', 'source', 'evidenceUrls'],
+  },
+  actTypes: { type: 'array', items: { type: 'string', enum: actTypeValues } },
+  actTypeEvidence: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: {
+        actType: { type: 'string', enum: actTypeValues },
+        ...classificationEvidenceProperties,
+      },
+      required: ['actType', 'confidence', 'source', 'evidenceUrls'],
+    },
+  },
+  acousticPerformances: { type: 'boolean' },
+  acousticEvidence: {
+    type: 'object',
+    properties: classificationEvidenceProperties,
+    required: ['confidence', 'source', 'evidenceUrls'],
+  },
+};
+
 const facebookProperties = {
   searched: { type: 'boolean' },
   status: { type: 'string', enum: ['matched', 'not_found', 'ambiguous', 'not_searched'] },
@@ -53,6 +108,11 @@ const enrichmentProperties = {
       evidenceUrls: { type: 'array', items: { type: 'string' } },
     },
     required: ['evidenceUrls'],
+  },
+  artistProfile: {
+    type: 'object',
+    properties: artistProfileProperties,
+    required: ['genres', 'genreEvidence', 'actTypes', 'actTypeEvidence'],
   },
   evidenceUrls: { type: 'array', items: { type: 'string' } },
 };
@@ -281,10 +341,12 @@ function mergeEvidence(...sets: Evidence[][]): Evidence[] {
 }
 
 function needsRichEnrichment(entity: EntityEnrichment): boolean {
+  const artistClassificationMissing = entity.entityType === 'artist' && !entity.artistProfile;
   return entity.facebook.searched !== true ||
     entity.facebook.status !== 'matched' ||
     !entity.facebook.url ||
-    !entity.bio.text;
+    !entity.bio.text ||
+    artistClassificationMissing;
 }
 
 function relevantToFreeEvents(item: EntityEnrichment, events: EventCandidate[]): boolean {
@@ -346,7 +408,7 @@ export async function discoverWithGemini(entity: SearchEntity, options: GeminiOp
   } = partitionEvents(events);
   const commercialEntities = commercialEntitySignals(events);
 
-  // Rich Facebook/bio/site enrichment is intentionally behind the FREE eligibility gate.
+  // Rich Facebook/bio/site/classification enrichment is intentionally behind the FREE eligibility gate.
   // Paid events remain publishable, but never contribute targets here.
   if (eligibility.autoEnrich && expansionEligibleEvents.length) {
     const targets: Array<{ item: EntityEnrichment; target: 'subject' | 'discovered'; index: number }> = [];
