@@ -60,6 +60,7 @@ export const handler: SQSHandler = async (event): Promise<SQSBatchResponse> => {
             freeEventsSeen: result.eligibility.freeEventsSeen,
             paidEventsSeen: result.eligibility.paidEventsSeen,
             unknownEventsSeen: result.eligibility.unknownEventsSeen,
+            ticketedVenue: result.eligibility.ticketedVenue,
             reason: result.eligibility.reason,
             checkedAt: result.retrievedAt,
             suppressedUntil,
