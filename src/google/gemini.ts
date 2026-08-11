@@ -10,7 +10,11 @@ import {
   type EventCandidate,
   type SearchEntity,
 } from '../domain/schema.js';
-import { classifyEligibility, retainFreeEvents } from '../domain/eligibility.js';
+import {
+  classifyEligibility,
+  commercialEntitySignals,
+  partitionEvents,
+} from '../domain/eligibility.js';
 import {
   buildAdmissionFollowUpPrompt,
   buildDiscoveryPrompt,
@@ -334,11 +338,17 @@ export async function discoverWithGemini(entity: SearchEntity, options: GeminiOp
     admissionFollowUps++;
   }
 
-  const eligibility = classifyEligibility(events);
-  const { retained: freeEvents, rejected: rejectedEvents } = retainFreeEvents(events);
+  const eligibility = classifyEligibility(events, entity.type);
+  const {
+    publishable: publishableEvents,
+    held: heldEvents,
+    expansionEligible: expansionEligibleEvents,
+  } = partitionEvents(events);
+  const commercialEntities = commercialEntitySignals(events);
 
   // Rich Facebook/bio/site enrichment is intentionally behind the FREE eligibility gate.
-  if (eligibility.autoEnrich && freeEvents.length) {
+  // Paid events remain publishable, but never contribute targets here.
+  if (eligibility.autoEnrich && expansionEligibleEvents.length) {
     const targets: Array<{ item: EntityEnrichment; target: 'subject' | 'discovered'; index: number }> = [];
 
     if (needsRichEnrichment(entityEnrichment)) {
@@ -346,7 +356,7 @@ export async function discoverWithGemini(entity: SearchEntity, options: GeminiOp
     }
 
     discoveredEntities.forEach((item, index) => {
-      if (relevantToFreeEvents(item, freeEvents) && needsRichEnrichment(item)) {
+      if (relevantToFreeEvents(item, expansionEligibleEvents) && needsRichEnrichment(item)) {
         targets.push({ item, target: 'discovered', index });
       }
     });
@@ -382,8 +392,10 @@ export async function discoverWithGemini(entity: SearchEntity, options: GeminiOp
     identityConfidence: parsed.identityConfidence,
     entityEnrichment,
     discoveredEntities,
-    events: freeEvents,
-    rejectedEvents,
+    events: publishableEvents,
+    heldEvents,
+    expansionEligibleEvents,
+    commercialEntities,
     eligibility,
     evidence,
     metrics: {
