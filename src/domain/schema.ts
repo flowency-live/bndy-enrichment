@@ -14,6 +14,7 @@ export type SearchEntity = z.infer<typeof SearchEntitySchema>;
 export const EvidenceSupportSchema = z.enum([
   'artist_name', 'venue_name', 'town', 'event_date', 'start_time',
   'ticket_url', 'ticket_price', 'facebook_url', 'bio', 'website',
+  'admission_status',
 ]);
 
 export const EvidenceSchema = z.object({
@@ -29,7 +30,7 @@ export type Evidence = z.infer<typeof EvidenceSchema>;
 
 export const FacebookSearchSchema = z.object({
   searched: z.boolean(),
-  status: z.enum(['matched', 'not_found', 'ambiguous']),
+  status: z.enum(['matched', 'not_found', 'ambiguous', 'not_searched']),
   url: z.string().url().optional(),
   confidence: z.number().min(0).max(1),
   evidenceUrls: z.array(z.string().url()).default([]),
@@ -62,6 +63,15 @@ export const TicketingSchema = z.object({
 });
 export type Ticketing = z.infer<typeof TicketingSchema>;
 
+export const AdmissionSchema = z.object({
+  status: z.enum(['FREE_CONFIRMED', 'PAID_CONFIRMED', 'UNKNOWN']),
+  confidence: z.number().min(0).max(1),
+  priceText: z.string().optional(),
+  evidenceUrls: z.array(z.string().url()).default([]),
+  reason: z.string().optional(),
+});
+export type Admission = z.infer<typeof AdmissionSchema>;
+
 export const EventCandidateSchema = z.object({
   artistName: z.string().min(1),
   venueName: z.string().min(1),
@@ -76,9 +86,31 @@ export const EventCandidateSchema = z.object({
   promoter: z.string().optional(),
   supportActs: z.array(z.string()).default([]),
   ticketing: TicketingSchema,
+  admission: AdmissionSchema,
   notes: z.string().nullable().optional(),
 });
 export type EventCandidate = z.infer<typeof EventCandidateSchema>;
+
+export const EligibilityClassSchema = z.enum([
+  'GRASSROOTS_FREE',
+  'LIKELY_GRASSROOTS',
+  'MIXED',
+  'COMMERCIAL_TICKETING',
+  'UNKNOWN',
+]);
+export type EligibilityClass = z.infer<typeof EligibilityClassSchema>;
+
+export const EligibilityDecisionSchema = z.object({
+  classification: EligibilityClassSchema,
+  autoEnrich: z.boolean(),
+  suppressed: z.boolean(),
+  suppressionDays: z.number().int().nonnegative(),
+  freeEventsSeen: z.number().int().nonnegative(),
+  paidEventsSeen: z.number().int().nonnegative(),
+  unknownEventsSeen: z.number().int().nonnegative(),
+  reason: z.string(),
+});
+export type EligibilityDecision = z.infer<typeof EligibilityDecisionSchema>;
 
 export const DiscoveryResponseSchema = z.object({
   identityConfidence: z.number().min(0).max(1),
@@ -96,6 +128,8 @@ export const DiscoveryResultSchema = z.object({
   entityEnrichment: EntityEnrichmentSchema,
   discoveredEntities: z.array(EntityEnrichmentSchema),
   events: z.array(EventCandidateSchema),
+  rejectedEvents: z.array(EventCandidateSchema).default([]),
+  eligibility: EligibilityDecisionSchema,
   evidence: z.array(EvidenceSchema),
   metrics: z.object({
     latencyMs: z.number(),
@@ -103,6 +137,8 @@ export const DiscoveryResultSchema = z.object({
     outputTokens: z.number().optional(),
     searchQueries: z.number(),
     followUpSearches: z.number().default(0),
+    admissionFollowUps: z.number().default(0),
+    richEnrichmentFollowUps: z.number().default(0),
   }),
 });
 export type DiscoveryResult = z.infer<typeof DiscoveryResultSchema>;
