@@ -11,6 +11,11 @@ export const SearchEntitySchema = z.object({
 });
 export type SearchEntity = z.infer<typeof SearchEntitySchema>;
 
+export const EvidenceSupportSchema = z.enum([
+  'artist_name', 'venue_name', 'town', 'event_date', 'start_time',
+  'ticket_url', 'ticket_price', 'facebook_url', 'bio', 'website',
+]);
+
 export const EvidenceSchema = z.object({
   id: z.string(),
   sourceUrl: z.string().url(),
@@ -18,9 +23,44 @@ export const EvidenceSchema = z.object({
   title: z.string().optional(),
   snippet: z.string().optional(),
   searchQuery: z.string().optional(),
-  supports: z.array(z.enum(['artist_name','venue_name','town','event_date','start_time'])).default([]),
+  supports: z.array(EvidenceSupportSchema).default([]),
 });
 export type Evidence = z.infer<typeof EvidenceSchema>;
+
+export const FacebookSearchSchema = z.object({
+  searched: z.boolean(),
+  status: z.enum(['matched', 'not_found', 'ambiguous']),
+  url: z.string().url().optional(),
+  confidence: z.number().min(0).max(1),
+  evidenceUrls: z.array(z.string().url()).default([]),
+  notes: z.string().nullable().optional(),
+});
+export type FacebookSearch = z.infer<typeof FacebookSearchSchema>;
+
+export const EntityEnrichmentSchema = z.object({
+  entityType: z.enum(['artist', 'venue']),
+  name: z.string().min(1),
+  town: z.string().optional(),
+  officialWebsite: z.string().url().optional(),
+  facebook: FacebookSearchSchema,
+  bio: z.object({
+    text: z.string().min(1).optional(),
+    evidenceUrls: z.array(z.string().url()).default([]),
+  }),
+  evidenceUrls: z.array(z.string().url()).default([]),
+});
+export type EntityEnrichment = z.infer<typeof EntityEnrichmentSchema>;
+
+export const TicketingSchema = z.object({
+  expected: z.boolean(),
+  status: z.enum(['found', 'not_found', 'not_applicable', 'unknown']),
+  ticketUrl: z.string().url().optional(),
+  provider: z.string().optional(),
+  priceText: z.string().optional(),
+  onSale: z.boolean().optional(),
+  evidenceUrls: z.array(z.string().url()).default([]),
+});
+export type Ticketing = z.infer<typeof TicketingSchema>;
 
 export const EventCandidateSchema = z.object({
   artistName: z.string().min(1),
@@ -32,12 +72,18 @@ export const EventCandidateSchema = z.object({
   cancelled: z.boolean().default(false),
   confidence: z.number().min(0).max(1),
   sourceUrls: z.array(z.string().url()).min(1),
+  eventUrl: z.string().url().optional(),
+  promoter: z.string().optional(),
+  supportActs: z.array(z.string()).default([]),
+  ticketing: TicketingSchema,
   notes: z.string().nullable().optional(),
 });
 export type EventCandidate = z.infer<typeof EventCandidateSchema>;
 
 export const DiscoveryResponseSchema = z.object({
   identityConfidence: z.number().min(0).max(1),
+  entityEnrichment: EntityEnrichmentSchema,
+  discoveredEntities: z.array(EntityEnrichmentSchema).default([]),
   events: z.array(EventCandidateSchema),
 });
 export type DiscoveryResponse = z.infer<typeof DiscoveryResponseSchema>;
@@ -46,6 +92,9 @@ export const DiscoveryResultSchema = z.object({
   runId: z.string(),
   entity: SearchEntitySchema,
   retrievedAt: z.string(),
+  identityConfidence: z.number().min(0).max(1),
+  entityEnrichment: EntityEnrichmentSchema,
+  discoveredEntities: z.array(EntityEnrichmentSchema),
   events: z.array(EventCandidateSchema),
   evidence: z.array(EvidenceSchema),
   metrics: z.object({
@@ -53,6 +102,7 @@ export const DiscoveryResultSchema = z.object({
     inputTokens: z.number().optional(),
     outputTokens: z.number().optional(),
     searchQueries: z.number(),
+    followUpSearches: z.number().default(0),
   }),
 });
 export type DiscoveryResult = z.infer<typeof DiscoveryResultSchema>;
