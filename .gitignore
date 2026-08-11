@@ -8,3 +8,4 @@ playwright/.auth/
 artifacts/
 coverage/
 .DS_Store
+result*.json

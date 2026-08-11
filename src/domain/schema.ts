@@ -116,7 +116,7 @@ export const EntityEnrichmentSchema = z.object({
   officialWebsite: z.string().url().optional(),
   facebook: FacebookSearchSchema,
   bio: z.object({
-    text: z.string().min(1).optional(),
+    text: z.string().optional().transform(s => s && s.length > 0 ? s : undefined),
     evidenceUrls: z.array(z.string().url()).default([]),
   }),
   artistProfile: ArtistProfileSchema.optional(),
