@@ -1,16 +1,21 @@
 import crypto from 'node:crypto';
 import { z } from 'zod';
 import {
+  AdmissionSchema,
   DiscoveryResponseSchema,
   EntityEnrichmentSchema,
-  TicketingSchema,
   type DiscoveryResult,
   type EntityEnrichment,
   type Evidence,
   type EventCandidate,
   type SearchEntity,
 } from '../domain/schema.js';
-import { buildArtistEnrichmentFollowUpPrompt, buildDiscoveryPrompt, buildTicketFollowUpPrompt } from './prompt.js';
+import { classifyEligibility, retainFreeEvents } from '../domain/eligibility.js';
+import {
+  buildAdmissionFollowUpPrompt,
+  buildDiscoveryPrompt,
+  buildEntityEnrichmentFollowUpPrompt,
+} from './prompt.js';
 
 export interface GeminiOptions {
   apiKey: string;
@@ -20,7 +25,7 @@ export interface GeminiOptions {
 
 const facebookProperties = {
   searched: { type: 'boolean' },
-  status: { type: 'string', enum: ['matched', 'not_found', 'ambiguous'] },
+  status: { type: 'string', enum: ['matched', 'not_found', 'ambiguous', 'not_searched'] },
   url: { type: 'string' },
   confidence: { type: 'number', minimum: 0, maximum: 1 },
   evidenceUrls: { type: 'array', items: { type: 'string' } },
@@ -56,6 +61,14 @@ const ticketProperties = {
   priceText: { type: 'string' },
   onSale: { type: 'boolean' },
   evidenceUrls: { type: 'array', items: { type: 'string' } },
+};
+
+const admissionProperties = {
+  status: { type: 'string', enum: ['FREE_CONFIRMED', 'PAID_CONFIRMED', 'UNKNOWN'] },
+  confidence: { type: 'number', minimum: 0, maximum: 1 },
+  priceText: { type: 'string' },
+  evidenceUrls: { type: 'array', items: { type: 'string' } },
+  reason: { type: 'string' },
 };
 
 const responseSchema = {
@@ -97,21 +110,29 @@ const responseSchema = {
             properties: ticketProperties,
             required: ['expected', 'status', 'evidenceUrls'],
           },
+          admission: {
+            type: 'object',
+            properties: admissionProperties,
+            required: ['status', 'confidence', 'evidenceUrls'],
+          },
           notes: { type: ['string', 'null'] },
         },
-        required: ['artistName', 'venueName', 'eventDate', 'timezone', 'cancelled', 'confidence', 'sourceUrls', 'supportActs', 'ticketing'],
+        required: [
+          'artistName', 'venueName', 'eventDate', 'timezone', 'cancelled', 'confidence',
+          'sourceUrls', 'supportActs', 'ticketing', 'admission',
+        ],
       },
     },
   },
   required: ['identityConfidence', 'entityEnrichment', 'discoveredEntities', 'events'],
 };
 
-const TicketFollowUpItemSchema = z.object({
+const AdmissionFollowUpItemSchema = z.object({
   index: z.number().int().nonnegative(),
-  ticketing: TicketingSchema,
+  admission: AdmissionSchema,
 });
-const TicketFollowUpSchema = z.object({ results: z.array(TicketFollowUpItemSchema) });
-const ticketFollowUpResponseSchema = {
+const AdmissionFollowUpSchema = z.object({ results: z.array(AdmissionFollowUpItemSchema) });
+const admissionFollowUpResponseSchema = {
   type: 'object',
   properties: {
     results: {
@@ -120,25 +141,25 @@ const ticketFollowUpResponseSchema = {
         type: 'object',
         properties: {
           index: { type: 'integer' },
-          ticketing: {
+          admission: {
             type: 'object',
-            properties: ticketProperties,
-            required: ['expected', 'status', 'evidenceUrls'],
+            properties: admissionProperties,
+            required: ['status', 'confidence', 'evidenceUrls'],
           },
         },
-        required: ['index', 'ticketing'],
+        required: ['index', 'admission'],
       },
     },
   },
   required: ['results'],
 };
 
-const ArtistFollowUpItemSchema = z.object({
+const EnrichmentFollowUpItemSchema = z.object({
   index: z.number().int().nonnegative(),
   enrichment: EntityEnrichmentSchema,
 });
-const ArtistFollowUpSchema = z.object({ results: z.array(ArtistFollowUpItemSchema) });
-const artistFollowUpResponseSchema = {
+const EnrichmentFollowUpSchema = z.object({ results: z.array(EnrichmentFollowUpItemSchema) });
+const enrichmentFollowUpResponseSchema = {
   type: 'object',
   properties: {
     results: {
@@ -197,9 +218,8 @@ function extractEvidence(raw: any): { evidence: Evidence[]; queryCount: number }
     const url = node.url ?? node.uri ?? node?.source?.url;
     if (typeof url === 'string' && /^https?:\/\//.test(url) && !seen.has(url)) {
       seen.add(url);
-      const id = `ev_${crypto.createHash('sha1').update(url).digest('hex').slice(0, 12)}`;
       evidence.push({
-        id,
+        id: `ev_${crypto.createHash('sha1').update(url).digest('hex').slice(0, 12)}`,
         sourceUrl: url,
         sourceDomain: new URL(url).hostname,
         title: node.title,
@@ -230,11 +250,7 @@ async function callGemini(apiKey: string, model: string, prompt: string, schema:
       model,
       input: prompt,
       tools: [{ type: 'google_search' }],
-      response_format: {
-        type: 'text',
-        mime_type: 'application/json',
-        schema,
-      },
+      response_format: { type: 'text', mime_type: 'application/json', schema },
     }),
   });
 
@@ -260,17 +276,18 @@ function mergeEvidence(...sets: Evidence[][]): Evidence[] {
   return [...byUrl.values()];
 }
 
-function artistNeedsFollowUp(entity: EntityEnrichment): boolean {
-  return entity.entityType === 'artist' && (
-    entity.facebook.searched !== true ||
+function needsRichEnrichment(entity: EntityEnrichment): boolean {
+  return entity.facebook.searched !== true ||
     entity.facebook.status !== 'matched' ||
     !entity.facebook.url ||
-    !entity.bio.text
-  );
+    !entity.bio.text;
 }
 
-function ticketNeedsFollowUp(event: EventCandidate): boolean {
-  return event.ticketing.expected && event.ticketing.status !== 'found' && event.ticketing.status !== 'not_applicable';
+function relevantToFreeEvents(item: EntityEnrichment, events: EventCandidate[]): boolean {
+  const name = item.name.trim().toLowerCase();
+  return events.some(event =>
+    event.artistName.trim().toLowerCase() === name || event.venueName.trim().toLowerCase() === name
+  );
 }
 
 export async function discoverWithGemini(entity: SearchEntity, options: GeminiOptions): Promise<DiscoveryResult> {
@@ -288,55 +305,74 @@ export async function discoverWithGemini(entity: SearchEntity, options: GeminiOp
   let searchQueries = primary.queryCount;
   let inputTokens = primary.inputTokens ?? 0;
   let outputTokens = primary.outputTokens ?? 0;
-  let followUpSearches = 0;
+  let admissionFollowUps = 0;
+  let richEnrichmentFollowUps = 0;
 
-  const missingTicketIndexes = events
+  const unknownAdmission = events
     .map((event, index) => ({ event, index }))
-    .filter(({ event }) => ticketNeedsFollowUp(event));
+    .filter(({ event }) => event.admission.status === 'UNKNOWN');
 
-  if (missingTicketIndexes.length) {
-    const targets = missingTicketIndexes.map(({ event }) => event);
-    const followUp = await callGemini(options.apiKey, model, buildTicketFollowUpPrompt(targets), ticketFollowUpResponseSchema);
-    const parsedFollowUp = TicketFollowUpSchema.parse(JSON.parse(followUp.text));
+  if (unknownAdmission.length) {
+    const followUp = await callGemini(
+      options.apiKey,
+      model,
+      buildAdmissionFollowUpPrompt(unknownAdmission.map(({ event }) => event)),
+      admissionFollowUpResponseSchema,
+    );
+    const parsedFollowUp = AdmissionFollowUpSchema.parse(JSON.parse(followUp.text));
 
     for (const item of parsedFollowUp.results) {
-      const original = missingTicketIndexes[item.index];
+      const original = unknownAdmission[item.index];
       if (!original) continue;
-      events[original.index] = { ...events[original.index], ticketing: item.ticketing };
+      events[original.index] = { ...events[original.index], admission: item.admission };
     }
 
     evidence = mergeEvidence(evidence, followUp.evidence);
     searchQueries += followUp.queryCount;
     inputTokens += followUp.inputTokens ?? 0;
     outputTokens += followUp.outputTokens ?? 0;
-    followUpSearches++;
+    admissionFollowUps++;
   }
 
-  const enrichmentTargets: Array<{ item: EntityEnrichment; target: 'subject' | 'discovered'; index: number }> = [];
-  if (artistNeedsFollowUp(entityEnrichment)) {
-    enrichmentTargets.push({ item: entityEnrichment, target: 'subject', index: -1 });
-  }
-  discoveredEntities.forEach((item, index) => {
-    if (artistNeedsFollowUp(item)) enrichmentTargets.push({ item, target: 'discovered', index });
-  });
+  const eligibility = classifyEligibility(events);
+  const { retained: freeEvents, rejected: rejectedEvents } = retainFreeEvents(events);
 
-  if (enrichmentTargets.length) {
-    const targets = enrichmentTargets.map(({ item }) => item);
-    const followUp = await callGemini(options.apiKey, model, buildArtistEnrichmentFollowUpPrompt(targets), artistFollowUpResponseSchema);
-    const parsedFollowUp = ArtistFollowUpSchema.parse(JSON.parse(followUp.text));
+  // Rich Facebook/bio/site enrichment is intentionally behind the FREE eligibility gate.
+  if (eligibility.autoEnrich && freeEvents.length) {
+    const targets: Array<{ item: EntityEnrichment; target: 'subject' | 'discovered'; index: number }> = [];
 
-    for (const result of parsedFollowUp.results) {
-      const original = enrichmentTargets[result.index];
-      if (!original) continue;
-      if (original.target === 'subject') entityEnrichment = result.enrichment;
-      else discoveredEntities[original.index] = result.enrichment;
+    if (needsRichEnrichment(entityEnrichment)) {
+      targets.push({ item: entityEnrichment, target: 'subject', index: -1 });
     }
 
-    evidence = mergeEvidence(evidence, followUp.evidence);
-    searchQueries += followUp.queryCount;
-    inputTokens += followUp.inputTokens ?? 0;
-    outputTokens += followUp.outputTokens ?? 0;
-    followUpSearches++;
+    discoveredEntities.forEach((item, index) => {
+      if (relevantToFreeEvents(item, freeEvents) && needsRichEnrichment(item)) {
+        targets.push({ item, target: 'discovered', index });
+      }
+    });
+
+    if (targets.length) {
+      const followUp = await callGemini(
+        options.apiKey,
+        model,
+        buildEntityEnrichmentFollowUpPrompt(targets.map(({ item }) => item)),
+        enrichmentFollowUpResponseSchema,
+      );
+      const parsedFollowUp = EnrichmentFollowUpSchema.parse(JSON.parse(followUp.text));
+
+      for (const result of parsedFollowUp.results) {
+        const original = targets[result.index];
+        if (!original) continue;
+        if (original.target === 'subject') entityEnrichment = result.enrichment;
+        else discoveredEntities[original.index] = result.enrichment;
+      }
+
+      evidence = mergeEvidence(evidence, followUp.evidence);
+      searchQueries += followUp.queryCount;
+      inputTokens += followUp.inputTokens ?? 0;
+      outputTokens += followUp.outputTokens ?? 0;
+      richEnrichmentFollowUps++;
+    }
   }
 
   return {
@@ -346,14 +382,18 @@ export async function discoverWithGemini(entity: SearchEntity, options: GeminiOp
     identityConfidence: parsed.identityConfidence,
     entityEnrichment,
     discoveredEntities,
-    events,
+    events: freeEvents,
+    rejectedEvents,
+    eligibility,
     evidence,
     metrics: {
       latencyMs: Date.now() - started,
       inputTokens: inputTokens || undefined,
       outputTokens: outputTokens || undefined,
       searchQueries,
-      followUpSearches,
+      followUpSearches: admissionFollowUps + richEnrichmentFollowUps,
+      admissionFollowUps,
+      richEnrichmentFollowUps,
     },
   };
 }
