@@ -18,6 +18,11 @@ describe('evaluate', () => {
         status: 'not_applicable',
         evidenceUrls: [],
       },
+      admission: {
+        status: 'FREE_CONFIRMED',
+        confidence: 1,
+        evidenceUrls: ['https://example.com/gig'],
+      },
     }];
     expect(evaluate(truth, found)).toMatchObject({ tp: 1, fp: 0, fn: 0, precision: 1, recall: 1 });
   });
