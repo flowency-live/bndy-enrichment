@@ -14,7 +14,7 @@ export type SearchEntity = z.infer<typeof SearchEntitySchema>;
 export const EvidenceSupportSchema = z.enum([
   'artist_name', 'venue_name', 'town', 'event_date', 'start_time',
   'ticket_url', 'ticket_price', 'facebook_url', 'bio', 'website',
-  'admission_status',
+  'admission_status', 'genres', 'artist_type', 'act_type', 'acoustic_performances',
 ]);
 
 export const EvidenceSchema = z.object({
@@ -38,6 +38,77 @@ export const FacebookSearchSchema = z.object({
 });
 export type FacebookSearch = z.infer<typeof FacebookSearchSchema>;
 
+export const GenreSchema = z.enum([
+  'Rock',
+  'Rock n Roll',
+  'Grunge',
+  'Metal',
+  'Punk',
+  'Alternative',
+  'New Wave',
+  'Pop',
+  'Indie',
+  'Britpop',
+  'Mod',
+  'Blues',
+  'R&B',
+  'Country',
+  'Americana',
+  'Folk',
+  'Soul',
+  'Funk',
+  'Motown',
+  'Electronic',
+  'Dance',
+  'Jazz',
+  'Classical',
+  'Reggae',
+  'Latin',
+  'Other',
+]);
+export type Genre = z.infer<typeof GenreSchema>;
+
+export const ArtistTypeSchema = z.enum([
+  'Band',
+  'Solo Act',
+  'Duo',
+  'Trio',
+  'Group',
+  'DJ',
+  'Collective',
+]);
+export type ArtistType = z.infer<typeof ArtistTypeSchema>;
+
+export const ActTypeSchema = z.enum(['Originals', 'Covers', 'Tribute Act']);
+export type ActType = z.infer<typeof ActTypeSchema>;
+
+export const ClassificationSourceSchema = z.enum([
+  'artist_declared',
+  'official_source',
+  'promoter_or_venue',
+  'gemini_inferred',
+]);
+export type ClassificationSource = z.infer<typeof ClassificationSourceSchema>;
+
+const ClassificationEvidenceBaseSchema = z.object({
+  confidence: z.number().min(0).max(1),
+  source: ClassificationSourceSchema,
+  evidenceUrls: z.array(z.string().url()).default([]),
+  rawText: z.string().optional(),
+});
+
+export const ArtistProfileSchema = z.object({
+  genres: z.array(GenreSchema).default([]),
+  genreEvidence: z.array(ClassificationEvidenceBaseSchema.extend({ genre: GenreSchema })).default([]),
+  artistType: ArtistTypeSchema.optional(),
+  artistTypeEvidence: ClassificationEvidenceBaseSchema.optional(),
+  actTypes: z.array(ActTypeSchema).default([]),
+  actTypeEvidence: z.array(ClassificationEvidenceBaseSchema.extend({ actType: ActTypeSchema })).default([]),
+  acousticPerformances: z.boolean().optional(),
+  acousticEvidence: ClassificationEvidenceBaseSchema.optional(),
+});
+export type ArtistProfile = z.infer<typeof ArtistProfileSchema>;
+
 export const EntityEnrichmentSchema = z.object({
   entityType: z.enum(['artist', 'venue']),
   name: z.string().min(1),
@@ -48,6 +119,7 @@ export const EntityEnrichmentSchema = z.object({
     text: z.string().min(1).optional(),
     evidenceUrls: z.array(z.string().url()).default([]),
   }),
+  artistProfile: ArtistProfileSchema.optional(),
   evidenceUrls: z.array(z.string().url()).default([]),
 });
 export type EntityEnrichment = z.infer<typeof EntityEnrichmentSchema>;
