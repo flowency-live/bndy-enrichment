@@ -12,6 +12,12 @@ describe('evaluate', () => {
       cancelled: false,
       confidence: 0.9,
       sourceUrls: ['https://example.com/gig'],
+      supportActs: [],
+      ticketing: {
+        expected: false,
+        status: 'not_applicable',
+        evidenceUrls: [],
+      },
     }];
     expect(evaluate(truth, found)).toMatchObject({ tp: 1, fp: 0, fn: 0, precision: 1, recall: 1 });
   });
