@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DiscoveryResponseSchema } from '../src/domain/schema.js';
 
 describe('enrichment response schema', () => {
-  it('captures Facebook/bio enrichment for an eligible free artist', () => {
+  it('captures Facebook/bio plus controlled bndy artist classification', () => {
     const parsed = DiscoveryResponseSchema.parse({
       identityConfidence: 0.99,
       entityEnrichment: {
@@ -16,8 +16,54 @@ describe('enrichment response schema', () => {
           evidenceUrls: ['https://www.facebook.com/Screaming45s/'],
         },
         bio: {
-          text: '5 piece rock band from North-East',
+          text: '5 piece rock band playing rock from the 70s to now plus indie/alt favourites',
           evidenceUrls: ['https://www.facebook.com/Screaming45s/'],
+        },
+        artistProfile: {
+          genres: ['Rock', 'Indie', 'Alternative'],
+          genreEvidence: [
+            {
+              genre: 'Rock',
+              confidence: 0.99,
+              source: 'artist_declared',
+              evidenceUrls: ['https://www.facebook.com/Screaming45s/'],
+              rawText: '5 piece rock band',
+            },
+            {
+              genre: 'Indie',
+              confidence: 0.95,
+              source: 'artist_declared',
+              evidenceUrls: ['https://www.facebook.com/Screaming45s/'],
+              rawText: 'indie/alt favourites',
+            },
+            {
+              genre: 'Alternative',
+              confidence: 0.95,
+              source: 'artist_declared',
+              evidenceUrls: ['https://www.facebook.com/Screaming45s/'],
+              rawText: 'indie/alt favourites',
+            },
+          ],
+          artistType: 'Band',
+          artistTypeEvidence: {
+            confidence: 0.99,
+            source: 'artist_declared',
+            evidenceUrls: ['https://www.facebook.com/Screaming45s/'],
+            rawText: '5 piece rock band',
+          },
+          actTypes: ['Covers'],
+          actTypeEvidence: [{
+            actType: 'Covers',
+            confidence: 0.9,
+            source: 'gemini_inferred',
+            evidenceUrls: ['https://www.facebook.com/Screaming45s/'],
+          }],
+          acousticPerformances: false,
+          acousticEvidence: {
+            confidence: 0.7,
+            source: 'gemini_inferred',
+            evidenceUrls: ['https://www.facebook.com/Screaming45s/'],
+          },
         },
         evidenceUrls: ['https://www.facebook.com/Screaming45s/'],
       },
@@ -46,10 +92,13 @@ describe('enrichment response schema', () => {
     });
 
     expect(parsed.entityEnrichment.facebook.status).toBe('matched');
+    expect(parsed.entityEnrichment.artistProfile?.genres).toEqual(['Rock', 'Indie', 'Alternative']);
+    expect(parsed.entityEnrichment.artistProfile?.artistType).toBe('Band');
+    expect(parsed.entityEnrichment.artistProfile?.actTypes).toEqual(['Covers']);
     expect(parsed.events[0].admission.status).toBe('FREE_CONFIRMED');
   });
 
-  it('supports a cheap reconnaissance placeholder before Facebook enrichment', () => {
+  it('supports a cheap reconnaissance placeholder before Facebook/classification enrichment', () => {
     const parsed = DiscoveryResponseSchema.parse({
       identityConfidence: 0.8,
       entityEnrichment: {
@@ -70,5 +119,27 @@ describe('enrichment response schema', () => {
 
     expect(parsed.entityEnrichment.facebook.searched).toBe(false);
     expect(parsed.entityEnrichment.facebook.status).toBe('not_searched');
+    expect(parsed.entityEnrichment.artistProfile).toBeUndefined();
+  });
+
+  it('rejects genres outside the existing bndy taxonomy', () => {
+    expect(() => DiscoveryResponseSchema.parse({
+      identityConfidence: 0.99,
+      entityEnrichment: {
+        entityType: 'artist',
+        name: 'Test Artist',
+        facebook: { searched: true, status: 'matched', confidence: 1, evidenceUrls: [] },
+        bio: { evidenceUrls: [] },
+        artistProfile: {
+          genres: ['Shoegaze'],
+          genreEvidence: [],
+          actTypes: [],
+          actTypeEvidence: [],
+        },
+        evidenceUrls: [],
+      },
+      discoveredEntities: [],
+      events: [],
+    })).toThrow();
   });
 });
