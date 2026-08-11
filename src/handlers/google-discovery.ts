@@ -3,10 +3,13 @@ import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-sec
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { SearchEntitySchema } from '../domain/schema.js';
+import { suppressionUntilIso } from '../domain/eligibility.js';
 import { discoverWithGemini } from '../google/gemini.js';
 
 const secrets = new SecretsManagerClient({});
-const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
+  marshallOptions: { removeUndefinedValues: true },
+});
 let cachedKey: string | undefined;
 
 async function getKey() {
@@ -33,14 +36,36 @@ export const handler: SQSHandler = async (event): Promise<SQSBatchResponse> => {
         horizonDays: Number(process.env.SEARCH_HORIZON_DAYS ?? 90),
       });
 
-      await ddb.send(new PutCommand({
-        TableName: process.env.STATE_TABLE!,
-        Item: {
-          pk: `ENTITY#${entity.type}#${entity.bndyId}`,
-          sk: `RUN#${result.retrievedAt}#${result.runId}`,
-          ...result,
-        },
-      }));
+      const entityPk = `ENTITY#${entity.type}#${entity.bndyId}`;
+      const suppressedUntil = suppressionUntilIso(result.eligibility);
+
+      await Promise.all([
+        ddb.send(new PutCommand({
+          TableName: process.env.STATE_TABLE!,
+          Item: {
+            pk: entityPk,
+            sk: `RUN#${result.retrievedAt}#${result.runId}`,
+            ...result,
+          },
+        })),
+        ddb.send(new PutCommand({
+          TableName: process.env.STATE_TABLE!,
+          Item: {
+            pk: entityPk,
+            sk: 'ELIGIBILITY',
+            classification: result.eligibility.classification,
+            autoEnrich: result.eligibility.autoEnrich,
+            suppressed: result.eligibility.suppressed,
+            suppressionDays: result.eligibility.suppressionDays,
+            freeEventsSeen: result.eligibility.freeEventsSeen,
+            paidEventsSeen: result.eligibility.paidEventsSeen,
+            unknownEventsSeen: result.eligibility.unknownEventsSeen,
+            reason: result.eligibility.reason,
+            checkedAt: result.retrievedAt,
+            suppressedUntil,
+          },
+        })),
+      ]);
     } catch (error) {
       console.error('Discovery failed', { messageId: record.messageId, error });
       batchItemFailures.push({ itemIdentifier: record.messageId });
