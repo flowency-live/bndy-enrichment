@@ -24,10 +24,10 @@ This repository contains the AWS-deployable prototype described in `docs/SPEC.md
 ```bash
 npm install
 cp .env.example .env
-# add GOOGLE_API_KEY to .env
+# add GEMINI_API_KEY to .env
 npm run build
 npm test
-npm run search -- --type artist --name "Killin Scarlet" --town "Northwich" --horizon 90
+npm run prototype:search -- --type artist --name "Killin Scarlet" --town "Northwich" --days 90
 ```
 
 ## Deploy to AWS
@@ -38,7 +38,7 @@ At minimum you will need:
 
 1. an AWS account/role capable of CDK deployment;
 2. a Gemini API key;
-3. Node.js 20+;
+3. Node.js 22;
 4. AWS CDK bootstrapped in the target account/region.
 
 The CDK stack creates a Secrets Manager secret for Gemini. Populate it after the first deployment, then invoke the worker through the queue/schedule.

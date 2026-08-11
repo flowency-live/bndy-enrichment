@@ -1,0 +1,101 @@
+import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as lambdaNode from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as sources from 'aws-cdk-lib/aws-lambda-event-sources';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as events from 'aws-cdk-lib/aws-events';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
+
+export class BndyEnrichmentStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    const table = new dynamodb.Table(this, 'StateTable', {
+      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
+    const evidenceBucket = new s3.Bucket(this, 'EvidenceBucket', {
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      lifecycleRules: [{ abortIncompleteMultipartUploadAfter: cdk.Duration.days(7) }],
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
+    const dlq = new sqs.Queue(this, 'GoogleDiscoveryDLQ', {
+      retentionPeriod: cdk.Duration.days(14),
+    });
+
+    const queue = new sqs.Queue(this, 'GoogleDiscoveryQueue', {
+      visibilityTimeout: cdk.Duration.minutes(6),
+      deadLetterQueue: { queue: dlq, maxReceiveCount: 3 },
+    });
+
+    const geminiSecret = new secretsmanager.Secret(this, 'GeminiApiKey', {
+      description: 'Set JSON value to {"apiKey":"..."} after deployment.',
+      generateSecretString: {
+        secretStringTemplate: '{}',
+        generateStringKey: 'placeholder',
+        excludePunctuation: true,
+      },
+    });
+
+    const common = {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: cdk.Duration.minutes(5),
+      memorySize: 1024,
+    };
+
+    const worker = new lambdaNode.NodejsFunction(this, 'GoogleDiscoveryWorker', {
+      ...common,
+      entry: 'src/handlers/google-discovery.ts',
+      handler: 'handler',
+      environment: {
+        STATE_TABLE: table.tableName,
+        GEMINI_SECRET_ARN: geminiSecret.secretArn,
+        GEMINI_MODEL: 'gemini-3.6-flash',
+        SEARCH_HORIZON_DAYS: '90',
+        EVIDENCE_BUCKET: evidenceBucket.bucketName,
+      },
+      bundling: { minify: true, sourceMap: true },
+    });
+
+    worker.addEventSource(new sources.SqsEventSource(queue, {
+      batchSize: 1,
+      reportBatchItemFailures: true,
+    }));
+    table.grantWriteData(worker);
+    geminiSecret.grantRead(worker);
+    evidenceBucket.grantReadWrite(worker);
+
+    const planner = new lambdaNode.NodejsFunction(this, 'ScanPlanner', {
+      ...common,
+      entry: 'src/handlers/scan-planner.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.seconds(30),
+      environment: { GOOGLE_QUEUE_URL: queue.queueUrl },
+      bundling: { minify: true, sourceMap: true },
+    });
+    queue.grantSendMessages(planner);
+
+    new events.Rule(this, 'DailyScanRule', {
+      schedule: events.Schedule.cron({ minute: '15', hour: '3' }),
+      targets: [new targets.LambdaFunction(planner, {
+        event: events.RuleTargetInput.fromObject({ entities: [] }),
+      })],
+    });
+
+    new cdk.CfnOutput(this, 'GeminiSecretArn', { value: geminiSecret.secretArn });
+    new cdk.CfnOutput(this, 'GoogleDiscoveryQueueUrl', { value: queue.queueUrl });
+    new cdk.CfnOutput(this, 'ScanPlannerFunctionName', { value: planner.functionName });
+    new cdk.CfnOutput(this, 'StateTableName', { value: table.tableName });
+  }
+}

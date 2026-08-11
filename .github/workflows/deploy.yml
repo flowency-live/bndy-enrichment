@@ -1,0 +1,30 @@
+name: deploy-aws
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+      - run: npx cdk bootstrap
+      - run: npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+      - name: Configure Gemini API key
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          SECRET_ARN=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.GeminiSecretArn)")
+          aws secretsmanager put-secret-value \
+            --secret-id "$SECRET_ARN" \
+            --secret-string "$(node -e 'console.log(JSON.stringify({apiKey:process.env.GEMINI_API_KEY}))')"

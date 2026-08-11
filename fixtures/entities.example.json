@@ -1,0 +1,4 @@
+[
+  {"type":"artist","bndyId":"artist-example","name":"Example Band","town":"Northwich","region":"Cheshire"},
+  {"type":"venue","bndyId":"venue-example","name":"Example Venue","town":"Northwich","region":"Cheshire"}
+]
