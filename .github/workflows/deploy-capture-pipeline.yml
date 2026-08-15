@@ -1,0 +1,111 @@
+name: deploy-capture-pipeline
+
+# One-shot push trigger: creating/changing this workflow deploys the capture pipeline.
+# It can also be run manually later if required.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/deploy-capture-pipeline.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout enrichment
+        uses: actions/checkout@v4
+
+      - name: Checkout capture
+        uses: actions/checkout@v4
+        with:
+          repository: flowency-live/bndy-capture
+          path: capture
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Recover current capture deployment parameters
+        shell: bash
+        run: |
+          set -euo pipefail
+          CAPTURE_FN=$(aws cloudformation describe-stacks \
+            --stack-name bndy-capture \
+            --query "Stacks[0].Outputs[?OutputKey=='CaptureFunctionName'].OutputValue | [0]" \
+            --output text)
+          test -n "$CAPTURE_FN" && test "$CAPTURE_FN" != "None"
+
+          CAPTURE_TOKEN=$(aws lambda get-function-configuration \
+            --function-name "$CAPTURE_FN" \
+            --query 'Environment.Variables.CAPTURE_TOKEN' \
+            --output text)
+          test -n "$CAPTURE_TOKEN" && test "$CAPTURE_TOKEN" != "None"
+          echo "::add-mask::$CAPTURE_TOKEN"
+
+          HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name \
+            --dns-name bndy.co.uk \
+            --query "HostedZones[?Name=='bndy.co.uk.'] | [0].Id" \
+            --output text | sed 's#^/hostedzone/##')
+          test -n "$HOSTED_ZONE_ID" && test "$HOSTED_ZONE_ID" != "None"
+
+          echo "CAPTURE_TOKEN=$CAPTURE_TOKEN" >> "$GITHUB_ENV"
+          echo "HOSTED_ZONE_ID=$HOSTED_ZONE_ID" >> "$GITHUB_ENV"
+
+      - name: Deploy capture API upgrade
+        working-directory: capture/aws
+        shell: bash
+        run: |
+          set -euo pipefail
+          sam --version
+          sam build
+          sam deploy \
+            --stack-name bndy-capture \
+            --region eu-west-2 \
+            --capabilities CAPABILITY_IAM \
+            --resolve-s3 \
+            --parameter-overrides \
+              CaptureToken="$CAPTURE_TOKEN" \
+              DomainName="capture.bndy.co.uk" \
+              HostedZoneId="$HOSTED_ZONE_ID" \
+              AllowedOrigin="*" \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+
+      - name: Install enrichment dependencies
+        run: npm install
+
+      - name: Deploy enrichment stack
+        run: |
+          npx cdk bootstrap
+          npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+
+      - name: Configure Gemini API key
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$GEMINI_API_KEY"
+          SECRET_ARN=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.GeminiSecretArn)")
+          aws secretsmanager put-secret-value \
+            --secret-id "$SECRET_ARN" \
+            --secret-string "$(node -e 'console.log(JSON.stringify({apiKey:process.env.GEMINI_API_KEY}))')"
+
+      - name: Invoke capture scanner
+        run: |
+          aws lambda invoke \
+            --function-name bndy-capture-scan \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{}' \
+            /tmp/capture-scan.json
+          cat /tmp/capture-scan.json
