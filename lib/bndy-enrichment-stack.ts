@@ -39,6 +39,15 @@ export class BndyEnrichmentStack extends cdk.Stack {
       deadLetterQueue: { queue: dlq, maxReceiveCount: 3 },
     });
 
+    const captureDlq = new sqs.Queue(this, 'CaptureProcessingDLQ', {
+      retentionPeriod: cdk.Duration.days(14),
+    });
+
+    const captureQueue = new sqs.Queue(this, 'CaptureProcessingQueue', {
+      visibilityTimeout: cdk.Duration.minutes(7),
+      deadLetterQueue: { queue: captureDlq, maxReceiveCount: 3 },
+    });
+
     const geminiSecret = new secretsmanager.Secret(this, 'GeminiApiKey', {
       description: 'Set JSON value to {"apiKey":"..."} after deployment.',
       generateSecretString: {
@@ -47,6 +56,19 @@ export class BndyEnrichmentStack extends cdk.Stack {
         excludePunctuation: true,
       },
     });
+
+    // Existing production service credentials. These are created/owned by the
+    // BNDY API and Capture stacks respectively; enrichment only receives read access.
+    const bndyServiceSecret = secretsmanager.Secret.fromSecretNameV2(
+      this,
+      'BndyMcpServiceSecret',
+      'bndy/mcp-service',
+    );
+    const captureServiceSecret = secretsmanager.Secret.fromSecretNameV2(
+      this,
+      'BndyCaptureServiceSecret',
+      'bndy/capture-service',
+    );
 
     const common = {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -97,9 +119,60 @@ export class BndyEnrichmentStack extends cdk.Stack {
       })],
     });
 
+    const captureProcessor = new lambdaNode.NodejsFunction(this, 'CaptureProcessor', {
+      ...common,
+      functionName: 'bndy-capture-processor',
+      entry: 'src/handlers/capture-processor.ts',
+      handler: 'handler',
+      environment: {
+        GEMINI_SECRET_ARN: geminiSecret.secretArn,
+        GEMINI_MODEL: 'gemini-3.6-flash',
+        SEARCH_HORIZON_DAYS: '90',
+        CAPTURE_API_BASE: 'https://capture.bndy.co.uk',
+        CAPTURE_SECRET_NAME: 'bndy/capture-service',
+        BNDY_API_BASE: 'https://api.bndy.co.uk',
+        BNDY_SERVICE_SECRET_NAME: 'bndy/mcp-service',
+      },
+      bundling: { minify: true, sourceMap: true },
+    });
+    captureProcessor.addEventSource(new sources.SqsEventSource(captureQueue, {
+      batchSize: 1,
+      reportBatchItemFailures: true,
+    }));
+    geminiSecret.grantRead(captureProcessor);
+    captureServiceSecret.grantRead(captureProcessor);
+    bndyServiceSecret.grantRead(captureProcessor);
+
+    const captureScanner = new lambdaNode.NodejsFunction(this, 'CaptureScanner', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      functionName: 'bndy-capture-scan',
+      entry: 'src/handlers/capture-scan.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(1),
+      memorySize: 512,
+      environment: {
+        CAPTURE_QUEUE_URL: captureQueue.queueUrl,
+        CAPTURE_SCAN_LIMIT: '25',
+        CAPTURE_API_BASE: 'https://capture.bndy.co.uk',
+        CAPTURE_SECRET_NAME: 'bndy/capture-service',
+      },
+      bundling: { minify: true, sourceMap: true },
+    });
+    captureQueue.grantSendMessages(captureScanner);
+    captureServiceSecret.grantRead(captureScanner);
+
+    // Fast polling means a phone capture normally starts processing within five minutes.
+    new events.Rule(this, 'CaptureScanRule', {
+      schedule: events.Schedule.rate(cdk.Duration.minutes(5)),
+      targets: [new targets.LambdaFunction(captureScanner)],
+    });
+
     new cdk.CfnOutput(this, 'GeminiSecretArn', { value: geminiSecret.secretArn });
     new cdk.CfnOutput(this, 'GoogleDiscoveryQueueUrl', { value: queue.queueUrl });
     new cdk.CfnOutput(this, 'ScanPlannerFunctionName', { value: planner.functionName });
     new cdk.CfnOutput(this, 'StateTableName', { value: table.tableName });
+    new cdk.CfnOutput(this, 'CaptureQueueUrl', { value: captureQueue.queueUrl });
+    new cdk.CfnOutput(this, 'CaptureScannerFunctionName', { value: captureScanner.functionName });
+    new cdk.CfnOutput(this, 'CaptureProcessorFunctionName', { value: captureProcessor.functionName });
   }
 }
