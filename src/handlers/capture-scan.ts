@@ -21,9 +21,9 @@ function canonicalUrl(url?: string): string | undefined {
   }
 }
 
-function sortOldestFirst(captures: CaptureRecord[]): CaptureRecord[] {
+function sortNewestFirst(captures: CaptureRecord[]): CaptureRecord[] {
   return [...captures].sort((a, b) =>
-    String(a.receivedAt ?? a.capturedAt ?? '').localeCompare(String(b.receivedAt ?? b.capturedAt ?? ''))
+    String(b.receivedAt ?? b.capturedAt ?? '').localeCompare(String(a.receivedAt ?? a.capturedAt ?? ''))
   );
 }
 
@@ -31,7 +31,7 @@ export const handler: Handler = async () => {
   const queueUrl = process.env.CAPTURE_QUEUE_URL;
   if (!queueUrl) throw new Error('CAPTURE_QUEUE_URL is required');
 
-  const captures = sortOldestFirst(await listUnprocessedCaptures(Number(process.env.CAPTURE_SCAN_LIMIT ?? 25)));
+  const captures = sortNewestFirst(await listUnprocessedCaptures(Number(process.env.CAPTURE_SCAN_LIMIT ?? 25)));
   const seen = new Map<string, string>();
   let queued = 0;
   let ignored = 0;
@@ -69,7 +69,6 @@ export const handler: Handler = async () => {
     await sqs.send(new SendMessageCommand({
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify({ captureId: capture.id }),
-      MessageGroupId: undefined,
     }));
     queued++;
   }
