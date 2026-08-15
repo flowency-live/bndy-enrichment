@@ -78,14 +78,14 @@ describe('eligibility', () => {
     expect(publishable).toHaveLength(2);
     expect(publishable.map(e => e.admission.status)).toEqual(['FREE_CONFIRMED', 'PAID_CONFIRMED']);
     expect(held).toHaveLength(1);
-    expect(held[0].admission.status).toBe('UNKNOWN');
+    expect(held[0]!.admission.status).toBe('UNKNOWN');
     expect(expansionEligible).toHaveLength(1);
-    expect(expansionEligible[0].processing.expandGraph).toBe(true);
+    expect(expansionEligible[0]!.processing!.expandGraph).toBe(true);
 
     const paid = publishable.find(e => e.admission.status === 'PAID_CONFIRMED')!;
-    expect(paid.processing.publish).toBe(true);
-    expect(paid.processing.enrichEntities).toBe(false);
-    expect(paid.processing.expandGraph).toBe(false);
+    expect(paid.processing!.publish).toBe(true);
+    expect(paid.processing!.enrichEntities).toBe(false);
+    expect(paid.processing!.expandGraph).toBe(false);
   });
 
   it('emits ticketed venue signals from paid gigs without making them enrichment targets', () => {
