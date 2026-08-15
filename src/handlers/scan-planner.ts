@@ -17,7 +17,7 @@ async function loadSuppressionState(entities: SearchEntity[]) {
     const out = await ddb.send(new BatchGetCommand({
       RequestItems: {
         [table]: {
-          Keys: chunk.map(entity => ({
+          Keys: chunk.map((entity: SearchEntity) => ({
             pk: `ENTITY#${entity.type}#${entity.bndyId}`,
             sk: 'ELIGIBILITY',
           })),
@@ -35,7 +35,7 @@ async function loadSuppressionState(entities: SearchEntity[]) {
 export const handler: Handler = async (event) => {
   // Prototype hook. Production should fetch due entities from bndy or a scan-state index.
   // Explicit entities are still accepted so the stack deploys without coupling to bndy's API yet.
-  const rawEntities = Array.isArray(event?.entities) ? event.entities : [];
+  const rawEntities: unknown[] = Array.isArray(event?.entities) ? event.entities : [];
   if (!rawEntities.length) {
     return {
       queued: 0,
@@ -44,12 +44,12 @@ export const handler: Handler = async (event) => {
     };
   }
 
-  const entities = rawEntities.map((entity: unknown) => SearchEntitySchema.parse(entity));
+  const entities: SearchEntity[] = rawEntities.map((entity: unknown) => SearchEntitySchema.parse(entity));
   const force = event?.force === true;
   const state = force ? new Map<string, any>() : await loadSuppressionState(entities);
   const now = Date.now();
 
-  const eligible = entities.filter(entity => {
+  const eligible: SearchEntity[] = entities.filter((entity: SearchEntity) => {
     const pk = `ENTITY#${entity.type}#${entity.bndyId}`;
     const record = state.get(pk);
     if (!record?.suppressed || !record?.suppressedUntil) return true;
@@ -59,7 +59,7 @@ export const handler: Handler = async (event) => {
   for (let i = 0; i < eligible.length; i += 10) {
     await sqs.send(new SendMessageBatchCommand({
       QueueUrl: process.env.GOOGLE_QUEUE_URL!,
-      Entries: eligible.slice(i, i + 10).map((body, j) => ({
+      Entries: eligible.slice(i, i + 10).map((body: SearchEntity, j: number) => ({
         Id: `${i + j}`,
         MessageBody: JSON.stringify(body),
       })),
