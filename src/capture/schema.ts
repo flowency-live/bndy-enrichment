@@ -49,7 +49,8 @@ export type CaptureArtist = z.infer<typeof CaptureArtistSchema>;
 
 export const CaptureEventSchema = z.object({
   artistName: z.string().min(1),
-  venueName: z.string().min(1),
+  eventName: z.string().min(1).optional(),
+  venueName: z.string().min(1).optional(),
   town: z.string().min(1).optional(),
   address: z.string().optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
