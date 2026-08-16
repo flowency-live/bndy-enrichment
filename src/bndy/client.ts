@@ -92,7 +92,7 @@ export async function findOrCreateArtist(artist: CaptureArtist, captureId: strin
   const out = await request('/api/artists/find-or-create', {
     method: 'POST',
     body: JSON.stringify(payload),
-  }, [409]);
+  }, [409, 422]);
   const body = out.body ?? {};
 
   if (body.action === 'matched' || body.action === 'created') {
