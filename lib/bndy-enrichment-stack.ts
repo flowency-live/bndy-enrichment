@@ -30,6 +30,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
+    const captureImagesBucket = s3.Bucket.fromBucketName(
+      this,
+      'CaptureImagesBucket',
+      `bndy-capture-images-${this.account}-${this.region}`,
+    );
+
     const dlq = new sqs.Queue(this, 'GoogleDiscoveryDLQ', {
       retentionPeriod: cdk.Duration.days(14),
     });
@@ -57,8 +63,6 @@ export class BndyEnrichmentStack extends cdk.Stack {
       },
     });
 
-    // Existing production service credentials. These are created/owned by the
-    // BNDY API and Capture stacks respectively; enrichment only receives read access.
     const bndyServiceSecret = secretsmanager.Secret.fromSecretNameV2(
       this,
       'BndyMcpServiceSecret',
@@ -142,6 +146,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
     geminiSecret.grantRead(captureProcessor);
     captureServiceSecret.grantRead(captureProcessor);
     bndyServiceSecret.grantRead(captureProcessor);
+    captureImagesBucket.grantRead(captureProcessor);
 
     const captureScanner = new lambdaNode.NodejsFunction(this, 'CaptureScanner', {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -161,7 +166,6 @@ export class BndyEnrichmentStack extends cdk.Stack {
     captureQueue.grantSendMessages(captureScanner);
     captureServiceSecret.grantRead(captureScanner);
 
-    // Fast polling means a phone capture normally starts processing within five minutes.
     new events.Rule(this, 'CaptureScanRule', {
       schedule: events.Schedule.rate(cdk.Duration.minutes(5)),
       targets: [new targets.LambdaFunction(captureScanner)],
