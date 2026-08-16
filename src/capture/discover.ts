@@ -57,7 +57,7 @@ const responseSchema = {
           confidence: { type: 'number', minimum: 0, maximum: 1 },
           sourceUrls: { type: 'array', items: { type: 'string' } },
         },
-        required: ['artistName', 'date', 'admission', 'cancelled', 'confidence', 'sourceUrls'],
+        required: ['artistName', 'venueName', 'date', 'admission', 'cancelled', 'confidence', 'sourceUrls'],
       },
     },
     evidenceUrls: { type: 'array', items: { type: 'string' } },
@@ -175,7 +175,7 @@ IMAGE / POSTER RULES
 - Do not invent a Facebook URL. The URL must be supported by search evidence and clearly belong to the same act.
 - Distinguish a VENUE from an EVENT/FESTIVAL name. For example a row may name a festival rather than the physical venue.
 - Put a named festival/event/promoter title in eventName. Put only the actual physical venue in venueName.
-- When the poster gives an event/festival name but not a physical venue, use grounded search to try to resolve the venue. If it remains unresolved, OMIT venueName rather than pretending the event name is a venue.
+- When the poster gives an event/festival name but not a physical venue, use grounded search to resolve the physical venue. If the venue cannot be resolved confidently, omit that event from the returned event list rather than inventing a venue.
 - Poster text itself is valid evidence for dates, times, prices and artist billing. Web search should corroborate/resolve identity, venues and admission where possible.
 
 For an ARTIST capture:
