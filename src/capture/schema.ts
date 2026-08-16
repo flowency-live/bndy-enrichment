@@ -1,6 +1,16 @@
 import { z } from 'zod';
 import { ActTypeSchema, ArtistTypeSchema, GenreSchema } from '../domain/schema.js';
 
+export const CaptureMediaSchema = z.object({
+  type: z.literal('image'),
+  bucket: z.string().min(1),
+  key: z.string().min(1),
+  mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+  size: z.number().nonnegative().optional(),
+  originalName: z.string().optional(),
+});
+export type CaptureMedia = z.infer<typeof CaptureMediaSchema>;
+
 export const CaptureRecordSchema = z.object({
   id: z.string().min(1),
   capturedAt: z.string().optional(),
@@ -14,6 +24,7 @@ export const CaptureRecordSchema = z.object({
   suggestedEntityType: z.enum(['unknown', 'venue', 'artist', 'event']).default('unknown'),
   status: z.enum(['unprocessed', 'processing', 'processed', 'rejected', 'failed', 'ignored']),
   rawPayload: z.record(z.unknown()).optional(),
+  media: CaptureMediaSchema.optional(),
   processingWorkerId: z.string().optional(),
   processingStartedAt: z.string().optional(),
   leaseUntil: z.string().optional(),
