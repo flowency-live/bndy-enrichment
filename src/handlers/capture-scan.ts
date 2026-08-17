@@ -21,6 +21,14 @@ function canonicalUrl(url?: string): string | undefined {
   }
 }
 
+function storedImageKey(capture: CaptureRecord): string | undefined {
+  if (!capture.mimeType?.startsWith('image/')) return undefined;
+  const raw = capture.rawPayload as Record<string, unknown> | undefined;
+  const bucket = typeof raw?.imageBucket === 'string' ? raw.imageBucket : undefined;
+  const key = typeof raw?.imageKey === 'string' ? raw.imageKey : undefined;
+  return bucket && key ? `s3://${bucket}/${key}` : undefined;
+}
+
 function sortNewestFirst(captures: CaptureRecord[]): CaptureRecord[] {
   return [...captures].sort((a, b) =>
     String(b.receivedAt ?? b.capturedAt ?? '').localeCompare(String(a.receivedAt ?? a.capturedAt ?? ''))
@@ -47,21 +55,31 @@ export const handler: Handler = async () => {
     }
 
     const url = canonicalUrl(capture.sharedUrl);
-    if (!url || url.startsWith('content://')) {
-      await addCaptureNote(capture.id, 'AWS processor: failed because the capture contains no usable public URL.');
+    const imageKey = storedImageKey(capture);
+
+    if (!url && !imageKey) {
+      await addCaptureNote(
+        capture.id,
+        capture.mimeType?.startsWith('image/')
+          ? 'AWS processor: failed because this image capture has no uploaded image object. Update the Android Capture app and resend.'
+          : 'AWS processor: failed because the capture contains no usable public URL or stored image.'
+      );
       await updateCaptureStatus(capture.id, 'failed');
       failed++;
       continue;
     }
 
-    const firstId = seen.get(url);
+    // Dedupe only within this scanner batch. URLs use their canonical public identity;
+    // image captures use the immutable S3 object identity.
+    const identity = url ? `url:${url}` : `image:${imageKey}`;
+    const firstId = seen.get(identity);
     if (firstId) {
       await addCaptureNote(capture.id, `AWS processor: duplicate of capture ${firstId}.`);
       await updateCaptureStatus(capture.id, 'processed');
       duplicates++;
       continue;
     }
-    seen.set(url, capture.id);
+    seen.set(identity, capture.id);
 
     const claimed = await claimCapture(capture.id, 'bndy-capture-scan', 20);
     if (!claimed) continue;
