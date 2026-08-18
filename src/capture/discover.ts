@@ -149,6 +149,21 @@ async function imageInput(capture: CaptureRecord): Promise<any | undefined> {
 function buildPrompt(capture: CaptureRecord, metadata: string, horizonDays: number): string {
   const today = new Date().toISOString().slice(0, 10);
   const isImage = capture.media?.type === 'image';
+  const sourceRules = isImage ? `IMAGE / POSTER RULES
+- Inspect the actual image carefully. Do not rely only on text search.
+- A poster headed by one artist/band with many dates is an ARTIST capture and a gig guide, not ten unrelated event captures.
+- Extract every clearly readable upcoming gig row from the poster, including month/date, time, town, price and annotations such as headline act.
+- Resolve the artist identity from the poster name using web search. Find the canonical official Facebook artist/profile URL even when no URL was shared from the phone.
+- Do not invent a Facebook URL. The URL must be supported by search evidence and clearly belong to the same act.
+- Distinguish a VENUE from an EVENT/FESTIVAL name. Put a named festival/event/promoter title in eventName and only the actual physical venue in venueName.
+- When the poster gives an event/festival name but not a physical venue, use grounded search to resolve the physical venue. If the venue cannot be resolved confidently, omit that event rather than inventing a venue.
+- Poster text itself is valid evidence for dates, times, prices and artist billing. Web search should corroborate/resolve identity, venues and admission where possible.` : `FACEBOOK / URL SHARE RULES
+- The normal case is a Facebook artist/band page shared from a phone.
+- Treat the supplied sharedUrl as the primary identity/provenance for this capture. Do not discard it merely because anonymous Facebook fetching is blocked or Google exposes limited Facebook text.
+- Resolve redirects/share URLs to the canonical artist/page URL when evidence allows.
+- If the supplied Facebook URL is already the artist page, preserve and return it even if Google does not expose richer Facebook text.
+- Do not replace a supplied Facebook artist identity with a similarly named act found in search. Use search to enrich and corroborate the captured entity, not to substitute a different one.`;
+
   return `You are processing one mobile share into BNDY, a UK grassroots live-music database.
 
 CAPTURE
@@ -165,28 +180,19 @@ ${metadata || '(none)'}
 
 Today is ${today}. Find only upcoming events within the next ${horizonDays} days.
 
-Use Google Search grounding aggressively enough to identify the exact shared entity, but do not guess across similarly named acts.
+Use Google Search grounding aggressively enough to identify the exact captured entity, but do not guess across similarly named acts.
 
-IMAGE / POSTER RULES
-- If an image is supplied, inspect the actual image carefully. Do not rely only on text search.
-- A poster headed by one artist/band with many dates is an ARTIST capture and a gig guide, not ten unrelated event captures.
-- Extract every clearly readable upcoming gig row from the poster, including month/date, time, town, price and annotations such as headline act.
-- Resolve the artist identity from the poster name using web search. Find the canonical official Facebook artist/profile URL even when no URL was shared from the phone.
-- Do not invent a Facebook URL. The URL must be supported by search evidence and clearly belong to the same act.
-- Distinguish a VENUE from an EVENT/FESTIVAL name. For example a row may name a festival rather than the physical venue.
-- Put a named festival/event/promoter title in eventName. Put only the actual physical venue in venueName.
-- When the poster gives an event/festival name but not a physical venue, use grounded search to resolve the physical venue. If the venue cannot be resolved confidently, omit that event from the returned event list rather than inventing a venue.
-- Poster text itself is valid evidence for dates, times, prices and artist billing. Web search should corroborate/resolve identity, venues and admission where possible.
+${sourceRules}
 
 For an ARTIST capture:
-- identify the exact artist name from its own/official source or the supplied poster;
+- identify the exact artist name from its own/official source${isImage ? ' or the supplied poster' : ''};
 - preserve/find the canonical Facebook profile/page URL;
 - location is REQUIRED for creation. Prefer the artist's own About/intro/website. If unavailable, infer a performing region only when repeated venue evidence supports it and use locationType=regional;
 - artistType is REQUIRED: Band, Solo Act, Duo, Trio, Group, DJ, Collective;
 - at least one actType is REQUIRED: Originals, Covers, Tribute Act. Multiple are allowed;
 - genres are optional and must use only the controlled enum;
 - bio is optional. Prefer concise factual wording derived from artist-declared/official text. Never fabricate a bio;
-- discover upcoming gigs from the poster plus official artist sources, venue/promoter listings and search results. Facebook event pages may be used if indexed publicly.
+- discover upcoming gigs from ${isImage ? 'the poster plus ' : ''}official artist sources, venue/promoter listings and search results. Facebook event pages may be used if indexed publicly.
 
 EVENT RULES
 - Only output real upcoming live performances for the identified artist.
@@ -195,15 +201,15 @@ EVENT RULES
 - venue town/city is important because the BNDY Venue Lambda will do authoritative Google Places resolution.
 - FREE_CONFIRMED only when evidence explicitly says free/free entry/no admission charge.
 - PAID_CONFIRMED when a price, mandatory paid ticket, or official ticket vendor clearly establishes paid admission.
-- absence of a price is UNKNOWN. A poster with no price is NOT evidence of free entry.
+- absence of a price is UNKNOWN.${isImage ? ' A poster with no price is NOT evidence of free entry.' : ''}
 - retain paid gigs. Do not drop them.
 - cancelled events may be returned with cancelled=true but will not be published.
-- deduplicate the same performance when poster evidence and web search both find it.
+- deduplicate the same performance when multiple sources find it.
 
 CLASSIFICATION
-- artist: the shared page/image represents a music artist/band/act, including an artist gig-guide poster.
+- artist: the shared ${isImage ? 'image' : 'page'} represents a music artist/band/act${isImage ? ', including an artist gig-guide poster' : ''}.
 - venue: it is primarily a music venue rather than an artist.
-- event: it is a single event rather than an artist profile/gig guide.
+- event: it is a single event rather than an artist profile${isImage ? '/gig guide' : ''}.
 - non_music: clearly unrelated to live music.
 - unsupported: cannot reliably identify the source/entity.
 
