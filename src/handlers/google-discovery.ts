@@ -4,6 +4,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { SearchEntitySchema } from '../domain/schema.js';
 import { suppressionUntilIso } from '../domain/eligibility.js';
+import { writeEnrichmentToEntity } from '../domain/write-back.js';
 import { discoverWithGemini } from '../google/gemini.js';
 
 const secrets = new SecretsManagerClient({});
@@ -67,6 +68,16 @@ export const handler: SQSHandler = async (event): Promise<SQSBatchResponse> => {
           },
         })),
       ]);
+
+      // Write enrichment data to production artist/venue tables for godmode review
+      if (process.env.ARTISTS_TABLE && process.env.VENUES_TABLE) {
+        await writeEnrichmentToEntity(
+          ddb,
+          result,
+          process.env.ARTISTS_TABLE,
+          process.env.VENUES_TABLE,
+        );
+      }
     } catch (error) {
       console.error('Discovery failed', { messageId: record.messageId, error });
       batchItemFailures.push({ itemIdentifier: record.messageId });

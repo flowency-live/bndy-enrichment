@@ -80,6 +80,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
       memorySize: 1024,
     };
 
+    // Import existing bndy tables for enrichment write-back
+    const artistsTable = dynamodb.Table.fromTableArn(this, 'ArtistsTable',
+      `arn:aws:dynamodb:${this.region}:${this.account}:table/bndy-artists`);
+    const venuesTable = dynamodb.Table.fromTableArn(this, 'VenuesTable',
+      `arn:aws:dynamodb:${this.region}:${this.account}:table/bndy-venues`);
+
     const worker = new lambdaNode.NodejsFunction(this, 'GoogleDiscoveryWorker', {
       ...common,
       entry: 'src/handlers/google-discovery.ts',
@@ -90,6 +96,8 @@ export class BndyEnrichmentStack extends cdk.Stack {
         GEMINI_MODEL: 'gemini-3.6-flash',
         SEARCH_HORIZON_DAYS: '90',
         EVIDENCE_BUCKET: evidenceBucket.bucketName,
+        ARTISTS_TABLE: artistsTable.tableName,
+        VENUES_TABLE: venuesTable.tableName,
       },
       bundling: { minify: true, sourceMap: true },
     });
@@ -99,6 +107,8 @@ export class BndyEnrichmentStack extends cdk.Stack {
       reportBatchItemFailures: true,
     }));
     table.grantWriteData(worker);
+    artistsTable.grantWriteData(worker);
+    venuesTable.grantWriteData(worker);
     geminiSecret.grantRead(worker);
     evidenceBucket.grantReadWrite(worker);
 
