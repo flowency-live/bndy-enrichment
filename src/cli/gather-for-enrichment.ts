@@ -12,7 +12,7 @@ import {
   BatchGetCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-const client = new DynamoDBDocumentClient(
+const client = DynamoDBDocumentClient.from(
   new DynamoDBClient({ region: 'eu-west-2' })
 );
 
