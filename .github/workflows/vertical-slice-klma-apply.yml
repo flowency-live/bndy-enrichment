@@ -33,7 +33,7 @@ jobs:
             echo 'No BNDY_SERVICE_TOKEN or MCP_SERVICE_TOKEN repository secret is available.' | tee /tmp/klma-apply.log
             exit 20
           fi
-          npx tsx src/cli/klma-live.ts --match "Walters Bligh Swiftys Meir" --limit 1 --apply 2>&1 | tee /tmp/klma-apply.log
+          npx tsx src/cli/klma-live.ts --match "Walters & Bligh Swiftys, Meir" --limit 1 --apply 2>&1 | tee /tmp/klma-apply.log
       - name: Build PR apply summary
         if: always()
         env:
