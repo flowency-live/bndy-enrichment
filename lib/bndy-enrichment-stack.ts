@@ -55,42 +55,31 @@ export class BndyEnrichmentStack extends cdk.Stack {
       `bndy-capture-images-${this.account}-${this.region}`,
     );
 
-    const dlq = new sqs.Queue(this, 'GoogleDiscoveryDLQ', {
-      retentionPeriod: cdk.Duration.days(14),
-    });
+    const dlq = new sqs.Queue(this, 'GoogleDiscoveryDLQ', { retentionPeriod: cdk.Duration.days(14) });
     const queue = new sqs.Queue(this, 'GoogleDiscoveryQueue', {
       visibilityTimeout: cdk.Duration.minutes(6),
       deadLetterQueue: { queue: dlq, maxReceiveCount: 3 },
     });
 
-    const captureDlq = new sqs.Queue(this, 'CaptureProcessingDLQ', {
-      retentionPeriod: cdk.Duration.days(14),
-    });
+    const captureDlq = new sqs.Queue(this, 'CaptureProcessingDLQ', { retentionPeriod: cdk.Duration.days(14) });
     const captureQueue = new sqs.Queue(this, 'CaptureProcessingQueue', {
       visibilityTimeout: cdk.Duration.minutes(7),
       deadLetterQueue: { queue: captureDlq, maxReceiveCount: 3 },
     });
 
-    // Strategic source runtime queues. Consumers land in WP-04/WP-05.
-    const sourceScanDlq = new sqs.Queue(this, 'SourceScanDLQ', {
-      retentionPeriod: cdk.Duration.days(14),
-    });
+    const sourceScanDlq = new sqs.Queue(this, 'SourceScanDLQ', { retentionPeriod: cdk.Duration.days(14) });
     const sourceScanQueue = new sqs.Queue(this, 'SourceScanQueue', {
       visibilityTimeout: cdk.Duration.minutes(15),
       deadLetterQueue: { queue: sourceScanDlq, maxReceiveCount: 3 },
     });
 
-    const browserScanDlq = new sqs.Queue(this, 'BrowserScanDLQ', {
-      retentionPeriod: cdk.Duration.days(14),
-    });
+    const browserScanDlq = new sqs.Queue(this, 'BrowserScanDLQ', { retentionPeriod: cdk.Duration.days(14) });
     const browserScanQueue = new sqs.Queue(this, 'BrowserScanQueue', {
       visibilityTimeout: cdk.Duration.minutes(15),
       deadLetterQueue: { queue: browserScanDlq, maxReceiveCount: 3 },
     });
 
-    const projectionDlq = new sqs.Queue(this, 'ProjectionDLQ', {
-      retentionPeriod: cdk.Duration.days(14),
-    });
+    const projectionDlq = new sqs.Queue(this, 'ProjectionDLQ', { retentionPeriod: cdk.Duration.days(14) });
     const projectionQueue = new sqs.Queue(this, 'ProjectionQueue', {
       visibilityTimeout: cdk.Duration.minutes(5),
       deadLetterQueue: { queue: projectionDlq, maxReceiveCount: 3 },
@@ -105,16 +94,8 @@ export class BndyEnrichmentStack extends cdk.Stack {
       },
     });
 
-    const bndyServiceSecret = secretsmanager.Secret.fromSecretNameV2(
-      this,
-      'BndyMcpServiceSecret',
-      'bndy/mcp-service',
-    );
-    const captureServiceSecret = secretsmanager.Secret.fromSecretNameV2(
-      this,
-      'BndyCaptureServiceSecret',
-      'bndy/capture-service',
-    );
+    const bndyServiceSecret = secretsmanager.Secret.fromSecretNameV2(this, 'BndyMcpServiceSecret', 'bndy/mcp-service');
+    const captureServiceSecret = secretsmanager.Secret.fromSecretNameV2(this, 'BndyCaptureServiceSecret', 'bndy/capture-service');
 
     const common = {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -145,6 +126,50 @@ export class BndyEnrichmentStack extends cdk.Stack {
       targets: [new targets.LambdaFunction(sourceDispatcher)],
     });
 
+    const sourceWorkerEnvironment = {
+      STATE_TABLE: table.tableName,
+      EVIDENCE_BUCKET: evidenceBucket.bucketName,
+      PROJECTION_QUEUE_URL: projectionQueue.queueUrl,
+    };
+
+    const sourceWorker = new lambdaNode.NodejsFunction(this, 'SourceWorker', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      entry: 'src/handlers/source-worker.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(14),
+      memorySize: 1024,
+      environment: sourceWorkerEnvironment,
+      bundling: { minify: true, sourceMap: true },
+    });
+    sourceWorker.addEventSource(new sources.SqsEventSource(sourceScanQueue, {
+      batchSize: 1,
+      reportBatchItemFailures: true,
+    }));
+    table.grantReadWriteData(sourceWorker);
+    evidenceBucket.grantReadWrite(sourceWorker);
+    projectionQueue.grantSendMessages(sourceWorker);
+
+    const browserSourceWorker = new lambdaNode.NodejsFunction(this, 'BrowserSourceWorker', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      entry: 'src/handlers/browser-source-worker.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(14),
+      memorySize: 3072,
+      environment: sourceWorkerEnvironment,
+      bundling: {
+        minify: true,
+        sourceMap: true,
+        nodeModules: ['@sparticuz/chromium', 'puppeteer-core'],
+      },
+    });
+    browserSourceWorker.addEventSource(new sources.SqsEventSource(browserScanQueue, {
+      batchSize: 1,
+      reportBatchItemFailures: true,
+    }));
+    table.grantReadWriteData(browserSourceWorker);
+    evidenceBucket.grantReadWrite(browserSourceWorker);
+    projectionQueue.grantSendMessages(browserSourceWorker);
+
     // Import existing bndy tables for enrichment write-back
     const artistsTable = dynamodb.Table.fromTableArn(this, 'ArtistsTable',
       `arn:aws:dynamodb:${this.region}:${this.account}:table/bndy-artists`);
@@ -166,11 +191,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       },
       bundling: { minify: true, sourceMap: true },
     });
-
-    worker.addEventSource(new sources.SqsEventSource(queue, {
-      batchSize: 1,
-      reportBatchItemFailures: true,
-    }));
+    worker.addEventSource(new sources.SqsEventSource(queue, { batchSize: 1, reportBatchItemFailures: true }));
     table.grantWriteData(worker);
     artistsTable.grantWriteData(worker);
     venuesTable.grantWriteData(worker);
@@ -182,10 +203,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       entry: 'src/handlers/scan-planner.ts',
       handler: 'handler',
       timeout: cdk.Duration.seconds(30),
-      environment: {
-        GOOGLE_QUEUE_URL: queue.queueUrl,
-        STATE_TABLE: table.tableName,
-      },
+      environment: { GOOGLE_QUEUE_URL: queue.queueUrl, STATE_TABLE: table.tableName },
       bundling: { minify: true, sourceMap: true },
     });
     queue.grantSendMessages(planner);
@@ -215,10 +233,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       },
       bundling: { minify: true, sourceMap: true },
     });
-    captureProcessor.addEventSource(new sources.SqsEventSource(captureQueue, {
-      batchSize: 1,
-      reportBatchItemFailures: true,
-    }));
+    captureProcessor.addEventSource(new sources.SqsEventSource(captureQueue, { batchSize: 1, reportBatchItemFailures: true }));
     geminiSecret.grantRead(captureProcessor);
     captureServiceSecret.grantRead(captureProcessor);
     bndyServiceSecret.grantRead(captureProcessor);
@@ -258,5 +273,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'BrowserScanQueueUrl', { value: browserScanQueue.queueUrl });
     new cdk.CfnOutput(this, 'ProjectionQueueUrl', { value: projectionQueue.queueUrl });
     new cdk.CfnOutput(this, 'SourceDispatcherFunctionName', { value: sourceDispatcher.functionName });
+    new cdk.CfnOutput(this, 'SourceWorkerFunctionName', { value: sourceWorker.functionName });
+    new cdk.CfnOutput(this, 'BrowserSourceWorkerFunctionName', { value: browserSourceWorker.functionName });
   }
 }
