@@ -13,7 +13,8 @@
     "destroy": "cdk destroy --all",
     "prototype:search": "tsx src/cli/search.ts",
     "evaluate": "tsx src/cli/evaluate.ts",
-    "facebook:probe": "tsx src/facebook/probe.ts"
+    "facebook:probe": "tsx src/facebook/probe.ts",
+    "source:klma": "tsx src/cli/klma-knowledge.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
