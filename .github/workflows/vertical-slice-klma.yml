@@ -14,6 +14,8 @@ on:
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   shadow-live-source:
@@ -26,6 +28,24 @@ jobs:
       - run: npm install
       - name: Run live KLMA source in shadow mode
         run: npm run source:klma -- --limit 5
+      - name: Build PR run summary
+        run: |
+          REPORT="$(find artifacts/knowledge -name run-report.json -print -quit)"
+          node - "$REPORT" <<'NODE' > /tmp/klma-comment.md
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          console.log('### KLMA live knowledge shadow run');
+          console.log('');
+          console.log(`- Source rows: **${report.source.rawRows}**`);
+          console.log(`- Future normalised events: **${report.source.futureNormalisedEvents}**`);
+          console.log(`- Observation: \`${report.knowledge.observationId}\``);
+          console.log(`- Claims: **${report.knowledge.claims}**`);
+          console.log(`- Graph: **${report.knowledge.graphNodes} nodes / ${report.knowledge.graphEdges} edges**`);
+          console.log(`- BNDY mutations: **0 (shadow)**`);
+          console.log(`- Run: ${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`);
+          console.log('');
+          console.log('The uploaded Actions artifact contains `raw.csv`, `observation.json`, `claims.json`, `graph.json`, `graph.html` and `run-report.json`.');
+          NODE
       - name: Upload graph and run evidence
         uses: actions/upload-artifact@v4
         with:
@@ -33,3 +53,7 @@ jobs:
           path: artifacts/knowledge/**
           if-no-files-found: error
           retention-days: 7
+      - name: Report result to PR 2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment 2 --body-file /tmp/klma-comment.md
