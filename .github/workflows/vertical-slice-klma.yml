@@ -7,6 +7,7 @@ on:
     paths:
       - 'src/vertical-slice/**'
       - 'src/cli/klma-knowledge.ts'
+      - 'src/cli/klma-live.ts'
       - 'src/knowledge/types.ts'
       - 'package.json'
       - '.github/workflows/vertical-slice-klma.yml'
@@ -31,7 +32,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          npm run source:klma -- --limit 5 2>&1 | tee /tmp/klma-run.log
+          npx tsx src/cli/klma-live.ts --limit 5 2>&1 | tee /tmp/klma-run.log
       - name: Build PR run summary
         if: always()
         env:
