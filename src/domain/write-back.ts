@@ -135,7 +135,7 @@ export async function writeEnrichmentToEntity(
     Key: { id: result.entity.bndyId },
     UpdateExpression: 'SET enrichment_status = :status, enrichment_date = :date, enrichment_data = :data',
     ExpressionAttributeValues: {
-      ':status': 'needs_review',
+      ':status': 'high_confidence',
       ':date': result.retrievedAt,
       ':data': enrichmentData,
     },
