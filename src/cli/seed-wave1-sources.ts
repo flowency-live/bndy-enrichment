@@ -2,9 +2,6 @@ import type { GigSource } from '../knowledge/types.js';
 import { SourceRegistryStore } from '../knowledge/stores/source-registry-store.js';
 import { nextScheduledAt } from '../source-runner/schedule.js';
 
-const tableName = process.env.STATE_TABLE;
-if (!tableName) throw new Error('STATE_TABLE is required');
-
 function withNext(source: Omit<GigSource, 'nextScanAt'>, now: Date): GigSource {
   const provisional: GigSource = { ...source, nextScanAt: now.toISOString() };
   return { ...provisional, nextScanAt: nextScheduledAt(provisional, now) };
@@ -76,9 +73,9 @@ export function waveOneSources(now = new Date()): GigSource[] {
       runtimeClass: 'browser',
     }, now),
     withNext({
-      // The current Cowork reports fire at ~05:03Z during BST, i.e. ~06:03 local.
-      // Keep this bootstrap disabled and use 06:00 local until WP-10 ports the
-      // source fixture/spec and can validate the exact minute from source history.
+      // Current Cowork reports fire at ~05:03Z during BST, i.e. ~06:03 local.
+      // This bootstrap remains disabled until WP-10 validates the exact minute,
+      // acquisition mode and snapshot semantics from the source fixtures/spec.
       ...safeDefaults,
       id: 'insangel-daily-import',
       name: 'insangel',
@@ -97,9 +94,10 @@ export function waveOneSources(now = new Date()): GigSource[] {
 }
 
 async function main(): Promise<void> {
+  const tableName = process.env.STATE_TABLE;
+  if (!tableName) throw new Error('STATE_TABLE is required');
   const store = new SourceRegistryStore(tableName);
-  const sources = waveOneSources();
-  for (const source of sources) {
+  for (const source of waveOneSources()) {
     await store.put(source);
     console.log(`seeded ${source.id}: enabled=${source.enabled}, shadow=${source.shadow}, writer=${source.writerAuthority}, next=${source.nextScanAt}`);
   }
