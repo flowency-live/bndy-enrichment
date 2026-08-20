@@ -27,15 +27,24 @@ jobs:
           node-version: 22
       - run: npm install
       - name: Run live KLMA source in shadow mode
-        run: npm run source:klma -- --limit 5
-      - name: Build PR run summary
+        id: klma
+        continue-on-error: true
         run: |
-          REPORT="$(find artifacts/knowledge -name run-report.json -print -quit)"
-          node - "$REPORT" <<'NODE' > /tmp/klma-comment.md
+          set -o pipefail
+          npm run source:klma -- --limit 5 2>&1 | tee /tmp/klma-run.log
+      - name: Build PR run summary
+        if: always()
+        env:
+          KLMA_OUTCOME: ${{ steps.klma.outcome }}
+        run: |
+          REPORT="$(find artifacts/knowledge -name run-report.json -print -quit 2>/dev/null || true)"
+          if [ -n "$REPORT" ]; then
+            node - "$REPORT" <<'NODE' > /tmp/klma-comment.md
           const fs = require('fs');
           const report = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
           console.log('### KLMA live knowledge shadow run');
           console.log('');
+          console.log(`- Result: **${process.env.KLMA_OUTCOME}**`);
           console.log(`- Source rows: **${report.source.rawRows}**`);
           console.log(`- Future normalised events: **${report.source.futureNormalisedEvents}**`);
           console.log(`- Observation: \`${report.knowledge.observationId}\``);
@@ -46,14 +55,34 @@ jobs:
           console.log('');
           console.log('The uploaded Actions artifact contains `raw.csv`, `observation.json`, `claims.json`, `graph.json`, `graph.html` and `run-report.json`.');
           NODE
+          else
+            {
+              echo '### KLMA live knowledge shadow run'
+              echo
+              echo "- Result: **${KLMA_OUTCOME}**"
+              echo "- Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+              echo
+              echo 'No run report was produced. Tail of execution log:'
+              echo '```text'
+              tail -n 40 /tmp/klma-run.log 2>/dev/null || echo 'No execution log available.'
+              echo '```'
+            } > /tmp/klma-comment.md
+          fi
       - name: Upload graph and run evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: klma-knowledge-shadow-${{ github.run_number }}
-          path: artifacts/knowledge/**
-          if-no-files-found: error
+          path: |
+            artifacts/knowledge/**
+            /tmp/klma-run.log
+          if-no-files-found: warn
           retention-days: 7
       - name: Report result to PR 2
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh pr comment 2 --body-file /tmp/klma-comment.md
+      - name: Fail job if KLMA shadow failed
+        if: steps.klma.outcome != 'success'
+        run: exit 1
