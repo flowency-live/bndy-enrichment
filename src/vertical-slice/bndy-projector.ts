@@ -65,8 +65,9 @@ export type ProjectionResult = {
 };
 
 function assertSafeAdditiveProjection(event: KlmaNormalisedEvent): void {
+  const trustedBndyId = lookupTrustedBndyId(event.venueName);
   const defaultedTown = event.warnings.some((warning) => warning.startsWith('Town defaulted to Stoke-on-Trent'));
-  if (defaultedTown) {
+  if (defaultedTown && !trustedBndyId) {
     throw new Error(`Venue location is not explicit enough for automatic projection: '${event.venueName}'`);
   }
 
@@ -104,7 +105,6 @@ async function resolveArtist(event: KlmaNormalisedEvent): Promise<{ id: string; 
 }
 
 async function resolveVenue(event: KlmaNormalisedEvent): Promise<{ id: string; action: string; name?: string }> {
-  // Check for trusted BNDY venue ID from proven alias mappings
   const trustedBndyId = lookupTrustedBndyId(event.venueName);
   if (trustedBndyId) {
     const canonicalName = lookupVenueCanonical(event.venueName);
@@ -115,7 +115,6 @@ async function resolveVenue(event: KlmaNormalisedEvent): Promise<{ id: string; a
     };
   }
 
-  // Unknown venue - use canonical API for find-or-create
   const payload = {
     name: event.venueName,
     city: event.town,
