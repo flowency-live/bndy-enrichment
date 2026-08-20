@@ -4,6 +4,24 @@
 **Status:** Proof of Concept
 **Author:** CTO Session
 
+> **Scope / authority boundary.** This document is a tactical cost-optimisation POC for the **existing enrichment engine**. It does not define BNDY target architecture and must not override or fork `docs/TARGET-ARCHITECTURE.md` or `docs/BUILD-PLAN.md`. The strategic programme remains the Observation/Claim/Reconciliation architecture in those documents. Any technique proved here may later be absorbed into that architecture, primarily through the model/search provider and routing work in WP-15.
+
+## Two active workstreams in this repository
+
+The repository currently contains two deliberately separate threads:
+
+1. **Strategic build:** `TARGET-ARCHITECTURE.md` + `BUILD-PLAN.md`. This consolidates source ingestion, Capture, claims, reconciliation, source adapters and the future knowledge graph into one runtime.
+2. **Cost POC:** this document + `src/serpapi/` + `src/hybrid/`. This asks a narrower question: *can the existing working enrichment capability be made dramatically cheaper without materially reducing quality?*
+
+Rules for this POC:
+
+- it may reuse today's `DiscoveryResult` and legacy write-back path purely to make an apples-to-apples quality/cost comparison;
+- it must not introduce a second strategic orchestration, source registry, claim model or target-state write path;
+- production rollout is not implied by POC success;
+- if adopted strategically, SerpAPI/Haiku become provider implementations behind the target intelligence/model abstraction rather than a parallel pipeline;
+- the existing Gemini path remains the quality baseline during evaluation;
+- no change made for this POC should regress the currently working Capture/poster/Facebook enrichment behaviour.
+
 ---
 
 ## Problem Statement
@@ -93,31 +111,82 @@ npx tsx src/cli/search-hybrid.ts --name "Artist Name" --town "Location" --compar
 - More predictable costs
 - Can scale to full artist database
 
+## Evaluation contract
+
+The POC is successful only if it demonstrates both **cost reduction and acceptable output parity** against the current Gemini path.
+
+For each comparison artist, record at minimum:
+
+- Gemini result;
+- hybrid result;
+- canonical Facebook URL match correctness;
+- artist identity correctness;
+- location correctness;
+- artist type / act type correctness where available;
+- bio/genre usefulness where available;
+- false-positive and false-negative differences;
+- search/model calls used;
+- measured or calculated cost;
+- latency.
+
+A cheaper result that materially increases wrong-artist matches is a failed POC regardless of nominal confidence score.
+
 ## Recommended Next Steps
 
-1. **Test quality** on 20-30 artists from the existing intake files
-2. **Compare results** with the Gemini enrichments we already have
-3. If quality is acceptable:
-   - Add a `HybridDiscoveryWorker` Lambda handler
-   - Create a hybrid queue alongside the Google queue
-   - Route based on cost/quality requirements
-4. Consider **Facebook Graph API** integration for verified FB URL validation (requires App Review)
+1. **Test quality** on 20-30 artists from the existing intake files, deliberately including easy, ambiguous and sparse grassroots acts.
+2. **Compare results** with the Gemini enrichments we already have using the evaluation contract above.
+3. If quality is acceptable, determine the cheapest routing strategy rather than immediately replacing Gemini everywhere.
+4. Only after that decision, consider a `HybridDiscoveryWorker` or provider integration.
+5. Consider **Facebook Graph API** integration for verified FB URL validation if App Review provides useful access.
 
 ## Integration with Existing Pipeline
 
 This POC outputs `HybridDiscoveryResult` which can be converted to `DiscoveryResult` via `toDiscoveryResult()`. This allows:
 
 - Direct comparison with Gemini results
-- Use of existing `writeEnrichmentToEntity` write-back logic
-- Gradual migration without pipeline changes
+- Temporary reuse of existing `writeEnrichmentToEntity` write-back logic for POC parity testing
+- Minimal disturbance to the working current pipeline while the experiment runs
+
+**Important:** `writeEnrichmentToEntity` is a legacy/as-built compatibility path, not the strategic destination. If the hybrid approach is adopted into the target architecture, its output should become an `Interpretation` / Claims input and canonical mutations should continue through the target reconciliation/projection path defined by `TARGET-ARCHITECTURE.md` and `BUILD-PLAN.md`.
+
+## Strategic absorption path
+
+If the POC succeeds, port the useful pieces rather than the POC pipeline itself:
+
+```text
+SerpAPI search provider ─┐
+                        ├─> WP-15 provider/routing layer
+Haiku reasoning provider┘
+              ↓
+Extraction / Interpretation
+              ↓
+Claims
+              ↓
+Reconciliation / Projection
+```
+
+Likely retained components:
+
+- SerpAPI client/search strategy;
+- Haiku provider/scoring prompts where they outperform on cost/quality;
+- quality/cost benchmark fixtures;
+- provider-level metrics;
+- routing rules such as cheap-first then Gemini escalation.
+
+Likely retired after strategic absorption:
+
+- a standalone `HybridDiscoveryWorker` if the generic provider/runtime can perform the same job;
+- any POC-only direct-write glue;
+- duplicate routing/orchestration that overlaps WP-15.
 
 ## Decision Required
 
 Before scaling this POC:
 
-1. Run quality comparison on real artists
-2. Decide acceptable confidence threshold
-3. Determine if hybrid should replace Gemini or supplement it
+1. Run quality comparison on real artists.
+2. Quantify accuracy by field and wrong-identity rate, not just an aggregate confidence score.
+3. Decide the escalation/routing threshold at which Gemini remains worthwhile.
+4. Decide whether the hybrid method is a bulk-enrichment tier, the default cheap tier, or merely another provider option.
 
 The hybrid pipeline may be best suited for:
 - Initial bulk enrichment (cost-sensitive)
@@ -127,4 +196,5 @@ The hybrid pipeline may be best suited for:
 Gemini may remain better for:
 - High-value artists (with upcoming events)
 - Cases where deep page analysis is needed
-- When budget allows
+- Poster/multimodal cases
+- Ambiguous identity cases where grounded search materially improves confidence
