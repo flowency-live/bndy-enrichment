@@ -213,6 +213,8 @@ CLASSIFICATION
 - non_music: clearly unrelated to live music.
 - unsupported: cannot reliably identify the source/entity.
 
+CRITICAL: When classification is "artist", you MUST populate the artist object with ALL required fields (name, facebookUrl, location, artistType, actTypes, confidence, evidenceUrls). Do not return classification="artist" without a complete artist object. If you cannot determine all required fields, use classification="unsupported" instead.
+
 Return JSON only matching the supplied schema.`;
 }
 
