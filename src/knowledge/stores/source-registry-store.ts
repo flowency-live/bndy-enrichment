@@ -1,4 +1,4 @@
-import { GetCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { GetCommand, PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { GigSourceSchema, type GigSource } from '../types.js';
 import { createDynamoStoreClient, type DynamoStoreClient } from './clients.js';
 
@@ -51,5 +51,32 @@ export class SourceRegistryStore {
     }));
 
     return (response.Items ?? []).map((item) => GigSourceSchema.parse(item));
+  }
+
+  async advanceSchedule(
+    sourceId: string,
+    expectedNextScanAt: string,
+    nextScanAt: string,
+    scheduledAt: string,
+  ): Promise<void> {
+    await this.client.send(new UpdateCommand({
+      TableName: this.tableName,
+      Key: { pk: `SOURCE#${sourceId}`, sk: 'CONFIG' },
+      UpdateExpression: [
+        'SET nextScanAt = :next',
+        'lastScheduledAt = :scheduled',
+        'GSI_SCHEDULE_PK = :schedulePk',
+        'GSI_SCHEDULE_SK = :scheduleSk',
+      ].join(', '),
+      ConditionExpression: 'enabled = :enabled AND nextScanAt = :expected',
+      ExpressionAttributeValues: {
+        ':next': nextScanAt,
+        ':scheduled': scheduledAt,
+        ':schedulePk': 'SOURCE_SCHEDULE',
+        ':scheduleSk': `${nextScanAt}#${sourceId}`,
+        ':enabled': true,
+        ':expected': expectedNextScanAt,
+      },
+    }));
   }
 }
