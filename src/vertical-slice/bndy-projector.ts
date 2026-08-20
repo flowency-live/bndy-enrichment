@@ -1,6 +1,7 @@
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import type { KlmaNormalisedEvent } from './klma-source.js';
 import { KLMA_SOURCE_ID } from './klma-source.js';
+import { lookupTrustedBndyId, lookupVenueCanonical } from './klma-venue-aliases.js';
 
 const secrets = new SecretsManagerClient({});
 let cachedToken: string | undefined;
@@ -103,6 +104,18 @@ async function resolveArtist(event: KlmaNormalisedEvent): Promise<{ id: string; 
 }
 
 async function resolveVenue(event: KlmaNormalisedEvent): Promise<{ id: string; action: string; name?: string }> {
+  // Check for trusted BNDY venue ID from proven alias mappings
+  const trustedBndyId = lookupTrustedBndyId(event.venueName);
+  if (trustedBndyId) {
+    const canonicalName = lookupVenueCanonical(event.venueName);
+    return {
+      id: trustedBndyId,
+      action: 'trusted_alias',
+      name: canonicalName ?? event.venueName,
+    };
+  }
+
+  // Unknown venue - use canonical API for find-or-create
   const payload = {
     name: event.venueName,
     city: event.town,
