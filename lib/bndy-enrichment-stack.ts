@@ -58,7 +58,6 @@ export class BndyEnrichmentStack extends cdk.Stack {
     const dlq = new sqs.Queue(this, 'GoogleDiscoveryDLQ', {
       retentionPeriod: cdk.Duration.days(14),
     });
-
     const queue = new sqs.Queue(this, 'GoogleDiscoveryQueue', {
       visibilityTimeout: cdk.Duration.minutes(6),
       deadLetterQueue: { queue: dlq, maxReceiveCount: 3 },
@@ -67,10 +66,34 @@ export class BndyEnrichmentStack extends cdk.Stack {
     const captureDlq = new sqs.Queue(this, 'CaptureProcessingDLQ', {
       retentionPeriod: cdk.Duration.days(14),
     });
-
     const captureQueue = new sqs.Queue(this, 'CaptureProcessingQueue', {
       visibilityTimeout: cdk.Duration.minutes(7),
       deadLetterQueue: { queue: captureDlq, maxReceiveCount: 3 },
+    });
+
+    // Strategic source runtime queues. Consumers land in WP-04/WP-05.
+    const sourceScanDlq = new sqs.Queue(this, 'SourceScanDLQ', {
+      retentionPeriod: cdk.Duration.days(14),
+    });
+    const sourceScanQueue = new sqs.Queue(this, 'SourceScanQueue', {
+      visibilityTimeout: cdk.Duration.minutes(15),
+      deadLetterQueue: { queue: sourceScanDlq, maxReceiveCount: 3 },
+    });
+
+    const browserScanDlq = new sqs.Queue(this, 'BrowserScanDLQ', {
+      retentionPeriod: cdk.Duration.days(14),
+    });
+    const browserScanQueue = new sqs.Queue(this, 'BrowserScanQueue', {
+      visibilityTimeout: cdk.Duration.minutes(15),
+      deadLetterQueue: { queue: browserScanDlq, maxReceiveCount: 3 },
+    });
+
+    const projectionDlq = new sqs.Queue(this, 'ProjectionDLQ', {
+      retentionPeriod: cdk.Duration.days(14),
+    });
+    const projectionQueue = new sqs.Queue(this, 'ProjectionQueue', {
+      visibilityTimeout: cdk.Duration.minutes(5),
+      deadLetterQueue: { queue: projectionDlq, maxReceiveCount: 3 },
     });
 
     const geminiSecret = new secretsmanager.Secret(this, 'GeminiApiKey', {
@@ -98,6 +121,29 @@ export class BndyEnrichmentStack extends cdk.Stack {
       timeout: cdk.Duration.minutes(5),
       memorySize: 1024,
     };
+
+    const sourceDispatcher = new lambdaNode.NodejsFunction(this, 'SourceDispatcher', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      entry: 'src/handlers/source-dispatcher.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 512,
+      environment: {
+        STATE_TABLE: table.tableName,
+        SOURCE_SCAN_QUEUE_URL: sourceScanQueue.queueUrl,
+        BROWSER_SCAN_QUEUE_URL: browserScanQueue.queueUrl,
+        PROJECTION_QUEUE_URL: projectionQueue.queueUrl,
+      },
+      bundling: { minify: true, sourceMap: true },
+    });
+    table.grantReadWriteData(sourceDispatcher);
+    sourceScanQueue.grantSendMessages(sourceDispatcher);
+    browserScanQueue.grantSendMessages(sourceDispatcher);
+
+    new events.Rule(this, 'SourceDispatchTick', {
+      schedule: events.Schedule.rate(cdk.Duration.minutes(15)),
+      targets: [new targets.LambdaFunction(sourceDispatcher)],
+    });
 
     // Import existing bndy tables for enrichment write-back
     const artistsTable = dynamodb.Table.fromTableArn(this, 'ArtistsTable',
@@ -145,6 +191,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
     queue.grantSendMessages(planner);
     table.grantReadData(planner);
 
+    // Legacy enrichment planner remains until its migration package retires it.
     new events.Rule(this, 'DailyScanRule', {
       schedule: events.Schedule.cron({ minute: '15', hour: '3' }),
       targets: [new targets.LambdaFunction(planner, {
@@ -207,5 +254,9 @@ export class BndyEnrichmentStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'CaptureQueueUrl', { value: captureQueue.queueUrl });
     new cdk.CfnOutput(this, 'CaptureScannerFunctionName', { value: captureScanner.functionName });
     new cdk.CfnOutput(this, 'CaptureProcessorFunctionName', { value: captureProcessor.functionName });
+    new cdk.CfnOutput(this, 'SourceScanQueueUrl', { value: sourceScanQueue.queueUrl });
+    new cdk.CfnOutput(this, 'BrowserScanQueueUrl', { value: browserScanQueue.queueUrl });
+    new cdk.CfnOutput(this, 'ProjectionQueueUrl', { value: projectionQueue.queueUrl });
+    new cdk.CfnOutput(this, 'SourceDispatcherFunctionName', { value: sourceDispatcher.functionName });
   }
 }
