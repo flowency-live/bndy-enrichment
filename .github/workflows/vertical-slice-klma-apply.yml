@@ -1,6 +1,6 @@
 name: KLMA one-item additive apply
 
-# Triggered after trusted KLMA venue alias port (b1d575c).
+# Triggered after trusted-alias safety gate fix (05e17f0).
 on:
   push:
     branches:
