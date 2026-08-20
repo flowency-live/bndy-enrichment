@@ -1,0 +1,94 @@
+name: KLMA one-item additive apply
+
+on:
+  push:
+    branches:
+      - vertical-slice-klma-run-impl14
+    paths:
+      - '.github/workflows/vertical-slice-klma-apply.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  apply-one-safe-item:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Apply Afterglow at Ashwood Longton through canonical APIs
+        id: apply
+        continue-on-error: true
+        env:
+          BNDY_SERVICE_TOKEN: ${{ secrets.BNDY_SERVICE_TOKEN || secrets.MCP_SERVICE_TOKEN }}
+        run: |
+          set -o pipefail
+          if [ -z "$BNDY_SERVICE_TOKEN" ]; then
+            echo 'No BNDY_SERVICE_TOKEN or MCP_SERVICE_TOKEN repository secret is available.' | tee /tmp/klma-apply.log
+            exit 20
+          fi
+          npx tsx src/cli/klma-live.ts --match "Afterglow Ashwood Longton" --limit 1 --apply 2>&1 | tee /tmp/klma-apply.log
+      - name: Build PR apply summary
+        if: always()
+        env:
+          APPLY_OUTCOME: ${{ steps.apply.outcome }}
+        run: |
+          REPORT="$(find artifacts/knowledge -name run-report.json -print -quit 2>/dev/null || true)"
+          if [ -n "$REPORT" ]; then
+            node - "$REPORT" <<'NODE' > /tmp/klma-apply-comment.md
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          console.log('### KLMA one-item additive apply');
+          console.log('');
+          console.log(`- Workflow result: **${process.env.APPLY_OUTCOME}**`);
+          console.log(`- Selected: **${report.projection.selected}**`);
+          console.log(`- BNDY successful: **${report.projection.successful}**`);
+          console.log(`- BNDY failed: **${report.projection.failed}**`);
+          console.log(`- Created events: **${report.projection.createdEvents}**`);
+          console.log(`- Existing events: **${report.projection.existingEvents}**`);
+          console.log(`- Graph: **${report.knowledge.graphNodes} nodes / ${report.knowledge.graphEdges} edges**`);
+          for (const result of report.projection.results || []) {
+            console.log(`- Canonical Artist: \`${result.artist.id}\` (${result.artist.action})`);
+            console.log(`- Canonical Venue: \`${result.venue.id}\` (${result.venue.action})`);
+            console.log(`- Canonical Event: \`${result.event.id}\` (${result.event.action}, verified=${result.event.verified})`);
+          }
+          for (const ex of report.projection.exceptions || []) console.log(`- Exception: ${ex.artist} @ ${ex.venue}: ${ex.error}`);
+          console.log(`- Run: ${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`);
+          NODE
+          else
+            {
+              echo '### KLMA one-item additive apply'
+              echo
+              echo "- Workflow result: **${APPLY_OUTCOME}**"
+              echo "- Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+              echo
+              echo 'No run report produced. Tail:'
+              echo '```text'
+              tail -n 40 /tmp/klma-apply.log 2>/dev/null || echo 'No apply log available.'
+              echo '```'
+            } > /tmp/klma-apply-comment.md
+          fi
+      - name: Upload applied graph and run evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: klma-knowledge-applied-${{ github.run_number }}
+          path: |
+            artifacts/knowledge/**
+            /tmp/klma-apply.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Report result to PR 2
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment 2 --body-file /tmp/klma-apply-comment.md
+      - name: Fail job if apply failed
+        if: steps.apply.outcome != 'success'
+        run: exit 1
