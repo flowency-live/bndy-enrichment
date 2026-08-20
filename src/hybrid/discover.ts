@@ -41,20 +41,23 @@ export interface HybridDiscoveryResult {
 
 function normalizeGenres(genres: string[] | undefined): string[] {
   if (!genres?.length) return [];
-  const validGenres = GenreSchema.options;
-  return genres
-    .map(g => {
-      // Try exact match first
-      const exact = validGenres.find(v => v.toLowerCase() === g.toLowerCase());
-      if (exact) return exact;
-      // Try partial match
-      const partial = validGenres.find(v =>
-        v.toLowerCase().includes(g.toLowerCase()) ||
-        g.toLowerCase().includes(v.toLowerCase())
-      );
-      return partial ?? null;
-    })
-    .filter((g): g is string => g !== null);
+  const validGenres = GenreSchema.options as readonly string[];
+  const result: string[] = [];
+  for (const g of genres) {
+    // Try exact match first
+    const exact = validGenres.find(v => v.toLowerCase() === g.toLowerCase());
+    if (exact) {
+      result.push(exact);
+      continue;
+    }
+    // Try partial match
+    const partial = validGenres.find(v =>
+      v.toLowerCase().includes(g.toLowerCase()) ||
+      g.toLowerCase().includes(v.toLowerCase())
+    );
+    if (partial) result.push(partial);
+  }
+  return result;
 }
 
 function normalizeArtistType(type: string | undefined): string | undefined {
@@ -66,10 +69,13 @@ function normalizeArtistType(type: string | undefined): string | undefined {
 
 function normalizeActTypes(types: string[] | undefined): string[] {
   if (!types?.length) return [];
-  const validTypes = ActTypeSchema.options;
-  return types
-    .map(t => validTypes.find(v => v.toLowerCase() === t.toLowerCase()))
-    .filter((t): t is string => t !== undefined);
+  const validTypes = ActTypeSchema.options as readonly string[];
+  const result: string[] = [];
+  for (const t of types) {
+    const match = validTypes.find(v => v.toLowerCase() === t.toLowerCase());
+    if (match) result.push(match);
+  }
+  return result;
 }
 
 export async function discoverWithHybrid(

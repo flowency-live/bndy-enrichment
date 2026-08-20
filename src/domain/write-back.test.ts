@@ -259,7 +259,7 @@ describe('writeEnrichmentToEntity', () => {
     expect(command.input.TableName).toBe('bndy-artists');
     expect(command.input.Key).toEqual({ id: 'artist-uuid-123' });
     expect(command.input.UpdateExpression).toContain('enrichment_status');
-    expect(command.input.ExpressionAttributeValues[':status']).toBe('needs_review');
+    expect(command.input.ExpressionAttributeValues[':status']).toBe('high_confidence');
   });
 
   it('writes venue enrichment data to VENUES_TABLE with snake_case fields', async () => {
