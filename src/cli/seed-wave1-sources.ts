@@ -1,0 +1,113 @@
+import type { GigSource } from '../knowledge/types.js';
+import { SourceRegistryStore } from '../knowledge/stores/source-registry-store.js';
+import { nextScheduledAt } from '../source-runner/schedule.js';
+
+const tableName = process.env.STATE_TABLE;
+if (!tableName) throw new Error('STATE_TABLE is required');
+
+function withNext(source: Omit<GigSource, 'nextScanAt'>, now: Date): GigSource {
+  const provisional: GigSource = { ...source, nextScanAt: now.toISOString() };
+  return { ...provisional, nextScanAt: nextScheduledAt(provisional, now) };
+}
+
+export function waveOneSources(now = new Date()): GigSource[] {
+  const safeDefaults = {
+    timezone: 'Europe/London',
+    mode: 'delta' as const,
+    snapshotSemantics: 'complete' as const,
+    thresholds: {},
+    enabled: false,
+    shadow: true,
+    writerAuthority: 'cowork' as const,
+    health: 'unknown' as const,
+  };
+
+  return [
+    withNext({
+      ...safeDefaults,
+      id: 'gigs-news-daily-import',
+      name: 'gigs-news',
+      type: 'AGGREGATOR',
+      url: 'https://gigs-news.uk',
+      region: 'Greater Manchester / East Cheshire',
+      cadence: 'daily',
+      localTime: '09:00',
+      authorityClass: 'aggregator',
+      adapter: 'gigs-news',
+      runtimeClass: 'browser',
+    }, now),
+    withNext({
+      ...safeDefaults,
+      id: 'klma-stoke-gig-list',
+      name: 'KLMA Stoke Gig List',
+      type: 'CURATED_SOURCE',
+      url: 'https://docs.google.com/spreadsheets/d/1atEqyN-RI1smTzSaCtMUSui7oNp2dhCpiGoAfY5ySno',
+      region: 'Staffordshire / Cheshire',
+      cadence: 'daily',
+      localTime: '09:00',
+      authorityClass: 'curated',
+      adapter: 'klma-stoke',
+      runtimeClass: 'standard',
+    }, now),
+    withNext({
+      ...safeDefaults,
+      id: 'onthecase-daily-import',
+      name: 'On The Case Music',
+      type: 'AGGREGATOR',
+      url: 'https://onthecasemusic.co.uk/gigs',
+      region: 'North East England',
+      cadence: 'daily',
+      localTime: '04:05',
+      authorityClass: 'aggregator',
+      adapter: 'onthecase',
+      runtimeClass: 'browser',
+    }, now),
+    withNext({
+      ...safeDefaults,
+      id: 'sceniceye-daily-import',
+      name: 'sceniceye',
+      type: 'AGGREGATOR',
+      url: 'https://scenicmind.co.uk/sceniceye',
+      region: 'Hampshire',
+      cadence: 'daily',
+      localTime: '09:00',
+      authorityClass: 'aggregator',
+      adapter: 'sceniceye',
+      runtimeClass: 'browser',
+    }, now),
+    withNext({
+      // The current Cowork reports fire at ~05:03Z during BST, i.e. ~06:03 local.
+      // Keep this bootstrap disabled and use 06:00 local until WP-10 ports the
+      // source fixture/spec and can validate the exact minute from source history.
+      ...safeDefaults,
+      id: 'insangel-daily-import',
+      name: 'insangel',
+      type: 'AGGREGATOR',
+      url: 'https://insangel.co.uk',
+      region: 'North East England',
+      cadence: 'daily',
+      localTime: '06:00',
+      mode: 'append-only',
+      snapshotSemantics: 'incremental',
+      authorityClass: 'aggregator',
+      adapter: 'insangel',
+      runtimeClass: 'standard',
+    }, now),
+  ];
+}
+
+async function main(): Promise<void> {
+  const store = new SourceRegistryStore(tableName);
+  const sources = waveOneSources();
+  for (const source of sources) {
+    await store.put(source);
+    console.log(`seeded ${source.id}: enabled=${source.enabled}, shadow=${source.shadow}, writer=${source.writerAuthority}, next=${source.nextScanAt}`);
+  }
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.stack ?? error.message : error);
+    process.exitCode = 1;
+  });
+}
