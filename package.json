@@ -16,6 +16,7 @@
     "facebook:probe": "tsx src/facebook/probe.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0",
     "@aws-sdk/client-dynamodb": "^3.864.0",
     "@aws-sdk/client-lambda": "^3.1111.0",
     "@aws-sdk/client-s3": "^3.864.0",
