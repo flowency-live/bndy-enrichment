@@ -1,0 +1,32 @@
+import type { SQSBatchResponse, SQSEvent, SQSRecord } from 'aws-lambda';
+import { BrowserAcquisitionRouter } from '../sources/runner/browser-acquisition.js';
+import { createRunnerDependencies } from '../sources/runner/runtime.js';
+import { runSource, type SourceRunRequest } from '../sources/runner/runner.js';
+
+function requestFrom(record: SQSRecord): SourceRunRequest {
+  const parsed = JSON.parse(record.body) as Partial<SourceRunRequest>;
+  if (!parsed.sourceId || !parsed.reason || !parsed.requestedAt) throw new Error('Invalid SourceScan message');
+  if (parsed.reason !== 'scheduled' && parsed.reason !== 'manual') throw new Error(`Invalid scan reason: ${parsed.reason}`);
+  return parsed as SourceRunRequest;
+}
+
+export async function handler(event: SQSEvent): Promise<SQSBatchResponse> {
+  const deps = createRunnerDependencies(new BrowserAcquisitionRouter());
+  const batchItemFailures: Array<{ itemIdentifier: string }> = [];
+
+  for (const record of event.Records) {
+    try {
+      const request = requestFrom(record);
+      const config = await deps.registry.get(request.sourceId);
+      if (!config) throw new Error(`Unknown source: ${request.sourceId}`);
+      if (config.runtimeClass !== 'browser') throw new Error(`Source ${config.id} belongs on SourceScanQueue`);
+      const result = await runSource(request, deps);
+      if (result.report.status === 'failed') throw new Error(result.report.errors.map((error) => error.message).join('; '));
+    } catch (error) {
+      console.error('BrowserSourceWorker failed', error);
+      batchItemFailures.push({ itemIdentifier: record.messageId });
+    }
+  }
+
+  return { batchItemFailures };
+}
