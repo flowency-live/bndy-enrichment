@@ -1,0 +1,35 @@
+name: KLMA knowledge vertical slice
+
+on:
+  push:
+    branches:
+      - vertical-slice-klma-run-impl14
+    paths:
+      - 'src/vertical-slice/**'
+      - 'src/cli/klma-knowledge.ts'
+      - 'src/knowledge/types.ts'
+      - 'package.json'
+      - '.github/workflows/vertical-slice-klma.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shadow-live-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Run live KLMA source in shadow mode
+        run: npm run source:klma -- --limit 5
+      - name: Upload graph and run evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: klma-knowledge-shadow-${{ github.run_number }}
+          path: artifacts/knowledge/**
+          if-no-files-found: error
+          retention-days: 7
