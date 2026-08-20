@@ -9,3 +9,5 @@ artifacts/
 coverage/
 .DS_Store
 result*.json
+intake-*.json
+tmp/
