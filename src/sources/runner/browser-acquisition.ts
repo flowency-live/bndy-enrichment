@@ -21,7 +21,7 @@ export class BrowserAcquisitionRouter implements AcquisitionRouter {
 
     const browser = await puppeteer.launch({
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
+      defaultViewport: { width: 1280, height: 900 },
       executablePath: await chromium.executablePath(),
       headless: true,
     });
@@ -33,7 +33,11 @@ export class BrowserAcquisitionRouter implements AcquisitionRouter {
         const target = intercepted.url();
         try {
           const parsed = new URL(target);
-          if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+          const hostname = parsed.hostname.toLowerCase();
+          if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:')
+            || hostname === 'localhost'
+            || hostname.endsWith('.localhost')
+            || (hostname && isPrivateAddress(hostname))) {
             void intercepted.abort();
             return;
           }
