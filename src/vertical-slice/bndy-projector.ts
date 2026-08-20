@@ -63,6 +63,17 @@ export type ProjectionResult = {
   event: { id: string; action: 'created' | 'existing'; verified: boolean };
 };
 
+function assertSafeAdditiveProjection(event: KlmaNormalisedEvent): void {
+  const defaultedTown = event.warnings.some((warning) => warning.startsWith('Town defaulted to Stoke-on-Trent'));
+  if (defaultedTown) {
+    throw new Error(`Venue location is not explicit enough for automatic projection: '${event.venueName}'`);
+  }
+
+  if (/\b(artisan\s+tap|eleven|the\s+rigger)\b/i.test(event.venueName)) {
+    throw new Error(`Venue requires specialist/multi-act handling before automatic projection: '${event.venueName}'`);
+  }
+}
+
 async function resolveArtist(event: KlmaNormalisedEvent): Promise<{ id: string; action: string; name?: string }> {
   const payload = {
     name: event.artistName,
@@ -173,6 +184,7 @@ async function verifyEvent(
 }
 
 export async function projectKlmaEvent(event: KlmaNormalisedEvent): Promise<ProjectionResult> {
+  assertSafeAdditiveProjection(event);
   const artist = await resolveArtist(event);
   const venue = await resolveVenue(event);
   const projectedEvent = await createOrFindEvent(event, artist.id, venue.id);
