@@ -135,6 +135,11 @@ function workItem(
   };
 }
 
+function explicitlyCancelled(event: NormalisedSourceEvent): boolean {
+  const status = event.status?.trim().toLowerCase();
+  return status === 'cancelled' || status === 'canceled' || status === 'cancelled_event';
+}
+
 export function buildProjectionWork(
   observation: SourceObservation,
   diff: SourceEventDiff,
@@ -145,11 +150,11 @@ export function buildProjectionWork(
 
   for (const event of diff.added) {
     const claimIds = (claimsByCandidate.get(eventCandidateKey(observation.sourceId, event.sourceEventKey)) ?? []).map((claim) => claim.id);
-    workItems.push(workItem(observation, event, 'create', claimIds));
+    workItems.push(workItem(observation, event, explicitlyCancelled(event) ? 'cancel' : 'create', claimIds));
   }
   for (const event of diff.updated) {
     const claimIds = (claimsByCandidate.get(eventCandidateKey(observation.sourceId, event.sourceEventKey)) ?? []).map((claim) => claim.id);
-    workItems.push(workItem(observation, event, 'update', claimIds));
+    workItems.push(workItem(observation, event, explicitlyCancelled(event) ? 'cancel' : 'update', claimIds));
   }
   for (const prior of diff.withdrawn) {
     const withdrawal = buildWithdrawalClaim(observation, prior);
