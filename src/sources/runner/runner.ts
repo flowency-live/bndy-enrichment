@@ -197,7 +197,7 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
         runId: run.runId,
         observationId: storedObservation.id,
         fetchMethod: raw.fetchMethod,
-        sourceUrl: raw.sourceUrl ?? config.url,
+        sourceUrl: raw.sourceUrl ?? config.url ?? 'unknown',
         complete: String(storedObservation.complete),
       },
     });
