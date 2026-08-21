@@ -26,8 +26,10 @@ export type NormalisedSourceEvent = {
   sourceEventKey: string;
   sourceNativeId?: string;
   artistName?: string;
+  artistExternalId?: string;
   artistLocation?: string;
   venueName?: string;
+  venueExternalId?: string;
   venueLocation?: string;
   venueAddress?: string;
   date?: string;
