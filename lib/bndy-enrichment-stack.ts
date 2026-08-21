@@ -85,6 +85,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
       deadLetterQueue: { queue: projectionDlq, maxReceiveCount: 3 },
     });
 
+    const entityEnrichmentDlq = new sqs.Queue(this, 'EntityEnrichmentDLQ', { retentionPeriod: cdk.Duration.days(14) });
+    const entityEnrichmentQueue = new sqs.Queue(this, 'EntityEnrichmentQueue', {
+      visibilityTimeout: cdk.Duration.minutes(6),
+      deadLetterQueue: { queue: entityEnrichmentDlq, maxReceiveCount: 3 },
+    });
+
     const geminiSecret = new secretsmanager.Secret(this, 'GeminiApiKey', {
       description: 'Set JSON value to {"apiKey":"..."} after deployment.',
       generateSecretString: {
@@ -170,7 +176,29 @@ export class BndyEnrichmentStack extends cdk.Stack {
     evidenceBucket.grantReadWrite(browserSourceWorker);
     projectionQueue.grantSendMessages(browserSourceWorker);
 
-    // Import existing bndy tables for enrichment write-back
+    const projectionWorker = new lambdaNode.NodejsFunction(this, 'ProjectionWorker', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      entry: 'src/handlers/projection-worker.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(4),
+      memorySize: 1024,
+      environment: {
+        STATE_TABLE: table.tableName,
+        ENTITY_ENRICHMENT_QUEUE_URL: entityEnrichmentQueue.queueUrl,
+        BNDY_API_BASE: 'https://api.bndy.co.uk',
+        BNDY_SERVICE_SECRET_NAME: 'bndy/mcp-service',
+      },
+      bundling: { minify: true, sourceMap: true },
+    });
+    projectionWorker.addEventSource(new sources.SqsEventSource(projectionQueue, {
+      batchSize: 1,
+      reportBatchItemFailures: true,
+    }));
+    table.grantReadWriteData(projectionWorker);
+    entityEnrichmentQueue.grantSendMessages(projectionWorker);
+    bndyServiceSecret.grantRead(projectionWorker);
+
+    // Import existing bndy tables for legacy enrichment write-back only.
     const artistsTable = dynamodb.Table.fromTableArn(this, 'ArtistsTable',
       `arn:aws:dynamodb:${this.region}:${this.account}:table/bndy-artists`);
     const venuesTable = dynamodb.Table.fromTableArn(this, 'VenuesTable',
@@ -209,7 +237,6 @@ export class BndyEnrichmentStack extends cdk.Stack {
     queue.grantSendMessages(planner);
     table.grantReadData(planner);
 
-    // Legacy enrichment planner remains until its migration package retires it.
     new events.Rule(this, 'DailyScanRule', {
       schedule: events.Schedule.cron({ minute: '15', hour: '3' }),
       targets: [new targets.LambdaFunction(planner, {
@@ -272,8 +299,10 @@ export class BndyEnrichmentStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'SourceScanQueueUrl', { value: sourceScanQueue.queueUrl });
     new cdk.CfnOutput(this, 'BrowserScanQueueUrl', { value: browserScanQueue.queueUrl });
     new cdk.CfnOutput(this, 'ProjectionQueueUrl', { value: projectionQueue.queueUrl });
+    new cdk.CfnOutput(this, 'EntityEnrichmentQueueUrl', { value: entityEnrichmentQueue.queueUrl });
     new cdk.CfnOutput(this, 'SourceDispatcherFunctionName', { value: sourceDispatcher.functionName });
     new cdk.CfnOutput(this, 'SourceWorkerFunctionName', { value: sourceWorker.functionName });
     new cdk.CfnOutput(this, 'BrowserSourceWorkerFunctionName', { value: browserSourceWorker.functionName });
+    new cdk.CfnOutput(this, 'ProjectionWorkerFunctionName', { value: projectionWorker.functionName });
   }
 }
