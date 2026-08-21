@@ -45,13 +45,29 @@ function claimFor(
 
 function eventClaims(observation: SourceObservation, event: NormalisedSourceEvent): KnowledgeClaim[] {
   const claims: KnowledgeClaim[] = [];
-  if (event.artistName) claims.push(claimFor(observation, event, 'hasPerformerName', event.artistName));
-  if (event.venueName) claims.push(claimFor(observation, event, 'hasVenueName', event.venueName));
+  if (event.artistName) {
+    claims.push(claimFor(observation, event, 'hasPerformerName', event.artistName));
+    claims.push(claimFor(observation, event, 'hasPerformer', {
+      name: event.artistName,
+      ...(event.artistLocation ? { location: event.artistLocation } : {}),
+    }));
+  }
+  if (event.venueName) {
+    claims.push(claimFor(observation, event, 'hasVenueName', event.venueName));
+    claims.push(claimFor(observation, event, 'occursAt', {
+      name: event.venueName,
+      ...(event.venueLocation ? { location: event.venueLocation } : {}),
+      ...(event.venueAddress ? { address: event.venueAddress } : {}),
+    }));
+  }
   if (event.date) claims.push(claimFor(observation, event, 'occursOn', event.date));
   if (event.startTime) claims.push(claimFor(observation, event, 'startsAt', event.startTime));
   if (event.endTime) claims.push(claimFor(observation, event, 'endsAt', event.endTime));
   if (event.title) claims.push(claimFor(observation, event, 'hasTitle', event.title));
   if (event.eventUrl) claims.push(claimFor(observation, event, 'hasEventUrl', event.eventUrl));
+  if (event.ticketUrl) claims.push(claimFor(observation, event, 'hasTicketUrl', event.ticketUrl));
+  if (event.admissionStatus) claims.push(claimFor(observation, event, 'hasAdmissionStatus', event.admissionStatus));
+  if (event.price) claims.push(claimFor(observation, event, 'hasPrice', event.price));
   if (event.status) claims.push(claimFor(observation, event, 'hasStatus', event.status));
   if (claims.length === 0) claims.push(claimFor(observation, event, 'derivedFrom', event.sourceEventKey));
   return claims;
@@ -136,7 +152,10 @@ export function buildProjectionWork(
   for (const prior of diff.withdrawn) {
     const withdrawal = buildWithdrawalClaim(observation, prior);
     withdrawalClaims.push(withdrawal);
-    workItems.push(workItem(observation, prior, 'cancel', [withdrawal.id]));
+    // Absence from a qualifying complete snapshot is a withdrawal, not an
+    // explicit cancellation. WP-05 hides/removes the projection only after
+    // authority checks; explicit cancellation remains action=cancel.
+    workItems.push(workItem(observation, prior, 'withdraw', [withdrawal.id]));
   }
 
   return { workItems, withdrawalClaims };
