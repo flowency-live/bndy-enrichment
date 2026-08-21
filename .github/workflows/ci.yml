@@ -16,3 +16,8 @@ jobs:
       - run: npm run build
       - run: npm run test
       - run: npm run synth
+      - name: Read-only Facebook Event proof
+        if: github.event_name == 'pull_request' && github.head_ref == 'capture-facebook-events'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: npm run capture:probe -- --url https://fb.me/e/gwHFuwf71
