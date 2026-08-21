@@ -1,0 +1,7 @@
+{
+  "result": "AWS_AUTH_BLOCKER",
+  "inspectedAt": "2026-08-21T17:46:12Z",
+  "awsOutcome": "failure",
+  "hasAwsRole": false,
+  "hasGeminiKey": false
+}
