@@ -131,7 +131,9 @@ function deps(options: {
       async updateLifecycle(...args) { lifecycle.push(args); },
     },
     state: {
-      async getMapping() { return options.mapping ?? null; },
+      async getMapping(sourceId, currentCandidateKey) {
+        return options.mapping ? { sourceId, candidateKey: currentCandidateKey, ...options.mapping } : null;
+      },
       async isItemComplete() { return false; },
       async markSuccess(...args) { successes.push(args); },
       async recordFailure(_item, message) { failures.push(message); },
