@@ -383,6 +383,9 @@ export const ProjectionWorkItemSchema = z.object({
   action: ProjectionActionSchema,
   idempotencyKey: z.string().min(1),
   claimIds: z.array(z.string()).min(1),
+  runId: z.string().min(1).optional(),
+  runItemCount: z.number().int().positive().optional(),
+  runOrdinal: z.number().int().positive().optional(),
   createdAt: IsoTimestampSchema,
 });
 export type ProjectionWorkItem = z.infer<typeof ProjectionWorkItemSchema>;
