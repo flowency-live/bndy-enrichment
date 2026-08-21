@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { GigSource, KnowledgeClaim, SourceObservation } from '../../knowledge/types.js';
 import type { ClaimStore, ObservationStore, SourceRegistryStore, SourceRuntimeState, SourceStateStore } from '../../knowledge/stores/index.js';
+import { buildParityArtifact } from '../../parity/source-parity.js';
 import type { AcquisitionRouter } from './acquisition.js';
 import type { SourceAdapter } from './adapter.js';
 import { diffSourceEvents } from './diff.js';
@@ -185,6 +186,27 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     report.withdrawn = diff.withdrawn.length;
     report.unchanged = diff.unchanged.length;
 
+    const parity = buildParityArtifact({
+      sourceId: config.id,
+      runDate: run.runDate,
+      evidence: raw.body,
+      parsed,
+      diff,
+      provenance: {
+        runtime: 'aws-bndy-enrichment',
+        runId: run.runId,
+        observationId: storedObservation.id,
+        fetchMethod: raw.fetchMethod,
+        sourceUrl: raw.sourceUrl ?? config.url,
+        complete: String(storedObservation.complete),
+      },
+    });
+    if (parity.evidenceSha256 !== storedObservation.captureHash) {
+      throw new Error(`Parity evidence hash does not match Observation captureHash for ${storedObservation.id}`);
+    }
+    const parityKey = await deps.artifacts.writeParity(config, run, parity);
+    report.artifacts.parity = parityKey;
+
     const projection = buildProjectionWork(storedObservation, diff, knowledge.claimsByCandidate);
     for (const claim of projection.withdrawalClaims) await deps.claims.put(claim);
     report.claims += projection.withdrawalClaims.length;
@@ -203,6 +225,7 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
       ...priorMetadata,
       lastNormalisedKey: normalisedKey,
       lastDiffKey: diffKey,
+      lastParityKey: parityKey,
     };
     if (storedObservation.complete) metadata.lastCompleteNormalisedKey = normalisedKey;
 
