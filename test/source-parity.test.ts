@@ -52,8 +52,8 @@ describe('WP-11 source parity', () => {
     const actual = buildParityArtifact({ sourceId: source.id, runDate: run.runDate, evidence, parsed });
     const comparison = compareParityArtifacts(donor, actual);
 
+    expect(comparison.differences, JSON.stringify({ donor, actual, differences: comparison.differences }, null, 2)).toEqual([]);
     expect(comparison.passed).toBe(true);
-    expect(comparison.differences).toEqual([]);
   });
 
   it('classifies differing raw evidence as INPUT_DIFFERENCE', () => {
