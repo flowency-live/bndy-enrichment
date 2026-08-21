@@ -38,6 +38,10 @@ function compact(value: unknown, max = 800): string {
   return text.length <= max ? text : `${text.slice(0, max)}…`;
 }
 
+function processableClassification(value: string): value is 'artist' | 'event' {
+  return value === 'artist' || value === 'event';
+}
+
 async function processCapture(captureId: string): Promise<void> {
   const capture = await getCapture(captureId);
   if (capture.status !== 'processing' && capture.status !== 'unprocessed') {
@@ -57,8 +61,16 @@ async function processCapture(captureId: string): Promise<void> {
     return;
   }
 
-  if (discovery.classification !== 'artist' || !discovery.artist) {
+  if (!processableClassification(discovery.classification) || !discovery.artist) {
     await addCaptureNote(captureId, `AWS processor: REVIEW_REQUIRED. Capture classified as ${discovery.classification}. ${discovery.reason}`);
+    await updateCaptureStatus(captureId, 'failed');
+    return;
+  }
+
+  if (discovery.classification === 'event' && discovery.events.length !== 1) {
+    await addCaptureNote(captureId,
+      `AWS processor: REVIEW_REQUIRED. Direct event capture must resolve to exactly one event, got ${discovery.events.length}. ${discovery.reason}`
+    );
     await updateCaptureStatus(captureId, 'failed');
     return;
   }
@@ -132,10 +144,12 @@ async function processCapture(captureId: string): Promise<void> {
 
   const note = [
     'AWS processor: completed.',
+    `Capture classification: ${discovery.classification}`,
     `Artist: ${discovery.artist.name} | ${artistResult.action} | ${artistId}`,
     `Facebook: ${discovery.artist.facebookUrl}`,
     `Location: ${discovery.artist.location}${discovery.artist.locationType ? ` (${discovery.artist.locationType})` : ''}`,
     `Artist type: ${discovery.artist.artistType}; act type: ${discovery.artist.actTypes.join(', ')}`,
+    discovery.canonicalUrl ? `Canonical capture URL: ${discovery.canonicalUrl}` : 'Canonical capture URL: not resolved',
     discovery.artist.bio ? `Bio: ${discovery.artist.bio}` : 'Bio: not found',
     `Events: ${createdEvents} created, ${duplicateEvents} existing duplicates, ${heldEvents} held.`,
     ...(eventLines.length ? ['Event detail:', ...eventLines.map(line => `- ${line}`)] : ['No publishable upcoming events found.']),
