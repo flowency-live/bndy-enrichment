@@ -1,0 +1,117 @@
+name: capture-prod-run
+
+on:
+  push:
+    branches: [capture-prod-run]
+    paths:
+      - '.github/workflows/capture-prod-run.yml'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: capture-prod-run
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Deploy current enrichment Capture processor
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install
+          npx cdk bootstrap
+          npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+          SECRET_ARN=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.GeminiSecretArn)")
+          test -n "${GEMINI_API_KEY:-}"
+          aws secretsmanager put-secret-value \
+            --secret-id "$SECRET_ARN" \
+            --secret-string "$(node -e 'console.log(JSON.stringify({apiKey:process.env.GEMINI_API_KEY}))')"
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Find exact Capture, scan it, and record result
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p diagnostics
+
+          CAPTURE_FN=$(aws cloudformation describe-stacks \
+            --stack-name bndy-capture \
+            --region eu-west-2 \
+            --query "Stacks[0].Outputs[?OutputKey=='CaptureFunctionName'].OutputValue | [0]" \
+            --output text)
+          CAPTURE_TOKEN=$(aws lambda get-function-configuration \
+            --region eu-west-2 \
+            --function-name "$CAPTURE_FN" \
+            --query 'Environment.Variables.CAPTURE_TOKEN' \
+            --output text)
+          echo "::add-mask::$CAPTURE_TOKEN"
+
+          curl -fsS -H "Authorization: Bearer $CAPTURE_TOKEN" \
+            'https://capture.bndy.co.uk/v1/captures?limit=100' > /tmp/captures.json
+
+          CAPTURE_ID=$(jq -r '
+            (.captures // .items // . // [])
+            | map(select(
+                ((.sharedUrl // "") | contains("gwHFuwf71")) or
+                ((.sharedUrl // "") | contains("1555240929628880")) or
+                ((.sharedText // "") | contains("gwHFuwf71")) or
+                ((.sharedText // "") | contains("1555240929628880"))
+              ))
+            | sort_by(.receivedAt // .capturedAt // "") | reverse | .[0].id // empty
+          ' /tmp/captures.json)
+
+          if [ -z "$CAPTURE_ID" ]; then
+            jq '{result:"NO_MATCHING_CAPTURE",inspectedAt:(now|todateiso8601),recentCaptures:((.captures // .items // . // [])[0:12] | map({id,capturedAt,receivedAt,status,sharedUrl,sharedText,mimeType,sourceApp,note}))}' \
+              /tmp/captures.json > diagnostics/capture-facebook-event-latest.json
+          else
+            aws lambda invoke --function-name bndy-capture-scan \
+              --cli-binary-format raw-in-base64-out --payload '{}' \
+              /tmp/scanner.json >/tmp/scanner-meta.json
+
+            for i in $(seq 1 30); do
+              curl -fsS -H "Authorization: Bearer $CAPTURE_TOKEN" \
+                "https://capture.bndy.co.uk/v1/captures/$CAPTURE_ID" > /tmp/capture.json
+              STATUS=$(jq -r '.capture.status // .status // empty' /tmp/capture.json)
+              if [ -n "$STATUS" ] && [ "$STATUS" != "unprocessed" ] && [ "$STATUS" != "processing" ]; then
+                break
+              fi
+              sleep 10
+            done
+
+            aws logs filter-log-events \
+              --log-group-name '/aws/lambda/bndy-capture-processor' \
+              --start-time "$(( ($(date +%s) - 3600) * 1000 ))" \
+              --filter-pattern "$CAPTURE_ID" \
+              --query 'events[].message' --output json \
+              > /tmp/processor-logs.json 2>/dev/null || echo '[]' > /tmp/processor-logs.json
+
+            jq -n \
+              --arg inspectedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              --arg captureId "$CAPTURE_ID" \
+              --argjson capture "$(jq '.capture // .' /tmp/capture.json)" \
+              --argjson scanner "$(cat /tmp/scanner.json)" \
+              --argjson processorLogs "$(cat /tmp/processor-logs.json)" \
+              '{result:"MATCHED_CAPTURE",inspectedAt:$inspectedAt,captureId:$captureId,capture:{id:$capture.id,capturedAt:$capture.capturedAt,receivedAt:$capture.receivedAt,updatedAt:$capture.updatedAt,status:$capture.status,sharedUrl:$capture.sharedUrl,sharedText:$capture.sharedText,mimeType:$capture.mimeType,sourceApp:$capture.sourceApp,suggestedEntityType:$capture.suggestedEntityType,note:$capture.note,processingAttempt:$capture.processingAttempt,processingWorkerId:$capture.processingWorkerId,leaseUntil:$capture.leaseUntil},scanner:$scanner,processorLogs:$processorLogs}' \
+              > diagnostics/capture-facebook-event-latest.json
+          fi
+
+          git config user.name 'bndy-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add diagnostics/capture-facebook-event-latest.json
+          git commit -m 'Record Facebook Event Capture acceptance result'
+          git push origin HEAD:capture-prod-run
