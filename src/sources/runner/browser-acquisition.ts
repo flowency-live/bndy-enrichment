@@ -30,22 +30,19 @@ export class BrowserAcquisitionRouter implements AcquisitionRouter {
       const page = await browser.newPage();
       await page.setRequestInterception(true);
       page.on('request', (intercepted) => {
-        const target = intercepted.url();
-        try {
-          const parsed = new URL(target);
-          const hostname = parsed.hostname.toLowerCase();
-          if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:')
-            || hostname === 'localhost'
-            || hostname.endsWith('.localhost')
-            || (hostname && isPrivateAddress(hostname))) {
-            void intercepted.abort();
-            return;
+        void (async () => {
+          try {
+            const parsed = assertSafeUrl(intercepted.url());
+            const resolved = await this.resolver.resolve(parsed.hostname);
+            if (!resolved.length || resolved.some(isPrivateAddress)) {
+              await intercepted.abort();
+              return;
+            }
+            await intercepted.continue();
+          } catch {
+            await intercepted.abort();
           }
-        } catch {
-          void intercepted.abort();
-          return;
-        }
-        void intercepted.continue();
+        })();
       });
 
       const response = await page.goto(url.toString(), {
@@ -55,13 +52,18 @@ export class BrowserAcquisitionRouter implements AcquisitionRouter {
       if (!response) throw new Error('Browser navigation returned no response');
       if (!response.ok()) throw new Error(`Browser source fetch returned HTTP ${response.status()}`);
 
-      const body = await page.content();
+      const settleMs = request.settleMs ?? 0;
+      if (settleMs > 0) await new Promise((resolve) => setTimeout(resolve, settleMs));
+
+      const body = request.bodyMode === 'innerText'
+        ? await page.$eval('body', (element) => (element as HTMLElement).innerText)
+        : await page.content();
       const bytes = Buffer.byteLength(body, 'utf8');
       const maxBytes = request.maxBytes ?? DEFAULT_MAX_BYTES;
       if (bytes > maxBytes) throw new Error(`Browser source response exceeds ${maxBytes} byte cap`);
 
       return {
-        kind: request.kind ?? 'html',
+        kind: request.kind ?? (request.bodyMode === 'innerText' ? 'text' : 'html'),
         body,
         sourceUrl: url.toString(),
         fetchMethod: request.fetchMethod ?? 'chromium',
