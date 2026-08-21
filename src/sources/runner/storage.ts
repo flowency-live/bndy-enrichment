@@ -1,10 +1,12 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import type { GigSource } from '../../knowledge/types.js';
+import type { SourceParityArtifact } from '../../parity/source-parity.js';
 import type { NormalisedSourceEvent, SourceEventDiff, SourceRunContext, SourceRunReport } from './types.js';
 
 export interface SourceRunArtifactStore {
   writeNormalised(config: GigSource, run: SourceRunContext, events: NormalisedSourceEvent[]): Promise<string>;
   writeDiff(config: GigSource, run: SourceRunContext, diff: SourceEventDiff): Promise<string>;
+  writeParity(config: GigSource, run: SourceRunContext, parity: SourceParityArtifact): Promise<string>;
   writeReport(config: GigSource, run: SourceRunContext, report: SourceRunReport): Promise<string>;
   loadNormalised(key?: string): Promise<NormalisedSourceEvent[]>;
 }
@@ -40,6 +42,10 @@ export class S3SourceRunArtifactStore implements SourceRunArtifactStore {
 
   async writeDiff(config: GigSource, run: SourceRunContext, diff: SourceEventDiff): Promise<string> {
     return await this.writeJson(`${this.prefix(config, run)}/diff.json`, diff);
+  }
+
+  async writeParity(config: GigSource, run: SourceRunContext, parity: SourceParityArtifact): Promise<string> {
+    return await this.writeJson(`${this.prefix(config, run)}/parity.json`, parity);
   }
 
   async writeReport(config: GigSource, run: SourceRunContext, report: SourceRunReport): Promise<string> {
