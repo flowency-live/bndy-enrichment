@@ -1,0 +1,39 @@
+name: capture-facebook-event-probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Facebook Event URL to probe
+        required: true
+        default: https://fb.me/e/gwHFuwf71
+  push:
+    branches: [capture-facebook-events]
+    paths:
+      - '.github/workflows/capture-facebook-event-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - name: Probe supplied Facebook Event without BNDY writes
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PROBE_URL: ${{ inputs.url || 'https://fb.me/e/gwHFuwf71' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run capture:probe -- --url "$PROBE_URL" | tee capture-probe-result.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: capture-facebook-event-probe
+          path: capture-probe-result.json
