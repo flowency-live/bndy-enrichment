@@ -1,4 +1,4 @@
-import { GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { GetCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import {
   ClaimWithdrawalSchema,
   ProjectionRunSchema,
@@ -24,11 +24,9 @@ export type ProjectionCountDelta = Partial<ProjectionRun['counts']>;
 function mappingPk(sourceId: string, candidateKey: string): string {
   return `PROJECTION#${sourceId}#${candidateKey}`;
 }
-
 function itemPk(idempotencyKey: string): string {
   return `PROJECTION_ITEM#${idempotencyKey}`;
 }
-
 function runPk(observationId: string): string {
   return `PROJECTION_RUN#${observationId}`;
 }
@@ -71,6 +69,7 @@ export class ProjectionStore {
     outcome: 'success' | 'shadow',
     details?: Record<string, unknown>,
   ): Promise<void> {
+    const completedAt = new Date().toISOString();
     await this.client.send(new PutCommand({
       TableName: this.tableName,
       Item: {
@@ -82,10 +81,9 @@ export class ProjectionStore {
         ...mapping,
         lastIdempotencyKey: item.idempotencyKey,
         lastAction: item.action,
-        lastProjectedAt: new Date().toISOString(),
+        lastProjectedAt: completedAt,
       },
     }));
-
     await this.client.send(new PutCommand({
       TableName: this.tableName,
       Item: {
@@ -97,7 +95,7 @@ export class ProjectionStore {
         candidateKey: item.candidateKey,
         action: item.action,
         status: outcome,
-        completedAt: new Date().toISOString(),
+        completedAt,
         details,
       },
     }));
@@ -140,100 +138,95 @@ export class ProjectionStore {
     delta: ProjectionCountDelta,
     error?: string,
   ): Promise<ProjectionRun> {
-    const runId = item.runId ?? item.observationId;
     const now = new Date().toISOString();
-    const names: Record<string, string> = {
-      '#status': 'status',
-      '#counts': 'counts',
-      '#errors': 'errors',
-    };
-    const values: Record<string, unknown> = {
-      ':runId': runId,
-      ':sourceId': item.sourceId,
-      ':observationId': item.observationId,
-      ':startedAt': item.createdAt,
-      ':partial': 'partial',
-      ':emptyErrors': [],
-      ':expectedItems': item.runItemCount ?? 1,
-    };
-    const setParts = [
-      'runId = if_not_exists(runId, :runId)',
-      'sourceId = if_not_exists(sourceId, :sourceId)',
-      'observationId = if_not_exists(observationId, :observationId)',
-      'startedAt = if_not_exists(startedAt, :startedAt)',
-      'expectedItems = if_not_exists(expectedItems, :expectedItems)',
-      '#status = :partial',
-      '#errors = if_not_exists(#errors, :emptyErrors)',
-    ];
-    const addParts: string[] = [];
+    const runId = item.runId ?? item.observationId;
+    const expectedItems = item.runItemCount ?? 1;
 
-    const allCounts: Array<keyof ProjectionRun['counts']> = [
-      'itemsSeen', 'claims', 'artistsCreated', 'artistsMatched', 'venuesCreated',
-      'venuesMatched', 'eventsCreated', 'eventsUpdated', 'eventsCancelled', 'projectionFailures',
-    ];
-    for (const key of allCounts) {
-      const name = `#c_${key}`;
-      const value = `:c_${key}`;
-      names[name] = key;
-      values[value] = key === 'itemsSeen' ? 1 : (delta[key] ?? 0);
-      addParts.push(`#counts.${name} ${value}`);
-    }
-
-    if (error) {
-      values[':error'] = [error];
-      setParts.push('#errors = list_append(if_not_exists(#errors, :emptyErrors), :error)');
-    }
-
-    await this.client.send(new UpdateCommand({
+    // One deterministic row per work item means a retry overwrites its previous
+    // result rather than double-counting the run.
+    await this.client.send(new PutCommand({
       TableName: this.tableName,
-      Key: { pk: runPk(item.observationId), sk: 'META' },
-      UpdateExpression: `SET ${setParts.join(', ')} ADD ${addParts.join(', ')}`,
-      ExpressionAttributeNames: names,
-      ExpressionAttributeValues: values,
+      Item: {
+        pk: runPk(item.observationId),
+        sk: `ITEM#${item.idempotencyKey}`,
+        entityType: 'ProjectionRunItem',
+        idempotencyKey: item.idempotencyKey,
+        sourceId: item.sourceId,
+        observationId: item.observationId,
+        runId,
+        expectedItems,
+        completedAt: now,
+        counts: {
+          itemsSeen: 1,
+          claims: delta.claims ?? 0,
+          artistsCreated: delta.artistsCreated ?? 0,
+          artistsMatched: delta.artistsMatched ?? 0,
+          venuesCreated: delta.venuesCreated ?? 0,
+          venuesMatched: delta.venuesMatched ?? 0,
+          eventsCreated: delta.eventsCreated ?? 0,
+          eventsUpdated: delta.eventsUpdated ?? 0,
+          eventsCancelled: delta.eventsCancelled ?? 0,
+          projectionFailures: error ? 1 : (delta.projectionFailures ?? 0),
+        },
+        ...(error ? { error } : {}),
+      },
     }));
 
-    const response = await this.client.send(new GetCommand({
+    const response = await this.client.send(new QueryCommand({
       TableName: this.tableName,
-      Key: { pk: runPk(item.observationId), sk: 'META' },
+      KeyConditionExpression: 'pk = :pk AND begins_with(sk, :prefix)',
+      ExpressionAttributeValues: { ':pk': runPk(item.observationId), ':prefix': 'ITEM#' },
+      ScanIndexForward: true,
     }));
-    const raw = response.Item ?? {};
-    const counts = raw.counts && typeof raw.counts === 'object' ? raw.counts as Record<string, number> : {};
-    const itemsSeen = counts.itemsSeen ?? 0;
-    const expectedItems = typeof raw.expectedItems === 'number' ? raw.expectedItems : item.runItemCount ?? 1;
-    const failures = counts.projectionFailures ?? 0;
-    const done = itemsSeen >= expectedItems;
-    const status = done ? (failures > 0 ? 'partial' : 'success') : 'partial';
 
-    if (done) {
-      await this.client.send(new UpdateCommand({
-        TableName: this.tableName,
-        Key: { pk: runPk(item.observationId), sk: 'META' },
-        UpdateExpression: 'SET #status = :status, completedAt = :completedAt',
-        ExpressionAttributeNames: { '#status': 'status' },
-        ExpressionAttributeValues: { ':status': status, ':completedAt': now },
-      }));
+    const counts: ProjectionRun['counts'] = {
+      itemsSeen: 0,
+      claims: 0,
+      artistsCreated: 0,
+      artistsMatched: 0,
+      venuesCreated: 0,
+      venuesMatched: 0,
+      eventsCreated: 0,
+      eventsUpdated: 0,
+      eventsCancelled: 0,
+      projectionFailures: 0,
+    };
+    const errors: string[] = [];
+    for (const row of response.Items ?? []) {
+      const rowCounts = row.counts && typeof row.counts === 'object'
+        ? row.counts as Partial<ProjectionRun['counts']>
+        : {};
+      for (const key of Object.keys(counts) as Array<keyof ProjectionRun['counts']>) {
+        counts[key] += typeof rowCounts[key] === 'number' ? rowCounts[key]! : 0;
+      }
+      if (typeof row.error === 'string') errors.push(row.error);
     }
 
-    return ProjectionRunSchema.parse({
+    const done = counts.itemsSeen >= expectedItems;
+    const status: ProjectionRun['status'] = done
+      ? (counts.projectionFailures > 0 ? 'partial' : 'success')
+      : 'partial';
+    const summary = ProjectionRunSchema.parse({
       runId,
       sourceId: item.sourceId,
       observationId: item.observationId,
       startedAt: item.createdAt,
       completedAt: done ? now : undefined,
       status,
-      counts: {
-        itemsSeen,
-        claims: counts.claims ?? 0,
-        artistsCreated: counts.artistsCreated ?? 0,
-        artistsMatched: counts.artistsMatched ?? 0,
-        venuesCreated: counts.venuesCreated ?? 0,
-        venuesMatched: counts.venuesMatched ?? 0,
-        eventsCreated: counts.eventsCreated ?? 0,
-        eventsUpdated: counts.eventsUpdated ?? 0,
-        eventsCancelled: counts.eventsCancelled ?? 0,
-        projectionFailures: failures,
-      },
-      errors: Array.isArray(raw.errors) ? raw.errors.filter((value): value is string => typeof value === 'string') : [],
+      counts,
+      errors,
     });
+
+    await this.client.send(new PutCommand({
+      TableName: this.tableName,
+      Item: {
+        pk: runPk(item.observationId),
+        sk: 'META',
+        entityType: 'ProjectionRun',
+        expectedItems,
+        ...summary,
+      },
+    }));
+    return summary;
   }
 }
