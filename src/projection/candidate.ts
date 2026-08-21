@@ -5,8 +5,10 @@ export type ProjectionEventCandidate = {
   sourceId: string;
   sourceEventKey: string;
   artistName: string;
+  artistExternalId?: string;
   artistLocation?: string;
   venueName: string;
+  venueExternalId?: string;
   venueLocation: string;
   venueAddress?: string;
   date: string;
@@ -54,11 +56,6 @@ function sourceEventKey(candidateKey: string, sourceId: string): string {
   return candidateKey.startsWith(prefix) ? candidateKey.slice(prefix.length) : candidateKey;
 }
 
-/**
- * Claims are the source of projection input. This deliberately does not read the
- * old normalised run file or a source-specific payload, keeping ProjectionWorker
- * independent from acquisition/adapters.
- */
 export function materialiseEventCandidate(
   candidateKey: string,
   sourceId: string,
@@ -81,9 +78,7 @@ export function materialiseEventCandidate(
     !date ? 'date' : undefined,
     !startTime ? 'startTime' : undefined,
   ].filter(Boolean);
-  if (missing.length) {
-    throw new Error(`Projection candidate ${candidateKey} missing ${missing.join(', ')}`);
-  }
+  if (missing.length) throw new Error(`Projection candidate ${candidateKey} missing ${missing.join(', ')}`);
 
   const observedAt = claims.reduce((latestAt, claim) => claim.observedAt > latestAt ? claim.observedAt : latestAt, '');
 
@@ -92,8 +87,10 @@ export function materialiseEventCandidate(
     sourceId,
     sourceEventKey: sourceEventKey(candidateKey, sourceId),
     artistName: artistName!,
+    artistExternalId: objectString(performer, 'sourceNativeId'),
     artistLocation: objectString(performer, 'location'),
     venueName: venueName!,
+    venueExternalId: objectString(venue, 'sourceNativeId'),
     venueLocation: venueLocation!,
     venueAddress: objectString(venue, 'address'),
     date: date!,
