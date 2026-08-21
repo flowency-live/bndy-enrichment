@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GigSource, KnowledgeClaim, ProjectionWorkItem, SourceObservation } from '../src/knowledge/types.js';
+import type { SourceParityArtifact } from '../src/parity/source-parity.js';
 import { HttpAcquisitionRouter, assertSafeUrl, type HostResolver } from '../src/sources/runner/acquisition.js';
 import type { SourceAdapter } from '../src/sources/runner/adapter.js';
 import { runSource, type RunnerDependencies } from '../src/sources/runner/runner.js';
@@ -44,6 +45,7 @@ function event(key: string, hash: string, overrides: Partial<NormalisedSourceEve
 class MemoryArtifacts implements SourceRunArtifactStore {
   readonly normalisedWrites: NormalisedSourceEvent[][] = [];
   readonly diffWrites: SourceEventDiff[] = [];
+  readonly parityWrites: SourceParityArtifact[] = [];
   readonly reports: SourceRunReport[] = [];
   constructor(readonly prior: NormalisedSourceEvent[]) {}
   async writeNormalised(_config: GigSource, _run: SourceRunContext, events: NormalisedSourceEvent[]): Promise<string> {
@@ -51,6 +53,9 @@ class MemoryArtifacts implements SourceRunArtifactStore {
   }
   async writeDiff(_config: GigSource, _run: SourceRunContext, diff: SourceEventDiff): Promise<string> {
     this.diffWrites.push(diff); return 'runs/current/diff.json';
+  }
+  async writeParity(_config: GigSource, _run: SourceRunContext, parity: SourceParityArtifact): Promise<string> {
+    this.parityWrites.push(structuredClone(parity)); return 'runs/current/parity.json';
   }
   async writeReport(_config: GigSource, _run: SourceRunContext, report: SourceRunReport): Promise<string> {
     this.reports.push(structuredClone(report)); return 'runs/current/report.json';
@@ -120,7 +125,7 @@ function fixtureDependencies(captureComplete: boolean) {
 }
 
 describe('target Source Runner', () => {
-  it('produces Observation, Claims, diff, one ProjectionWorkItem per change and a report', async () => {
+  it('produces Observation, Claims, diff, parity artifact, one ProjectionWorkItem per change and a report', async () => {
     const fx = fixtureDependencies(true);
     const result = await runSource({
       sourceId: 'fixture-source',
@@ -141,9 +146,19 @@ describe('target Source Runner', () => {
     expect(fx.projection).toHaveLength(3);
     expect(fx.claims.some((claim) => claim.predicate === 'hasStatus' && claim.value === 'absent-from-complete-snapshot')).toBe(true);
     expect(result.report.projectionWorkItems).toBe(3);
+    expect(fx.artifacts.parityWrites).toHaveLength(1);
+    expect(fx.artifacts.parityWrites[0]?.evidenceSha256).toBe(result.observation?.captureHash);
+    expect(fx.artifacts.parityWrites[0]?.diff).toEqual({
+      added: ['e2'], updated: ['e1'], unchanged: [], withdrawn: ['e3'], pastDropped: [], ignoredAbsences: [],
+    });
+    expect(fx.artifacts.parityWrites[0]?.provenance).toMatchObject({
+      runtime: 'aws-bndy-enrichment', runId: 'run-run-fixed', fetchMethod: 'fixture', complete: 'true',
+    });
+    expect(result.report.artifacts.parity).toBe('runs/current/parity.json');
     expect(fx.artifacts.reports).toHaveLength(1);
     expect(fx.states.at(-1)?.lastCompleteObservationId).toBe(result.observation?.id);
     expect(fx.states.at(-1)?.metadata.lastCompleteNormalisedKey).toBe('runs/current/normalised.json');
+    expect(fx.states.at(-1)?.metadata.lastParityKey).toBe('runs/current/parity.json');
   });
 
   it('allows positive additions/updates but produces zero withdrawals for an incomplete capture', async () => {
@@ -162,6 +177,8 @@ describe('target Source Runner', () => {
     expect(result.diff?.ignoredAbsences.map((item) => item.sourceEventKey)).toEqual(['e3']);
     expect(result.projectionWorkItems.map((item) => item.action).sort()).toEqual(['create', 'update']);
     expect(fx.claims.some((claim) => claim.value === 'absent-from-complete-snapshot')).toBe(false);
+    expect(fx.artifacts.parityWrites[0]?.diff?.withdrawn).toEqual([]);
+    expect(fx.artifacts.parityWrites[0]?.diff?.ignoredAbsences).toEqual(['e3']);
     expect(fx.states.at(-1)?.lastCompleteObservationId).toBe('obs-complete-prior');
     expect(fx.states.at(-1)?.metadata.lastCompleteNormalisedKey).toBe('runs/prior-complete/normalised.json');
   });
