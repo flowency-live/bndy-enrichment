@@ -1,6 +1,7 @@
 export type CaptureTargetKind =
   | 'facebook_event_short'
   | 'facebook_event'
+  | 'facebook_share'
   | 'facebook_url'
   | 'instagram_url'
   | 'generic_url'
@@ -87,10 +88,13 @@ export function classifyCaptureTarget(input: {
 
   if (isFacebookHost(url.hostname)) {
     const eventPath = /(?:^|\/)events(?:\/|$)/i.test(path);
+    const sharePath = /^\/share(?:\/|$)/i.test(path);
     return {
-      kind: eventPath ? 'facebook_event' : 'facebook_url',
+      kind: eventPath ? 'facebook_event' : sharePath ? 'facebook_share' : 'facebook_url',
       platform: 'facebook',
-      platformObjectType: eventPath ? 'event' : 'url',
+      // /share/<token> is only a transport URL. The object type is deliberately
+      // unknown until the public redirect is followed.
+      platformObjectType: eventPath ? 'event' : sharePath ? 'unknown' : 'url',
       deterministic: true,
       inputUrl: input.sharedUrl,
       normalisedUrl: url.toString(),

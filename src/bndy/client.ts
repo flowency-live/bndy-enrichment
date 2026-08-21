@@ -106,8 +106,21 @@ export async function findOrCreateArtist(artist: CaptureArtist, captureId: strin
   if (body.action === 'review') {
     return { action: 'review', candidates: body.candidates ?? [], raw: body };
   }
-  if (body.action === 'duplicate' || body.error === 'DUPLICATE_ARTIST') {
-    return { action: 'duplicate', artistId: body.existingArtistId ?? undefined, raw: body };
+
+  // The canonical artist Lambda returns a hard uniqueness conflict as HTTP 409
+  // with { action: 'create_failed', code: 'DUPLICATE', existingArtistId }.
+  // Older adapters expected action=duplicate/error=DUPLICATE_ARTIST, so a safe
+  // duplicate was being treated as a processor failure instead of reusing the
+  // canonical record. Accept every explicit duplicate shape, but only when the
+  // API supplies the existing artist id.
+  const duplicateArtistId = body.existingArtistId ?? body.existingId;
+  const explicitDuplicate =
+    body.action === 'duplicate' ||
+    body.error === 'DUPLICATE_ARTIST' ||
+    body.code === 'DUPLICATE' ||
+    (out.status === 409 && /duplicate artist/i.test(String(body.error ?? body.message ?? '')));
+  if (explicitDuplicate && duplicateArtistId) {
+    return { action: 'duplicate', artistId: duplicateArtistId, raw: body };
   }
 
   throw new Error(`Unexpected artist find-or-create response: ${JSON.stringify(body)}`);

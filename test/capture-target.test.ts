@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { classifyCaptureTarget, isFacebookEventTarget } from '../src/capture/classify-target.js';
+import { refineCaptureTargetFromResolvedUrl } from '../src/capture/resolve-target.js';
 
 describe('classifyCaptureTarget', () => {
   it('classifies fb.me event short links without AI', () => {
@@ -22,6 +23,30 @@ describe('classifyCaptureTarget', () => {
     expect(result.kind).toBe('facebook_event');
     expect(result.platformObjectType).toBe('event');
     expect(isFacebookEventTarget(result)).toBe(true);
+  });
+
+  it('treats Facebook /share tokens as transport URLs until resolved', () => {
+    const initial = classifyCaptureTarget({ sharedUrl: 'https://www.facebook.com/share/1YHQ83pwfB/' });
+    expect(initial).toMatchObject({
+      kind: 'facebook_share',
+      platform: 'facebook',
+      platformObjectType: 'unknown',
+      deterministic: true,
+    });
+    expect(isFacebookEventTarget(initial)).toBe(false);
+
+    const resolved = refineCaptureTargetFromResolvedUrl(
+      initial,
+      'https://www.facebook.com/events/1555240929628880/',
+    );
+    expect(resolved).toMatchObject({
+      kind: 'facebook_event',
+      platform: 'facebook',
+      platformObjectType: 'event',
+      inputUrl: 'https://www.facebook.com/share/1YHQ83pwfB/',
+      normalisedUrl: 'https://www.facebook.com/events/1555240929628880/',
+    });
+    expect(isFacebookEventTarget(resolved)).toBe(true);
   });
 
   it('does not misclassify a normal Facebook profile as an event', () => {
