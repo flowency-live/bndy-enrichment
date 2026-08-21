@@ -134,8 +134,10 @@ describe('target Source Runner', () => {
     expect(result.diff?.added.map((item) => item.sourceEventKey)).toEqual(['e2']);
     expect(result.diff?.updated.map((item) => item.sourceEventKey)).toEqual(['e1']);
     expect(result.diff?.withdrawn.map((item) => item.sourceEventKey)).toEqual(['e3']);
-    expect(result.projectionWorkItems.map((item) => item.action).sort()).toEqual(['cancel', 'create', 'update']);
+    expect(result.projectionWorkItems.map((item) => item.action).sort()).toEqual(['create', 'update', 'withdraw']);
     expect(result.projectionWorkItems).toHaveLength(3);
+    expect(result.projectionWorkItems.every((item) => item.runId === 'run-run-fixed')).toBe(true);
+    expect(result.projectionWorkItems.every((item) => item.runItemCount === 3)).toBe(true);
     expect(fx.projection).toHaveLength(3);
     expect(fx.claims.some((claim) => claim.predicate === 'hasStatus' && claim.value === 'absent-from-complete-snapshot')).toBe(true);
     expect(result.report.projectionWorkItems).toBe(3);
@@ -170,7 +172,22 @@ describe('target Source Runner', () => {
     fx.deps.registry.get = async (sourceId) => ({ ...(await originalGet(sourceId))!, mode: 'append-only' });
     const result = await runSource({ sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z' }, fx.deps);
     expect(result.diff?.withdrawn).toHaveLength(0);
-    expect(result.projectionWorkItems.some((item) => item.action === 'cancel')).toBe(false);
+    expect(result.projectionWorkItems.some((item) => item.action === 'withdraw')).toBe(false);
+  });
+
+  it('turns explicit cancellation evidence into cancel rather than withdrawal', async () => {
+    const fx = fixtureDependencies(true);
+    const originalAdapter = fx.deps.loadAdapter(config())!;
+    fx.deps.loadAdapter = () => ({
+      ...originalAdapter,
+      async parse(sourceConfig, run, raw) {
+        const parsed = await originalAdapter.parse(sourceConfig, run, raw);
+        return { ...parsed, events: parsed.events.map((item) => item.sourceEventKey === 'e2' ? { ...item, status: 'cancelled' } : item) };
+      },
+    });
+    const result = await runSource({ sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z' }, fx.deps);
+    expect(result.projectionWorkItems.find((entry) => entry.candidateKey.endsWith(':e2'))?.action).toBe('cancel');
+    expect(result.projectionWorkItems.find((entry) => entry.candidateKey.endsWith(':e3'))?.action).toBe('withdraw');
   });
 });
 
