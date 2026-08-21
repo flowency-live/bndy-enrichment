@@ -2,7 +2,7 @@ name: deploy-capture-pipeline
 
 # One-shot push trigger: creating/changing this workflow deploys the capture pipeline.
 # It can also be run manually later if required.
-# Trigger production deploy after image-capture scanner compatibility fix.
+# Trigger production deploy after Facebook Event Capture support lands.
 on:
   workflow_dispatch:
   push:
