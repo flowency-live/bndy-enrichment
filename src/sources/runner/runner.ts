@@ -156,7 +156,6 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     report.parked = parsed.parked.length;
     report.warnings.push(...parsed.warnings);
 
-    // Immutable source evidence + Observation is the durable knowledge boundary.
     const storedObservation = await deps.observations.put(
       observationFor(config, raw, parsed.events, run),
       raw.body,
@@ -189,8 +188,15 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     const projection = buildProjectionWork(storedObservation, diff, knowledge.claimsByCandidate);
     for (const claim of projection.withdrawalClaims) await deps.claims.put(claim);
     report.claims += projection.withdrawalClaims.length;
+
+    const totalWork = projection.workItems.length;
+    projection.workItems.forEach((item, index) => {
+      item.runId = run.runId;
+      item.runItemCount = totalWork || undefined;
+      item.runOrdinal = index + 1;
+    });
     for (const item of projection.workItems) await deps.projection.publish(item);
-    report.projectionWorkItems = projection.workItems.length;
+    report.projectionWorkItems = totalWork;
 
     const priorMetadata = previousState?.metadata ?? {};
     const metadata: Record<string, unknown> = {
@@ -254,6 +260,4 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
   }
 }
 
-// Type-only imports above document the concrete production dependencies that the
-// runtime factory supplies, while RunnerDependencies stays mockable for tests.
 void (0 as unknown as SourceRegistryStore | SourceStateStore | ObservationStore | ClaimStore);

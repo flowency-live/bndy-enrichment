@@ -45,13 +45,31 @@ function claimFor(
 
 function eventClaims(observation: SourceObservation, event: NormalisedSourceEvent): KnowledgeClaim[] {
   const claims: KnowledgeClaim[] = [];
-  if (event.artistName) claims.push(claimFor(observation, event, 'hasPerformerName', event.artistName));
-  if (event.venueName) claims.push(claimFor(observation, event, 'hasVenueName', event.venueName));
+  if (event.artistName) {
+    claims.push(claimFor(observation, event, 'hasPerformerName', event.artistName));
+    claims.push(claimFor(observation, event, 'hasPerformer', {
+      name: event.artistName,
+      ...(event.artistExternalId ? { sourceNativeId: event.artistExternalId } : {}),
+      ...(event.artistLocation ? { location: event.artistLocation } : {}),
+    }));
+  }
+  if (event.venueName) {
+    claims.push(claimFor(observation, event, 'hasVenueName', event.venueName));
+    claims.push(claimFor(observation, event, 'occursAt', {
+      name: event.venueName,
+      ...(event.venueExternalId ? { sourceNativeId: event.venueExternalId } : {}),
+      ...(event.venueLocation ? { location: event.venueLocation } : {}),
+      ...(event.venueAddress ? { address: event.venueAddress } : {}),
+    }));
+  }
   if (event.date) claims.push(claimFor(observation, event, 'occursOn', event.date));
   if (event.startTime) claims.push(claimFor(observation, event, 'startsAt', event.startTime));
   if (event.endTime) claims.push(claimFor(observation, event, 'endsAt', event.endTime));
   if (event.title) claims.push(claimFor(observation, event, 'hasTitle', event.title));
   if (event.eventUrl) claims.push(claimFor(observation, event, 'hasEventUrl', event.eventUrl));
+  if (event.ticketUrl) claims.push(claimFor(observation, event, 'hasTicketUrl', event.ticketUrl));
+  if (event.admissionStatus) claims.push(claimFor(observation, event, 'hasAdmissionStatus', event.admissionStatus));
+  if (event.price) claims.push(claimFor(observation, event, 'hasPrice', event.price));
   if (event.status) claims.push(claimFor(observation, event, 'hasStatus', event.status));
   if (claims.length === 0) claims.push(claimFor(observation, event, 'derivedFrom', event.sourceEventKey));
   return claims;
@@ -117,6 +135,11 @@ function workItem(
   };
 }
 
+function explicitlyCancelled(event: NormalisedSourceEvent): boolean {
+  const status = event.status?.trim().toLowerCase();
+  return status === 'cancelled' || status === 'canceled' || status === 'cancelled_event';
+}
+
 export function buildProjectionWork(
   observation: SourceObservation,
   diff: SourceEventDiff,
@@ -127,16 +150,16 @@ export function buildProjectionWork(
 
   for (const event of diff.added) {
     const claimIds = (claimsByCandidate.get(eventCandidateKey(observation.sourceId, event.sourceEventKey)) ?? []).map((claim) => claim.id);
-    workItems.push(workItem(observation, event, 'create', claimIds));
+    workItems.push(workItem(observation, event, explicitlyCancelled(event) ? 'cancel' : 'create', claimIds));
   }
   for (const event of diff.updated) {
     const claimIds = (claimsByCandidate.get(eventCandidateKey(observation.sourceId, event.sourceEventKey)) ?? []).map((claim) => claim.id);
-    workItems.push(workItem(observation, event, 'update', claimIds));
+    workItems.push(workItem(observation, event, explicitlyCancelled(event) ? 'cancel' : 'update', claimIds));
   }
   for (const prior of diff.withdrawn) {
     const withdrawal = buildWithdrawalClaim(observation, prior);
     withdrawalClaims.push(withdrawal);
-    workItems.push(workItem(observation, prior, 'cancel', [withdrawal.id]));
+    workItems.push(workItem(observation, prior, 'withdraw', [withdrawal.id]));
   }
 
   return { workItems, withdrawalClaims };
