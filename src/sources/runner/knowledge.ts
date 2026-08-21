@@ -49,6 +49,7 @@ function eventClaims(observation: SourceObservation, event: NormalisedSourceEven
     claims.push(claimFor(observation, event, 'hasPerformerName', event.artistName));
     claims.push(claimFor(observation, event, 'hasPerformer', {
       name: event.artistName,
+      ...(event.artistExternalId ? { sourceNativeId: event.artistExternalId } : {}),
       ...(event.artistLocation ? { location: event.artistLocation } : {}),
     }));
   }
@@ -56,6 +57,7 @@ function eventClaims(observation: SourceObservation, event: NormalisedSourceEven
     claims.push(claimFor(observation, event, 'hasVenueName', event.venueName));
     claims.push(claimFor(observation, event, 'occursAt', {
       name: event.venueName,
+      ...(event.venueExternalId ? { sourceNativeId: event.venueExternalId } : {}),
       ...(event.venueLocation ? { location: event.venueLocation } : {}),
       ...(event.venueAddress ? { address: event.venueAddress } : {}),
     }));
@@ -152,9 +154,6 @@ export function buildProjectionWork(
   for (const prior of diff.withdrawn) {
     const withdrawal = buildWithdrawalClaim(observation, prior);
     withdrawalClaims.push(withdrawal);
-    // Absence from a qualifying complete snapshot is a withdrawal, not an
-    // explicit cancellation. WP-05 hides/removes the projection only after
-    // authority checks; explicit cancellation remains action=cancel.
     workItems.push(workItem(observation, prior, 'withdraw', [withdrawal.id]));
   }
 
