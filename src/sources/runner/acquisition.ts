@@ -11,6 +11,10 @@ export type AcquisitionRequest = {
   maxBytes?: number;
   complete?: boolean;
   fetchMethod?: string;
+  /** Browser-only: return rendered document text instead of serialized HTML. */
+  bodyMode?: 'html' | 'innerText';
+  /** Browser-only hydration grace period after navigation. */
+  settleMs?: number;
 };
 
 export interface AcquisitionRouter {

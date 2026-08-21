@@ -1,4 +1,5 @@
 import { ClaimStore, ObservationStore, SourceRegistryStore, SourceStateStore } from '../../knowledge/stores/index.js';
+import '../adapters/gigs-news/index.js';
 import type { AcquisitionRouter } from './acquisition.js';
 import { getSourceAdapter } from './adapter.js';
 import { SqsProjectionPublisher } from './projection-publisher.js';

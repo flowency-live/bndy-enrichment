@@ -1,0 +1,52 @@
+[
+  {
+    "sourceEventKey": "2026-06-17_blueheart_eagle-child-whitefield",
+    "artistName": "Blueheart",
+    "artistExternalId": "artist_blueheart",
+    "venueName": "Eagle & Child Whitefield",
+    "venueExternalId": "venue_eagle-child-whitefield",
+    "venueLocation": "Whitefield",
+    "date": "2026-06-17",
+    "startTime": "20:00"
+  },
+  {
+    "sourceEventKey": "2026-06-18_roy-pimmy_white-hart-woodley",
+    "artistName": "Roy Pimmy",
+    "artistExternalId": "artist_roy-pimmy",
+    "venueName": "White Hart Woodley",
+    "venueExternalId": "venue_white-hart-woodley",
+    "venueLocation": "Woodley",
+    "date": "2026-06-18",
+    "startTime": "16:30"
+  },
+  {
+    "sourceEventKey": "2026-06-18_jon-casey-blues_the-welcome-inn-whitefield",
+    "artistName": "Jon Casey Blues Band",
+    "artistExternalId": "artist_jon-casey-blues",
+    "venueName": "the Welcome Inn Whitefield",
+    "venueExternalId": "venue_the-welcome-inn-whitefield",
+    "venueLocation": "Whitefield",
+    "date": "2026-06-18",
+    "startTime": "20:00"
+  },
+  {
+    "sourceEventKey": "2026-06-19_evolution_the-stock-dove-romiley",
+    "artistName": "Evolution",
+    "artistExternalId": "artist_evolution",
+    "venueName": "the Stock Dove Romiley",
+    "venueExternalId": "venue_the-stock-dove-romiley",
+    "venueLocation": "Romiley",
+    "date": "2026-06-19",
+    "startTime": "20:00"
+  },
+  {
+    "sourceEventKey": "2026-06-19_andy-lee_crown-bredbury",
+    "artistName": "Andy Lee",
+    "artistExternalId": "artist_andy-lee",
+    "venueName": "Crown Bredbury",
+    "venueExternalId": "venue_crown-bredbury",
+    "venueLocation": "Bredbury",
+    "date": "2026-06-19",
+    "startTime": "20:00"
+  }
+]
