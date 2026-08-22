@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { BrassCanonicalApi } from './canonical-api.js';
 import type { BrassBandProjectionPackage } from './projection.js';
+import type { EventCandidate } from '../domain/schema.js';
 
 function projection(): BrassBandProjectionPackage {
   return {
@@ -27,6 +28,24 @@ function projection(): BrassBandProjectionPackage {
     provenance: { identityConfidence: 0.99, sourceUrls: ['https://example.test', 'https://evidence.test'], observationSourceIds: ['test'], generatedAt: new Date().toISOString() },
     publishable: true,
     holdReasons: [],
+  };
+}
+
+function eventCandidate(): EventCandidate {
+  return {
+    artistName: 'Test Brass Band',
+    venueName: 'Test Town Hall',
+    town: 'Test Town',
+    eventDate: '2026-10-04',
+    startTime: '14:30',
+    timezone: 'Europe/London',
+    cancelled: false,
+    confidence: 0.98,
+    sourceUrls: ['https://example.test/concert'],
+    eventUrl: 'https://example.test/concert',
+    supportActs: [],
+    ticketing: { expected: true, status: 'found', ticketUrl: 'https://tickets.example.test/concert', evidenceUrls: ['https://example.test/concert'] },
+    admission: { status: 'PAID_CONFIRMED', confidence: 0.98, priceText: '£15', evidenceUrls: ['https://example.test/concert'] },
   };
 }
 
@@ -83,5 +102,50 @@ describe('BrassCanonicalApi', () => {
     held.holdReasons = ['review'];
     await expect(api.ensureBand(held)).rejects.toThrow('Refusing non-publishable projection');
     expect(called).toBe(false);
+  });
+
+  it('creates a new Venue with brass publication and no discovery scope', async () => {
+    let captured: Record<string, unknown> | undefined;
+    const fetchImpl: typeof fetch = async (url, init) => {
+      expect(String(url)).toContain('/api/venues/find-or-create/mcp');
+      captured = JSON.parse(String(init?.body));
+      return response(201, { action: 'created', venue: { id: 'v1', name: 'Test Town Hall', publicationScopes: ['brass'], discoveryScopes: [], latitude: 53.1, longitude: -2.2 } });
+    };
+    const api = new BrassCanonicalApi('https://api.test', fetchImpl);
+    const result = await api.ensureVenue(eventCandidate());
+    expect(captured).toMatchObject({ publicationScopes: ['brass'], discoveryScopes: [] });
+    expect(result).toMatchObject({ id: 'v1', action: 'created', discoveryScopes: [] });
+  });
+
+  it('allows reuse of an existing live Venue without widening it', async () => {
+    const fetchImpl: typeof fetch = async () => response(200, { action: 'matched', venue: { id: 'live-v', name: 'Test Town Hall', publicationScopes: ['live'], discoveryScopes: ['live'], latitude: 53.1, longitude: -2.2 } });
+    const api = new BrassCanonicalApi('https://api.test', fetchImpl);
+    const result = await api.ensureVenue(eventCandidate());
+    expect(result).toMatchObject({ id: 'live-v', action: 'matched', publicationScopes: ['live'], discoveryScopes: ['live'] });
+  });
+
+  it('rejects a newly created Venue if discovery scope was widened', async () => {
+    const fetchImpl: typeof fetch = async () => response(201, { action: 'created', venue: { id: 'bad-v', name: 'Test Town Hall', publicationScopes: ['brass'], discoveryScopes: ['live'] } });
+    const api = new BrassCanonicalApi('https://api.test', fetchImpl);
+    await expect(api.ensureVenue(eventCandidate())).rejects.toThrow(/^VENUE_DISCOVERY_SCOPE_FAILURE:/);
+  });
+
+  it('creates a Concert with brass scope atomically', async () => {
+    let captured: Record<string, unknown> | undefined;
+    const fetchImpl: typeof fetch = async (url, init) => {
+      expect(String(url)).toContain('/api/events/community/mcp');
+      captured = JSON.parse(String(init?.body));
+      return response(201, { event: { id: 'e1', publicationScopes: ['brass'] } });
+    };
+    const api = new BrassCanonicalApi('https://api.test', fetchImpl);
+    const result = await api.ensureConcert(eventCandidate(), 'band1', 'venue1');
+    expect(captured).toMatchObject({ artistId: 'band1', venueId: 'venue1', publicationScopes: ['brass'], eventKind: 'concert', ticketed: true });
+    expect(result).toEqual({ id: 'e1', created: true, duplicate: false });
+  });
+
+  it('returns existing Event IDs from the canonical duplicate gate', async () => {
+    const fetchImpl: typeof fetch = async () => response(409, { existingEventId: 'existing-e' });
+    const api = new BrassCanonicalApi('https://api.test', fetchImpl);
+    await expect(api.ensureConcert(eventCandidate(), 'band1', 'venue1')).resolves.toEqual({ id: 'existing-e', created: false, duplicate: true });
   });
 });
