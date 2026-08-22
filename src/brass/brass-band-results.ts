@@ -63,6 +63,17 @@ export function slugCandidates(name: string): string[] {
   for (const value of [withoutBand, withoutBrass]) {
     if (value && !candidates.includes(value)) candidates.push(value);
   }
+
+  // BBR often includes the generic organisation type in the URL even when
+  // contest listings omit it (e.g. "Aldbourne" -> "aldbourne-band").
+  const stems = [...candidates];
+  for (const stem of stems) {
+    if (!stem) continue;
+    for (const suffix of ['band', 'brass-band', 'brass', 'silver-band']) {
+      const value = `${stem}-${suffix}`.replace(/-+/g, '-');
+      if (!candidates.includes(value)) candidates.push(value);
+    }
+  }
   return candidates;
 }
 
@@ -124,6 +135,27 @@ function normaliseName(value: string): string {
     .trim();
 }
 
+function editDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i += 1) {
+    let diagonal = prev[0];
+    prev[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      const old = prev[j];
+      prev[j] = Math.min(
+        prev[j] + 1,
+        prev[j - 1] + 1,
+        diagonal + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+      diagonal = old;
+    }
+  }
+  return prev[b.length];
+}
+
 function compatible(candidate: BrassBandIdentityCandidate, record: BrassBandResultsRecord): boolean {
   const observed = new Set([
     candidate.canonicalName,
@@ -165,9 +197,11 @@ async function loadIndex(): Promise<BrassBandResultsIndexRow[]> {
 
 async function candidatePageUrls(candidate: BrassBandIdentityCandidate): Promise<string[]> {
   const names = [...new Set([candidate.canonicalName, ...candidate.aliases, ...candidate.observations.map((item) => item.observedName)])];
-  const wanted = new Set(names.map(normaliseName).filter(Boolean));
+  const normalisedNames = names.map(normaliseName).filter(Boolean);
+  const wanted = new Set(normalisedNames);
   const index = await loadIndex();
-  const indexed = index.filter((row) => wanted.has(normaliseName(row.name)) && regionCompatible(candidate, row));
+  const regional = index.filter((row) => regionCompatible(candidate, row));
+  const indexed = regional.filter((row) => wanted.has(normaliseName(row.name)));
 
   if (indexed.length === 1) return [indexed[0].pageUrl];
   if (indexed.length > 1) {
@@ -176,8 +210,17 @@ async function candidatePageUrls(candidate: BrassBandIdentityCandidate): Promise
     return [];
   }
 
+  // Conservative typo recovery: only accept a unique regional index row that
+  // is one edit away from a reasonably long observed name. This catches source
+  // slips such as Aldburne/Aldbourne without merging short similar band names.
+  const fuzzy = regional.filter((row) => {
+    const rowName = normaliseName(row.name);
+    return rowName.length >= 7 && normalisedNames.some((name) => name.length >= 7 && editDistance(name, rowName) <= 1);
+  });
+  if (fuzzy.length === 1) return [fuzzy[0].pageUrl];
+
   // Fallback for a historic/sponsored name that only appears in a Band's alias list.
-  return [...new Set(names.flatMap((name) => slugCandidates(name)).map((slug) => `https://www.brassbandresults.co.uk/bands/${slug}`))].slice(0, 4);
+  return [...new Set(names.flatMap((name) => slugCandidates(name)).map((slug) => `https://www.brassbandresults.co.uk/bands/${slug}`))].slice(0, 20);
 }
 
 export async function resolveViaBrassBandResults(candidate: BrassBandIdentityCandidate): Promise<ResolvedBrassBand | null> {
