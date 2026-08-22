@@ -1,5 +1,6 @@
 import { classifyCaptureTarget } from '../capture/classify-target.js';
 import { discoverCapture, inspectPublicPage } from '../capture/discover.js';
+import { prepareCaptureForDiscovery } from '../capture/prepare-discovery.js';
 import type { CaptureRecord } from '../capture/schema.js';
 import { BrowserAcquisitionRouter } from '../sources/runner/browser-acquisition.js';
 
@@ -38,26 +39,27 @@ function readiness(discovery: Awaited<ReturnType<typeof discoverCapture>>) {
     !event?.venueName && 'event.venueName',
     !event?.town && 'event.town',
     !event?.date && 'event.date',
+    !event?.startTime && 'event.startTime',
   ].filter(Boolean);
 
   const exactSingleEvent = discovery.classification === 'event' && discovery.events.length === 1;
-  const admissionPublishable = Boolean(event && event.admission !== 'UNKNOWN' && !event.cancelled);
+  const eventPublishable = Boolean(event && !event.cancelled);
   const identityReady = missingArtistFields.length === 0 && missingEventFields.length === 0;
 
   return {
     exactSingleEvent,
     identityReady,
-    admissionPublishable,
-    wouldProjectTactically: exactSingleEvent && identityReady && admissionPublishable,
+    eventPublishable,
+    wouldProjectTactically: exactSingleEvent && identityReady && eventPublishable,
     missingArtistFields,
     missingEventFields,
     reason: !exactSingleEvent
       ? `expected classification=event with exactly one event; got ${discovery.classification}/${discovery.events.length}`
       : !identityReady
         ? 'event/artist identity is incomplete'
-        : !admissionPublishable
-          ? event?.cancelled ? 'event is cancelled' : 'admission is UNKNOWN and current tactical policy holds it'
-          : 'ready for the current tactical canonical projection path',
+        : !eventPublishable
+          ? 'event is cancelled'
+          : 'ready for the current tactical canonical projection path; unknown admission is allowed and defaults non-ticketed',
   };
 }
 
@@ -113,20 +115,23 @@ if (!hasFlag('no-gemini')) {
       suggestedEntityType: target.platformObjectType === 'event' ? 'event' : 'unknown',
       status: 'unprocessed',
     };
+    const discoveryCapture = prepareCaptureForDiscovery(capture, anonymous?.finalUrl);
     try {
-      const discovery = await discoverCapture(capture, {
+      const discovery = await discoverCapture(discoveryCapture, {
         apiKey,
         model: process.env.GEMINI_MODEL,
         horizonDays: Number(process.env.SEARCH_HORIZON_DAYS ?? 90),
       });
       gemini = {
         ok: true,
+        discoveryInputUrl: discoveryCapture.sharedUrl,
         discovery,
         readiness: readiness(discovery),
       };
     } catch (error) {
       gemini = {
         ok: false,
+        discoveryInputUrl: discoveryCapture.sharedUrl,
         error: error instanceof Error ? error.message : String(error),
       };
     }
@@ -134,7 +139,7 @@ if (!hasFlag('no-gemini')) {
 }
 
 console.log(JSON.stringify({
-  probeVersion: 1,
+  probeVersion: 2,
   executedAt: new Date().toISOString(),
   writeMode: 'READ_ONLY',
   input: { url },
