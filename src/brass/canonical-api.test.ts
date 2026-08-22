@@ -105,7 +105,7 @@ describe('BrassCanonicalApi', () => {
     expect(called).toBe(false);
   });
 
-  it('creates a new Venue with brass publication and no discovery scope', async () => {
+  it('creates a new Venue with brass publication, no discovery scope, and no guessed venue kind', async () => {
     let captured: Record<string, unknown> | undefined;
     const fetchImpl: typeof fetch = async (url, init) => {
       expect(String(url)).toContain('/api/venues/find-or-create/mcp');
@@ -115,6 +115,7 @@ describe('BrassCanonicalApi', () => {
     const api = new BrassCanonicalApi('https://api.test', fetchImpl);
     const result = await api.ensureVenue(eventCandidate());
     expect(captured).toMatchObject({ publicationScopes: ['brass'], discoveryScopes: [] });
+    expect(captured).not.toHaveProperty('venueKind');
     expect(result).toMatchObject({ id: 'v1', action: 'created', discoveryScopes: [] });
   });
 
