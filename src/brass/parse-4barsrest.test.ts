@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { parse4BarsRestBandObservations, splitBandAndConductor } from './parse-4barsrest';
-import type { BrassSource } from './types';
+import { parse4BarsRestBandObservations, splitBandAndConductor } from './parse-4barsrest.js';
+import type { BrassSource } from './types.js';
 
 const source: BrassSource = {
   id: 'test-2026-area',
