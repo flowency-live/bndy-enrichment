@@ -1,4 +1,4 @@
-import type { BrassBandObservation, BrassSource } from './types';
+import type { BrassBandObservation, BrassSource } from './types.js';
 
 function decodeEntities(input: string): string {
   return input
