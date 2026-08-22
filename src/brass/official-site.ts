@@ -78,23 +78,37 @@ function candidateUrls(officialWebsite: string): string[] {
   ])];
 }
 
-export async function resolveOfficialSiteLocation(officialWebsite: string): Promise<OfficialSiteLocation | null> {
-  for (const url of candidateUrls(officialWebsite)) {
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        headers: { 'user-agent': 'bndy-brass-research/1.0 (+https://bndy.live)', accept: 'text/html,application/xhtml+xml' },
-        redirect: 'follow',
-        signal: AbortSignal.timeout(10_000),
-      });
-    } catch {
-      continue;
-    }
-    if (!response.ok) continue;
+async function fetchLocation(url: string): Promise<OfficialSiteLocation | null> {
+  try {
+    const response = await fetch(url, {
+      headers: { 'user-agent': 'bndy-brass-research/1.0 (+https://bndy.live)', accept: 'text/html,application/xhtml+xml' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(7_000),
+    });
+    if (!response.ok) return null;
     const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('text/html')) continue;
-    const location = extractLocationFromHtml(await response.text(), response.url || url);
-    if (location) return location;
+    if (!contentType.includes('text/html')) return null;
+    return extractLocationFromHtml(await response.text(), response.url || url);
+  } catch {
+    return null;
   }
-  return null;
+}
+
+export async function resolveOfficialSiteLocation(officialWebsite: string): Promise<OfficialSiteLocation | null> {
+  const urls = candidateUrls(officialWebsite);
+
+  // Homepage is both cheapest and the most authoritative place to look first.
+  const home = await fetchLocation(urls[0]);
+  if (home?.town) return home;
+
+  // Old band sites can have broken route variants. Probe the remaining common
+  // location pages concurrently so one dead /contact path cannot stall a whole
+  // national resolution run.
+  const rest = await Promise.all(urls.slice(1).map(fetchLocation));
+  const withTown = rest.find((location) => location?.town);
+  if (withTown) return withTown;
+
+  // A postcode-only result is still useful evidence even if it is not enough
+  // on its own for the canonical Artist location gate.
+  return home ?? rest.find(Boolean) ?? null;
 }
