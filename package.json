@@ -20,7 +20,8 @@
     "source:parity": "tsx src/cli/source-parity.ts",
     "brass:bootstrap": "tsx src/cli/brass-bootstrap.ts",
     "brass:resolve": "tsx src/cli/brass-resolve.ts",
-    "brass:discover": "tsx src/cli/brass-discover.ts"
+    "brass:discover": "tsx src/cli/brass-discover.ts",
+    "brass:write": "tsx src/cli/brass-write.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
