@@ -22,8 +22,15 @@ function args() {
   const values = process.argv.slice(2);
   const out: Record<string, string> = {};
   for (let i = 0; i < values.length; i += 1) {
-    if (!values[i].startsWith('--')) continue;
-    out[values[i].slice(2)] = values[i + 1] ?? '';
+    const value = values[i];
+    if (!value.startsWith('--')) continue;
+    const key = value.slice(2);
+    const next = values[i + 1];
+    if (!next || next.startsWith('--')) {
+      out[key] = 'true';
+      continue;
+    }
+    out[key] = next;
     i += 1;
   }
   return out;
@@ -51,8 +58,9 @@ async function main() {
   const outputPath = resolve(process.cwd(), options.out || 'brass-resolved-2026.json');
   const limit = Math.max(1, Number(options.limit || 25));
   const offset = Math.max(0, Number(options.offset || 0));
+  const concurrency = Math.min(16, Math.max(1, Number(options.concurrency || 8)));
   const minObservationConfidence = Number(options['min-candidate-confidence'] || 0.78);
-  const allowGemini = options['gemini-fallback'] !== 'false';
+  const allowGemini = options['gemini-fallback'] === 'true';
 
   const bootstrap = JSON.parse(await readFile(inputPath, 'utf8')) as BootstrapFile;
   const selected = bootstrap.identities
@@ -66,27 +74,12 @@ async function main() {
     // First run.
   }
   const byCandidate = new Map((existing.rows ?? []).map((row) => [row.candidate.canonicalName.toLowerCase(), row]));
+  const queue = selected.filter((candidate) => !byCandidate.get(candidate.canonicalName.toLowerCase())?.resolved);
 
-  for (const candidate of selected) {
-    const key = candidate.canonicalName.toLowerCase();
-    if (byCandidate.get(key)?.resolved) {
-      console.log(`skip ${candidate.canonicalName}: already resolved`);
-      continue;
-    }
-
-    try {
-      console.log(`resolve ${candidate.canonicalName}`);
-      const { resolved, method } = await resolveCandidate(candidate, allowGemini);
-      const projection = buildBrassBandProjection(candidate, resolved);
-      byCandidate.set(key, { candidate, resolved, resolutionMethod: method, projection });
-      console.log(`  ${resolved.officialName}: method=${method} confidence=${resolved.identityConfidence.toFixed(2)} publishable=${projection.publishable}`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      byCandidate.set(key, { candidate, error: message });
-      console.error(`  failed: ${message}`);
-    }
-
-    await writeFile(outputPath, JSON.stringify({
+  let cursor = 0;
+  let persistChain = Promise.resolve();
+  const persist = () => {
+    persistChain = persistChain.then(() => writeFile(outputPath, JSON.stringify({
       generatedAt: new Date().toISOString(),
       edition: 'brass',
       mode: 'resolution-and-projection-only',
@@ -94,8 +87,34 @@ async function main() {
       freeResolver: 'brassbandresults.co.uk',
       geminiFallbackAvailable: Boolean(process.env.GEMINI_API_KEY),
       rows: [...byCandidate.values()],
-    }, null, 2), 'utf8');
+    }, null, 2), 'utf8'));
+    return persistChain;
+  };
+
+  async function worker(workerId: number) {
+    while (true) {
+      const index = cursor++;
+      const candidate = queue[index];
+      if (!candidate) return;
+      const key = candidate.canonicalName.toLowerCase();
+
+      try {
+        console.log(`[${workerId}] resolve ${candidate.canonicalName}`);
+        const { resolved, method } = await resolveCandidate(candidate, allowGemini);
+        const projection = buildBrassBandProjection(candidate, resolved);
+        byCandidate.set(key, { candidate, resolved, resolutionMethod: method, projection });
+        console.log(`[${workerId}]   ${resolved.officialName}: method=${method} confidence=${resolved.identityConfidence.toFixed(2)} publishable=${projection.publishable}`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        byCandidate.set(key, { candidate, error: message });
+        console.error(`[${workerId}]   failed ${candidate.canonicalName}: ${message}`);
+      }
+      await persist();
+    }
   }
+
+  await Promise.all(Array.from({ length: Math.min(concurrency, Math.max(1, queue.length)) }, (_, index) => worker(index + 1)));
+  await persistChain;
 
   const rows = [...byCandidate.values()];
   const successful = rows.filter((row) => row.resolved);
@@ -104,7 +123,7 @@ async function main() {
   const freeResolved = rows.filter((row) => row.resolutionMethod === 'brass_band_results');
   const geminiResolved = rows.filter((row) => row.resolutionMethod === 'gemini_search');
   console.log(`Wrote ${outputPath}`);
-  console.log(`resolved=${successful.length} free=${freeResolved.length} gemini=${geminiResolved.length} publishable=${publishable.length} held=${held.length} errors=${rows.filter((row) => row.error).length}`);
+  console.log(`resolved=${successful.length} free=${freeResolved.length} gemini=${geminiResolved.length} publishable=${publishable.length} held=${held.length} errors=${rows.filter((row) => row.error).length} concurrency=${concurrency}`);
 }
 
 main().catch((error) => {
