@@ -1,8 +1,9 @@
+import { describe, expect, it } from 'vitest';
 import {
   BRASS_DISCOVERY_POLICY,
   LIVE_DISCOVERY_POLICY,
   getDiscoveryPolicy,
-} from './policies';
+} from './policies.js';
 
 describe('edition discovery policies', () => {
   it('preserves the current live free-first expansion behaviour', () => {
