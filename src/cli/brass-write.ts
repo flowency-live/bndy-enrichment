@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { BrassCanonicalApi } from '../brass/canonical-api.js';
 import { consolidateBrassBandProjections } from '../brass/consolidate-projections.js';
+import { applyReviewedLocationClaim } from '../brass/reviewed-location-claims.js';
 import type { BrassBandProjectionPackage } from '../brass/projection.js';
 
 interface ResolvedRow {
@@ -73,7 +74,7 @@ async function main() {
 
   const input = JSON.parse(await readFile(inputPath, 'utf8')) as ResolutionFile;
   const rawProjections = (input.rows ?? []).map((row) => row.projection).filter((projection): projection is BrassBandProjectionPackage => Boolean(projection));
-  const consolidated = consolidateBrassBandProjections(rawProjections);
+  const consolidated = consolidateBrassBandProjections(rawProjections).map(applyReviewedLocationClaim);
   const scopeEligible = mapReadyOnly
     ? consolidated.filter((projection) => Boolean(projection.record.domainProfiles.brass.postcode))
     : consolidated;
@@ -93,13 +94,7 @@ async function main() {
 
   for (const projection of projections) {
     if (!projection.publishable) {
-      outcomes.push({
-        proposedId: projection.proposedId,
-        bandName: projection.record.name,
-        mode: commit ? 'commit' : 'plan',
-        status: 'held',
-        message: projection.holdReasons.join(', '),
-      });
+      outcomes.push({ proposedId: projection.proposedId, bandName: projection.record.name, mode: commit ? 'commit' : 'plan', status: 'held', message: projection.holdReasons.join(', ') });
       continue;
     }
 
@@ -129,42 +124,22 @@ async function main() {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       const conflict = message.startsWith('SCOPE_CONFLICT:');
-      outcomes.push({
-        proposedId: projection.proposedId,
-        bandName: projection.record.name,
-        mode: 'commit',
-        status: conflict ? 'conflict' : 'failed',
-        message,
-      });
+      outcomes.push({ proposedId: projection.proposedId, bandName: projection.record.name, mode: 'commit', status: conflict ? 'conflict' : 'failed', message });
       console.error(`${conflict ? 'conflict' : 'failed'} ${projection.record.name}: ${message}`);
     }
 
     await writeFile(outputPath, JSON.stringify({
-      generatedAt: new Date().toISOString(),
-      edition: 'brass',
-      canonicalWrites: true,
-      rawProjectionCount: rawProjections.length,
-      consolidatedProjectionCount: consolidated.length,
-      mapReadyOnly,
-      allowlist: options.allowlist || null,
-      outcomes,
+      generatedAt: new Date().toISOString(), edition: 'brass', canonicalWrites: true,
+      rawProjectionCount: rawProjections.length, consolidatedProjectionCount: consolidated.length,
+      mapReadyOnly, allowlist: options.allowlist || null, outcomes,
     }, null, 2), 'utf8');
   }
 
   await writeFile(outputPath, JSON.stringify({
-    generatedAt: new Date().toISOString(),
-    edition: 'brass',
-    canonicalWrites: commit,
-    input: inputPath,
-    rawProjectionCount: rawProjections.length,
-    consolidatedProjectionCount: consolidated.length,
-    duplicateProjectionCount: rawProjections.length - consolidated.length,
-    mapReadyOnly,
-    allowlist: options.allowlist || null,
-    eligibleProjectionCount: eligible.length,
-    offset,
-    limit,
-    outcomes,
+    generatedAt: new Date().toISOString(), edition: 'brass', canonicalWrites: commit, input: inputPath,
+    rawProjectionCount: rawProjections.length, consolidatedProjectionCount: consolidated.length,
+    duplicateProjectionCount: rawProjections.length - consolidated.length, mapReadyOnly,
+    allowlist: options.allowlist || null, eligibleProjectionCount: eligible.length, offset, limit, outcomes,
   }, null, 2), 'utf8');
 
   const counts = outcomes.reduce<Record<string, number>>((acc, outcome) => {
@@ -172,15 +147,7 @@ async function main() {
     return acc;
   }, {});
   console.log(`Wrote ${outputPath}`);
-  console.log(JSON.stringify({
-    rawProjectionCount: rawProjections.length,
-    consolidatedProjectionCount: consolidated.length,
-    duplicateProjectionCount: rawProjections.length - consolidated.length,
-    mapReadyOnly,
-    allowlist: options.allowlist || null,
-    eligibleProjectionCount: eligible.length,
-    ...counts,
-  }));
+  console.log(JSON.stringify({ rawProjectionCount: rawProjections.length, consolidatedProjectionCount: consolidated.length, duplicateProjectionCount: rawProjections.length - consolidated.length, mapReadyOnly, allowlist: options.allowlist || null, eligibleProjectionCount: eligible.length, ...counts }));
 }
 
 main().catch((error) => {
