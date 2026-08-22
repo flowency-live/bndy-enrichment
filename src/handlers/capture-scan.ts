@@ -21,8 +21,24 @@ function canonicalUrl(url?: string): string | undefined {
   }
 }
 
-function storedImageKey(capture: CaptureRecord): string | undefined {
+/**
+ * Return the immutable object identity for an image Capture.
+ *
+ * Current Capture records store uploaded images in the first-class `media` field.
+ * Older Android captures used rawPayload.imageBucket/imageKey, so keep that as a
+ * backwards-compatible fallback while all clients converge on the same schema.
+ */
+export function storedImageKey(capture: CaptureRecord): string | undefined {
   if (!capture.mimeType?.startsWith('image/')) return undefined;
+
+  if (
+    capture.media?.type === 'image' &&
+    capture.media.bucket?.trim() &&
+    capture.media.key?.trim()
+  ) {
+    return `s3://${capture.media.bucket}/${capture.media.key}`;
+  }
+
   const raw = capture.rawPayload as Record<string, unknown> | undefined;
   const bucket = typeof raw?.imageBucket === 'string' ? raw.imageBucket : undefined;
   const key = typeof raw?.imageKey === 'string' ? raw.imageKey : undefined;
@@ -61,7 +77,7 @@ export const handler: Handler = async () => {
       await addCaptureNote(
         capture.id,
         capture.mimeType?.startsWith('image/')
-          ? 'AWS processor: failed because this image capture has no uploaded image object. Update the Android Capture app and resend.'
+          ? 'AWS processor: failed because this image capture has no uploaded image object.'
           : 'AWS processor: failed because the capture contains no usable public URL or stored image.'
       );
       await updateCaptureStatus(capture.id, 'failed');
