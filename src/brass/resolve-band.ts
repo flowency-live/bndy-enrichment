@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { BrassBandIdentityCandidate } from './types';
+import type { BrassBandIdentityCandidate } from './types.js';
 
 const ResolvedBandSchema = z.object({
   officialName: z.string().min(1),
