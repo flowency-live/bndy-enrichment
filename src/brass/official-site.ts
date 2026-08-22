@@ -22,6 +22,15 @@ function clean(value: unknown): string | undefined {
   return result || undefined;
 }
 
+function normalisePostcode(value: unknown): string | undefined {
+  const cleaned = clean(value)?.toUpperCase();
+  if (!cleaned) return undefined;
+  const match = cleaned.match(UK_POSTCODE);
+  if (!match || match[0].replace(/\s/g, '') !== cleaned.replace(/\s/g, '')) return undefined;
+  const compact = cleaned.replace(/\s+/g, '');
+  return compact.length > 3 ? `${compact.slice(0, -3)} ${compact.slice(-3)}` : cleaned;
+}
+
 function walkJson(node: unknown, out: Record<string, string>[]): void {
   if (!node || typeof node !== 'object') return;
   if (Array.isArray(node)) {
@@ -32,10 +41,12 @@ function walkJson(node: unknown, out: Record<string, string>[]): void {
   if (record.address && typeof record.address === 'object') {
     const address = record.address as Record<string, unknown>;
     const found: Record<string, string> = {};
-    for (const key of ['addressLocality', 'addressRegion', 'postalCode', 'streetAddress']) {
+    for (const key of ['addressLocality', 'addressRegion', 'streetAddress']) {
       const value = clean(address[key]);
       if (value) found[key] = value;
     }
+    const postcode = normalisePostcode(address.postalCode);
+    if (postcode) found.postalCode = postcode;
     if (Object.keys(found).length) out.push(found);
   }
   for (const value of Object.values(record)) walkJson(value, out);
@@ -61,7 +72,13 @@ export function extractLocationFromHtml(html: string, evidenceUrl?: string): Off
     };
   }
 
-  const postcode = decode(html.replace(/<[^>]+>/g, ' ')).match(UK_POSTCODE)?.[0]?.toUpperCase();
+  // Do not let CSS colours, JS bundles or JSON literals masquerade as UK
+  // postcodes. Only inspect human-readable page text after removing scripts/styles.
+  const visibleHtml = html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ');
+  const visibleText = decode(visibleHtml.replace(/<[^>]+>/g, ' '));
+  const postcode = normalisePostcode(visibleText.match(UK_POSTCODE)?.[0]);
   if (postcode) return { postcode, evidenceUrl };
   return null;
 }
