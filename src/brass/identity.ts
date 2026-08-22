@@ -1,4 +1,4 @@
-import type { BrassBandIdentityCandidate, BrassBandObservation } from './types';
+import type { BrassBandIdentityCandidate, BrassBandObservation } from './types.js';
 
 /**
  * Conservative first pass: exact normalised names only.
@@ -51,7 +51,7 @@ export function proposeAliasCandidates(candidates: BrassBandIdentityCandidate[])
       if (!a.size || !b.size) continue;
       const overlap = [...a].filter((token) => b.has(token));
       const score = overlap.length / Math.max(a.size, b.size);
-      const sameRegion = left.regions.some((region) => right.regions.includes(region));
+      const sameRegion = left.regions.some((region: string) => right.regions.includes(region));
       if (score >= 0.6 && sameRegion) {
         proposals.push({
           leftName: left.canonicalName,
