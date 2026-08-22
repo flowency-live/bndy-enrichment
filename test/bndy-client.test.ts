@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { findOrCreateArtist } from '../src/bndy/client.js';
+import { createEvent, findOrCreateArtist } from '../src/bndy/client.js';
 
 describe('findOrCreateArtist', () => {
   afterEach(() => {
@@ -78,5 +78,39 @@ describe('findOrCreateArtist', () => {
       artistId: '13944bfd-89ab-402e-95dc-a371fd78fd2f',
       raw: body,
     });
+  });
+});
+
+describe('createEvent', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete process.env.BNDY_SERVICE_TOKEN;
+  });
+
+  it('defaults unknown admission to non-ticketed', async () => {
+    process.env.BNDY_SERVICE_TOKEN = 'test-service-token';
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      event: { id: 'event-123' },
+    }), {
+      status: 201,
+      headers: { 'content-type': 'application/json' },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createEvent('artist-123', 'venue-123', {
+      artistName: 'Example Artist',
+      venueName: 'Example Venue',
+      town: 'Manchester',
+      date: '2026-09-01',
+      eventUrl: 'https://www.facebook.com/events/123456789/',
+      admission: 'UNKNOWN',
+      cancelled: false,
+      confidence: 0.99,
+      sourceUrls: ['https://www.facebook.com/events/123456789/'],
+    }, 'capture-unknown-admission');
+
+    const [, init] = fetchMock.mock.calls[0];
+    const payload = JSON.parse(String(init?.body));
+    expect(payload.ticketed).toBe(false);
   });
 });
