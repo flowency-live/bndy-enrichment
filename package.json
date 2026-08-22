@@ -18,7 +18,8 @@
     "source:klma": "tsx src/cli/klma-knowledge.ts",
     "sources:seed-wave1": "tsx src/cli/seed-wave1-sources.ts",
     "source:parity": "tsx src/cli/source-parity.ts",
-    "brass:bootstrap": "tsx src/cli/brass-bootstrap.ts"
+    "brass:bootstrap": "tsx src/cli/brass-bootstrap.ts",
+    "brass:resolve": "tsx src/cli/brass-resolve.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
