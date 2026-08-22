@@ -1,5 +1,6 @@
 import type { BrassBandIdentityCandidate } from './types.js';
 import type { ResolvedBrassBand } from './resolve-band.js';
+import { resolveOfficialSiteLocation } from './official-site.js';
 
 export interface BrassBandResultsRecord {
   pageUrl: string;
@@ -109,9 +110,20 @@ export async function resolveViaBrassBandResults(candidate: BrassBandIdentityCan
     const record = parseBrassBandResultsPage(await response.text(), response.url || pageUrl);
     if (!record || !compatible(candidate, record)) continue;
 
+    const siteLocation = record.website ? await resolveOfficialSiteLocation(record.website) : null;
+    const evidenceUrls = [...new Set([
+      record.pageUrl,
+      ...candidate.observations.map((item) => item.sourceUrl),
+      ...(record.website ? [record.website] : []),
+      ...(siteLocation?.evidenceUrl ? [siteLocation.evidenceUrl] : []),
+    ])];
+
     return {
       officialName: record.currentName,
       officialWebsite: record.website,
+      town: siteLocation?.town,
+      county: siteLocation?.county,
+      postcode: siteLocation?.postcode,
       country: 'United Kingdom',
       aliases: record.aliases.map((name) => ({
         name,
@@ -120,8 +132,8 @@ export async function resolveViaBrassBandResults(candidate: BrassBandIdentityCan
         evidenceUrls: [record.pageUrl],
       })),
       identityConfidence: record.website ? 0.98 : 0.94,
-      evidenceUrls: [...new Set([record.pageUrl, ...candidate.observations.map((item) => item.sourceUrl)])],
-      notes: `Resolved deterministically via Brass Band Results${record.region ? ` (${record.region})` : ''}. Section is evidence only and is not projected as permanent Band metadata.`,
+      evidenceUrls,
+      notes: `Resolved deterministically via Brass Band Results${record.region ? ` (${record.region})` : ''}${siteLocation ? '; location clues read from the official site' : ''}. Section is evidence only and is not projected as permanent Band metadata.`,
     };
   }
 
