@@ -41,6 +41,22 @@ function args() {
   return out;
 }
 
+function canonicalNameKey(value: string): string {
+  return value.normalize('NFKC').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+async function readAllowlist(path?: string): Promise<Set<string> | null> {
+  if (!path) return null;
+  const text = await readFile(resolve(process.cwd(), path), 'utf8');
+  const names = text
+    .split(/\r?\n/)
+    .map((line) => line.replace(/#.*$/, '').trim())
+    .filter(Boolean)
+    .map(canonicalNameKey);
+  if (!names.length) throw new Error(`Allowlist ${path} contains no Band names`);
+  return new Set(names);
+}
+
 async function main() {
   const options = args();
   const inputPath = resolve(process.cwd(), options.input || 'brass-resolved-2026.json');
@@ -49,13 +65,28 @@ async function main() {
   const limit = Math.max(1, Number(options.limit || (commit ? 10 : 1000)));
   const offset = Math.max(0, Number(options.offset || 0));
   const mapReadyOnly = options['map-ready-only'] === 'true';
+  const allowlist = await readAllowlist(options.allowlist);
+
+  if (commit && !allowlist) {
+    throw new Error('Production brass writes require --allowlist <file>; bulk commit without an explicit reviewed Band list is disabled');
+  }
 
   const input = JSON.parse(await readFile(inputPath, 'utf8')) as ResolutionFile;
   const rawProjections = (input.rows ?? []).map((row) => row.projection).filter((projection): projection is BrassBandProjectionPackage => Boolean(projection));
   const consolidated = consolidateBrassBandProjections(rawProjections);
-  const eligible = mapReadyOnly
+  const scopeEligible = mapReadyOnly
     ? consolidated.filter((projection) => Boolean(projection.record.domainProfiles.brass.postcode))
     : consolidated;
+  const eligible = allowlist
+    ? scopeEligible.filter((projection) => allowlist.has(canonicalNameKey(projection.record.name)))
+    : scopeEligible;
+
+  if (allowlist) {
+    const found = new Set(eligible.map((projection) => canonicalNameKey(projection.record.name)));
+    const missing = [...allowlist].filter((name) => !found.has(name));
+    if (missing.length) throw new Error(`Allowlisted Bands not found in eligible projections: ${missing.join(', ')}`);
+  }
+
   const projections = eligible.slice(offset, offset + limit);
   const api = commit ? new BrassCanonicalApi() : undefined;
   const outcomes: WriteOutcome[] = [];
@@ -115,6 +146,7 @@ async function main() {
       rawProjectionCount: rawProjections.length,
       consolidatedProjectionCount: consolidated.length,
       mapReadyOnly,
+      allowlist: options.allowlist || null,
       outcomes,
     }, null, 2), 'utf8');
   }
@@ -128,6 +160,7 @@ async function main() {
     consolidatedProjectionCount: consolidated.length,
     duplicateProjectionCount: rawProjections.length - consolidated.length,
     mapReadyOnly,
+    allowlist: options.allowlist || null,
     eligibleProjectionCount: eligible.length,
     offset,
     limit,
@@ -144,6 +177,7 @@ async function main() {
     consolidatedProjectionCount: consolidated.length,
     duplicateProjectionCount: rawProjections.length - consolidated.length,
     mapReadyOnly,
+    allowlist: options.allowlist || null,
     eligibleProjectionCount: eligible.length,
     ...counts,
   }));
