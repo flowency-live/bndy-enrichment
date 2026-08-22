@@ -1,5 +1,6 @@
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import type { BrassBandProjectionPackage } from './projection.js';
+import { geocodeUkPostcode } from './postcode-geocode.js';
 
 export interface CanonicalBandResult {
   id: string;
@@ -9,6 +10,8 @@ export interface CanonicalBandResult {
   discoveryScopes?: string[];
   performerKind?: string;
   matchedBy?: string;
+  locationLat?: number;
+  locationLng?: number;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -21,6 +24,10 @@ function stringField(value: unknown): string | undefined {
 
 function stringArray(value: unknown): string[] | undefined {
   return Array.isArray(value) && value.every((item) => typeof item === 'string') ? value as string[] : undefined;
+}
+
+function numberField(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 export class BrassCanonicalApi {
@@ -78,10 +85,15 @@ export class BrassCanonicalApi {
       throw new Error(`Band ${projection.proposedId} must have brass-only discovery scope`);
     }
 
+    const postcode = projection.record.domainProfiles.brass.postcode;
+    const geocode = postcode ? await geocodeUkPostcode(postcode) : null;
+    const locationType = geocode ? 'city' : 'region';
+
     const out = await this.post('/api/artists/find-or-create/mcp', {
       name: projection.record.name,
       location: projection.record.location,
-      locationType: 'region',
+      locationType,
+      ...(geocode ? { locationLat: geocode.latitude, locationLng: geocode.longitude } : {}),
       canCreate: true,
       confirmNew: true,
       artistType: projection.record.artist_type,
@@ -94,7 +106,17 @@ export class BrassCanonicalApi {
       publicationScopes: projection.record.publicationScopes,
       discoveryScopes: projection.record.discoveryScopes,
       names: projection.record.names,
-      domainProfiles: projection.record.domainProfiles,
+      domainProfiles: {
+        ...projection.record.domainProfiles,
+        brass: {
+          ...projection.record.domainProfiles.brass,
+          ...(geocode ? {
+            postcode: geocode.postcode,
+            geocodeSource: 'postcodes.io',
+            geocodeEvidenceUrl: geocode.evidenceUrl,
+          } : {}),
+        },
+      },
       acts: projection.record.acts,
     });
 
@@ -123,6 +145,8 @@ export class BrassCanonicalApi {
       discoveryScopes,
       performerKind,
       matchedBy: stringField(out.body.matchedBy),
+      locationLat: numberField(artist.locationLat) ?? geocode?.latitude,
+      locationLng: numberField(artist.locationLng) ?? geocode?.longitude,
     };
   }
 }
