@@ -47,10 +47,11 @@ export function splitBandAndConductor(raw: string): { bandName: string; conducto
   const match = cleaned.match(/^(.*)\s+\(([^()]*)\)$/);
   if (!match) return { bandName: cleaned };
   const bandName = match[1].trim();
-  const conductor = match[2].trim();
+  const suffix = match[2].trim();
   if (!bandName) return { bandName: cleaned };
-  if (!conductor || /^(?:tbc|tba|n\/a)$/i.test(conductor)) return { bandName };
-  return { bandName, conductorName: conductor };
+  // Listing metadata, not a conductor.
+  if (/^(?:pre[- ]?qualified|qualified|withdrawn|tbc|tba|n\/a)$/i.test(suffix)) return { bandName };
+  return { bandName, conductorName: suffix || undefined };
 }
 
 function numberedEntry(line: string): string | null {
@@ -58,6 +59,37 @@ function numberedEntry(line: string): string | null {
   if (match) return match[1].trim();
   const table = line.match(/^\s*\d+\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)(?:\s*\||$)/);
   if (table) return `${table[1].trim()} (${table[2].trim()})`;
+  return null;
+}
+
+function isMetadataOrNarrative(line: string): boolean {
+  if (line.length > 150) return true;
+  if (/^(?:test piece|adjudicators?|start|tickets?|venue|schedule|qualifiers?|competing bands|become a supporter|advertisement|saturday|sunday|monday|tuesday|wednesday|thursday|friday)\b/i.test(line)) return true;
+  if (/^sections?\s+\d/i.test(line)) return true;
+  if (/^royal albert hall\b|^york barbican\b|^upton vale baptist church\b/i.test(line)) return true;
+  if (/^\d{1,2}(?:st|nd|rd|th)?\s+[A-Z][a-z]+(?:\s+\d{4})?$/i.test(line)) return true;
+  if (/\b(?:will|there|this year|takes place|held at|qualif(?:y|ication)|invitation|defending champion)\b/i.test(line) && /[.!?]$/.test(line)) return true;
+  return false;
+}
+
+/**
+ * 4barsrest line-up articles frequently render each band as a bare text line
+ * rather than a numbered result. We only accept these while inside a detected
+ * section and after aggressive metadata/narrative rejection.
+ */
+function sectionListingEntry(line: string, source: BrassSource, section?: string): string | null {
+  if (!section || isMetadataOrNarrative(line)) return null;
+  if (/^\d/.test(line)) return null;
+  if (/^[A-Z][a-z]+,\s+\d{2}\s+[A-Z][a-z]+\s+\d{4}$/.test(line)) return null;
+
+  // A conductor-form listing is the strongest unnumbered shape.
+  if (/^.{2,120}\s+\([^()]+\)$/.test(line)) return line;
+
+  // National Finals and similar official lists contain bare band names.
+  // Keep this to contest listings only and reject punctuation-heavy prose.
+  if (source.kind === 'contest_listing' && line.length <= 80 && !/[.:;!?]/.test(line)) {
+    return line;
+  }
   return null;
 }
 
@@ -70,10 +102,10 @@ export function parse4BarsRestBandObservations(content: string, source: BrassSou
   for (const line of lines) {
     const nextSection = detectSection(line);
     if (nextSection) { section = nextSection; continue; }
-    const entry = numberedEntry(line);
+    const entry = numberedEntry(line) ?? sectionListingEntry(line, source, section);
     if (!entry) continue;
     const { bandName, conductorName } = splitBandAndConductor(entry);
-    if (bandName.length < 2 || bandName.length > 140) continue;
+    if (bandName.length < 2 || bandName.length > 140 || isMetadataOrNarrative(bandName)) continue;
     observations.push({
       observedName: bandName,
       normalisedName: normaliseBandName(bandName),
