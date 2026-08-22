@@ -11,6 +11,14 @@ export interface BrassBandResultsRecord {
   section?: string;
 }
 
+export interface BrassBandResultsIndexRow {
+  name: string;
+  pageUrl: string;
+  region?: string;
+}
+
+let indexPromise: Promise<BrassBandResultsIndexRow[]> | undefined;
+
 function decodeEntities(input: string): string {
   return input
     .replace(/&amp;/gi, '&')
@@ -22,6 +30,20 @@ function decodeEntities(input: string): string {
 
 function stripTags(input: string): string {
   return decodeEntities(input.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+}
+
+async function fetchHtml(url: string, timeoutMs = 12_000): Promise<{ url: string; html: string } | null> {
+  try {
+    const response = await fetch(url, {
+      headers: { 'user-agent': 'bndy-brass-research/1.0 (+https://bndy.live)', accept: 'text/html' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!response.ok) return null;
+    return { url: response.url || url, html: await response.text() };
+  } catch {
+    return null;
+  }
 }
 
 export function slugCandidates(name: string): string[] {
@@ -70,6 +92,27 @@ export function parseBrassBandResultsPage(html: string, pageUrl: string): BrassB
   };
 }
 
+export function parseBrassBandResultsIndex(html: string, pageUrl = 'https://www.brassbandresults.co.uk/bands'): BrassBandResultsIndexRow[] {
+  const origin = new URL(pageUrl).origin;
+  const rows: BrassBandResultsIndexRow[] = [];
+  for (const rowMatch of html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)) {
+    const row = rowMatch[1];
+    const bandMatch = row.match(/href=["'](\/bands\/[^"'#?]+)["'][^>]*>([\s\S]*?)<\/a>/i);
+    if (!bandMatch) continue;
+    const name = stripTags(bandMatch[2]);
+    if (!name) continue;
+
+    const cells = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((match) => stripTags(match[1]));
+    const region = cells.length >= 2 ? cells[1] : undefined;
+    rows.push({
+      name,
+      pageUrl: new URL(bandMatch[1], origin).toString(),
+      region,
+    });
+  }
+  return rows;
+}
+
 function normaliseName(value: string): string {
   return value
     .normalize('NFKD')
@@ -91,23 +134,59 @@ function compatible(candidate: BrassBandIdentityCandidate, record: BrassBandResu
   return recordNames.some((name) => observed.has(name));
 }
 
-export async function resolveViaBrassBandResults(candidate: BrassBandIdentityCandidate): Promise<ResolvedBrassBand | null> {
+function candidateRegions(candidate: BrassBandIdentityCandidate): Set<string> {
+  return new Set(candidate.observations.map((item) => String(item.region ?? '').toLowerCase()).filter(Boolean));
+}
+
+function regionCompatible(candidate: BrassBandIdentityCandidate, row: BrassBandResultsIndexRow): boolean {
+  const regions = candidateRegions(candidate);
+  if (regions.size === 0 || !row.region) return true;
+  const rowRegion = row.region.toLowerCase();
+  return [...regions].some((region) => rowRegion.includes(region) || region.includes(rowRegion));
+}
+
+async function loadIndex(): Promise<BrassBandResultsIndexRow[]> {
+  if (!indexPromise) {
+    indexPromise = (async () => {
+      const paths = ['', ...'BCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''), '0-9'];
+      const rows: BrassBandResultsIndexRow[] = [];
+      for (let i = 0; i < paths.length; i += 4) {
+        const batch = paths.slice(i, i + 4);
+        const pages = await Promise.all(batch.map((letter) => fetchHtml(`https://www.brassbandresults.co.uk/bands${letter ? `/${letter}` : ''}`, 15_000)));
+        for (const page of pages) {
+          if (page) rows.push(...parseBrassBandResultsIndex(page.html, page.url));
+        }
+      }
+      return rows;
+    })();
+  }
+  return indexPromise;
+}
+
+async function candidatePageUrls(candidate: BrassBandIdentityCandidate): Promise<string[]> {
   const names = [...new Set([candidate.canonicalName, ...candidate.aliases, ...candidate.observations.map((item) => item.observedName)])];
-  const urls = [...new Set(names.flatMap((name) => slugCandidates(name)).map((slug) => `https://www.brassbandresults.co.uk/bands/${slug}/`))];
+  const wanted = new Set(names.map(normaliseName).filter(Boolean));
+  const index = await loadIndex();
+  const indexed = index.filter((row) => wanted.has(normaliseName(row.name)) && regionCompatible(candidate, row));
+
+  if (indexed.length === 1) return [indexed[0].pageUrl];
+  if (indexed.length > 1) {
+    const exact = indexed.filter((row) => names.some((name) => row.name.toLowerCase() === name.toLowerCase()));
+    if (exact.length === 1) return [exact[0].pageUrl];
+    return [];
+  }
+
+  // Fallback for a historic/sponsored name that only appears in a Band's alias list.
+  return [...new Set(names.flatMap((name) => slugCandidates(name)).map((slug) => `https://www.brassbandresults.co.uk/bands/${slug}`))].slice(0, 4);
+}
+
+export async function resolveViaBrassBandResults(candidate: BrassBandIdentityCandidate): Promise<ResolvedBrassBand | null> {
+  const urls = await candidatePageUrls(candidate);
 
   for (const pageUrl of urls) {
-    let response: Response;
-    try {
-      response = await fetch(pageUrl, {
-        headers: { 'user-agent': 'bndy-brass-research/1.0 (+https://bndy.live)', accept: 'text/html' },
-        redirect: 'follow',
-        signal: AbortSignal.timeout(12_000),
-      });
-    } catch {
-      continue;
-    }
-    if (!response.ok) continue;
-    const record = parseBrassBandResultsPage(await response.text(), response.url || pageUrl);
+    const page = await fetchHtml(pageUrl);
+    if (!page) continue;
+    const record = parseBrassBandResultsPage(page.html, page.url);
     if (!record || !compatible(candidate, record)) continue;
 
     const siteLocation = record.website ? await resolveOfficialSiteLocation(record.website) : null;
