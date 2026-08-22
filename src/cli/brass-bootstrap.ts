@@ -5,7 +5,19 @@ import { fetchAndParse4BarsRestSource } from '../brass/parse-4barsrest.js';
 import { groupExactIdentityCandidates, proposeAliasCandidates } from '../brass/identity.js';
 import type { BrassBandObservation } from '../brass/types.js';
 
+function args() {
+  const values = process.argv.slice(2);
+  const out: Record<string, string> = {};
+  for (let i = 0; i < values.length; i += 1) {
+    if (!values[i].startsWith('--')) continue;
+    out[values[i].slice(2)] = values[i + 1] ?? '';
+    i += 1;
+  }
+  return out;
+}
+
 async function main() {
+  const options = args();
   const observations: BrassBandObservation[] = [];
   const errors: Array<{ sourceId: string; error: string }> = [];
 
@@ -38,7 +50,7 @@ async function main() {
     aliasProposals,
   };
 
-  const outputPath = resolve(process.cwd(), process.argv[2] || 'brass-bootstrap-2026.json');
+  const outputPath = resolve(process.cwd(), options.out || 'brass-bootstrap-2026.json');
   await writeFile(outputPath, JSON.stringify(output, null, 2), 'utf8');
   console.log(`Wrote ${outputPath}`);
 
