@@ -58,6 +58,7 @@ export interface BrassBandProjectionPackage {
   };
   publishable: boolean;
   holdReasons: string[];
+  enrichmentFlags: string[];
 }
 
 export interface ProductionInput {
@@ -79,6 +80,16 @@ function actId(bandName: string, productionName: string): string {
 
 function unique(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function fallbackRegion(candidate: BrassBandIdentityCandidate): string | undefined {
+  const counts = new Map<string, number>();
+  for (const observation of candidate.observations) {
+    const region = observation.region?.trim();
+    if (!region) continue;
+    counts.set(region, (counts.get(region) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
 }
 
 export function buildBrassBandProjection(
@@ -115,13 +126,24 @@ export function buildBrassBandProjection(
     ...aliases.map((alias) => alias.name),
   ]).filter((name) => name.toLowerCase() !== resolved.officialName.toLowerCase());
 
+  // Hold reasons are identity-safety failures: these block a canonical Band.
   const holdReasons: string[] = [];
   if (resolved.identityConfidence < 0.9) holdReasons.push('identity_confidence_below_0.90');
-  if (!resolved.officialWebsite) holdReasons.push('official_website_not_resolved');
-  if (!resolved.town && !resolved.postcode) holdReasons.push('band_location_not_resolved');
   if (sourceUrls.length < 2) holdReasons.push('insufficient_identity_evidence');
 
-  const location = [resolved.town, resolved.county].filter(Boolean).join(', ') || resolved.postcode || undefined;
+  // Enrichment gaps do NOT make an otherwise well-evidenced current Band cease
+  // to exist. They mark the record for follow-up and determine map readiness.
+  const enrichmentFlags: string[] = [];
+  if (!resolved.officialWebsite) enrichmentFlags.push('official_website_not_resolved');
+  if (!resolved.town && !resolved.postcode) enrichmentFlags.push('precise_band_location_not_resolved');
+
+  const region = fallbackRegion(candidate);
+  const location = [resolved.town, resolved.county].filter(Boolean).join(', ')
+    || resolved.postcode
+    || region
+    || undefined;
+  if (!location) holdReasons.push('identity_location_unresolvable');
+
   const acts: BrassActProjection[] = productions.map((production, index) => ({
     id: actId(resolved.officialName, production.name),
     name: production.name.trim(),
@@ -163,7 +185,7 @@ export function buildBrassBandProjection(
       },
       source: 'bndy-brass-intelligence',
       ai_created: true,
-      needs_review: holdReasons.length > 0,
+      needs_review: holdReasons.length > 0 || enrichmentFlags.length > 0,
     },
     provenance: {
       identityConfidence: resolved.identityConfidence,
@@ -173,5 +195,6 @@ export function buildBrassBandProjection(
     },
     publishable: holdReasons.length === 0,
     holdReasons,
+    enrichmentFlags,
   };
 }
