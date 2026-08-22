@@ -38,8 +38,8 @@ describe('edition-aware event processing', () => {
     expect(result.publishable).toHaveLength(2);
     expect(result.expansionEligible).toHaveLength(2);
     const paid = result.expansionEligible.find((item) => item.admission.status === 'PAID_CONFIRMED');
-    expect(paid?.processing.expandGraph).toBe(true);
-    expect(paid?.processing.enrichEntities).toBe(true);
+    expect(paid?.processing?.expandGraph).toBe(true);
+    expect(paid?.processing?.enrichEntities).toBe(true);
   });
 
   it('continues to hold unresolved admission in brass', () => {
