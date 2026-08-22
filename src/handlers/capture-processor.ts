@@ -1,9 +1,10 @@
 import type { SQSBatchResponse, SQSHandler } from 'aws-lambda';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { addCaptureNote, getCapture, updateCaptureStatus } from '../capture/client.js';
-import { discoverCapture } from '../capture/discover.js';
+import { discoverCapture, inspectPublicPage } from '../capture/discover.js';
+import { prepareCaptureForDiscovery } from '../capture/prepare-discovery.js';
 import { findOrCreateArtist, findOrCreateVenue, createEvent, getArtist, patchMissingArtistFields } from '../bndy/client.js';
-import type { CaptureArtist, CaptureEvent } from '../capture/schema.js';
+import type { CaptureArtist, CaptureEvent, CaptureRecord } from '../capture/schema.js';
 
 const secrets = new SecretsManagerClient({});
 let cachedGeminiKey: string | undefined;
@@ -46,6 +47,14 @@ function processableClassification(value: string): value is 'artist' | 'event' {
   return value === 'artist' || value === 'event';
 }
 
+async function prepareDiscoveryCapture(capture: CaptureRecord): Promise<CaptureRecord> {
+  // Modern Facebook Android shares are frequently opaque /share/<token>/ transport URLs.
+  // Resolve that public redirect first so discoverCapture sees /events/<id>/ and therefore
+  // uses its exact-event prompt instead of the generic artist/profile discovery path.
+  const inspection = await inspectPublicPage(capture.sharedUrl);
+  return prepareCaptureForDiscovery(capture, inspection?.finalUrl);
+}
+
 async function processCapture(captureId: string): Promise<void> {
   const capture = await getCapture(captureId);
   if (capture.status !== 'processing' && capture.status !== 'unprocessed') {
@@ -53,7 +62,8 @@ async function processCapture(captureId: string): Promise<void> {
     return;
   }
 
-  const discovery = await discoverCapture(capture, {
+  const discoveryCapture = await prepareDiscoveryCapture(capture);
+  const discovery = await discoverCapture(discoveryCapture, {
     apiKey: await geminiKey(),
     model: process.env.GEMINI_MODEL,
     horizonDays: Number(process.env.SEARCH_HORIZON_DAYS ?? 90),
@@ -77,6 +87,25 @@ async function processCapture(captureId: string): Promise<void> {
     );
     await updateCaptureStatus(captureId, 'failed');
     return;
+  }
+
+  if (discovery.classification === 'event') {
+    const event = discovery.events[0];
+    if (!event.cancelled && !event.startTime) {
+      // The canonical community event API currently requires startTime. Do not silently
+      // mark a direct user submission processed when the model missed it: retry the whole
+      // exact-event extraction instead. Artist/profile multi-event discovery remains best-effort.
+      throw new Error(`Direct event capture ${captureId} resolved without a start time; retry exact-event extraction`);
+    }
+
+    // When the transport URL was deterministically resolved to a canonical Facebook Event,
+    // keep that object identity even if search grounding returns a noisier URL variant.
+    if (discoveryCapture.sharedUrl?.includes('facebook.com/events/')) {
+      discovery.canonicalUrl = discoveryCapture.sharedUrl;
+      event.eventUrl = discoveryCapture.sharedUrl;
+      if (!event.sourceUrls.includes(discoveryCapture.sharedUrl)) event.sourceUrls.unshift(discoveryCapture.sharedUrl);
+      if (!discovery.evidenceUrls.includes(discoveryCapture.sharedUrl)) discovery.evidenceUrls.unshift(discoveryCapture.sharedUrl);
+    }
   }
 
   const missing = validateArtistForCreation(discovery.artist);
@@ -142,7 +171,13 @@ async function processCapture(captureId: string): Promise<void> {
         `${result.created ? 'created' : 'existing duplicate'} ${result.id}${venue.isNew ? ' | venue newly created' : ' | venue matched'}`
       );
     } catch (error) {
-      eventLines.push(`${event.date} | ${event.venueName}: skipped - ${error instanceof Error ? error.message : String(error)}`);
+      const message = error instanceof Error ? error.message : String(error);
+      if (discovery.classification === 'event') {
+        // A direct share represents one user-requested event. Never swallow a projection
+        // failure and mark it processed: let SQS retry and eventually surface a failed capture.
+        throw new Error(`Direct event projection failed for ${event.date} ${event.venueName}: ${message}`);
+      }
+      eventLines.push(`${event.date} | ${event.venueName}: skipped - ${message}`);
     }
   }
 
