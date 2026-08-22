@@ -53,12 +53,14 @@ jobs:
         run: npm run brass:resolve -- --input brass-bootstrap-2026.json --out brass-resolved-2026.json --limit 1000 --concurrency 8 --gemini-fallback false
 
       - name: Summarise
+        if: always()
         shell: bash
         run: |
           node - <<'NODE'
           const fs = require('fs');
-          const boot = JSON.parse(fs.readFileSync('brass-bootstrap-2026.json','utf8'));
-          const resolved = JSON.parse(fs.readFileSync('brass-resolved-2026.json','utf8'));
+          const read = (path, fallback) => fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8')) : fallback;
+          const boot = read('brass-bootstrap-2026.json', {});
+          const resolved = read('brass-resolved-2026.json', { rows: [] });
           const rows = resolved.rows || [];
           const summary = {
             generatedAt: new Date().toISOString(),
@@ -71,12 +73,15 @@ jobs:
             held: rows.filter(r => r.projection && !r.projection.publishable).length,
             unresolved: rows.filter(r => r.error).length,
             canonicalWrites: false,
+            bootstrapFilePresent: fs.existsSync('brass-bootstrap-2026.json'),
+            resolvedFilePresent: fs.existsSync('brass-resolved-2026.json'),
           };
           fs.writeFileSync('brass-free-bootstrap-summary.json', JSON.stringify(summary, null, 2));
           console.log(summary);
           NODE
 
       - name: Upload evidence bundle
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: brass-free-bootstrap-2026
@@ -84,4 +89,5 @@ jobs:
             brass-bootstrap-2026.json
             brass-resolved-2026.json
             brass-free-bootstrap-summary.json
+          if-no-files-found: warn
           retention-days: 14
