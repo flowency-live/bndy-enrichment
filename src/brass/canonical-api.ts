@@ -1,0 +1,264 @@
+import crypto from 'node:crypto';
+import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import type { EventCandidate } from '../domain/schema.js';
+import type { BrassBandProjectionPackage } from './projection.js';
+import { geocodeUkPostcode } from './postcode-geocode.js';
+
+export interface CanonicalBandResult {
+  id: string;
+  name: string;
+  action: 'created' | 'matched';
+  publicationScopes?: string[];
+  discoveryScopes?: string[];
+  performerKind?: string;
+  matchedBy?: string;
+  locationLat?: number;
+  locationLng?: number;
+}
+
+export interface CanonicalVenueResult {
+  id: string;
+  name: string;
+  action: 'created' | 'matched';
+  publicationScopes?: string[];
+  discoveryScopes?: string[];
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface CanonicalConcertResult {
+  id: string;
+  created: boolean;
+  duplicate: boolean;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function stringField(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value : undefined;
+}
+
+function stringArray(value: unknown): string[] | undefined {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string') ? value as string[] : undefined;
+}
+
+function numberField(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+function stableEventExternalId(candidate: EventCandidate, artistId: string): string {
+  return crypto.createHash('sha1').update([
+    artistId,
+    candidate.venueName.toLowerCase(),
+    candidate.town?.toLowerCase() ?? '',
+    candidate.eventDate,
+    candidate.startTime ?? '',
+    candidate.eventUrl ?? candidate.sourceUrls[0] ?? '',
+  ].join('\u001f')).digest('hex');
+}
+
+export class BrassCanonicalApi {
+  private readonly secrets = new SecretsManagerClient({ region: process.env.AWS_REGION ?? 'eu-west-2' });
+  private cachedToken?: string;
+
+  constructor(
+    private readonly apiBase = (process.env.BNDY_API_BASE ?? 'https://api.bndy.co.uk').replace(/\/$/, ''),
+    private readonly fetchImpl: typeof fetch = fetch,
+  ) {}
+
+  private async token(): Promise<string> {
+    if (this.cachedToken) return this.cachedToken;
+    if (process.env.BNDY_SERVICE_TOKEN) {
+      this.cachedToken = process.env.BNDY_SERVICE_TOKEN;
+      return this.cachedToken;
+    }
+
+    const secretName = process.env.BNDY_SERVICE_SECRET_NAME ?? 'bndy/mcp-service';
+    const output = await this.secrets.send(new GetSecretValueCommand({ SecretId: secretName }));
+    if (!output.SecretString) throw new Error(`BNDY service secret ${secretName} has no SecretString`);
+    const parsed = asRecord(JSON.parse(output.SecretString));
+    const token = stringField(parsed.token) ?? stringField(parsed.MCP_SERVICE_TOKEN);
+    if (!token) throw new Error(`BNDY service secret ${secretName} must contain token`);
+    this.cachedToken = token;
+    return token;
+  }
+
+  private async post(path: string, payload: Record<string, unknown>, allowedStatuses: number[] = []): Promise<{ status: number; body: Record<string, unknown> }> {
+    const response = await this.fetchImpl(`${this.apiBase}${path}`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${await this.token()}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    const text = await response.text();
+    let body: unknown = {};
+    try { body = text ? JSON.parse(text) : {}; } catch { body = { raw: text }; }
+    const record = asRecord(body);
+    if (!response.ok && !allowedStatuses.includes(response.status)) {
+      throw new Error(`BNDY API ${response.status} ${path}: ${JSON.stringify(record)}`);
+    }
+    return { status: response.status, body: record };
+  }
+
+  async ensureBand(projection: BrassBandProjectionPackage): Promise<CanonicalBandResult> {
+    if (!projection.publishable) throw new Error(`Refusing non-publishable projection ${projection.proposedId}`);
+    if (projection.edition !== 'brass') throw new Error(`Refusing non-brass projection ${projection.proposedId}`);
+    if (projection.record.publicationScopes.length !== 1 || projection.record.publicationScopes[0] !== 'brass') {
+      throw new Error(`Band ${projection.proposedId} must be brass-only at canonical creation`);
+    }
+    if (projection.record.discoveryScopes.length !== 1 || projection.record.discoveryScopes[0] !== 'brass') {
+      throw new Error(`Band ${projection.proposedId} must have brass-only discovery scope`);
+    }
+
+    const postcode = projection.record.domainProfiles.brass.postcode;
+    const geocode = postcode ? await geocodeUkPostcode(postcode) : null;
+    const locationType = geocode ? 'city' : 'region';
+
+    const out = await this.post('/api/artists/find-or-create/mcp', {
+      name: projection.record.name,
+      location: projection.record.location,
+      locationType,
+      ...(geocode ? { locationLat: geocode.latitude, locationLng: geocode.longitude } : {}),
+      canCreate: true,
+      confirmNew: true,
+      artistType: projection.record.artist_type,
+      websiteUrl: projection.record.websiteUrl,
+      nameVariants: projection.record.name_variants,
+      externalIds: [{ source: 'bndy-brass-intelligence', id: projection.proposedId }],
+      verifiedSourceName: projection.record.name,
+      bio: '',
+      performerKind: projection.record.performerKind,
+      publicationScopes: projection.record.publicationScopes,
+      discoveryScopes: projection.record.discoveryScopes,
+      names: projection.record.names,
+      domainProfiles: {
+        ...projection.record.domainProfiles,
+        brass: {
+          ...projection.record.domainProfiles.brass,
+          ...(geocode ? {
+            postcode: geocode.postcode,
+            geocodeSource: 'postcodes.io',
+            geocodeEvidenceUrl: geocode.evidenceUrl,
+          } : {}),
+        },
+      },
+      acts: projection.record.acts,
+    });
+
+    const artist = asRecord(out.body.artist);
+    const id = stringField(artist.id) ?? stringField(out.body.existingArtistId);
+    if (!id) throw new Error(`Artist resolution returned no ID: ${JSON.stringify(out.body)}`);
+
+    const actionRaw = stringField(out.body.action);
+    const action: 'created' | 'matched' = actionRaw === 'created' || out.status === 201 ? 'created' : 'matched';
+    const publicationScopes = stringArray(artist.publicationScopes) ?? stringArray(out.body.publicationScopes);
+    const discoveryScopes = stringArray(artist.discoveryScopes) ?? stringArray(out.body.discoveryScopes);
+    const performerKind = stringField(artist.performerKind) ?? stringField(out.body.performerKind);
+
+    if (action === 'matched' && !(publicationScopes ?? []).includes('brass')) {
+      throw new Error(`SCOPE_CONFLICT:${id}:${projection.record.name}:matched canonical Artist is not brass-scoped`);
+    }
+    if (action === 'created' && !(publicationScopes ?? []).includes('brass')) {
+      throw new Error(`ATOMIC_SCOPE_FAILURE:${id}:${projection.record.name}:created Artist did not return brass publication scope`);
+    }
+
+    return {
+      id,
+      name: stringField(artist.name) ?? projection.record.name,
+      action,
+      publicationScopes,
+      discoveryScopes,
+      performerKind,
+      matchedBy: stringField(out.body.matchedBy),
+      locationLat: numberField(artist.locationLat) ?? geocode?.latitude,
+      locationLng: numberField(artist.locationLng) ?? geocode?.longitude,
+    };
+  }
+
+  async ensureVenue(candidate: EventCandidate): Promise<CanonicalVenueResult> {
+    if (!candidate.venueName || !candidate.town) throw new Error('Venue name and town are required for canonical venue resolution');
+
+    // Venue type is intentionally omitted unless the evidence actually establishes
+    // it. Scoped creation must not turn an unknown hall/church/theatre into a
+    // guessed concert_hall merely to satisfy a taxonomy field.
+    const out = await this.post('/api/venues/find-or-create/mcp', {
+      name: candidate.venueName,
+      city: candidate.town,
+      publicationScopes: ['brass'],
+      discoveryScopes: [],
+      externalIds: [{
+        source: 'bndy-brass-intelligence',
+        id: `event-venue:${candidate.venueName.toLowerCase()}:${candidate.town.toLowerCase()}`,
+      }],
+    });
+
+    const venue = asRecord(out.body.venue ?? out.body);
+    const id = stringField(venue.id) ?? stringField(out.body.existingVenueId);
+    if (!id) throw new Error(`Venue resolution returned no ID: ${JSON.stringify(out.body)}`);
+
+    const actionRaw = stringField(out.body.action);
+    const action: 'created' | 'matched' = actionRaw === 'created' || out.status === 201 || out.body.isNew === true ? 'created' : 'matched';
+    const publicationScopes = stringArray(venue.publicationScopes) ?? stringArray(out.body.publicationScopes);
+    const discoveryScopes = stringArray(venue.discoveryScopes) ?? stringArray(out.body.discoveryScopes);
+
+    // Existing venues may legitimately be live-only canonical places. They are
+    // safe to reuse as the location of a brass Event without widening their
+    // browse/discovery scopes. Only NEW venues must prove brass-safe creation.
+    if (action === 'created' && !(publicationScopes ?? []).includes('brass')) {
+      throw new Error(`ATOMIC_SCOPE_FAILURE:${id}:${candidate.venueName}:created Venue did not return brass publication scope`);
+    }
+    if (action === 'created' && (discoveryScopes ?? []).length !== 0) {
+      throw new Error(`VENUE_DISCOVERY_SCOPE_FAILURE:${id}:${candidate.venueName}:new brass Venue must have empty discovery scopes`);
+    }
+
+    return {
+      id,
+      name: stringField(venue.name) ?? candidate.venueName,
+      action,
+      publicationScopes,
+      discoveryScopes,
+      latitude: numberField(venue.latitude) ?? numberField(asRecord(venue.location).lat),
+      longitude: numberField(venue.longitude) ?? numberField(asRecord(venue.location).lng),
+    };
+  }
+
+  async ensureConcert(candidate: EventCandidate, artistId: string, venueId: string): Promise<CanonicalConcertResult> {
+    const externalId = stableEventExternalId(candidate, artistId);
+    const payload: Record<string, unknown> = {
+      artistId,
+      venueId,
+      date: candidate.eventDate,
+      ...(candidate.startTime ? { startTime: candidate.startTime } : {}),
+      isPublic: true,
+      source: 'bndy-brass-intelligence',
+      externalIds: [{ source: 'bndy-brass-intelligence', id: externalId }],
+      publicationScopes: ['brass'],
+      eventKind: 'concert',
+      ...(candidate.notes ? { title: candidate.notes } : {}),
+      ...(candidate.eventUrl ? { eventUrl: candidate.eventUrl } : {}),
+      ...(candidate.ticketing.ticketUrl ? { ticketUrl: candidate.ticketing.ticketUrl } : {}),
+      ...(candidate.admission.priceText ? { price: candidate.admission.priceText } : {}),
+      ticketed: candidate.admission.status === 'PAID_CONFIRMED',
+    };
+
+    const out = await this.post('/api/events/community/mcp', payload, [409]);
+    if (out.status === 409) {
+      const id = stringField(out.body.existingEventId);
+      if (!id) throw new Error(`Duplicate Concert response has no existingEventId: ${JSON.stringify(out.body)}`);
+      return { id, created: false, duplicate: true };
+    }
+
+    const event = asRecord(out.body.event);
+    const id = stringField(event.id) ?? stringField(out.body.id);
+    if (!id) throw new Error(`Concert create returned no ID: ${JSON.stringify(out.body)}`);
+    const scopes = stringArray(event.publicationScopes) ?? stringArray(out.body.publicationScopes);
+    if (!(scopes ?? []).includes('brass')) {
+      throw new Error(`ATOMIC_SCOPE_FAILURE:${id}:Concert did not return brass publication scope`);
+    }
+    return { id, created: true, duplicate: false };
+  }
+}

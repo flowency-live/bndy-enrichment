@@ -1,0 +1,102 @@
+name: brass free bootstrap
+
+on:
+  push:
+    branches:
+      - feature/brass-edition-foundation
+    paths:
+      - '.github/workflows/brass-free-bootstrap.yml'
+      - 'src/brass/**'
+      - 'src/cli/brass-*.ts'
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/brass-free-bootstrap.yml'
+      - 'src/brass/**'
+      - 'src/cli/brass-*.ts'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+concurrency:
+  group: brass-free-bootstrap-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm install
+
+      - name: Verify
+        run: npm run check
+
+      - name: Harvest 2026 contesting bands
+        run: npm run brass:bootstrap -- --out brass-bootstrap-2026.json
+
+      - name: Resolve identities without paid AI
+        run: npm run brass:resolve -- --input brass-bootstrap-2026.json --out brass-resolved-2026.json --limit 1000 --concurrency 8 --gemini-fallback false
+
+      - name: Plan canonical Band writes
+        run: npm run brass:write -- --input brass-resolved-2026.json --out brass-write-plan-2026.json --limit 1000
+
+      - name: Summarise
+        if: always()
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const read = (path, fallback) => fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8')) : fallback;
+          const boot = read('brass-bootstrap-2026.json', {});
+          const resolved = read('brass-resolved-2026.json', { rows: [] });
+          const plan = read('brass-write-plan-2026.json', { outcomes: [] });
+          const rows = resolved.rows || [];
+          const outcomes = plan.outcomes || [];
+          const summary = {
+            generatedAt: new Date().toISOString(),
+            observations: boot.observationCount ?? boot.observations?.length ?? 0,
+            identityCandidates: boot.exactIdentityCount ?? boot.identities?.length ?? 0,
+            aliasProposals: boot.aliasProposalCount ?? boot.aliasProposals?.length ?? 0,
+            resolved: rows.filter(r => r.resolved).length,
+            freeResolved: rows.filter(r => r.resolutionMethod === 'brass_band_results').length,
+            publishable: rows.filter(r => r.projection?.publishable).length,
+            held: rows.filter(r => r.projection && !r.projection.publishable).length,
+            unresolved: rows.filter(r => r.error).length,
+            plannedWrites: outcomes.filter(r => r.status === 'planned').length,
+            plannedHolds: outcomes.filter(r => r.status === 'held').length,
+            canonicalWrites: false,
+            bootstrapFilePresent: fs.existsSync('brass-bootstrap-2026.json'),
+            resolvedFilePresent: fs.existsSync('brass-resolved-2026.json'),
+            writePlanFilePresent: fs.existsSync('brass-write-plan-2026.json'),
+          };
+          fs.writeFileSync('brass-free-bootstrap-summary.json', JSON.stringify(summary, null, 2));
+          console.log(summary);
+          NODE
+
+      - name: Upload evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brass-free-bootstrap-2026
+          path: |
+            brass-bootstrap-2026.json
+            brass-resolved-2026.json
+            brass-write-plan-2026.json
+            brass-free-bootstrap-summary.json
+          if-no-files-found: warn
+          retention-days: 14
