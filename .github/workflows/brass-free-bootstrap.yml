@@ -1,0 +1,73 @@
+name: brass free bootstrap
+
+on:
+  push:
+    branches:
+      - feature/brass-edition-foundation
+    paths:
+      - '.github/workflows/brass-free-bootstrap.yml'
+      - 'src/brass/**'
+      - 'src/cli/brass-*.ts'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Verify
+        run: npm run check
+
+      - name: Harvest 2026 contesting bands
+        run: npm run brass:bootstrap -- --out brass-bootstrap-2026.json
+
+      - name: Resolve identities without paid AI
+        run: npm run brass:resolve -- --input brass-bootstrap-2026.json --out brass-resolved-2026.json --limit 1000 --gemini-fallback false
+
+      - name: Summarise
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const boot = JSON.parse(fs.readFileSync('brass-bootstrap-2026.json','utf8'));
+          const resolved = JSON.parse(fs.readFileSync('brass-resolved-2026.json','utf8'));
+          const rows = resolved.rows || [];
+          const summary = {
+            generatedAt: new Date().toISOString(),
+            observations: boot.observations?.length || 0,
+            identityCandidates: boot.identities?.length || 0,
+            resolved: rows.filter(r => r.resolved).length,
+            freeResolved: rows.filter(r => r.resolutionMethod === 'brass_band_results').length,
+            publishable: rows.filter(r => r.projection?.publishable).length,
+            held: rows.filter(r => r.projection && !r.projection.publishable).length,
+            unresolved: rows.filter(r => r.error).length,
+            canonicalWrites: false,
+          };
+          fs.writeFileSync('brass-free-bootstrap-summary.json', JSON.stringify(summary, null, 2));
+          console.log(summary);
+          NODE
+
+      - name: Upload evidence bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: brass-free-bootstrap-2026
+          path: |
+            brass-bootstrap-2026.json
+            brass-resolved-2026.json
+            brass-free-bootstrap-summary.json
+          retention-days: 14
