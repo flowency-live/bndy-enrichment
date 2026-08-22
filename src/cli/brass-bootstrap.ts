@@ -1,11 +1,12 @@
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { BRASS_2026_IDENTITY_SOURCES } from '../brass/sources';
-import { fetchAndParse4BarsRestSource } from '../brass/parse-4barsrest';
-import { groupExactIdentityCandidates, proposeAliasCandidates } from '../brass/identity';
+import { BRASS_2026_IDENTITY_SOURCES } from '../brass/sources.js';
+import { fetchAndParse4BarsRestSource } from '../brass/parse-4barsrest.js';
+import { groupExactIdentityCandidates, proposeAliasCandidates } from '../brass/identity.js';
+import type { BrassBandObservation } from '../brass/types.js';
 
 async function main() {
-  const observations = [];
+  const observations: BrassBandObservation[] = [];
   const errors: Array<{ sourceId: string; error: string }> = [];
 
   for (const source of [...BRASS_2026_IDENTITY_SOURCES].sort((a, b) => b.priority - a.priority)) {
