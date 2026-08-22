@@ -28,6 +28,7 @@ function projection(): BrassBandProjectionPackage {
     provenance: { identityConfidence: 0.99, sourceUrls: ['https://example.test', 'https://evidence.test'], observationSourceIds: ['test'], generatedAt: new Date().toISOString() },
     publishable: true,
     holdReasons: [],
+    enrichmentFlags: [],
   };
 }
 
