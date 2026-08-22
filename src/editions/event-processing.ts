@@ -28,6 +28,6 @@ export function partitionEventsForEdition(events: EventCandidate[], editionId: E
   return {
     publishable: promoted,
     held: live.held,
-    expansionEligible: promoted.filter((event) => event.processing.expandGraph),
+    expansionEligible: promoted.filter((event) => event.processing?.expandGraph === true),
   };
 }
