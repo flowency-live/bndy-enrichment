@@ -26,8 +26,8 @@ describe('parseBrassBandResultsIndex', () => {
         </tr>
       </table>`;
     expect(parseBrassBandResultsIndex(html)).toEqual([
-      { name: 'Aberdeen City Band', pageUrl: 'https://www.brassbandresults.co.uk/bands/aberdeen-city-band', region: 'Scotland Scotland' },
-      { name: 'Acceler8', pageUrl: 'https://www.brassbandresults.co.uk/bands/acceler8', region: 'North West North West' },
+      { name: 'Aberdeen City Band', pageUrl: 'https://www.brassbandresults.co.uk/bands/aberdeen-city-band', region: 'Scotland' },
+      { name: 'Acceler8', pageUrl: 'https://www.brassbandresults.co.uk/bands/acceler8', region: 'North West' },
     ]);
   });
 });
