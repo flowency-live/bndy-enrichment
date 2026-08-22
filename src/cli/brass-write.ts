@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { BrassCanonicalApi } from '../brass/canonical-api.js';
+import { consolidateBrassBandProjections } from '../brass/consolidate-projections.js';
 import type { BrassBandProjectionPackage } from '../brass/projection.js';
 
 interface ResolvedRow {
@@ -47,16 +48,19 @@ async function main() {
   const commit = options.commit === 'true';
   const limit = Math.max(1, Number(options.limit || (commit ? 10 : 1000)));
   const offset = Math.max(0, Number(options.offset || 0));
+  const mapReadyOnly = options['map-ready-only'] === 'true';
 
   const input = JSON.parse(await readFile(inputPath, 'utf8')) as ResolutionFile;
-  const rows = (input.rows ?? []).slice(offset, offset + limit);
+  const rawProjections = (input.rows ?? []).map((row) => row.projection).filter((projection): projection is BrassBandProjectionPackage => Boolean(projection));
+  const consolidated = consolidateBrassBandProjections(rawProjections);
+  const eligible = mapReadyOnly
+    ? consolidated.filter((projection) => Boolean(projection.record.domainProfiles.brass.postcode))
+    : consolidated;
+  const projections = eligible.slice(offset, offset + limit);
   const api = commit ? new BrassCanonicalApi() : undefined;
   const outcomes: WriteOutcome[] = [];
 
-  for (const row of rows) {
-    const projection = row.projection;
-    if (!projection) continue;
-
+  for (const projection of projections) {
     if (!projection.publishable) {
       outcomes.push({
         proposedId: projection.proposedId,
@@ -69,12 +73,13 @@ async function main() {
     }
 
     if (!commit) {
+      const postcode = projection.record.domainProfiles.brass.postcode;
       outcomes.push({
         proposedId: projection.proposedId,
         bandName: projection.record.name,
         mode: 'plan',
         status: 'planned',
-        message: `would POST brass-scoped Band to canonical Artist gate; aliases=${projection.record.name_variants.length}`,
+        message: `would POST brass-scoped Band to canonical Artist gate; aliases=${projection.record.name_variants.length}${postcode ? `; postcode=${postcode}; map-geocode=required` : ''}`,
       });
       continue;
     }
@@ -87,7 +92,7 @@ async function main() {
         mode: 'commit',
         status: result.action,
         canonicalId: result.id,
-        message: `publicationScopes=${JSON.stringify(result.publicationScopes)} matchedBy=${result.matchedBy ?? ''}`,
+        message: `publicationScopes=${JSON.stringify(result.publicationScopes)} matchedBy=${result.matchedBy ?? ''}${result.locationLat !== undefined && result.locationLng !== undefined ? ` coordinates=${result.locationLat},${result.locationLng}` : ''}`,
       });
       console.log(`${result.action} ${projection.record.name} -> ${result.id}`);
     } catch (error) {
@@ -107,6 +112,9 @@ async function main() {
       generatedAt: new Date().toISOString(),
       edition: 'brass',
       canonicalWrites: true,
+      rawProjectionCount: rawProjections.length,
+      consolidatedProjectionCount: consolidated.length,
+      mapReadyOnly,
       outcomes,
     }, null, 2), 'utf8');
   }
@@ -116,6 +124,11 @@ async function main() {
     edition: 'brass',
     canonicalWrites: commit,
     input: inputPath,
+    rawProjectionCount: rawProjections.length,
+    consolidatedProjectionCount: consolidated.length,
+    duplicateProjectionCount: rawProjections.length - consolidated.length,
+    mapReadyOnly,
+    eligibleProjectionCount: eligible.length,
     offset,
     limit,
     outcomes,
@@ -126,7 +139,14 @@ async function main() {
     return acc;
   }, {});
   console.log(`Wrote ${outputPath}`);
-  console.log(JSON.stringify(counts));
+  console.log(JSON.stringify({
+    rawProjectionCount: rawProjections.length,
+    consolidatedProjectionCount: consolidated.length,
+    duplicateProjectionCount: rawProjections.length - consolidated.length,
+    mapReadyOnly,
+    eligibleProjectionCount: eligible.length,
+    ...counts,
+  }));
 }
 
 main().catch((error) => {
