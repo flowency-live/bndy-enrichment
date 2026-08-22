@@ -203,6 +203,13 @@ function stableEventExternalId(captureId: string, event: CaptureEvent, venueId: 
   return `${captureId}:${urlPart}`;
 }
 
+export function captureEventIsTicketed(event: CaptureEvent): boolean {
+  // Ticketed is deliberately independent from paid admission. A door charge does
+  // not make an event ticketed. Default false and only opt in when the source
+  // explicitly identifies ticketing or supplies a ticket URL.
+  return event.ticketed === true || Boolean(event.ticketUrl);
+}
+
 export async function createEvent(artistId: string, venueId: string, event: CaptureEvent, captureId: string): Promise<EventWriteResult> {
   const externalId = stableEventExternalId(captureId, event, venueId);
   const payload: Record<string, unknown> = {
@@ -212,7 +219,7 @@ export async function createEvent(artistId: string, venueId: string, event: Capt
     isPublic: true,
     externalIds: [{ source: 'bndy-capture', id: externalId }],
     eventUrl: event.eventUrl,
-    ticketed: event.ticketed ?? event.admission === 'PAID_CONFIRMED',
+    ticketed: captureEventIsTicketed(event),
     ticketUrl: event.ticketUrl,
     price: event.price,
   };
