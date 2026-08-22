@@ -40,6 +40,7 @@ export interface BrassBandProjectionPackage {
         organisationType: 'brass_band';
         town?: string;
         county?: string;
+        postcode?: string;
         country?: string;
         officialWebsiteUrl?: string;
         sourceRefs: string[];
@@ -117,10 +118,10 @@ export function buildBrassBandProjection(
   const holdReasons: string[] = [];
   if (resolved.identityConfidence < 0.9) holdReasons.push('identity_confidence_below_0.90');
   if (!resolved.officialWebsite) holdReasons.push('official_website_not_resolved');
-  if (!resolved.town) holdReasons.push('band_location_not_resolved');
+  if (!resolved.town && !resolved.postcode) holdReasons.push('band_location_not_resolved');
   if (sourceUrls.length < 2) holdReasons.push('insufficient_identity_evidence');
 
-  const location = [resolved.town, resolved.county].filter(Boolean).join(', ') || undefined;
+  const location = [resolved.town, resolved.county].filter(Boolean).join(', ') || resolved.postcode || undefined;
   const acts: BrassActProjection[] = productions.map((production, index) => ({
     id: actId(resolved.officialName, production.name),
     name: production.name.trim(),
@@ -154,6 +155,7 @@ export function buildBrassBandProjection(
           organisationType: 'brass_band',
           town: resolved.town,
           county: resolved.county,
+          postcode: resolved.postcode,
           country: resolved.country,
           officialWebsiteUrl: resolved.officialWebsite,
           sourceRefs: sourceUrls,
