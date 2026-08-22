@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createEvent, findOrCreateArtist } from '../src/bndy/client.js';
+import { captureEventIsTicketed, createEvent, findOrCreateArtist } from '../src/bndy/client.js';
 
 describe('findOrCreateArtist', () => {
   afterEach(() => {
@@ -81,13 +81,40 @@ describe('findOrCreateArtist', () => {
   });
 });
 
+describe('Capture ticketing policy', () => {
+  const baseEvent = {
+    artistName: 'Example Artist',
+    venueName: 'Example Venue',
+    town: 'Manchester',
+    date: '2026-09-01',
+    admission: 'UNKNOWN' as const,
+    cancelled: false,
+    confidence: 0.99,
+    sourceUrls: ['https://www.facebook.com/events/123456789/'],
+  };
+
+  it('defaults unknown and free admission to non-ticketed', () => {
+    expect(captureEventIsTicketed(baseEvent)).toBe(false);
+    expect(captureEventIsTicketed({ ...baseEvent, admission: 'FREE_CONFIRMED' })).toBe(false);
+  });
+
+  it('does not treat a door price alone as ticketed', () => {
+    expect(captureEventIsTicketed({ ...baseEvent, admission: 'PAID_CONFIRMED', price: '£5' })).toBe(false);
+  });
+
+  it('marks an event ticketed only when ticketing is explicitly identified', () => {
+    expect(captureEventIsTicketed({ ...baseEvent, ticketed: true })).toBe(true);
+    expect(captureEventIsTicketed({ ...baseEvent, ticketUrl: 'https://tickets.example.com/event' })).toBe(true);
+  });
+});
+
 describe('createEvent', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     delete process.env.BNDY_SERVICE_TOKEN;
   });
 
-  it('defaults unknown admission to non-ticketed', async () => {
+  it('sends unknown admission to BNDY as non-ticketed', async () => {
     process.env.BNDY_SERVICE_TOKEN = 'test-service-token';
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       event: { id: 'event-123' },
