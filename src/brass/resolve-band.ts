@@ -6,6 +6,7 @@ const ResolvedBandSchema = z.object({
   officialWebsite: z.string().url().optional(),
   town: z.string().optional(),
   county: z.string().optional(),
+  postcode: z.string().optional(),
   country: z.string().default('United Kingdom'),
   aliases: z.array(z.object({
     name: z.string().min(1),
@@ -27,6 +28,7 @@ const responseSchema = {
     officialWebsite: { type: 'string' },
     town: { type: 'string' },
     county: { type: 'string' },
+    postcode: { type: 'string' },
     country: { type: 'string' },
     aliases: {
       type: 'array',
@@ -63,7 +65,7 @@ function prompt(candidate: BrassBandIdentityCandidate): string {
   const observations = candidate.observations.slice(0, 12).map((observation) =>
     `- ${observation.year} ${observation.region ?? 'UK'}: "${observation.observedName}" (${observation.sourceUrl})`
   ).join('\n');
-  return `You are resolving the canonical identity of a UK brass band for bndy Brass.\n\nObserved contest identity:\n${candidate.canonicalName}\n\nEvidence observations:\n${observations}\n\nUse Google Search. Prefer the band's own current official website, then official association/contest sources. Determine the current official name, official website, home town/base and county where confidently supported. Identify former sponsored/official names and common names ONLY when sources support that they are the same continuing band. Do not merge similarly named different bands. Do not infer a permanent musical director. Do not return section/ranking as a permanent property. Evidence URLs must support the identity claims. If uncertain, keep identityConfidence below 0.85 and explain briefly in notes.`;
+  return `You are resolving the canonical identity of a UK brass band for bndy Brass.\n\nObserved contest identity:\n${candidate.canonicalName}\n\nEvidence observations:\n${observations}\n\nUse Google Search. Prefer the band's own current official website, then official association/contest sources. Determine the current official name, official website, home town/base, county and postcode where confidently supported. Identify former sponsored/official names and common names ONLY when sources support that they are the same continuing band. Do not merge similarly named different bands. Do not infer a permanent musical director. Do not return section/ranking as a permanent property. Evidence URLs must support the identity claims. If uncertain, keep identityConfidence below 0.85 and explain briefly in notes.`;
 }
 
 export async function resolveBrassBandIdentity(candidate: BrassBandIdentityCandidate, options: { apiKey: string; model?: string }): Promise<ResolvedBrassBand> {
