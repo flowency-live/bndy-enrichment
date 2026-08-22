@@ -21,6 +21,10 @@ on:
       - 'package-lock.json'
   workflow_dispatch:
 
+concurrency:
+  group: brass-free-bootstrap-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -46,7 +50,7 @@ jobs:
         run: npm run brass:bootstrap -- --out brass-bootstrap-2026.json
 
       - name: Resolve identities without paid AI
-        run: npm run brass:resolve -- --input brass-bootstrap-2026.json --out brass-resolved-2026.json --limit 1000 --gemini-fallback false
+        run: npm run brass:resolve -- --input brass-bootstrap-2026.json --out brass-resolved-2026.json --limit 1000 --concurrency 8 --gemini-fallback false
 
       - name: Summarise
         shell: bash
@@ -58,8 +62,9 @@ jobs:
           const rows = resolved.rows || [];
           const summary = {
             generatedAt: new Date().toISOString(),
-            observations: boot.observations?.length || 0,
-            identityCandidates: boot.identities?.length || 0,
+            observations: boot.observationCount ?? boot.observations?.length ?? 0,
+            identityCandidates: boot.exactIdentityCount ?? boot.identities?.length ?? 0,
+            aliasProposals: boot.aliasProposalCount ?? boot.aliasProposals?.length ?? 0,
             resolved: rows.filter(r => r.resolved).length,
             freeResolved: rows.filter(r => r.resolutionMethod === 'brass_band_results').length,
             publishable: rows.filter(r => r.projection?.publishable).length,
