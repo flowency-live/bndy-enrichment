@@ -82,7 +82,9 @@ describe('brass projection', () => {
     expect(projection.holdReasons).toContain('identity_confidence_below_0.90');
     expect(projection.enrichmentFlags).toContain('official_website_not_resolved');
     expect(projection.enrichmentFlags).toContain('precise_band_location_not_resolved');
-    expect(projection.record.location).toBe('North West');
+    // Prefer the most precise resolved geography available before falling back
+    // to the coarse contest region. County is still flagged for map enrichment.
+    expect(projection.record.location).toBe('Greater Manchester');
   });
 
   it('allows a strongly evidenced current Band to exist while enrichment remains incomplete', () => {
