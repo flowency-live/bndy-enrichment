@@ -10,6 +10,15 @@ on:
       - 'src/cli/brass-*.ts'
       - 'package.json'
       - 'package-lock.json'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/brass-free-bootstrap.yml'
+      - 'src/brass/**'
+      - 'src/cli/brass-*.ts'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
 
 permissions:
