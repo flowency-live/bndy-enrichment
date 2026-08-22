@@ -21,7 +21,8 @@
     "brass:bootstrap": "tsx src/cli/brass-bootstrap.ts",
     "brass:resolve": "tsx src/cli/brass-resolve.ts",
     "brass:discover": "tsx src/cli/brass-discover.ts",
-    "brass:write": "tsx src/cli/brass-write.ts"
+    "brass:write": "tsx src/cli/brass-write.ts",
+    "brass:write-concerts": "tsx src/cli/brass-write-concerts.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
