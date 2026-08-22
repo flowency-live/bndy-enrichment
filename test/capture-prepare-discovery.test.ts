@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { buildCapturePrompt } from '../src/capture/discover.js';
 import { prepareCaptureForDiscovery } from '../src/capture/prepare-discovery.js';
 import type { CaptureRecord } from '../src/capture/schema.js';
 
@@ -27,6 +28,20 @@ describe('prepareCaptureForDiscovery', () => {
       captureTransportUrl: 'https://www.facebook.com/share/18FZZvzpfF/',
       captureResolvedUrl: 'https://www.facebook.com/events/1052283023872867/',
     });
+  });
+
+  it('activates the exact Facebook Event discovery prompt after resolving an opaque share URL', () => {
+    const prepared = prepareCaptureForDiscovery(
+      capture('https://www.facebook.com/share/18FZZvzpfF/'),
+      'https://www.facebook.com/events/1052283023872867/',
+    );
+
+    const prompt = buildCapturePrompt(prepared, '', 90);
+    expect(prompt).toContain('FACEBOOK EVENT URL RULES');
+    expect(prompt).toContain('sharedUrl: https://www.facebook.com/events/1052283023872867/');
+    expect(prompt).toContain('deterministicTargetKind: facebook_event');
+    expect(prompt).toContain('deterministicObjectType: event');
+    expect(prompt).toContain('Identify only the specific event represented by the supplied URL');
   });
 
   it('does not rewrite a share URL when the public resolution is not a Facebook object', () => {
