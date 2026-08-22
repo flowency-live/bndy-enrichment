@@ -1,4 +1,4 @@
-import type { DiscoveryPolicy, EditionId } from './types';
+import type { DiscoveryPolicy, EditionId } from './types.js';
 
 export const LIVE_DISCOVERY_POLICY: DiscoveryPolicy = Object.freeze({
   editionId: 'live',
