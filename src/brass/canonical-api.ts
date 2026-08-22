@@ -182,12 +182,14 @@ export class BrassCanonicalApi {
   async ensureVenue(candidate: EventCandidate): Promise<CanonicalVenueResult> {
     if (!candidate.venueName || !candidate.town) throw new Error('Venue name and town are required for canonical venue resolution');
 
+    // Venue type is intentionally omitted unless the evidence actually establishes
+    // it. Scoped creation must not turn an unknown hall/church/theatre into a
+    // guessed concert_hall merely to satisfy a taxonomy field.
     const out = await this.post('/api/venues/find-or-create/mcp', {
       name: candidate.venueName,
       city: candidate.town,
       publicationScopes: ['brass'],
       discoveryScopes: [],
-      venueKind: 'other',
       externalIds: [{
         source: 'bndy-brass-intelligence',
         id: `event-venue:${candidate.venueName.toLowerCase()}:${candidate.town.toLowerCase()}`,
