@@ -1,11 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { parseBrassBandResultsPage, slugCandidates } from './brass-band-results.js';
+import { parseBrassBandResultsIndex, parseBrassBandResultsPage, slugCandidates } from './brass-band-results.js';
 
 describe('slugCandidates', () => {
   it('creates stable candidate slugs', () => {
     expect(slugCandidates("Foden's")).toContain('fodens');
     expect(slugCandidates('Brighouse & Rastrick Band')).toContain('brighouse-and-rastrick-band');
     expect(slugCandidates('Brighouse & Rastrick Band')).toContain('brighouse-and-rastrick');
+  });
+});
+
+describe('parseBrassBandResultsIndex', () => {
+  it('extracts exact band page URLs and regions from directory rows', () => {
+    const html = `
+      <table>
+        <tr><th>Name</th><th>Region</th><th>Contest Results</th></tr>
+        <tr>
+          <td><a href="/bands/aberdeen-city-band">Aberdeen City Band</a></td>
+          <td><img alt="Scotland" /> <a href="/regions/scotland">Scotland</a></td>
+          <td>43</td>
+        </tr>
+        <tr>
+          <td><a href="/bands/acceler8">Acceler8</a></td>
+          <td><img alt="North West" /> <a href="/regions/north-west">North West</a></td>
+          <td>195</td>
+        </tr>
+      </table>`;
+    expect(parseBrassBandResultsIndex(html)).toEqual([
+      { name: 'Aberdeen City Band', pageUrl: 'https://www.brassbandresults.co.uk/bands/aberdeen-city-band', region: 'Scotland Scotland' },
+      { name: 'Acceler8', pageUrl: 'https://www.brassbandresults.co.uk/bands/acceler8', region: 'North West North West' },
+    ]);
   });
 });
 
