@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { resolveBrassBandIdentity } from '../brass/resolve-band.js';
 import { resolveViaBrassBandResults } from '../brass/brass-band-results.js';
 import { buildBrassBandProjection } from '../brass/projection.js';
+import { geocodeUkPostcode } from '../brass/postcode-geocode.js';
 import type { BrassBandIdentityCandidate } from '../brass/types.js';
 import type { ResolvedBrassBand } from '../brass/resolve-band.js';
 
@@ -36,9 +37,24 @@ function args() {
   return out;
 }
 
+async function validateResolvedLocation(resolved: ResolvedBrassBand): Promise<ResolvedBrassBand> {
+  if (!resolved.postcode) return resolved;
+  const geocode = await geocodeUkPostcode(resolved.postcode);
+  if (!geocode) {
+    // HTML/text extraction can pick up CSS colours or other postcode-shaped
+    // strings. An unvalidated postcode must never satisfy publishability.
+    return { ...resolved, postcode: undefined };
+  }
+  return {
+    ...resolved,
+    postcode: geocode.postcode,
+    evidenceUrls: [...new Set([...resolved.evidenceUrls, geocode.evidenceUrl])],
+  };
+}
+
 async function resolveCandidate(candidate: BrassBandIdentityCandidate, allowGemini: boolean): Promise<{ resolved: ResolvedBrassBand; method: ResolvedRow['resolutionMethod'] }> {
   const free = await resolveViaBrassBandResults(candidate);
-  if (free) return { resolved: free, method: 'brass_band_results' };
+  if (free) return { resolved: await validateResolvedLocation(free), method: 'brass_band_results' };
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!allowGemini || !apiKey) {
@@ -49,7 +65,7 @@ async function resolveCandidate(candidate: BrassBandIdentityCandidate, allowGemi
     apiKey,
     model: process.env.GEMINI_MODEL,
   });
-  return { resolved, method: 'gemini_search' };
+  return { resolved: await validateResolvedLocation(resolved), method: 'gemini_search' };
 }
 
 async function main() {
@@ -85,6 +101,7 @@ async function main() {
       mode: 'resolution-and-projection-only',
       canonicalWrites: false,
       freeResolver: 'brassbandresults.co.uk',
+      postcodeValidation: 'postcodes.io',
       geminiFallbackAvailable: Boolean(process.env.GEMINI_API_KEY),
       rows: [...byCandidate.values()],
     }, null, 2), 'utf8'));
