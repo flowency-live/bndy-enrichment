@@ -4,6 +4,9 @@ import { parseBrassBandResultsIndex, parseBrassBandResultsPage, slugCandidates }
 describe('slugCandidates', () => {
   it('creates stable candidate slugs', () => {
     expect(slugCandidates("Foden's")).toContain('fodens');
+    expect(slugCandidates("Foden's")).toContain('fodens-band');
+    expect(slugCandidates('Aldbourne')).toContain('aldbourne-band');
+    expect(slugCandidates('Abergavenny Borough')).toContain('abergavenny-borough-band');
     expect(slugCandidates('Brighouse & Rastrick Band')).toContain('brighouse-and-rastrick-band');
     expect(slugCandidates('Brighouse & Rastrick Band')).toContain('brighouse-and-rastrick');
   });
