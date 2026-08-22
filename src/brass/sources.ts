@@ -1,4 +1,4 @@
-import type { BrassSource } from './types';
+import type { BrassSource } from './types.js';
 
 /**
  * Wave 0/1 sources for the 2026 UK contesting-band identity graph.
