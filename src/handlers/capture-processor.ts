@@ -29,8 +29,12 @@ function validateArtistForCreation(artist?: CaptureArtist): string[] {
   return missing;
 }
 
-function eventShouldPublish(event: CaptureEvent): boolean {
-  return !event.cancelled && event.admission !== 'UNKNOWN';
+// A direct Capture submission is an explicit assertion that the event belongs in BNDY.
+// Admission is metadata, not an eligibility gate. Unknown admission therefore defaults to
+// a normal non-ticketed event unless stronger evidence says it is paid/ticketed. Explicitly
+// cancelled events remain the only events held from projection here.
+export function eventShouldPublish(event: CaptureEvent): boolean {
+  return !event.cancelled;
 }
 
 function compact(value: unknown, max = 800): string {
@@ -122,7 +126,7 @@ async function processCapture(captureId: string): Promise<void> {
   for (const event of discovery.events) {
     if (!eventShouldPublish(event)) {
       heldEvents++;
-      eventLines.push(`${event.date} ${event.venueName}: held (${event.cancelled ? 'cancelled' : 'admission unknown'})`);
+      eventLines.push(`${event.date} ${event.venueName}: held (cancelled)`);
       continue;
     }
 
@@ -152,7 +156,7 @@ async function processCapture(captureId: string): Promise<void> {
     discovery.canonicalUrl ? `Canonical capture URL: ${discovery.canonicalUrl}` : 'Canonical capture URL: not resolved',
     discovery.artist.bio ? `Bio: ${discovery.artist.bio}` : 'Bio: not found',
     `Events: ${createdEvents} created, ${duplicateEvents} existing duplicates, ${heldEvents} held.`,
-    ...(eventLines.length ? ['Event detail:', ...eventLines.map(line => `- ${line}`)] : ['No publishable upcoming events found.']),
+    ...(eventLines.length ? ['Event detail:', ...eventLines.map(line => `- ${line}`)] : ['No upcoming events found.']),
     ...(venueLines.length ? ['New venues:', ...venueLines.map(line => `- ${line}`)] : ['No new venues.']),
   ].join('\n');
 
