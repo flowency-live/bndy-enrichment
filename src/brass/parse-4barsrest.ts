@@ -49,7 +49,6 @@ export function splitBandAndConductor(raw: string): { bandName: string; conducto
   const bandName = match[1].trim();
   const suffix = match[2].trim();
   if (!bandName) return { bandName: cleaned };
-  // Listing metadata, not a conductor.
   if (/^(?:pre[- ]?qualified|qualified|withdrawn|tbc|tba|n\/a)$/i.test(suffix)) return { bandName };
   return { bandName, conductorName: suffix || undefined };
 }
@@ -64,7 +63,8 @@ function numberedEntry(line: string): string | null {
 
 function isMetadataOrNarrative(line: string): boolean {
   if (line.length > 150) return true;
-  if (/^(?:test piece|adjudicators?|start|tickets?|venue|schedule|qualifiers?|competing bands|become a supporter|advertisement|saturday|sunday|monday|tuesday|wednesday|thursday|friday)\b/i.test(line)) return true;
+  if (/^(?:test piece|adjudicators?|start|tickets?|venue|schedule|qualifiers?|competing bands|become a supporter|advertisement|advertise|sponsored|read more|latest|news|results?|report|gallery|comments?|previous|next|home|menu|login|register|subscribe|saturday|sunday|monday|tuesday|wednesday|thursday|friday)\b/i.test(line)) return true;
+  if (/^(?:share|facebook|twitter|x|email|print)$/i.test(line)) return true;
   if (/^sections?\s+\d/i.test(line)) return true;
   if (/^royal albert hall\b|^york barbican\b|^upton vale baptist church\b/i.test(line)) return true;
   if (/^\d{1,2}(?:st|nd|rd|th)?\s+[A-Z][a-z]+(?:\s+\d{4})?$/i.test(line)) return true;
@@ -72,24 +72,12 @@ function isMetadataOrNarrative(line: string): boolean {
   return false;
 }
 
-/**
- * 4barsrest line-up articles frequently render each band as a bare text line
- * rather than a numbered result. We only accept these while inside a detected
- * section and after aggressive metadata/narrative rejection.
- */
 function sectionListingEntry(line: string, source: BrassSource, section?: string): string | null {
   if (!section || isMetadataOrNarrative(line)) return null;
   if (/^\d/.test(line)) return null;
   if (/^[A-Z][a-z]+,\s+\d{2}\s+[A-Z][a-z]+\s+\d{4}$/.test(line)) return null;
-
-  // A conductor-form listing is the strongest unnumbered shape.
   if (/^.{2,120}\s+\([^()]+\)$/.test(line)) return line;
-
-  // National Finals and similar official lists contain bare band names.
-  // Keep this to contest listings only and reject punctuation-heavy prose.
-  if (source.kind === 'contest_listing' && line.length <= 80 && !/[.:;!?]/.test(line)) {
-    return line;
-  }
+  if (source.kind === 'contest_listing' && line.length <= 80 && !/[.:;!?]/.test(line)) return line;
   return null;
 }
 
