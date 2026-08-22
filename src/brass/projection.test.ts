@@ -69,7 +69,7 @@ describe('brass projection', () => {
     });
   });
 
-  it('holds weak identity resolution instead of making it writeable', () => {
+  it('holds genuinely weak identity evidence', () => {
     const projection = buildBrassBandProjection(candidate, {
       ...resolved,
       identityConfidence: 0.72,
@@ -80,7 +80,26 @@ describe('brass projection', () => {
     expect(projection.publishable).toBe(false);
     expect(projection.record.needs_review).toBe(true);
     expect(projection.holdReasons).toContain('identity_confidence_below_0.90');
-    expect(projection.holdReasons).toContain('official_website_not_resolved');
-    expect(projection.holdReasons).toContain('band_location_not_resolved');
+    expect(projection.enrichmentFlags).toContain('official_website_not_resolved');
+    expect(projection.enrichmentFlags).toContain('precise_band_location_not_resolved');
+    expect(projection.record.location).toBe('North West');
+  });
+
+  it('allows a strongly evidenced current Band to exist while enrichment remains incomplete', () => {
+    const projection = buildBrassBandProjection(candidate, {
+      ...resolved,
+      officialWebsite: undefined,
+      town: undefined,
+      county: undefined,
+      postcode: undefined,
+    });
+    expect(projection.publishable).toBe(true);
+    expect(projection.record.needs_review).toBe(true);
+    expect(projection.record.location).toBe('North West');
+    expect(projection.holdReasons).toEqual([]);
+    expect(projection.enrichmentFlags).toEqual(expect.arrayContaining([
+      'official_website_not_resolved',
+      'precise_band_location_not_resolved',
+    ]));
   });
 });
