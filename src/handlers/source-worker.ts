@@ -5,10 +5,15 @@ import { runSource, type SourceRunRequest } from '../sources/runner/runner.js';
 
 function requestFrom(record: SQSRecord): SourceRunRequest {
   const parsed = JSON.parse(record.body) as Partial<SourceRunRequest>;
-  if (!parsed.sourceId || !parsed.reason || !parsed.requestedAt) throw new Error('Invalid SourceScan message');
+  if (!parsed.sourceId || !parsed.reason) throw new Error('Invalid SourceScan message');
   if (parsed.reason !== 'scheduled' && parsed.reason !== 'manual') throw new Error(`Invalid scan reason: ${parsed.reason}`);
   if (parsed.taskKey && (!parsed.task || typeof parsed.task !== 'object')) throw new Error('Source taskKey requires task payload');
-  return parsed as SourceRunRequest;
+  return {
+    ...parsed,
+    sourceId: parsed.sourceId,
+    reason: parsed.reason,
+    requestedAt: parsed.requestedAt ?? new Date().toISOString(),
+  } as SourceRunRequest;
 }
 
 export async function handler(event: SQSEvent): Promise<SQSBatchResponse> {
