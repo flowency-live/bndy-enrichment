@@ -1,4 +1,6 @@
 import type {
+  ClaimPredicate,
+  EntityCandidate,
   EventCandidate,
   GigSource,
   KnowledgeClaim,
@@ -22,6 +24,13 @@ export type FetchedSource = {
   structuralFingerprint?: string;
 };
 
+export type NormalisedSourceClaim = {
+  predicate: ClaimPredicate;
+  value: unknown;
+  confidence?: number;
+  evidenceText?: string;
+};
+
 export type NormalisedSourceEvent = {
   sourceEventKey: string;
   sourceNativeId?: string;
@@ -42,11 +51,30 @@ export type NormalisedSourceEvent = {
   admissionStatus?: string;
   price?: string;
   contentHash?: string;
+  claims?: NormalisedSourceClaim[];
   data?: Record<string, unknown>;
+};
+
+export type NormalisedSourceEntity = {
+  entityType: 'artist' | 'venue';
+  sourceEntityKey: string;
+  sourceNativeId?: string;
+  displayName?: string;
+  sourceUrl?: string;
+  confidence?: number;
+  claims: NormalisedSourceClaim[];
+};
+
+export type SourceFanoutRequest = {
+  sourceId: string;
+  taskKey: string;
+  task: Record<string, unknown>;
 };
 
 export type ParsedSource = {
   events: NormalisedSourceEvent[];
+  entities?: NormalisedSourceEntity[];
+  nextRequests?: SourceFanoutRequest[];
   parked: Array<{ reason: string; raw?: unknown }>;
   warnings: string[];
 };
@@ -58,6 +86,8 @@ export type SourceRunContext = {
   runDate: string;
   reason: 'scheduled' | 'manual';
   requestedAt: string;
+  taskKey?: string;
+  task?: Record<string, unknown>;
 };
 
 export type SourceEventDiff = {
@@ -72,7 +102,7 @@ export type SourceEventDiff = {
 export type KnowledgeOutput = {
   observation: SourceObservation;
   claims: KnowledgeClaim[];
-  candidates: EventCandidate[];
+  candidates: Array<EventCandidate | EntityCandidate>;
   claimsByCandidate: Map<string, KnowledgeClaim[]>;
 };
 
@@ -87,6 +117,7 @@ export type SourceRunReport = {
   complete?: boolean;
   rawItems: number;
   validEvents: number;
+  entityProfiles: number;
   parked: number;
   claims: number;
   added: number;
@@ -94,6 +125,8 @@ export type SourceRunReport = {
   withdrawn: number;
   unchanged: number;
   projectionWorkItems: number;
+  fanoutQueued: number;
+  fanoutDuplicates: number;
   shadow: boolean;
   writerAuthority: 'cowork' | 'aws';
   warnings: string[];
@@ -106,7 +139,7 @@ export type SourceRunnerResult = {
   report: SourceRunReport;
   observation?: SourceObservation;
   claims: KnowledgeClaim[];
-  candidates: EventCandidate[];
+  candidates: Array<EventCandidate | EntityCandidate>;
   diff?: SourceEventDiff;
   projectionWorkItems: ProjectionWorkItem[];
 };
