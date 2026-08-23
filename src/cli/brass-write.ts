@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { BrassCanonicalApi } from '../brass/canonical-api.js';
 import { consolidateBrassBandProjections } from '../brass/consolidate-projections.js';
 import { applyReviewedLocationClaim } from '../brass/reviewed-location-claims.js';
+import { duplicateArtistIdFromError, verifyExistingBrassBand } from '../brass/verify-existing-band.js';
 import type { BrassBandProjectionPackage } from '../brass/projection.js';
 
 interface ResolvedRow {
@@ -123,9 +124,35 @@ async function main() {
       console.log(`${result.action} ${projection.record.name} -> ${result.id}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      const conflict = message.startsWith('SCOPE_CONFLICT:');
-      outcomes.push({ proposedId: projection.proposedId, bandName: projection.record.name, mode: 'commit', status: conflict ? 'conflict' : 'failed', message });
-      console.error(`${conflict ? 'conflict' : 'failed'} ${projection.record.name}: ${message}`);
+      const duplicateId = duplicateArtistIdFromError(message);
+      if (duplicateId) {
+        try {
+          const existing = await verifyExistingBrassBand(duplicateId);
+          if (existing) {
+            outcomes.push({
+              proposedId: projection.proposedId,
+              bandName: projection.record.name,
+              mode: 'commit',
+              status: 'matched',
+              canonicalId: existing.id,
+              message: `verified canonical 409 as existing brass Band; publicationScopes=${JSON.stringify(existing.publicationScopes)}${existing.locationLat !== undefined && existing.locationLng !== undefined ? ` coordinates=${existing.locationLat},${existing.locationLng}` : ''}`,
+            });
+            console.log(`matched ${projection.record.name} -> ${existing.id} (verified 409 duplicate)`);
+          } else {
+            const conflictMessage = `SCOPE_CONFLICT:${duplicateId}:${projection.record.name}:409 duplicate could not be verified through brass-only API`;
+            outcomes.push({ proposedId: projection.proposedId, bandName: projection.record.name, mode: 'commit', status: 'conflict', canonicalId: duplicateId, message: conflictMessage });
+            console.error(`conflict ${projection.record.name}: ${conflictMessage}`);
+          }
+        } catch (verificationError) {
+          const verificationMessage = verificationError instanceof Error ? verificationError.message : String(verificationError);
+          outcomes.push({ proposedId: projection.proposedId, bandName: projection.record.name, mode: 'commit', status: 'failed', canonicalId: duplicateId, message: `Duplicate verification failed: ${verificationMessage}` });
+          console.error(`failed ${projection.record.name}: duplicate verification failed: ${verificationMessage}`);
+        }
+      } else {
+        const conflict = message.startsWith('SCOPE_CONFLICT:');
+        outcomes.push({ proposedId: projection.proposedId, bandName: projection.record.name, mode: 'commit', status: conflict ? 'conflict' : 'failed', message });
+        console.error(`${conflict ? 'conflict' : 'failed'} ${projection.record.name}: ${message}`);
+      }
     }
 
     await writeFile(outputPath, JSON.stringify({
