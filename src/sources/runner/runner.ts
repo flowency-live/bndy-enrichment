@@ -5,11 +5,13 @@ import { buildParityArtifact } from '../../parity/source-parity.js';
 import type { AcquisitionRouter } from './acquisition.js';
 import type { SourceAdapter } from './adapter.js';
 import { diffSourceEvents } from './diff.js';
+import type { SourceFanoutPublisher } from './fanout.js';
 import { buildKnowledge, buildProjectionWork } from './knowledge.js';
 import type { ProjectionPublisher } from './projection-publisher.js';
 import type { SourceRunArtifactStore } from './storage.js';
 import type {
   FetchedSource,
+  NormalisedSourceEntity,
   NormalisedSourceEvent,
   SourceRunContext,
   SourceRunnerResult,
@@ -20,6 +22,8 @@ export type SourceRunRequest = {
   sourceId: string;
   reason: 'scheduled' | 'manual';
   requestedAt: string;
+  taskKey?: string;
+  task?: Record<string, unknown>;
 };
 
 export interface RunnerSourceRegistry {
@@ -46,6 +50,7 @@ export type RunnerDependencies = {
   claims: RunnerClaimStore;
   artifacts: SourceRunArtifactStore;
   projection: ProjectionPublisher;
+  fanout?: SourceFanoutPublisher;
   acquisition: AcquisitionRouter;
   loadAdapter: (config: GigSource) => SourceAdapter | undefined;
   now?: () => Date;
@@ -59,7 +64,13 @@ function extension(raw: FetchedSource): string {
   return 'txt';
 }
 
-function observationFor(config: GigSource, raw: FetchedSource, events: NormalisedSourceEvent[], run: SourceRunContext): SourceObservation {
+function observationFor(
+  config: GigSource,
+  raw: FetchedSource,
+  events: NormalisedSourceEvent[],
+  entities: NormalisedSourceEntity[],
+  run: SourceRunContext,
+): SourceObservation {
   return {
     id: `obs-${randomUUID()}`,
     sourceId: config.id,
@@ -70,7 +81,7 @@ function observationFor(config: GigSource, raw: FetchedSource, events: Normalise
     complete: raw.complete,
     paginationComplete: raw.paginationComplete,
     captureStable: raw.captureStable,
-    itemCount: events.length,
+    itemCount: events.length + entities.length,
     futureItemCount: events.filter((event) => !event.date || event.date >= run.runDate).length,
     httpStatus: raw.httpStatus,
     contentType: raw.contentType,
@@ -95,6 +106,7 @@ function initialReport(config: GigSource, run: SourceRunContext): SourceRunRepor
     reason: run.reason,
     rawItems: 0,
     validEvents: 0,
+    entityProfiles: 0,
     parked: 0,
     claims: 0,
     added: 0,
@@ -102,6 +114,8 @@ function initialReport(config: GigSource, run: SourceRunContext): SourceRunRepor
     withdrawn: 0,
     unchanged: 0,
     projectionWorkItems: 0,
+    fanoutQueued: 0,
+    fanoutDuplicates: 0,
     shadow: config.shadow,
     writerAuthority: config.writerAuthority,
     warnings: [],
@@ -145,6 +159,8 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     runDate: started.toISOString().slice(0, 10),
     reason: request.reason,
     requestedAt: request.requestedAt,
+    taskKey: request.taskKey,
+    task: request.task,
   };
   const report = initialReport(config, run);
   const previousState = await deps.state.get(config.id);
@@ -152,22 +168,33 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
   try {
     const raw = await adapter.fetch(config, run, deps.acquisition);
     const parsed = await adapter.parse(config, run, raw);
-    report.rawItems = parsed.events.length + parsed.parked.length;
+    const entities = parsed.entities ?? [];
+    report.rawItems = parsed.events.length + entities.length + parsed.parked.length;
     report.validEvents = parsed.events.length;
+    report.entityProfiles = entities.length;
     report.parked = parsed.parked.length;
     report.warnings.push(...parsed.warnings);
 
     const storedObservation = await deps.observations.put(
-      observationFor(config, raw, parsed.events, run),
+      observationFor(config, raw, parsed.events, entities, run),
       raw.body,
       { contentType: raw.contentType, extension: extension(raw) },
     );
     report.observationId = storedObservation.id;
     report.complete = storedObservation.complete;
 
-    const knowledge = buildKnowledge(storedObservation, parsed.events);
+    const knowledge = buildKnowledge(storedObservation, parsed.events, entities);
     for (const claim of knowledge.claims) await deps.claims.put(claim);
     report.claims = knowledge.claims.length;
+
+    if ((parsed.nextRequests?.length ?? 0) > 0) {
+      if (!deps.fanout) throw new Error(`Source ${config.id} produced child work but SOURCE_SCAN_QUEUE_URL is not configured`);
+      for (const child of parsed.nextRequests ?? []) {
+        const queued = await deps.fanout.publish(child, run.startedAt);
+        if (queued) report.fanoutQueued += 1;
+        else report.fanoutDuplicates += 1;
+      }
+    }
 
     const normalisedKey = await deps.artifacts.writeNormalised(config, run, parsed.events);
     report.artifacts.normalised = normalisedKey;
@@ -226,6 +253,7 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
       lastNormalisedKey: normalisedKey,
       lastDiffKey: diffKey,
       lastParityKey: parityKey,
+      lastTaskKey: request.taskKey,
     };
     if (storedObservation.complete) metadata.lastCompleteNormalisedKey = normalisedKey;
 
