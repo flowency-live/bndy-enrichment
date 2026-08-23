@@ -1,13 +1,21 @@
 import { createHash } from 'node:crypto';
 import type {
   ClaimPredicate,
+  ClaimSubjectType,
+  EntityCandidate,
   EventCandidate,
   KnowledgeClaim,
   ProjectionAction,
   ProjectionWorkItem,
   SourceObservation,
 } from '../../knowledge/types.js';
-import type { KnowledgeOutput, NormalisedSourceEvent, SourceEventDiff } from './types.js';
+import type {
+  KnowledgeOutput,
+  NormalisedSourceClaim,
+  NormalisedSourceEntity,
+  NormalisedSourceEvent,
+  SourceEventDiff,
+} from './types.js';
 
 function id(prefix: string, ...parts: string[]): string {
   return `${prefix}-${createHash('sha256').update(parts.join('\u001f')).digest('hex').slice(0, 32)}`;
@@ -22,6 +30,8 @@ function claimFor(
   event: NormalisedSourceEvent,
   predicate: ClaimPredicate,
   value: unknown,
+  confidence = 1,
+  evidenceText?: string,
 ): KnowledgeClaim {
   const candidateKey = eventCandidateKey(observation.sourceId, event.sourceEventKey);
   return {
@@ -31,16 +41,21 @@ function claimFor(
     subject: { type: 'event-candidate', key: candidateKey },
     predicate,
     value,
-    confidence: 1,
+    confidence,
     evidence: {
-      sourceUrl: observation.sourceUrl,
+      sourceUrl: event.eventUrl ?? observation.sourceUrl,
       evidenceKey: observation.evidenceKey,
-      rawItemId: event.sourceEventKey,
+      rawItemId: event.sourceNativeId ?? event.sourceEventKey,
       contentHash: event.contentHash,
+      ...(evidenceText ? { text: evidenceText } : {}),
     },
     observedAt: observation.observedAt,
     status: 'active',
   };
+}
+
+function customEventClaim(observation: SourceObservation, event: NormalisedSourceEvent, claim: NormalisedSourceClaim): KnowledgeClaim {
+  return claimFor(observation, event, claim.predicate, claim.value, claim.confidence ?? 1, claim.evidenceText);
 }
 
 function eventClaims(observation: SourceObservation, event: NormalisedSourceEvent): KnowledgeClaim[] {
@@ -71,16 +86,70 @@ function eventClaims(observation: SourceObservation, event: NormalisedSourceEven
   if (event.admissionStatus) claims.push(claimFor(observation, event, 'hasAdmissionStatus', event.admissionStatus));
   if (event.price) claims.push(claimFor(observation, event, 'hasPrice', event.price));
   if (event.status) claims.push(claimFor(observation, event, 'hasStatus', event.status));
+  for (const custom of event.claims ?? []) claims.push(customEventClaim(observation, event, custom));
   if (claims.length === 0) claims.push(claimFor(observation, event, 'derivedFrom', event.sourceEventKey));
   return claims;
+}
+
+function entitySubjectType(entity: NormalisedSourceEntity): ClaimSubjectType {
+  return entity.entityType === 'artist' ? 'artist-candidate' : 'venue-candidate';
+}
+
+function entityClaim(
+  observation: SourceObservation,
+  entity: NormalisedSourceEntity,
+  claim: NormalisedSourceClaim,
+): KnowledgeClaim {
+  const subjectType = entitySubjectType(entity);
+  return {
+    id: id('claim', observation.id, entity.sourceEntityKey, claim.predicate, JSON.stringify(claim.value)),
+    observationId: observation.id,
+    sourceId: observation.sourceId,
+    subject: { type: subjectType, key: entity.sourceEntityKey },
+    predicate: claim.predicate,
+    value: claim.value,
+    confidence: claim.confidence ?? entity.confidence ?? 1,
+    evidence: {
+      sourceUrl: entity.sourceUrl ?? observation.sourceUrl,
+      evidenceKey: observation.evidenceKey,
+      rawItemId: entity.sourceNativeId ?? entity.sourceEntityKey,
+      ...(claim.evidenceText ? { text: claim.evidenceText } : {}),
+    },
+    observedAt: observation.observedAt,
+    status: 'active',
+  };
+}
+
+function entityKnowledge(observation: SourceObservation, entity: NormalisedSourceEntity): {
+  claims: KnowledgeClaim[];
+  candidate: EntityCandidate;
+} {
+  const baseClaims: NormalisedSourceClaim[] = entity.displayName
+    ? [{ predicate: 'hasName', value: entity.displayName }, ...entity.claims]
+    : entity.claims;
+  const claims = baseClaims.map((claim) => entityClaim(observation, entity, claim));
+  return {
+    claims,
+    candidate: {
+      candidateKey: entity.sourceEntityKey,
+      entityType: entity.entityType,
+      sourceId: observation.sourceId,
+      sourceNativeId: entity.sourceNativeId,
+      displayName: entity.displayName,
+      observedAt: observation.observedAt,
+      supportingClaimIds: claims.map((claim) => claim.id),
+      confidence: entity.confidence ?? 1,
+    },
+  };
 }
 
 export function buildKnowledge(
   observation: SourceObservation,
   events: NormalisedSourceEvent[],
+  entities: NormalisedSourceEntity[] = [],
 ): KnowledgeOutput {
   const claims: KnowledgeClaim[] = [];
-  const candidates: EventCandidate[] = [];
+  const candidates: Array<EventCandidate | EntityCandidate> = [];
   const claimsByCandidate = new Map<string, KnowledgeClaim[]>();
 
   for (const event of events) {
@@ -103,6 +172,13 @@ export function buildKnowledge(
       confidence: 1,
       observedAt: observation.observedAt,
     });
+  }
+
+  for (const entity of entities) {
+    const output = entityKnowledge(observation, entity);
+    claims.push(...output.claims);
+    claimsByCandidate.set(entity.sourceEntityKey, output.claims);
+    candidates.push(output.candidate);
   }
 
   return { observation, claims, candidates, claimsByCandidate };
