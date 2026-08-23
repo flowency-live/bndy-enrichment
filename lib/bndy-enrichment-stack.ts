@@ -136,6 +136,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       STATE_TABLE: table.tableName,
       EVIDENCE_BUCKET: evidenceBucket.bucketName,
       PROJECTION_QUEUE_URL: projectionQueue.queueUrl,
+      SOURCE_SCAN_QUEUE_URL: sourceScanQueue.queueUrl,
     };
 
     const sourceWorker = new lambdaNode.NodejsFunction(this, 'SourceWorker', {
@@ -144,16 +145,19 @@ export class BndyEnrichmentStack extends cdk.Stack {
       handler: 'handler',
       timeout: cdk.Duration.minutes(14),
       memorySize: 1024,
+      reservedConcurrentExecutions: 2,
       environment: sourceWorkerEnvironment,
       bundling: { minify: true, sourceMap: true },
     });
     sourceWorker.addEventSource(new sources.SqsEventSource(sourceScanQueue, {
       batchSize: 1,
       reportBatchItemFailures: true,
+      maxConcurrency: 2,
     }));
     table.grantReadWriteData(sourceWorker);
     evidenceBucket.grantReadWrite(sourceWorker);
     projectionQueue.grantSendMessages(sourceWorker);
+    sourceScanQueue.grantSendMessages(sourceWorker);
 
     const browserSourceWorker = new lambdaNode.NodejsFunction(this, 'BrowserSourceWorker', {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -161,7 +165,11 @@ export class BndyEnrichmentStack extends cdk.Stack {
       handler: 'handler',
       timeout: cdk.Duration.minutes(14),
       memorySize: 3072,
-      environment: sourceWorkerEnvironment,
+      environment: {
+        STATE_TABLE: table.tableName,
+        EVIDENCE_BUCKET: evidenceBucket.bucketName,
+        PROJECTION_QUEUE_URL: projectionQueue.queueUrl,
+      },
       bundling: {
         minify: true,
         sourceMap: true,
@@ -197,6 +205,39 @@ export class BndyEnrichmentStack extends cdk.Stack {
     table.grantReadWriteData(projectionWorker);
     entityEnrichmentQueue.grantSendMessages(projectionWorker);
     bndyServiceSecret.grantRead(projectionWorker);
+
+    // Lemonrock fast-change surfaces are scheduled directly into the durable source queue.
+    // The source family remains registry-backed and shadow/no-write; these rules only create observations/claims.
+    new events.Rule(this, 'LemonrockFastGigTick', {
+      schedule: events.Schedule.rate(cdk.Duration.minutes(15)),
+      targets: [
+        new targets.SqsQueue(sourceScanQueue, {
+          message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-new-gigs', reason: 'scheduled' }),
+        }),
+        new targets.SqsQueue(sourceScanQueue, {
+          message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-cancellations', reason: 'scheduled' }),
+        }),
+      ],
+    });
+
+    new events.Rule(this, 'LemonrockDailyReconcile', {
+      schedule: events.Schedule.cron({ minute: '10', hour: '2' }),
+      targets: [new targets.SqsQueue(sourceScanQueue, {
+        message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-future-reconcile', reason: 'scheduled' }),
+      })],
+    });
+
+    new events.Rule(this, 'LemonrockWeeklyDirectoryReconcile', {
+      schedule: events.Schedule.cron({ minute: '20', hour: '2', weekDay: 'SUN' }),
+      targets: [
+        new targets.SqsQueue(sourceScanQueue, {
+          message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-artist-index', reason: 'scheduled' }),
+        }),
+        new targets.SqsQueue(sourceScanQueue, {
+          message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-venue-index', reason: 'scheduled' }),
+        }),
+      ],
+    });
 
     // Import existing bndy tables for legacy enrichment write-back only.
     const artistsTable = dynamodb.Table.fromTableArn(this, 'ArtistsTable',
@@ -293,6 +334,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'GoogleDiscoveryQueueUrl', { value: queue.queueUrl });
     new cdk.CfnOutput(this, 'ScanPlannerFunctionName', { value: planner.functionName });
     new cdk.CfnOutput(this, 'StateTableName', { value: table.tableName });
+    new cdk.CfnOutput(this, 'EvidenceBucketName', { value: evidenceBucket.bucketName });
     new cdk.CfnOutput(this, 'CaptureQueueUrl', { value: captureQueue.queueUrl });
     new cdk.CfnOutput(this, 'CaptureScannerFunctionName', { value: captureScanner.functionName });
     new cdk.CfnOutput(this, 'CaptureProcessorFunctionName', { value: captureProcessor.functionName });
