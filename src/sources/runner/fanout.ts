@@ -18,6 +18,37 @@ function taskKey(sourceId: string, key: string) {
   return { pk: `BOOTSTRAP#${sourceFamily(sourceId)}`, sk: `TASK#${key}` };
 }
 
+function isoWeek(date: Date): string {
+  const utc = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const day = utc.getUTCDay() || 7;
+  utc.setUTCDate(utc.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((utc.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${utc.getUTCFullYear()}W${String(week).padStart(2, '0')}`;
+}
+
+function dedupeKey(request: SourceFanoutRequest, requestedAt: string): string {
+  if (!request.sourceId.startsWith('lemonrock-')) return request.taskKey;
+  const date = new Date(requestedAt);
+  if (Number.isNaN(date.getTime())) return request.taskKey;
+
+  // Gig detail is intentionally refreshable every hour so an explicit same-day
+  // cancellation or changed time is not suppressed by bootstrap dedupe.
+  if (request.sourceId === 'lemonrock-gig-hydration') {
+    return `${request.taskKey}@${date.toISOString().slice(0, 13)}`;
+  }
+
+  // Rich artist/venue profiles change more slowly; one hydration per ISO week is
+  // enough during national reconciliation while still allowing future refreshes.
+  if (request.sourceId === 'lemonrock-artist-hydration' || request.sourceId === 'lemonrock-venue-hydration') {
+    return `${request.taskKey}@${isoWeek(date)}`;
+  }
+
+  // Directory/county child pages are replayable daily. Within a bootstrap run,
+  // duplicate links from multiple indexes collapse onto one durable task.
+  return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
+}
+
 export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
   private readonly ddb: DynamoDBDocumentClient;
   private readonly sqs: SQSClient;
@@ -33,7 +64,8 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
   }
 
   async publish(request: SourceFanoutRequest, requestedAt: string): Promise<boolean> {
-    const key = taskKey(request.sourceId, request.taskKey);
+    const resolvedTaskKey = dedupeKey(request, requestedAt);
+    const key = taskKey(request.sourceId, resolvedTaskKey);
     try {
       await this.ddb.send(new PutCommand({
         TableName: this.tableName,
@@ -42,7 +74,8 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
           entityType: 'SourceTask',
           sourceFamily: sourceFamily(request.sourceId),
           sourceId: request.sourceId,
-          taskKey: request.taskKey,
+          taskKey: resolvedTaskKey,
+          logicalTaskKey: request.taskKey,
           taskKind: typeof request.task.kind === 'string' ? request.task.kind : 'unknown',
           sourceUrl: typeof request.task.url === 'string' ? request.task.url : undefined,
           task: request.task,
@@ -64,7 +97,7 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
           sourceId: request.sourceId,
           reason: 'manual',
           requestedAt,
-          taskKey: request.taskKey,
+          taskKey: resolvedTaskKey,
           task: request.task,
         }),
       }));
