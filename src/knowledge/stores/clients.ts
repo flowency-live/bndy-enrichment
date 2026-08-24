@@ -19,7 +19,9 @@ export interface S3StoreClient {
 }
 
 export function createDynamoStoreClient(region = process.env.AWS_REGION ?? 'eu-west-2'): DynamoStoreClient {
-  const client = DynamoDBDocumentClient.from(new DynamoDBClient({ region }));
+  const client = DynamoDBDocumentClient.from(new DynamoDBClient({ region }), {
+    marshallOptions: { removeUndefinedValues: true },
+  });
   return {
     async send(command: DynamoStoreCommand): Promise<DynamoStoreResponse> {
       return await client.send(command as never) as unknown as DynamoStoreResponse;
