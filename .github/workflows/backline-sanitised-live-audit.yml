@@ -1,0 +1,181 @@
+name: Backline sanitised live audit
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/backline-sanitised-live-audit.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+      - run: python -m pip install --quiet boto3
+      - name: Read live aggregate state
+        run: |
+          mkdir -p ops
+          python <<'PY'
+          import boto3, json
+          from collections import Counter, defaultdict
+          from datetime import datetime, timezone
+          from decimal import Decimal
+
+          REGION="eu-west-2"; STACK="BndyEnrichmentStack"
+          def cv(v):
+            if isinstance(v,Decimal): return int(v) if v%1==0 else float(v)
+            if isinstance(v,dict): return {k:cv(x) for k,x in v.items()}
+            if isinstance(v,list): return [cv(x) for x in v]
+            return v
+          out={"generatedAt":datetime.now(timezone.utc).isoformat(),"account":"771551874768","region":REGION,
+               "readOnly":True,"sanitised":True,"errors":[]}
+          def err(section,e): out["errors"].append({"section":section,"type":type(e).__name__})
+          try:
+            ident=boto3.client("sts",region_name=REGION).get_caller_identity()
+            out["identityVerified"]=ident.get("Account")=="771551874768"
+          except Exception as e: err("identity",e)
+          resources=[]; outputs={}
+          try:
+            cfn=boto3.client("cloudformation",region_name=REGION)
+            st=cfn.describe_stacks(StackName=STACK)["Stacks"][0]
+            outputs={x["OutputKey"]:x["OutputValue"] for x in st.get("Outputs",[])}
+            out["stack"]={"status":st["StackStatus"],
+              "lastUpdatedAt":st.get("LastUpdatedTime").isoformat() if st.get("LastUpdatedTime") else None}
+            token=None
+            while True:
+              a={"StackName":STACK}
+              if token:a["NextToken"]=token
+              r=cfn.list_stack_resources(**a); resources+=r.get("StackResourceSummaries",[])
+              token=r.get("NextToken")
+              if not token:break
+            out["resourceCounts"]=dict(Counter(x["ResourceType"] for x in resources))
+          except Exception as e: err("cloudformation",e)
+          def phys(t,needle=""):
+            z=[x for x in resources if x.get("ResourceType")==t and x.get("PhysicalResourceId")]
+            if needle:
+              q=[x for x in z if needle.lower() in x.get("LogicalResourceId","").lower()]
+              if q:z=q
+            return [x["PhysicalResourceId"] for x in z]
+          table=outputs.get("StateTableName") or ((phys("AWS::DynamoDB::Table","StateTable") or [None])[0])
+          bucket=outputs.get("EvidenceBucketName") or ((phys("AWS::S3::Bucket","Evidence") or [None])[0])
+          items=[]
+          try:
+            tab=boto3.resource("dynamodb",region_name=REGION).Table(table)
+            start=None; consumed=0
+            while True:
+              a={"ReturnConsumedCapacity":"TOTAL"}
+              if start:a["ExclusiveStartKey"]=start
+              r=tab.scan(**a);items+=r.get("Items",[])
+              consumed+=r.get("ConsumedCapacity",{}).get("CapacityUnits",0)
+              start=r.get("LastEvaluatedKey")
+              if not start:break
+            out["stateTable"]={"itemsScanned":len(items),"scanCapacityUnits":cv(consumed)}
+          except Exception as e: err("stateTable",e)
+          def latest(rows,*fs):
+            v=[x.get(f) for x in rows for f in fs if isinstance(x.get(f),str) and x.get(f)]
+            return max(v) if v else None
+          try:
+            rows=[x for x in items if x.get("pk")=="BOOTSTRAP#lemonrock" and str(x.get("sk","")).startswith("TASK#")]
+            def ident(x):
+              t=x.get("task") if isinstance(x.get("task"),dict) else {}
+              return str(x.get("sourceId",""))+"|"+str(t.get("nativeId") or x.get("sourceUrl") or x.get("logicalTaskKey") or x.get("taskKey") or x.get("sk"))
+            cur={}
+            for x in rows:
+              k=ident(x)
+              if k not in cur or str(x.get("updatedAt",""))>str(cur[k].get("updatedAt","")):cur[k]=x
+            cur=list(cur.values());tax=defaultdict(Counter)
+            for x in cur:
+              t=x.get("task") if isinstance(x.get("task"),dict) else {}
+              k=str(x.get("taskKind") or t.get("kind") or "other")
+              tax[k]["discovered"]+=1;tax[k][str(x.get("status","unknown"))]+=1
+            obs=[x for x in items if x.get("entityType")=="SourceObservation" and str(x.get("sourceId","")).startswith("lemonrock-")]
+            cl=[x for x in items if x.get("entityType")=="KnowledgeClaim" and str(x.get("sourceId","")).startswith("lemonrock-")]
+            res=[x for x in items if x.get("entityType")=="EntityResolution" and
+                 (str(x.get("sourceId","")).startswith("lemonrock-") or str(x.get("candidateKey","")).startswith("lemonrock:"))]
+            cfg=[x for x in items if str(x.get("pk","")).startswith("SOURCE#lemonrock-") and x.get("sk")=="CONFIG"]
+            out["lemonrock"]={
+              "taskHistoryRows":len(rows),"uniqueCurrentTasks":len(cur),
+              "taskStatus":dict(Counter(str(x.get("status","unknown")) for x in cur)),
+              "taxonomy":{k:dict(v) for k,v in sorted(tax.items())},
+              "observations":len(obs),"observationsBySource":dict(Counter(str(x.get("sourceId","unknown")) for x in obs)),
+              "claims":len(cl),"claimsBySource":dict(Counter(str(x.get("sourceId","unknown")) for x in cl)),
+              "entityResolutions":len(res),"resolutionsByType":dict(Counter(str(x.get("candidateType","unknown")) for x in res)),
+              "evidenceReferences":len({x.get("evidenceKey") for x in obs if x.get("evidenceKey")}),
+              "lastActivityAt":latest([x for x in items if str(x.get("sourceId","")).startswith("lemonrock-") or x.get("pk")=="BOOTSTRAP#lemonrock"],
+                                      "updatedAt","completedAt","failedAt","observedAt","lastSuccessfulScanAt","lastScanAt","lastReconciledAt"),
+              "sources":[{"id":x.get("id") or str(x.get("pk","")).replace("SOURCE#",""),"enabled":x.get("enabled"),
+                "shadow":x.get("shadow"),"health":x.get("health"),"cadence":x.get("cadence"),
+                "lastSuccessfulScanAt":x.get("lastSuccessfulScanAt"),"lastScanAt":x.get("lastScanAt"),
+                "lastReconciledAt":x.get("lastReconciledAt")} for x in sorted(cfg,key=lambda y:str(y.get("pk","")))],
+              "failedTasks":[{"sourceId":x.get("sourceId"),"kind":x.get("taskKind") or (x.get("task") or {}).get("kind"),
+                "updatedAt":x.get("updatedAt"),"errorType":str(x.get("lastError","")).split(":")[0][:100]}
+                for x in cur if x.get("status")=="failed"][:100]}
+          except Exception as e: err("lemonrock",e)
+          try:
+            metas=[x for x in items if str(x.get("pk","")).startswith("BASELINE#") and x.get("sk")=="META"]
+            metas.sort(key=lambda x:str(x.get("completedAt") or x.get("startedAt") or ""),reverse=True)
+            keep=["snapshotId","snapshotAt","startedAt","completedAt","status","shadow","canonicalWritesEnabled",
+                  "counts","totals","skippedWithoutId","errors"]
+            out["canonicalBaseline"]={"manifestCount":len(metas),"manifests":[{k:cv(x.get(k)) for k in keep} for x in metas]}
+          except Exception as e: err("canonicalBaseline",e)
+          try:
+            sqs=boto3.client("sqs",region_name=REGION);qs=[]
+            for n in phys("AWS::SQS::Queue"):
+              try:
+                u=sqs.get_queue_url(QueueName=n)["QueueUrl"]
+                a=sqs.get_queue_attributes(QueueUrl=u,AttributeNames=["ApproximateNumberOfMessages",
+                  "ApproximateNumberOfMessagesNotVisible","ApproximateNumberOfMessagesDelayed"])["Attributes"]
+                qs.append({"logicalRole":next((x["LogicalResourceId"] for x in resources if x.get("PhysicalResourceId")==n),n),
+                  "visible":int(a.get("ApproximateNumberOfMessages",0)),"inFlight":int(a.get("ApproximateNumberOfMessagesNotVisible",0)),
+                  "delayed":int(a.get("ApproximateNumberOfMessagesDelayed",0))})
+              except Exception as e:err("sqsQueue",e)
+            out["queues"]=qs
+          except Exception as e:err("sqs",e)
+          try:
+            ev=boto3.client("events",region_name=REGION);rules=[]
+            for n in phys("AWS::Events::Rule"):
+              r=ev.describe_rule(Name=n);ts=ev.list_targets_by_rule(Rule=n).get("Targets",[])
+              inputs=[]
+              for t in ts:
+                try:
+                  j=json.loads(t.get("Input","{}"))
+                  inputs.append({"sourceId":j.get("sourceId"),"reason":j.get("reason"),"taskKind":(j.get("task") or {}).get("kind")})
+                except: inputs.append({})
+              rules.append({"logicalRole":next((x["LogicalResourceId"] for x in resources if x.get("PhysicalResourceId")==n),n),
+                "state":r.get("State"),"scheduleExpression":r.get("ScheduleExpression"),"targetInputs":inputs})
+            out["schedules"]=rules
+          except Exception as e:err("eventBridge",e)
+          try:
+            s3=boto3.client("s3",region_name=REGION);count=0;size=0;newest=None;tok=None
+            while True:
+              a={"Bucket":bucket}
+              if tok:a["ContinuationToken"]=tok
+              r=s3.list_objects_v2(**a)
+              for z in r.get("Contents",[]):count+=1;size+=z.get("Size",0);newest=max(newest,z["LastModified"]) if newest else z["LastModified"]
+              tok=r.get("NextContinuationToken")
+              if not tok:break
+            out["evidenceBucket"]={"objects":count,"bytes":size,"newestAt":newest.isoformat() if newest else None}
+          except Exception as e:err("evidenceBucket",e)
+          with open("ops/backline-sanitised-live-audit.json","w") as f:json.dump(cv(out),f,indent=2,sort_keys=True)
+          PY
+      - name: Publish aggregate report
+        if: always()
+        run: |
+          test -f ops/backline-sanitised-live-audit.json || printf '{"generatedAt":"%s","sanitised":true,"errors":[{"section":"workflow","type":"NoReport"}]}
+' "$(date -u +%FT%TZ)" > ops/backline-sanitised-live-audit.json
+          git config user.name bndy-backline-audit
+          git config user.email actions@users.noreply.github.com
+          git add -f ops/backline-sanitised-live-audit.json
+          git commit -m "Record Backline sanitised live audit" || true
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
