@@ -1,0 +1,32 @@
+name: Validate Join owner protection once
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    if: contains(github.event.head_commit.message, 'Run Join owner protection validation')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: Record validation
+        run: |
+          printf 'Join owner protection validation passed: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > docs/JOIN-OWNER-PROTECTION-VALIDATED.txt
+          git config user.name 'bndy-product-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add docs/JOIN-OWNER-PROTECTION-VALIDATED.txt
+          git commit -m 'Validate Join owner projection protection'
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
