@@ -1,0 +1,42 @@
+name: Diagnose Join owner check once
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: contains(github.event.head_commit.message, 'Run Join owner check diagnostics')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Run and capture check
+        run: |
+          set +e
+          npm run check > /tmp/join-owner-check.log 2>&1
+          CODE=$?
+          set -e
+          {
+            echo "exit_code=$CODE"
+            echo "checked_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo '--- output ---'
+            tail -n 120 /tmp/join-owner-check.log
+          } > docs/JOIN-OWNER-CHECK.txt
+      - name: Commit diagnostics
+        run: |
+          git config user.name 'bndy-product-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add docs/JOIN-OWNER-CHECK.txt
+          git commit -m 'Record Join owner projection check'
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
