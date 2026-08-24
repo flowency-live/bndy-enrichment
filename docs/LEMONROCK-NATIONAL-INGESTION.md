@@ -1056,15 +1056,7 @@ Lemonrock is fully implemented as a Backline source when:
 
 ## 30. Next action
 
-Begin **LR-01 + LR-02** in `bndy-enrichment`:
-
-1. inspect current SourceAdapter/runtime contracts on `main`
-2. add Lemonrock source family foundation
-3. capture real production fixtures
-4. implement national enumeration
-5. run locally in zero-write mode
-6. produce first national counts
-7. then wire durable bootstrap queues and start the shadow bootstrap
+LR-01 to LR-05 have progressed into the deployed shadow ingestion runtime. Execution now follows the owned completion control in section 31: recover remaining work, deploy and run the full reconciliation, prove completeness, then verify recurring diffs.
 
 ## 31. Owned completion execution control
 
