@@ -24,6 +24,8 @@ async function fetchWithRetry(
         maxBytes: 4 * 1024 * 1024,
         complete: false,
         fetchMethod: 'http-lemonrock',
+        followRedirects: true,
+        maxRedirects: 5,
         headers: {
           accept: 'text/html,application/xhtml+xml',
           'user-agent': 'BNDY-Backline/1.0 (+https://bndy.live; source-reconciliation)',
@@ -32,7 +34,8 @@ async function fetchWithRetry(
     } catch (error) {
       lastError = error;
       const message = error instanceof Error ? error.message : String(error);
-      if (attempt === 3 || !/HTTP (403|429|5\d\d)/i.test(message)) throw error;
+      const retryable = /HTTP (403|408|425|429|5\d\d)|fetch failed|timed? ?out|abort/i.test(message);
+      if (attempt === 3 || !retryable) throw error;
       await sleep(500 * (2 ** attempt));
     }
   }
