@@ -1,10 +1,10 @@
 {
-  "phase": "authenticating",
+  "phase": "verifying-recurring-targets",
   "status": "failed",
-  "startedAt": "2026-08-24T19:13:34Z",
-  "deployedSha": "57a87325739153270833a137b35cbe63443d7d84",
+  "startedAt": "2026-08-24T19:58:58Z",
+  "deployedSha": "6154e57d60f4df227be50d84ce5d7b8ae73bd6ae",
   "shadow": true,
   "canonicalWritesEnabled": false,
   "recurringTargetsVerified": false,
-  "completedAt": "2026-08-24T19:13:34Z"
+  "completedAt": "2026-08-24T20:01:18Z"
 }
