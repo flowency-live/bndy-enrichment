@@ -86,6 +86,7 @@ export type SourceRunContext = {
   runDate: string;
   reason: 'scheduled' | 'manual';
   requestedAt: string;
+  reconciliationId?: string;
   taskKey?: string;
   task?: Record<string, unknown>;
 };
@@ -109,6 +110,7 @@ export type KnowledgeOutput = {
 export type SourceRunReport = {
   runId: string;
   sourceId: string;
+  reconciliationId?: string;
   startedAt: string;
   completedAt: string;
   status: 'completed' | 'failed';
