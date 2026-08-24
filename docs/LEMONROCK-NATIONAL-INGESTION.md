@@ -1088,6 +1088,8 @@ The deployed weekly rule still targets the Artist and Venue index sources direct
 
 **Execution action:** deploy this revision, recover the two dead-letter messages, start the immediate national reconciliation, and publish the sanitised reconciliation manifest.
 
+**Latest execution attempt:** GitHub Actions run [32766907880](https://github.com/flowency-live/bndy-enrichment/actions/runs/32766907880) stopped before any AWS mutation because the `production` environment does not yet contain `AWS_DEPLOY_ROLE_ARN`. CI run [32766907999](https://github.com/flowency-live/bndy-enrichment/actions/runs/32766907999) passed. The read-only audit role remains separate and operational.
+
 ### 31.1 Completion claim
 
 “Lemonrock is fully ingested into Backline” may be stated only when all of the following are true for a named snapshot and timestamp:
