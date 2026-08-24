@@ -249,6 +249,8 @@ jobs:
               "lemonrock-artist-index",
               "lemonrock-venue-index",
               "lemonrock-future-reconcile",
+              "lemonrock-new-gigs",
+              "lemonrock-cancellations",
           }
           queue = {
               "visible": int(sys.argv[4]),
