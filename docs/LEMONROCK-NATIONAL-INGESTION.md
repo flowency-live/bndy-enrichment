@@ -1067,6 +1067,27 @@ LR-01 to LR-05 have progressed into the deployed shadow ingestion runtime. Execu
 
 This section turns LR-01 to LR-09 into a completion-controlled production run. It does not replace the architecture or implementation sections above.
 
+
+### 31.0 Live execution checkpoint
+
+Authoritative audit: `2026-08-24T18:53:51Z`.
+
+| Control | Live result |
+|---|---:|
+| Lemonrock Observations | 4,050 |
+| Lemonrock Claims | 34,618 |
+| Lemonrock Resolutions | 0 |
+| Current logical tasks | 2,663 |
+| Completed tasks | 2,662 |
+| Failed tasks | 1 |
+| Source queue visible / in-flight | 0 / 0 |
+| Dead-letter queue visible | 2 |
+| Full-reconcile Observations | 0 |
+
+The deployed weekly rule still targets the Artist and Venue index sources directly. The completion runtime now carries a single reconciliation ID through all fan-out levels, records deduped identities as discovered by the current run, verifies the national Artist/Venue/Gig branches, recovers source-scan dead letters, and refuses to mark completion unless the queues are clear and all discovered tasks are terminal.
+
+**Execution action:** deploy this revision, recover the two dead-letter messages, start the immediate national reconciliation, and publish the sanitised reconciliation manifest.
+
 ### 31.1 Completion claim
 
 “Lemonrock is fully ingested into Backline” may be stated only when all of the following are true for a named snapshot and timestamp:
