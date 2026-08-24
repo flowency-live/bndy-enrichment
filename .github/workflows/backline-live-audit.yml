@@ -70,7 +70,7 @@ jobs:
           evidence_bucket="$(jq -r '.Stacks[0].Outputs[] | select(.OutputKey=="EvidenceBucketName") | .OutputValue' "$audit_tmp/stack.json")"
           source_queue="$(jq -r '.Stacks[0].Outputs[] | select(.OutputKey=="SourceScanQueueUrl") | .OutputValue' "$audit_tmp/stack.json")"
 
-          aws dynamodb scan --table-name "$state_table"             --projection-expression "pk, sk, entityType, sourceId, #id, #st, health, enabled, shadow, canonicalWritesEnabled, observedAt, startedAt, completedAt, lastScanAt, lastScheduledAt, nextScanAt, snapshotId, snapshotAt, counts, totals, skippedWithoutId, errors"             --expression-attribute-names '{"#id":"id","#st":"status"}'             --output json > "$audit_tmp/state.json"
+          aws dynamodb scan --table-name "$state_table"             --projection-expression "pk, sk, entityType, sourceId, #id, #st, health, enabled, shadow, canonicalWritesEnabled, observedAt, queuedAt, startedAt, completedAt, failedAt, updatedAt, lastScanAt, lastScheduledAt, nextScanAt, lastRunAt, lastSuccessfulRunAt, lastFailureAt, consecutiveFailures, taskKind, task, logicalTaskKey, taskKey, lastError, snapshotId, snapshotAt, counts, totals, skippedWithoutId, errors"             --expression-attribute-names '{"#id":"id","#st":"status"}'             --output json > "$audit_tmp/state.json"
 
           aws sqs get-queue-attributes --queue-url "$source_queue"             --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible RedrivePolicy             --output json > "$audit_tmp/queue.json"
           dlq_name="$(jq -r '.Attributes.RedrivePolicy | fromjson | .deadLetterTargetArn | split(":")[-1]' "$audit_tmp/queue.json")"
@@ -84,6 +84,17 @@ jobs:
           evidence_total="${evidence_total:-0}"
 
           jq             --arg auditedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)"             --arg accountExpected "771551874768"             --arg accountActual "$(aws sts get-caller-identity --query Account --output text)"             --arg evidenceTotal "$evidence_total"             --slurpfile queue "$audit_tmp/queue.json"             --slurpfile dlq "$audit_tmp/dlq.json"             --slurpfile rules "$audit_tmp/rules.json" '
+            def error_class:
+              (. // "" | tostring) as $e |
+              if ($e | test("HTTP 403"; "i")) then "HTTP_403"
+              elif ($e | test("HTTP 429"; "i")) then "HTTP_429"
+              elif ($e | test("HTTP 5[0-9][0-9]"; "i")) then "HTTP_5XX"
+              elif ($e | test("timeout|timed out|abort"; "i")) then "TIMEOUT"
+              elif ($e | test("structural gate|recognisable HTML"; "i")) then "STRUCTURAL_GATE"
+              elif ($e | test("parse|parser"; "i")) then "PARSER"
+              elif ($e | test("Dynamo|marshall|undefined"; "i")) then "PERSISTENCE"
+              elif ($e | test("fetch|network"; "i")) then "FETCH"
+              else "OTHER" end;
             def ddb:
               if type != "object" then .
               elif has("S") then .S
@@ -95,8 +106,12 @@ jobs:
               else . end;
             ([.Items[] | map_values(ddb)]) as $i |
             ([ $i[] | select((.sourceId // "") | startswith("lemonrock-")) ]) as $lr |
-            ([ $i[] | select(.pk == "BOOTSTRAP#lemonrock" and (.sk | startswith("TASK#"))) ]) as $tasks |
+            ([ $i[] | select(.pk == "BOOTSTRAP#lemonrock" and (.sk | startswith("TASK#"))) ]) as $taskRows |
+            ($taskRows
+              | group_by([(.sourceId // ""), (.task.nativeId // .logicalTaskKey // .taskKey // .sk // "")])
+              | map(sort_by(.updatedAt // .queuedAt // "") | last)) as $tasks |
             ([ $i[] | select(.entityType == "GigSource" and ((.id // "") | startswith("lemonrock-"))) ]) as $sources |
+            ([ $i[] | select((.pk | startswith("SOURCE#lemonrock-")) and .sk == "STATE") ]) as $sourceStates |
             ([ $i[] | select((.pk | startswith("BASELINE#")) and .sk == "META") ] | sort_by(.completedAt // .snapshotAt // .startedAt) | last // null) as $baseline |
             {
               auditedAt: $auditedAt,
@@ -116,6 +131,30 @@ jobs:
                 tasksByStatus: ($tasks | group_by(.status // "unknown") | map({key: (.[0].status // "unknown"), value: length}) | from_entries),
                 outstandingTasks: ([ $tasks[] | select((.status // "") != "complete" and (.status // "") != "completed" and (.status // "") != "succeeded") ] | length),
                 failedTasks: ([ $tasks[] | select((.status // "") == "failed" or (.status // "") == "error") ] | length),
+                failedTaskSummary: ([ $tasks[]
+                  | select((.status // "") == "failed" or (.status // "") == "error")
+                  | {
+                      sourceId: (.sourceId // "unknown"),
+                      taskKind: (.taskKind // .task.kind // "unknown"),
+                      errorClass: ((.lastError // "") | error_class),
+                      failedAt: (.failedAt // .updatedAt // null)
+                    }
+                ] | sort_by(.sourceId, .taskKind)),
+                outstandingBySourceAndKind: ([ $tasks[]
+                  | select((.status // "") != "complete" and (.status // "") != "completed" and (.status // "") != "succeeded")
+                  | {sourceId: (.sourceId // "unknown"), taskKind: (.taskKind // .task.kind // "unknown")}
+                ] | group_by([.sourceId, .taskKind]) | map({
+                  sourceId: .[0].sourceId,
+                  taskKind: .[0].taskKind,
+                  count: length
+                })),
+                sourceRuntimeState: ($sourceStates | map({
+                  id: (.sourceId // (.pk | sub("^SOURCE#"; ""))),
+                  lastRunAt: (.lastRunAt // null),
+                  lastSuccessfulRunAt: (.lastSuccessfulRunAt // null),
+                  lastFailureAt: (.lastFailureAt // null),
+                  consecutiveFailures: (.consecutiveFailures // 0)
+                }) | sort_by(.id)),
                 sourceConfiguration: ($sources | map({
                   id, enabled, shadow, health,
                   lastScanAt: (.lastScanAt // null),
