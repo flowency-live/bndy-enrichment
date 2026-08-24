@@ -7,8 +7,7 @@ describe('Dynamo document marshalling', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('removes undefined values instead of failing a Backline write', async () => {
-    vi.spyOn(DynamoDBClient.prototype as never, 'send' as never).mockResolvedValue({} as never);
-
+    const sendSpy = vi.spyOn(DynamoDBClient.prototype as any, 'send').mockResolvedValue({});
     const client = createDynamoStoreClient('eu-west-2');
 
     await expect(client.send(new PutCommand({
@@ -20,5 +19,7 @@ describe('Dynamo document marshalling', () => {
         nested: { present: true, missing: undefined },
       },
     }))).resolves.toEqual({});
+
+    expect(sendSpy).toHaveBeenCalledOnce();
   });
 });
