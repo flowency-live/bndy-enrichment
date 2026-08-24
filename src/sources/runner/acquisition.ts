@@ -102,7 +102,8 @@ export class HttpAcquisitionRouter implements AcquisitionRouter {
   }
 
   async acquire(request: AcquisitionRequest): Promise<FetchedSource> {
-    let url = assertSafeUrl(request.url);
+    const requestedUrl = assertSafeUrl(request.url);
+    let url = requestedUrl;
     const timeoutMs = request.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     const maxBytes = request.maxBytes ?? DEFAULT_MAX_BYTES;
     const maxRedirects = request.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
@@ -145,7 +146,8 @@ export class HttpAcquisitionRouter implements AcquisitionRouter {
       return {
         kind: request.kind ?? kindFromContentType(contentType),
         body,
-        sourceUrl: url.toString(),
+        // Keep source identity/provenance on the requested URL. Redirect targets are transport detail.
+        sourceUrl: requestedUrl.toString(),
         fetchMethod: request.fetchMethod ?? 'http',
         fetchedAt: new Date().toISOString(),
         complete: request.complete ?? true,
