@@ -22,6 +22,7 @@ export type SourceRunRequest = {
   sourceId: string;
   reason: 'scheduled' | 'manual';
   requestedAt: string;
+  reconciliationId?: string;
   taskKey?: string;
   task?: Record<string, unknown>;
 };
@@ -100,6 +101,7 @@ function initialReport(config: GigSource, run: SourceRunContext): SourceRunRepor
   return {
     runId: run.runId,
     sourceId: config.id,
+    reconciliationId: run.reconciliationId,
     startedAt: run.startedAt,
     completedAt: run.startedAt,
     status: 'completed',
@@ -152,9 +154,12 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
   const clock = deps.now ?? (() => new Date());
   const idFactory = deps.newId ?? randomUUID;
   const started = clock();
+  const runId = `run-${idFactory()}`;
   const run: SourceRunContext = {
-    runId: `run-${idFactory()}`,
+    runId,
     sourceId: config.id,
+    reconciliationId: request.reconciliationId
+      ?? (request.sourceId === 'lemonrock-full-reconcile' ? runId : undefined),
     startedAt: started.toISOString(),
     runDate: started.toISOString().slice(0, 10),
     reason: request.reason,
@@ -190,7 +195,7 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     if ((parsed.nextRequests?.length ?? 0) > 0) {
       if (!deps.fanout) throw new Error(`Source ${config.id} produced child work but SOURCE_SCAN_QUEUE_URL is not configured`);
       for (const child of parsed.nextRequests ?? []) {
-        const queued = await deps.fanout.publish(child, run.startedAt);
+        const queued = await deps.fanout.publish(child, run.startedAt, run.reconciliationId);
         if (queued) report.fanoutQueued += 1;
         else report.fanoutDuplicates += 1;
       }
@@ -255,6 +260,7 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
       lastParityKey: parityKey,
       lastTaskKey: request.taskKey,
     };
+    if (run.reconciliationId) metadata.lastReconciliationId = run.reconciliationId;
     if (storedObservation.complete) metadata.lastCompleteNormalisedKey = normalisedKey;
 
     await deps.state.put({
