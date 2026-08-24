@@ -1065,3 +1065,142 @@ Begin **LR-01 + LR-02** in `bndy-enrichment`:
 5. run locally in zero-write mode
 6. produce first national counts
 7. then wire durable bootstrap queues and start the shadow bootstrap
+
+## 31. Owned completion execution control
+
+**Execution status:** Active until the completion gate below is satisfied.  
+**Delivery owner:** Backline delivery workstream.  
+**Current truth source:** live AWS state, with sanitised aggregate evidence recorded by the repository audit.  
+**Current gate:** incomplete. Evidence exists at national scale, but completeness has not yet been proven by a successful full reconciliation.
+
+This section turns LR-01 to LR-09 into a completion-controlled production run. It does not replace the architecture or implementation sections above.
+
+### 31.1 Completion claim
+
+“Lemonrock is fully ingested into Backline” may be stated only when all of the following are true for a named snapshot and timestamp:
+
+- national Artist, Venue and current/future Gig enumeration completed;
+- every enumerated source-native identity has a terminal disposition;
+- retry-pending, queued and running bootstrap work are zero;
+- failed work and dead-letter work are zero after recovery;
+- every successfully acquired object has immutable evidence, an Observation and atomised Claims;
+- no source-native object was discarded because canonical identity was uncertain;
+- unresolved and conflicting identities remain durable and inspectable;
+- a full national reconciliation completed after bootstrap recovery;
+- the final completeness manifest reconciles enumeration, hydration, Observation, Claim and evidence totals;
+- the recurring schedules below exist in deployed AWS and have completed at least one successful execution;
+- canonical writes remain disabled unless separately approved through the projection gates.
+
+A terminal disposition is one of:
+
+- `hydrated`: evidence, Observation and Claims exist;
+- `source-withdrawn`: the identity was enumerated but the source now explicitly reports it absent/unavailable, with evidence;
+- `unresolved`: source data is fully retained but no canonical BNDY identity is yet safe;
+- `conflicted`: source data is fully retained and competing identity evidence requires later resolution.
+
+`retry-pending`, `failed` and unexplained `missing` are not completion states.
+
+### 31.2 Execution stages
+
+#### Stage A — recover the bootstrap
+
+- classify every failed task by source and task kind;
+- fix the underlying acquisition, parsing or persistence defect;
+- replay only the affected idempotent work;
+- reconcile duplicate task-history rows to the current logical task inventory;
+- finish with no failed or dead-letter work.
+
+**Gate A:** every enumerated task has a valid terminal disposition and the active queues are drained.
+
+#### Stage B — deploy full national reconciliation
+
+- attach `lemonrock-full-reconcile` to the deployed weekly completeness rule;
+- verify the deployed target, not only the CDK source;
+- run an immediate full reconciliation after bootstrap recovery;
+- record a completeness manifest containing discovered identities, hydrated identities, missing identities, terminal dispositions and evidence/Observation/Claim totals;
+- enqueue and recover any gaps found by the reconciliation;
+- run the final reconciliation again after gap recovery.
+
+**Gate B:** the final full-reconcile manifest contains zero unexplained missing identities and zero pending recovery work.
+
+#### Stage C — prove Backline integrity
+
+For Artist, Venue and Gig separately, verify:
+
+```text
+enumerated source identities
+= hydrated
++ explicitly source-withdrawn
++ unresolved
++ conflicted
+```
+
+Additionally verify:
+
+- every hydrated identity has at least one current Observation;
+- every current Observation has immutable evidence;
+- expected semantic/source Claims are present;
+- source-native keys are stable and unique;
+- no ambiguous name-only match created canonical data;
+- the canonical BNDY baseline remains unchanged by the shadow ingestion.
+
+**Gate C:** a reproducible, sanitised completion report passes all invariants.
+
+#### Stage D — verify recurring diffs
+
+The deployed operating model must include:
+
+| Loop | Target cadence | Purpose |
+|---|---|---|
+| New gigs | every 10–15 minutes | discover newly posted or changed gigs |
+| Explicit cancellations | every 10–15 minutes | retain and act on explicit cancellation evidence |
+| Artist directory diff | daily | discover new Artist identities and rehydrate changed/stale profiles |
+| Venue directory diff | daily | discover new Venue identities and rehydrate changed/stale profiles |
+| Future-gig reconciliation | adaptive by event proximity | refresh date, time, venue, lineup, admission, ticketing and state |
+| Full national reconciliation | weekly | prove continuing inventory completeness and repair silent drift |
+
+Every loop must record:
+
+- last run;
+- last successful run;
+- last change detected;
+- items discovered/changed;
+- failures and consecutive failures;
+- next due run;
+- source health;
+- resulting work and queue outcome.
+
+**Gate D:** every loop is present in deployed AWS and its first scheduled execution completes successfully.
+
+#### Stage E — hand off to the next Backline stage
+
+Once Gates A to D pass:
+
+- mark national Lemonrock ingestion complete on the workboard;
+- freeze the successful snapshot/manifest as completion evidence;
+- continue recurring diffs;
+- hand the corpus to the identity-resolution, Godmode graph and shadow-projection workstreams;
+- keep all canonical mass writes disabled until their separate review gates pass.
+
+### 31.3 Execution order
+
+1. Failed-task and dead-letter diagnosis.
+2. Idempotent recovery and queue drain.
+3. Full-reconcile target deployment.
+4. Immediate national reconciliation.
+5. Gap hydration/recovery.
+6. Final national reconciliation and invariant report.
+7. Scheduled-loop verification.
+8. Workboard completion update and next-stage handoff.
+
+### 31.4 Reporting rule
+
+Progress reports must distinguish:
+
+- **evidence captured**;
+- **identity hydrated**;
+- **identity resolved**;
+- **projection proposed**;
+- **projection applied**.
+
+Large Observation or Claim totals alone do not prove national completeness. Only the reconciliation manifest and the gates above can support the completion claim.
