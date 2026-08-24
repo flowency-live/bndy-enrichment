@@ -14,11 +14,15 @@ import { entityResolutionItem } from '../knowledge/stores/resolution-store.js';
 import { SourceRegistryStore } from '../knowledge/stores/source-registry-store.js';
 import type { EntityResolution, GigSource, SourceObservation } from '../knowledge/types.js';
 
+function requiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is required`);
+  return value;
+}
+
 const region = process.env.AWS_REGION ?? 'eu-west-2';
-const stateTable = process.env.STATE_TABLE;
-const evidenceBucket = process.env.EVIDENCE_BUCKET;
-if (!stateTable) throw new Error('STATE_TABLE is required');
-if (!evidenceBucket) throw new Error('EVIDENCE_BUCKET is required');
+const stateTable = requiredEnv('STATE_TABLE');
+const evidenceBucket = requiredEnv('EVIDENCE_BUCKET');
 
 const canonicalTables = {
   artist: process.env.BNDY_ARTISTS_TABLE ?? 'bndy-artists',
@@ -125,8 +129,8 @@ const summary: Summary = {
   errors: [],
 };
 
-function addTotals(target: TypeCounts): void {
-  for (const key of Object.keys(target) as Array<keyof TypeCounts>) {
+function refreshTotals(): void {
+  for (const key of Object.keys(summary.totals) as Array<keyof TypeCounts>) {
     summary.totals[key] = summary.counts.artist[key]
       + summary.counts.venue[key]
       + summary.counts.event[key]
@@ -203,13 +207,7 @@ async function processEntity(entityType: BaselineEntityType, record: Record<stri
   const recordJson = stableJson(record);
   const contentHash = sha256(recordJson);
   const observationId = `bndy-baseline:${snapshotId}:${entityType}:${id}:${contentHash.slice(0, 16)}`;
-  const envelope = stableJson({
-    snapshotId,
-    snapshotAt,
-    entityType,
-    canonicalEntityId: id,
-    record,
-  });
+  const envelope = stableJson({ snapshotId, snapshotAt, entityType, canonicalEntityId: id, record });
 
   const observationBase: SourceObservation = {
     id: observationId,
@@ -262,9 +260,11 @@ async function processEntity(entityType: BaselineEntityType, record: Record<stri
   counts.observations += 1;
   counts.claims += claims.length;
   counts.resolutions += 1;
-  counts[evidenceResult === 'created' ? 'evidenceCreated' : 'evidenceExisting'] += 1;
+  if (evidenceResult === 'created') counts.evidenceCreated += 1;
+  else counts.evidenceExisting += 1;
   const provenance = provenanceForRecord(record);
-  counts[provenance.classification === 'bndy-legacy-canonical' ? 'legacyCanonicalEntities' : 'recoverableSourceEntities'] += 1;
+  if (provenance.classification === 'bndy-legacy-canonical') counts.legacyCanonicalEntities += 1;
+  else counts.recoverableSourceEntities += 1;
 }
 
 async function mapLimit<T>(items: T[], limit: number, worker: (item: T) => Promise<void>): Promise<void> {
@@ -288,19 +288,13 @@ async function scanCanonicalTable(
     const records = (page.Items ?? []) as Record<string, unknown>[];
     await mapLimit(records, 6, async (record) => processEntity(classify(record), record));
     ExclusiveStartKey = page.LastEvaluatedKey as Record<string, unknown> | undefined;
-    addTotals(summary.totals);
-    console.log(JSON.stringify({
-      progress: true,
-      tableName,
-      snapshotId,
-      totals: summary.totals,
-      skippedWithoutId: summary.skippedWithoutId,
-    }));
+    refreshTotals();
+    console.log(JSON.stringify({ progress: true, tableName, snapshotId, totals: summary.totals, skippedWithoutId: summary.skippedWithoutId }));
   } while (ExclusiveStartKey);
 }
 
 async function writeManifest(): Promise<void> {
-  addTotals(summary.totals);
+  refreshTotals();
   await ddb.send(new PutCommand({
     TableName: stateTable,
     Item: {
@@ -321,9 +315,7 @@ async function main(): Promise<void> {
     await scanCanonicalTable(canonicalTables.artist, () => 'artist');
     await scanCanonicalTable(canonicalTables.venue, () => 'venue');
     await scanCanonicalTable(canonicalTables.event, logicalEventType);
-    if (summary.skippedWithoutId > 0) {
-      throw new Error(`Baseline skipped ${summary.skippedWithoutId} canonical rows without id`);
-    }
+    if (summary.skippedWithoutId > 0) throw new Error(`Baseline skipped ${summary.skippedWithoutId} canonical rows without id`);
     summary.status = 'complete';
     summary.completedAt = new Date().toISOString();
     await writeManifest();
