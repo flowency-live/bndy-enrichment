@@ -236,6 +236,13 @@ export class BndyEnrichmentStack extends cdk.Stack {
         new targets.SqsQueue(sourceScanQueue, {
           message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-venue-index', reason: 'scheduled' }),
         }),
+        new targets.SqsQueue(sourceScanQueue, {
+          message: events.RuleTargetInput.fromObject({
+            sourceId: 'lemonrock-full-reconcile',
+            reason: 'scheduled',
+            task: { kind: 'future-index', url: 'https://www.lemonrock.com/' },
+          }),
+        }),
       ],
     });
 
