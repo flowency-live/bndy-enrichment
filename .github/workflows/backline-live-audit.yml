@@ -9,10 +9,6 @@ permissions:
   contents: write
   id-token: write
 
-concurrency:
-  group: backline-live-audit
-  cancel-in-progress: true
-
 jobs:
   audit:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Run sanitised Backline AWS audit')
