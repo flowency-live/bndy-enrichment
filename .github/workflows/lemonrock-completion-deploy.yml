@@ -1,0 +1,115 @@
+name: Deploy and start Lemonrock completion
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  deploy-and-start:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Deploy Lemonrock completion runtime')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Require dedicated deployment role
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+        run: |
+          set -euo pipefail
+          test -n "$AWS_DEPLOY_ROLE_ARN" || {
+            echo "AWS_DEPLOY_ROLE_ARN is not configured in the production environment"
+            exit 1
+          }
+
+      - name: Configure AWS deployment credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Install and validate
+        run: |
+          set -euo pipefail
+          npm install
+          npm run build
+          npm run test
+          npm run check
+          npx cdk synth >/tmp/cdk-synth.log
+
+      - name: Deploy exact main revision
+        run: |
+          set -euo pipefail
+          npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+
+      - name: Verify deployed recurring targets
+        run: |
+          set -euo pipefail
+          weekly_rule=$(aws cloudformation list-stack-resources             --stack-name BndyEnrichmentStack             --query "StackResourceSummaries[?LogicalResourceId=='LemonrockWeeklyDirectoryReconcile'].PhysicalResourceId | [0]"             --output text)
+          daily_rule=$(aws cloudformation list-stack-resources             --stack-name BndyEnrichmentStack             --query "StackResourceSummaries[?LogicalResourceId=='LemonrockDailyReconcile'].PhysicalResourceId | [0]"             --output text)
+          fast_rule=$(aws cloudformation list-stack-resources             --stack-name BndyEnrichmentStack             --query "StackResourceSummaries[?LogicalResourceId=='LemonrockFastGigTick'].PhysicalResourceId | [0]"             --output text)
+
+          test "$weekly_rule" != "None"
+          test "$daily_rule" != "None"
+          test "$fast_rule" != "None"
+
+          weekly_sources=$(aws events list-targets-by-rule --rule "$weekly_rule"             --query "Targets[].Input" --output text)
+          daily_sources=$(aws events list-targets-by-rule --rule "$daily_rule"             --query "Targets[].Input" --output text)
+          fast_sources=$(aws events list-targets-by-rule --rule "$fast_rule"             --query "Targets[].Input" --output text)
+
+          grep -q 'lemonrock-full-reconcile' <<<"$weekly_sources"
+          grep -q 'lemonrock-future-reconcile' <<<"$daily_sources"
+          grep -q 'lemonrock-artist-index' <<<"$daily_sources"
+          grep -q 'lemonrock-venue-index' <<<"$daily_sources"
+          grep -q 'lemonrock-new-gigs' <<<"$fast_sources"
+          grep -q 'lemonrock-cancellations' <<<"$fast_sources"
+
+      - name: Start durable full national reconciliation
+        run: |
+          set -euo pipefail
+          queue_url=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.SourceScanQueueUrl)")
+          requested_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          body=$(jq -nc --arg requestedAt "$requested_at" '{
+            sourceId:"lemonrock-full-reconcile",
+            reason:"manual",
+            requestedAt:$requestedAt,
+            task:{kind:"full-reconcile",url:"https://www.lemonrock.com/"}
+          }')
+          aws sqs send-message --queue-url "$queue_url" --message-body "$body" >/dev/null
+
+      - name: Publish sanitised start evidence
+        if: success()
+        env:
+          DEPLOYED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p ops
+          jq -n             --arg startedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)"             --arg deployedSha "$DEPLOYED_SHA"             '{
+              phase:"reconciliation-started",
+              status:"running",
+              startedAt:$startedAt,
+              deployedSha:$deployedSha,
+              shadow:true,
+              canonicalWritesEnabled:false,
+              recurringTargetsVerified:true
+            }' > ops/lemonrock-completion-run.json
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ops/lemonrock-completion-run.json
+          git commit -m "Record Lemonrock completion reconciliation start" || exit 0
+          if ! git push origin HEAD:main; then
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
