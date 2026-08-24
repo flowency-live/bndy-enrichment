@@ -1,0 +1,10 @@
+{
+  "phase": "authenticating",
+  "status": "failed",
+  "startedAt": "2026-08-24T19:13:34Z",
+  "deployedSha": "57a87325739153270833a137b35cbe63443d7d84",
+  "shadow": true,
+  "canonicalWritesEnabled": false,
+  "recurringTargetsVerified": false,
+  "completedAt": "2026-08-24T19:13:34Z"
+}
