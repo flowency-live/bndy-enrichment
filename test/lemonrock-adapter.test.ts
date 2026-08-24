@@ -124,4 +124,37 @@ describe('Lemonrock source-native identities', () => {
     expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigs-in-greater-manchester');
     expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigs-in-london');
   });
+
+  it('fans a full reconciliation across national artist, venue and gig roots', () => {
+    const html = `
+      <html><body>
+        <a href="/gigs-in-london">London gigs</a>
+        <a href="/gig.php?id=939252">Current gig</a>
+      </body></html>`;
+    const parsed = parseLemonrock(
+      html,
+      'https://www.lemonrock.com/',
+      run('lemonrock-full-reconcile'),
+    );
+    const tasks = parsed.nextRequests ?? [];
+    expect(tasks).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        sourceId: 'lemonrock-artist-index',
+        task: expect.objectContaining({ kind: 'artist-index' }),
+      }),
+      expect.objectContaining({
+        sourceId: 'lemonrock-venue-index',
+        task: expect.objectContaining({ kind: 'venue-index' }),
+      }),
+      expect.objectContaining({
+        sourceId: 'lemonrock-future-reconcile',
+        task: expect.objectContaining({ kind: 'gig-index' }),
+      }),
+      expect.objectContaining({
+        sourceId: 'lemonrock-gig-hydration',
+        task: expect.objectContaining({ nativeId: 'lemonrock:gig:939252' }),
+      }),
+    ]));
+  });
+
 });
