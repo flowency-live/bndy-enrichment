@@ -1,0 +1,174 @@
+name: Lemonrock completion diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/lemonrock-completion-diagnostic.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Read aggregate completion state
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "$tmp_dir"' EXIT
+          mkdir -p ops
+
+          state_table=$(aws cloudformation describe-stacks             --stack-name BndyEnrichmentStack             --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]"             --output text)
+          queue_url=$(aws cloudformation describe-stacks             --stack-name BndyEnrichmentStack             --query "Stacks[0].Outputs[?OutputKey=='SourceScanQueueUrl'].OutputValue | [0]"             --output text)
+
+          aws dynamodb query             --table-name "$state_table"             --key-condition-expression "pk = :pk AND begins_with(sk, :prefix)"             --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#lemonrock"},":prefix":{"S":"TASK#"}}'             --projection-expression "pk, sk, sourceId, taskKind, taskKey, logicalTaskKey, #st, queuedAt, startedAt, completedAt, failedAt, updatedAt, lastError, task"             --expression-attribute-names '{"#st":"status"}'             --output json > "$tmp_dir/tasks.json"
+
+          aws dynamodb scan             --table-name "$state_table"             --filter-expression "begins_with(pk, :prefix) AND sk = :state"             --expression-attribute-values '{":prefix":{"S":"SOURCE#lemonrock-"},":state":{"S":"STATE"}}'             --projection-expression "pk, sk, sourceId, lastRunAt, lastSuccessfulRunAt, lastFailureAt, consecutiveFailures"             --output json > "$tmp_dir/source-state.json"
+
+          aws sqs get-queue-attributes             --queue-url "$queue_url"             --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed RedrivePolicy             --output json > "$tmp_dir/queue.json"
+          dlq_name=$(jq -r '.Attributes.RedrivePolicy | fromjson | .deadLetterTargetArn | split(":")[-1]' "$tmp_dir/queue.json")
+          dlq_url=$(aws sqs get-queue-url --queue-name "$dlq_name" --query QueueUrl --output text)
+          aws sqs get-queue-attributes             --queue-url "$dlq_url"             --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible             --output json > "$tmp_dir/dlq.json"
+
+          python <<'PY' "$tmp_dir/tasks.json" "$tmp_dir/source-state.json" "$tmp_dir/queue.json" "$tmp_dir/dlq.json"
+          import json, re, sys
+          from collections import Counter
+
+          def ddb(v):
+              if not isinstance(v, dict):
+                  return v
+              if "S" in v: return v["S"]
+              if "N" in v:
+                  n = float(v["N"])
+                  return int(n) if n.is_integer() else n
+              if "BOOL" in v: return v["BOOL"]
+              if "NULL" in v: return None
+              if "M" in v: return {k: ddb(x) for k, x in v["M"].items()}
+              if "L" in v: return [ddb(x) for x in v["L"]]
+              return {k: ddb(x) for k, x in v.items()}
+
+          def row(item):
+              return {k: ddb(v) for k, v in item.items()}
+
+          def error_class(value):
+              value = str(value or "")
+              tests = [
+                  ("HTTP_403", r"HTTP 403"),
+                  ("HTTP_429", r"HTTP 429"),
+                  ("HTTP_5XX", r"HTTP 5\d\d"),
+                  ("TIMEOUT", r"timeout|timed out|abort"),
+                  ("STRUCTURAL_GATE", r"structural gate|recognisable HTML"),
+                  ("PARSER", r"parse|parser"),
+                  ("PERSISTENCE", r"Dynamo|marshall|undefined"),
+                  ("FETCH", r"fetch|network"),
+              ]
+              for label, pattern in tests:
+                  if re.search(pattern, value, re.I): return label
+              return "OTHER"
+
+          tasks = [row(x) for x in json.load(open(sys.argv[1]))["Items"]]
+          current = {}
+          for task in tasks:
+              details = task.get("task") if isinstance(task.get("task"), dict) else {}
+              identity = (
+                  str(task.get("sourceId", "")),
+                  str(details.get("nativeId") or task.get("logicalTaskKey") or task.get("taskKey") or task.get("sk")),
+              )
+              if identity not in current or str(task.get("updatedAt", "")) > str(current[identity].get("updatedAt", "")):
+                  current[identity] = task
+          current = list(current.values())
+
+          sources = [row(x) for x in json.load(open(sys.argv[2]))["Items"]]
+          queue = json.load(open(sys.argv[3]))["Attributes"]
+          dlq = json.load(open(sys.argv[4]))["Attributes"]
+
+          failures = []
+          for task in current:
+              if task.get("status") not in ("failed", "error"):
+                  continue
+              details = task.get("task") if isinstance(task.get("task"), dict) else {}
+              failures.append({
+                  "sourceId": task.get("sourceId", "unknown"),
+                  "taskKind": task.get("taskKind") or details.get("kind") or "unknown",
+                  "errorClass": error_class(task.get("lastError")),
+                  "failedAt": task.get("failedAt") or task.get("updatedAt"),
+              })
+
+          outstanding = [
+              x for x in current
+              if x.get("status") not in ("complete", "completed", "succeeded")
+          ]
+          by_source_kind = Counter(
+              (str(x.get("sourceId", "unknown")),
+               str(x.get("taskKind") or (x.get("task") or {}).get("kind") or "unknown"))
+              for x in outstanding
+          )
+
+          report = {
+              "generatedAt": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
+              "sanitised": True,
+              "shadow": True,
+              "canonicalWritesEnabled": False,
+              "taskHistoryRows": len(tasks),
+              "uniqueCurrentTasks": len(current),
+              "tasksByStatus": dict(Counter(str(x.get("status", "unknown")) for x in current)),
+              "failedTaskSummary": sorted(failures, key=lambda x: (x["sourceId"], x["taskKind"])),
+              "outstandingBySourceAndKind": [
+                  {"sourceId": k[0], "taskKind": k[1], "count": count}
+                  for k, count in sorted(by_source_kind.items())
+              ],
+              "sourceRuntimeState": sorted([
+                  {
+                      "id": x.get("sourceId") or str(x.get("pk", "")).removeprefix("SOURCE#"),
+                      "lastRunAt": x.get("lastRunAt"),
+                      "lastSuccessfulRunAt": x.get("lastSuccessfulRunAt"),
+                      "lastFailureAt": x.get("lastFailureAt"),
+                      "consecutiveFailures": x.get("consecutiveFailures", 0),
+                  }
+                  for x in sources
+              ], key=lambda x: x["id"]),
+              "queue": {
+                  "visible": int(queue.get("ApproximateNumberOfMessages", 0)),
+                  "inFlight": int(queue.get("ApproximateNumberOfMessagesNotVisible", 0)),
+                  "delayed": int(queue.get("ApproximateNumberOfMessagesDelayed", 0)),
+                  "deadLetterVisible": int(dlq.get("ApproximateNumberOfMessages", 0)),
+                  "deadLetterInFlight": int(dlq.get("ApproximateNumberOfMessagesNotVisible", 0)),
+              },
+          }
+          with open("ops/lemonrock-completion-diagnostic.json", "w") as f:
+              json.dump(report, f, indent=2, sort_keys=True)
+          PY
+
+      - name: Publish sanitised diagnostic
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f ops/lemonrock-completion-diagnostic.json ]; then
+            mkdir -p ops
+            jq -n --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)"               '{generatedAt:$generatedAt,sanitised:true,status:"diagnostic-failed"}'               > ops/lemonrock-completion-diagnostic.json
+          fi
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ops/lemonrock-completion-diagnostic.json
+          git commit -m "Record Lemonrock completion diagnostic" || exit 0
+          if ! git push origin HEAD:main; then
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
