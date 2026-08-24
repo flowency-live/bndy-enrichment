@@ -1,1 +1,395 @@
-{"generatedAt":null,"sanitised":true,"errors":[{"section":"workflow","type":"NoReport"}]}
+{
+  "account": "771551874768",
+  "canonicalBaseline": {
+    "manifestCount": 1,
+    "manifests": [
+      {
+        "canonicalWritesEnabled": false,
+        "completedAt": "2026-08-24T07:34:22.467Z",
+        "counts": {
+          "artist": {
+            "claims": 125652,
+            "entities": 3229,
+            "evidenceCreated": 3229,
+            "evidenceExisting": 0,
+            "legacyCanonicalEntities": 0,
+            "observations": 3229,
+            "recoverableSourceEntities": 3229,
+            "resolutions": 3229
+          },
+          "event": {
+            "claims": 288027,
+            "entities": 8844,
+            "evidenceCreated": 8844,
+            "evidenceExisting": 0,
+            "legacyCanonicalEntities": 189,
+            "observations": 8844,
+            "recoverableSourceEntities": 8655,
+            "resolutions": 8844
+          },
+          "festival": {
+            "claims": 2497,
+            "entities": 16,
+            "evidenceCreated": 16,
+            "evidenceExisting": 0,
+            "legacyCanonicalEntities": 0,
+            "observations": 16,
+            "recoverableSourceEntities": 16,
+            "resolutions": 16
+          },
+          "venue": {
+            "claims": 101955,
+            "entities": 3199,
+            "evidenceCreated": 3199,
+            "evidenceExisting": 0,
+            "legacyCanonicalEntities": 3188,
+            "observations": 3199,
+            "recoverableSourceEntities": 11,
+            "resolutions": 3199
+          }
+        },
+        "errors": [],
+        "shadow": true,
+        "skippedWithoutId": 0,
+        "snapshotAt": "2026-08-24T07:15:00.000Z",
+        "snapshotId": "bndy-baseline-2026-08-24-v1",
+        "startedAt": "2026-08-24T07:16:37.211Z",
+        "status": "complete",
+        "totals": {
+          "claims": 518131,
+          "entities": 15288,
+          "evidenceCreated": 15288,
+          "evidenceExisting": 0,
+          "legacyCanonicalEntities": 3377,
+          "observations": 15288,
+          "recoverableSourceEntities": 11911,
+          "resolutions": 15288
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
+    }
+  ],
+  "evidenceBucket": {
+    "bytes": 146719773,
+    "newestAt": "2026-08-24T18:42:04+00:00",
+    "objects": 35543
+  },
+  "generatedAt": "2026-08-24T18:46:06.053507+00:00",
+  "identityVerified": true,
+  "lemonrock": {
+    "claims": 34618,
+    "claimsBySource": {
+      "lemonrock-artist-hydration": 299,
+      "lemonrock-gig-hydration": 16935,
+      "lemonrock-venue-hydration": 17384
+    },
+    "entityResolutions": 0,
+    "evidenceReferences": 4050,
+    "failedTasks": [
+      {
+        "errorType": "fetch failed",
+        "kind": null,
+        "sourceId": null,
+        "updatedAt": "2026-08-24T05:06:49.041Z"
+      }
+    ],
+    "lastActivityAt": "2026-08-24T18:42:03.226Z",
+    "observations": 4050,
+    "observationsBySource": {
+      "lemonrock-artist-hydration": 53,
+      "lemonrock-artist-index": 5,
+      "lemonrock-cancellations": 90,
+      "lemonrock-future-reconcile": 3,
+      "lemonrock-gig-hydration": 1305,
+      "lemonrock-new-gigs": 86,
+      "lemonrock-venue-hydration": 2477,
+      "lemonrock-venue-index": 31
+    },
+    "resolutionsByType": {},
+    "sources": [
+      {
+        "cadence": "manual",
+        "enabled": true,
+        "health": "unknown",
+        "id": "lemonrock-artist-hydration",
+        "lastReconciledAt": null,
+        "lastScanAt": null,
+        "lastSuccessfulScanAt": null,
+        "shadow": true
+      },
+      {
+        "cadence": "manual",
+        "enabled": true,
+        "health": "unknown",
+        "id": "lemonrock-artist-index",
+        "lastReconciledAt": null,
+        "lastScanAt": null,
+        "lastSuccessfulScanAt": null,
+        "shadow": true
+      },
+      {
+        "cadence": "manual",
+        "enabled": true,
+        "health": "unknown",
+        "id": "lemonrock-cancellations",
+        "lastReconciledAt": null,
+        "lastScanAt": null,
+        "lastSuccessfulScanAt": null,
+        "shadow": true
+      },
+      {
+        "cadence": "manual",
+        "enabled": true,
+        "health": "unknown",
+        "id": "lemonrock-full-reconcile",
+        "lastReconciledAt": null,
+        "lastScanAt": null,
+        "lastSuccessfulScanAt": null,
+        "shadow": true
+      },
+      {
+        "cadence": "manual",
+        "enabled": true,
+        "health": "unknown",
+        "id": "lemonrock-future-reconcile",
+        "lastReconciledAt": null,
+        "lastScanAt": null,
+        "lastSuccessfulScanAt": null,
+        "shadow": true
+      },
+      {
+        "cadence": "manual",
+        "enabled": true,
+        "health": "unknown",
+        "id": "lemonrock-gig-hydration",
+        "lastReconciledAt": null,
+        "lastScanAt": null,
+        "lastSuccessfulScanAt": null,
+        "shadow": true
+      },
+      {
+        "cadence": "manual",
+        "enabled": true,
+        "health": "unknown",
+        "id": "lemonrock-new-gigs",
+        "lastReconciledAt": null,
+        "lastScanAt": null,
+        "lastSuccessfulScanAt": null,
+        "shadow": true
+      },
+      {
+        "cadence": "manual",
+        "enabled": true,
+        "health": "unknown",
+        "id": "lemonrock-venue-hydration",
+        "lastReconciledAt": null,
+        "lastScanAt": null,
+        "lastSuccessfulScanAt": null,
+        "shadow": true
+      },
+      {
+        "cadence": "manual",
+        "enabled": true,
+        "health": "unknown",
+        "id": "lemonrock-venue-index",
+        "lastReconciledAt": null,
+        "lastScanAt": null,
+        "lastSuccessfulScanAt": null,
+        "shadow": true
+      }
+    ],
+    "taskHistoryRows": 3881,
+    "taskStatus": {
+      "completed": 2662,
+      "failed": 1
+    },
+    "taxonomy": {
+      "artist": {
+        "completed": 53,
+        "discovered": 53
+      },
+      "artist-index-page": {
+        "completed": 1,
+        "discovered": 1
+      },
+      "gig": {
+        "completed": 87,
+        "discovered": 87
+      },
+      "other": {
+        "completed": 16,
+        "discovered": 17,
+        "failed": 1
+      },
+      "venue": {
+        "completed": 2477,
+        "discovered": 2477
+      },
+      "venue-index-page": {
+        "completed": 28,
+        "discovered": 28
+      }
+    },
+    "uniqueCurrentTasks": 2663
+  },
+  "queues": [],
+  "readOnly": true,
+  "region": "eu-west-2",
+  "resourceCounts": {
+    "AWS::CDK::Metadata": 1,
+    "AWS::DynamoDB::Table": 1,
+    "AWS::Events::Rule": 6,
+    "AWS::IAM::Policy": 8,
+    "AWS::IAM::Role": 8,
+    "AWS::Lambda::EventSourceMapping": 5,
+    "AWS::Lambda::Function": 8,
+    "AWS::Lambda::Permission": 3,
+    "AWS::S3::Bucket": 1,
+    "AWS::S3::BucketPolicy": 1,
+    "AWS::SQS::Queue": 12,
+    "AWS::SQS::QueuePolicy": 1,
+    "AWS::SecretsManager::Secret": 1
+  },
+  "sanitised": true,
+  "schedules": [
+    {
+      "logicalRole": "CaptureScanRuleA091BC00",
+      "scheduleExpression": "rate(5 minutes)",
+      "state": "ENABLED",
+      "targetInputs": [
+        {
+          "reason": null,
+          "sourceId": null,
+          "taskKind": null
+        }
+      ]
+    },
+    {
+      "logicalRole": "DailyScanRule81F5C117",
+      "scheduleExpression": "cron(15 3 * * ? *)",
+      "state": "ENABLED",
+      "targetInputs": [
+        {
+          "reason": null,
+          "sourceId": null,
+          "taskKind": null
+        }
+      ]
+    },
+    {
+      "logicalRole": "LemonrockDailyReconcile4F5BB31C",
+      "scheduleExpression": "cron(10 2 * * ? *)",
+      "state": "ENABLED",
+      "targetInputs": [
+        {
+          "reason": "scheduled",
+          "sourceId": "lemonrock-future-reconcile",
+          "taskKind": null
+        }
+      ]
+    },
+    {
+      "logicalRole": "LemonrockFastGigTickB23E8683",
+      "scheduleExpression": "rate(15 minutes)",
+      "state": "ENABLED",
+      "targetInputs": [
+        {
+          "reason": "scheduled",
+          "sourceId": "lemonrock-new-gigs",
+          "taskKind": null
+        },
+        {
+          "reason": "scheduled",
+          "sourceId": "lemonrock-cancellations",
+          "taskKind": null
+        }
+      ]
+    },
+    {
+      "logicalRole": "LemonrockWeeklyDirectoryReconcileCB1A5499",
+      "scheduleExpression": "cron(20 2 ? * SUN *)",
+      "state": "ENABLED",
+      "targetInputs": [
+        {
+          "reason": "scheduled",
+          "sourceId": "lemonrock-artist-index",
+          "taskKind": null
+        },
+        {
+          "reason": "scheduled",
+          "sourceId": "lemonrock-venue-index",
+          "taskKind": null
+        }
+      ]
+    },
+    {
+      "logicalRole": "SourceDispatchTick13E0B2C9",
+      "scheduleExpression": "rate(15 minutes)",
+      "state": "ENABLED",
+      "targetInputs": [
+        {
+          "reason": null,
+          "sourceId": null,
+          "taskKind": null
+        }
+      ]
+    }
+  ],
+  "stack": {
+    "lastUpdatedAt": "2026-08-24T06:33:00.868000+00:00",
+    "status": "UPDATE_COMPLETE"
+  },
+  "stateTable": {
+    "itemsScanned": 598531,
+    "scanCapacityUnits": 72060.5
+  }
+}
