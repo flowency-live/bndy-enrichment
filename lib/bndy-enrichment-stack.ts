@@ -222,20 +222,22 @@ export class BndyEnrichmentStack extends cdk.Stack {
 
     new events.Rule(this, 'LemonrockDailyReconcile', {
       schedule: events.Schedule.cron({ minute: '10', hour: '2' }),
-      targets: [new targets.SqsQueue(sourceScanQueue, {
-        message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-future-reconcile', reason: 'scheduled' }),
-      })],
-    });
-
-    new events.Rule(this, 'LemonrockWeeklyDirectoryReconcile', {
-      schedule: events.Schedule.cron({ minute: '20', hour: '2', weekDay: 'SUN' }),
       targets: [
+        new targets.SqsQueue(sourceScanQueue, {
+          message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-future-reconcile', reason: 'scheduled' }),
+        }),
         new targets.SqsQueue(sourceScanQueue, {
           message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-artist-index', reason: 'scheduled' }),
         }),
         new targets.SqsQueue(sourceScanQueue, {
           message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-venue-index', reason: 'scheduled' }),
         }),
+      ],
+    });
+
+    new events.Rule(this, 'LemonrockWeeklyDirectoryReconcile', {
+      schedule: events.Schedule.cron({ minute: '20', hour: '2', weekDay: 'SUN' }),
+      targets: [
         new targets.SqsQueue(sourceScanQueue, {
           message: events.RuleTargetInput.fromObject({
             sourceId: 'lemonrock-full-reconcile',
