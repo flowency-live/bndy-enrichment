@@ -5,7 +5,21 @@ import { createDynamoStoreClient, type DynamoStoreClient } from './clients.js';
 export const CLAIM_BY_OBSERVATION_INDEX = 'ObservationClaimsIndex';
 export const CLAIM_BY_SUBJECT_INDEX = 'SubjectClaimsIndex';
 
-export type CanonicalEntityType = 'artist' | 'venue' | 'event';
+export type CanonicalEntityType = 'artist' | 'venue' | 'event' | 'festival';
+
+export function knowledgeClaimItem(claim: KnowledgeClaim): Record<string, unknown> {
+  const parsed = KnowledgeClaimSchema.parse(claim);
+  return {
+    pk: `CLAIM#${parsed.id}`,
+    sk: 'META',
+    entityType: 'KnowledgeClaim',
+    ...parsed,
+    GSI1PK: `OBS#${parsed.observationId}`,
+    GSI1SK: `${parsed.observedAt}#${parsed.id}`,
+    GSI2PK: `SUBJECT#${parsed.subject.type}#${parsed.subject.key}`,
+    GSI2SK: `${parsed.observedAt}#${parsed.id}`,
+  };
+}
 
 export class ClaimStore {
   constructor(
@@ -14,19 +28,9 @@ export class ClaimStore {
   ) {}
 
   async put(claim: KnowledgeClaim): Promise<void> {
-    const parsed = KnowledgeClaimSchema.parse(claim);
     await this.client.send(new PutCommand({
       TableName: this.tableName,
-      Item: {
-        pk: `CLAIM#${parsed.id}`,
-        sk: 'META',
-        entityType: 'KnowledgeClaim',
-        ...parsed,
-        GSI1PK: `OBS#${parsed.observationId}`,
-        GSI1SK: `${parsed.observedAt}#${parsed.id}`,
-        GSI2PK: `SUBJECT#${parsed.subject.type}#${parsed.subject.key}`,
-        GSI2SK: `${parsed.observedAt}#${parsed.id}`,
-      },
+      Item: knowledgeClaimItem(claim),
       ConditionExpression: 'attribute_not_exists(pk)',
     }));
   }
