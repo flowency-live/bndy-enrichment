@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { GigSource } from '../src/knowledge/types.js';
+import type { SourceAdapter } from '../src/sources/runner/adapter.js';
 import { DynamoSqsSourceFanoutPublisher } from '../src/sources/runner/fanout.js';
+import { runSource, type RunnerDependencies } from '../src/sources/runner/runner.js';
 
 const child = {
   sourceId: 'lemonrock-gig-hydration',
@@ -78,4 +81,75 @@ describe('Lemonrock reconciliation lineage', () => {
     });
     expect(sqsSend).not.toHaveBeenCalled();
   });
+
+  it('starts a lineage at the full-reconcile root and propagates it to child fanout', async () => {
+    const source: GigSource = {
+      id: 'lemonrock-full-reconcile',
+      name: 'Lemonrock full reconciliation',
+      url: 'https://www.lemonrock.com/',
+      type: 'AGGREGATOR',
+      timezone: 'Europe/London',
+      cadence: 'manual',
+      localTime: '05:00',
+      mode: 'append-only',
+      snapshotSemantics: 'incremental',
+      authorityClass: 'aggregator',
+      thresholds: {},
+      adapter: 'lemonrock',
+      runtimeClass: 'standard',
+      enabled: true,
+      shadow: true,
+      writerAuthority: 'aws',
+      health: 'unknown',
+    };
+    const adapter: SourceAdapter = {
+      async fetch() {
+        return {
+          kind: 'html',
+          body: '<html><body></body></html>',
+          sourceUrl: source.url,
+          fetchMethod: 'test',
+          fetchedAt: '2026-08-24T19:10:00.000Z',
+          complete: false,
+        };
+      },
+      async parse() {
+        return { events: [], nextRequests: [child], parked: [], warnings: [] };
+      },
+    };
+    const publish = vi.fn().mockResolvedValue(true);
+    const deps: RunnerDependencies = {
+      registry: { async get() { return source; } },
+      state: { async get() { return null; }, async put() {} },
+      observations: { async put(observation) { return observation; } },
+      claims: { async put() {} },
+      artifacts: {
+        async writeNormalised() { return 'runs/normalised.json'; },
+        async writeDiff() { return 'runs/diff.json'; },
+        async writeParity() { return 'runs/parity.json'; },
+        async writeReport() { return 'runs/report.json'; },
+        async loadNormalised() { return []; },
+      },
+      projection: { async publish() {} },
+      fanout: { publish, async mark() {} },
+      acquisition: { async acquire() { throw new Error('adapter owns acquisition'); } },
+      loadAdapter: () => adapter,
+      now: () => new Date('2026-08-24T19:10:00.000Z'),
+      newId: () => 'full-reconcile-1',
+    };
+
+    const result = await runSource({
+      sourceId: 'lemonrock-full-reconcile',
+      reason: 'manual',
+      requestedAt: '2026-08-24T19:09:00.000Z',
+    }, deps);
+
+    expect(result.report.reconciliationId).toBe('run-full-reconcile-1');
+    expect(publish).toHaveBeenCalledWith(
+      child,
+      '2026-08-24T19:10:00.000Z',
+      'run-full-reconcile-1',
+    );
+  });
+
 });
