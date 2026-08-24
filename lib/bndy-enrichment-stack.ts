@@ -242,7 +242,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
           message: events.RuleTargetInput.fromObject({
             sourceId: 'lemonrock-full-reconcile',
             reason: 'scheduled',
-            task: { kind: 'future-index', url: 'https://www.lemonrock.com/' },
+            task: { kind: 'full-reconcile', url: 'https://www.lemonrock.com/' },
           }),
         }),
       ],
