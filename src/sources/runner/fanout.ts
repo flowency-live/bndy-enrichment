@@ -6,7 +6,7 @@ import type { SourceFanoutRequest } from './types.js';
 export type SourceTaskStatus = 'queued' | 'running' | 'completed' | 'failed';
 
 export interface SourceFanoutPublisher {
-  publish(request: SourceFanoutRequest, requestedAt: string): Promise<boolean>;
+  publish(request: SourceFanoutRequest, requestedAt: string, reconciliationId?: string): Promise<boolean>;
   mark(sourceId: string, taskKey: string, status: SourceTaskStatus, at: string, error?: string): Promise<void>;
 }
 
@@ -65,7 +65,7 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
     this.sqs = sqs ?? new SQSClient({});
   }
 
-  async publish(request: SourceFanoutRequest, requestedAt: string): Promise<boolean> {
+  async publish(request: SourceFanoutRequest, requestedAt: string, reconciliationId?: string): Promise<boolean> {
     const resolvedTaskKey = dedupeKey(request, requestedAt);
     const key = taskKey(request.sourceId, resolvedTaskKey);
     try {
@@ -83,12 +83,29 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
           task: request.task,
           status: 'queued',
           queuedAt: requestedAt,
+          lastDiscoveredAt: requestedAt,
+          reconciliationId,
+          lastReconciliationId: reconciliationId,
           updatedAt: requestedAt,
         },
         ConditionExpression: 'attribute_not_exists(pk)',
       }));
     } catch (error) {
-      if (error instanceof Error && error.name === 'ConditionalCheckFailedException') return false;
+      if (error instanceof Error && error.name === 'ConditionalCheckFailedException') {
+        const values: Record<string, unknown> = { ':at': requestedAt };
+        let update = 'SET lastDiscoveredAt = :at, updatedAt = :at';
+        if (reconciliationId) {
+          update += ', lastReconciliationId = :reconciliationId';
+          values[':reconciliationId'] = reconciliationId;
+        }
+        await this.ddb.send(new UpdateCommand({
+          TableName: this.tableName,
+          Key: key,
+          UpdateExpression: update,
+          ExpressionAttributeValues: values,
+        }));
+        return false;
+      }
       throw error;
     }
 
@@ -99,6 +116,7 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
           sourceId: request.sourceId,
           reason: 'manual',
           requestedAt,
+          reconciliationId,
           taskKey: resolvedTaskKey,
           task: request.task,
         }),
