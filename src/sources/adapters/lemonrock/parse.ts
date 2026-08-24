@@ -68,7 +68,11 @@ function artistIndex(html: string, sourceUrl: string): ParsedSource {
     const slug = lemonrockSlug(anchor.href)!;
     return request('lemonrock-artist-hydration', 'artist', anchor.href, `lemonrock:artist:${slug}`, anchor.text);
   });
-  const pages = pageRequests(html, sourceUrl, 'advancedsearchbands.php', 'artist-index-page', 'lemonrock-artist-index');
+  const pages = uniqueBy([
+    ...pageRequests(html, sourceUrl, 'allbands.php', 'artist-index-page', 'lemonrock-artist-index'),
+    // Retain compatibility with previously captured advanced-search evidence.
+    ...pageRequests(html, sourceUrl, 'advancedsearchbands.php', 'artist-index-page', 'lemonrock-artist-index'),
+  ], (item) => item.taskKey);
   const text = textFromHtml(html);
   const total = Number(text.match(/Found\s+([\d,]+)\s+band\/artists?/i)?.[1]?.replace(/,/g, '') ?? '0');
   const generated: SourceFanoutRequest[] = [];
@@ -94,7 +98,12 @@ function venueIndex(html: string, sourceUrl: string): ParsedSource {
 function futureIndex(html: string, sourceUrl: string): ParsedSource {
   const counties = uniqueBy(
     anchorsFromHtml(html, sourceUrl)
-      .filter((anchor) => new URL(anchor.href).pathname.startsWith('/gigs-in-'))
+      .filter((anchor) => {
+        const url = new URL(anchor.href);
+        const pathname = url.pathname.toLowerCase();
+        return pathname.startsWith('/gigs-in-')
+          || (pathname === '/gigsincounty.php' && url.searchParams.has('county'));
+      })
       .map((anchor) => request('lemonrock-future-reconcile', 'gig-index', anchor.href)),
     (item) => item.taskKey,
   );
@@ -102,25 +111,39 @@ function futureIndex(html: string, sourceUrl: string): ParsedSource {
   return { events: [], nextRequests: uniqueBy([...counties, ...gigs], (item) => item.taskKey), parked: [], warnings: [] };
 }
 
-function fullReconcile(html: string, sourceUrl: string): ParsedSource {
-  const future = futureIndex(html, sourceUrl);
+function fullReconcile(_html: string, _sourceUrl: string): ParsedSource {
   const roots = [
     request(
       'lemonrock-artist-index',
       'artist-index',
-      'https://www.lemonrock.com/advancedsearchbands.php?_start=0',
+      'https://www.lemonrock.com/allbands.php',
     ),
     request(
       'lemonrock-venue-index',
       'venue-index',
       'https://www.lemonrock.com/allvenues.php',
     ),
+    request(
+      'lemonrock-future-reconcile',
+      'future-index',
+      'https://www.lemonrock.com/gigsbycounty.php',
+    ),
+    request(
+      'lemonrock-new-gigs',
+      'new-gigs',
+      'https://www.lemonrock.com/newestgigs.php',
+    ),
+    request(
+      'lemonrock-cancellations',
+      'cancellations',
+      'https://www.lemonrock.com/cancellations.php',
+    ),
   ];
   return {
     events: [],
-    nextRequests: uniqueBy([...roots, ...(future.nextRequests ?? [])], (item) => `${item.sourceId}|${item.taskKey}`),
-    parked: future.parked,
-    warnings: future.warnings,
+    nextRequests: roots,
+    parked: [],
+    warnings: [],
   };
 }
 
