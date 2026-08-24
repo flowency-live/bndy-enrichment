@@ -1,19 +1,208 @@
 {
-  "auditedAt": "2026-08-24T16:19:01Z",
+  "auditedAt": "2026-08-24T17:02:25Z",
   "scope": {
-    "accountMatchesExpected": null,
+    "accountMatchesExpected": true,
     "region": "eu-west-2",
-    "stackExists": null
-  },
-  "access": {
-    "credentials": "unavailable",
-    "auditExecution": "skipped"
+    "stackExists": true
   },
   "lemonrock": {
-    "status": "UNVERIFIED"
+    "observations": 3862,
+    "observationsBySource": {
+      "lemonrock-artist-hydration": 53,
+      "lemonrock-artist-index": 5,
+      "lemonrock-cancellations": 83,
+      "lemonrock-future-reconcile": 3,
+      "lemonrock-gig-hydration": 1131,
+      "lemonrock-new-gigs": 79,
+      "lemonrock-venue-hydration": 2477,
+      "lemonrock-venue-index": 31
+    },
+    "claims": 32360,
+    "claimsBySource": {
+      "lemonrock-artist-hydration": 299,
+      "lemonrock-gig-hydration": 14677,
+      "lemonrock-venue-hydration": 17384
+    },
+    "resolutions": 0,
+    "resolutionsBySource": {},
+    "taskCount": 3707,
+    "tasksByStatus": {
+      "completed": 3706,
+      "failed": 1
+    },
+    "outstandingTasks": 1,
+    "failedTasks": 1,
+    "sourceConfiguration": [
+      {
+        "id": "lemonrock-artist-hydration",
+        "enabled": true,
+        "shadow": true,
+        "health": "unknown",
+        "lastScanAt": null,
+        "lastScheduledAt": null,
+        "nextScanAt": null
+      },
+      {
+        "id": "lemonrock-artist-index",
+        "enabled": true,
+        "shadow": true,
+        "health": "unknown",
+        "lastScanAt": null,
+        "lastScheduledAt": null,
+        "nextScanAt": null
+      },
+      {
+        "id": "lemonrock-cancellations",
+        "enabled": true,
+        "shadow": true,
+        "health": "unknown",
+        "lastScanAt": null,
+        "lastScheduledAt": null,
+        "nextScanAt": null
+      },
+      {
+        "id": "lemonrock-full-reconcile",
+        "enabled": true,
+        "shadow": true,
+        "health": "unknown",
+        "lastScanAt": null,
+        "lastScheduledAt": null,
+        "nextScanAt": null
+      },
+      {
+        "id": "lemonrock-future-reconcile",
+        "enabled": true,
+        "shadow": true,
+        "health": "unknown",
+        "lastScanAt": null,
+        "lastScheduledAt": null,
+        "nextScanAt": null
+      },
+      {
+        "id": "lemonrock-gig-hydration",
+        "enabled": true,
+        "shadow": true,
+        "health": "unknown",
+        "lastScanAt": null,
+        "lastScheduledAt": null,
+        "nextScanAt": null
+      },
+      {
+        "id": "lemonrock-new-gigs",
+        "enabled": true,
+        "shadow": true,
+        "health": "unknown",
+        "lastScanAt": null,
+        "lastScheduledAt": null,
+        "nextScanAt": null
+      },
+      {
+        "id": "lemonrock-venue-hydration",
+        "enabled": true,
+        "shadow": true,
+        "health": "unknown",
+        "lastScanAt": null,
+        "lastScheduledAt": null,
+        "nextScanAt": null
+      },
+      {
+        "id": "lemonrock-venue-index",
+        "enabled": true,
+        "shadow": true,
+        "health": "unknown",
+        "lastScanAt": null,
+        "lastScheduledAt": null,
+        "nextScanAt": null
+      }
+    ],
+    "lastObservationAt": "2026-08-24T16:57:03.260Z",
+    "queue": {
+      "visible": 0,
+      "inFlight": 0,
+      "deadLetterVisible": 2,
+      "deadLetterInFlight": 0
+    },
+    "schedules": [
+      {
+        "nameClass": "daily-reconcile",
+        "state": "ENABLED",
+        "scheduleExpression": "cron(10 2 * * ? *)"
+      },
+      {
+        "nameClass": "fast-change",
+        "state": "ENABLED",
+        "scheduleExpression": "rate(15 minutes)"
+      },
+      {
+        "nameClass": "weekly-directory-reconcile",
+        "state": "ENABLED",
+        "scheduleExpression": "cron(20 2 ? * SUN *)"
+      }
+    ],
+    "evidenceObjectsAllSources": 19150
   },
   "canonicalBaseline": {
-    "found": false,
-    "status": "UNVERIFIED"
+    "found": true,
+    "snapshotId": "bndy-baseline-2026-08-24-v1",
+    "snapshotAt": "2026-08-24T07:15:00.000Z",
+    "startedAt": "2026-08-24T07:16:37.211Z",
+    "completedAt": "2026-08-24T07:34:22.467Z",
+    "status": "complete",
+    "counts": {
+      "artist": {
+        "observations": 3229,
+        "evidenceCreated": 3229,
+        "recoverableSourceEntities": 3229,
+        "evidenceExisting": 0,
+        "legacyCanonicalEntities": 0,
+        "entities": 3229,
+        "claims": 125652,
+        "resolutions": 3229
+      },
+      "venue": {
+        "resolutions": 3199,
+        "entities": 3199,
+        "evidenceExisting": 0,
+        "legacyCanonicalEntities": 3188,
+        "recoverableSourceEntities": 11,
+        "evidenceCreated": 3199,
+        "observations": 3199,
+        "claims": 101955
+      },
+      "event": {
+        "evidenceCreated": 8844,
+        "evidenceExisting": 0,
+        "entities": 8844,
+        "resolutions": 8844,
+        "observations": 8844,
+        "legacyCanonicalEntities": 189,
+        "recoverableSourceEntities": 8655,
+        "claims": 288027
+      },
+      "festival": {
+        "evidenceExisting": 0,
+        "entities": 16,
+        "recoverableSourceEntities": 16,
+        "resolutions": 16,
+        "claims": 2497,
+        "legacyCanonicalEntities": 0,
+        "evidenceCreated": 16,
+        "observations": 16
+      }
+    },
+    "totals": {
+      "observations": 15288,
+      "recoverableSourceEntities": 11911,
+      "entities": 15288,
+      "evidenceCreated": 15288,
+      "legacyCanonicalEntities": 3377,
+      "claims": 518131,
+      "resolutions": 15288,
+      "evidenceExisting": 0
+    },
+    "skippedWithoutId": 0,
+    "errors": [],
+    "shadow": true,
+    "canonicalWritesEnabled": null
   }
 }
