@@ -216,7 +216,7 @@ jobs:
             --projection-expression "lastSuccessfulRunAt, lastFailureAt, consecutiveFailures, metadata" \
             --output json > /tmp/full-reconcile-state.json
 
-          python <<'PY' "$STATUS_FILE" /tmp/lemonrock-tasks.json /tmp/full-reconcile-state.json "$visible" "$inflight" "$delayed" "$dlq_visible" "$dlq_inflight"
+          python - "$STATUS_FILE" /tmp/lemonrock-tasks.json /tmp/full-reconcile-state.json "$visible" "$inflight" "$delayed" "$dlq_visible" "$dlq_inflight" <<'PY'
           import json, sys
           from collections import Counter
 
@@ -310,6 +310,6 @@ jobs:
           git add "$STATUS_FILE"
           git commit -m "Record Lemonrock completion reconciliation status" || exit 0
           if ! git push origin HEAD:main; then
-            git pull --rebase origin main
+            git pull --rebase --autostash origin main
             git push origin HEAD:main
           fi
