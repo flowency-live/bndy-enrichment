@@ -1,0 +1,132 @@
+name: Sanitised Backline live AWS audit
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  audit:
+    if: contains(github.event.head_commit.message, 'Run sanitised Backline AWS audit')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Query live AWS and build aggregate-only report
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          audit_tmp="$(mktemp -d)"
+          trap 'rm -rf "$audit_tmp"' EXIT
+          mkdir -p docs
+
+          aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --output json > "$audit_tmp/stack.json"
+          state_table="$(jq -r '.Stacks[0].Outputs[] | select(.OutputKey=="StateTableName") | .OutputValue' "$audit_tmp/stack.json")"
+          evidence_bucket="$(jq -r '.Stacks[0].Outputs[] | select(.OutputKey=="EvidenceBucketName") | .OutputValue' "$audit_tmp/stack.json")"
+          source_queue="$(jq -r '.Stacks[0].Outputs[] | select(.OutputKey=="SourceScanQueueUrl") | .OutputValue' "$audit_tmp/stack.json")"
+
+          aws dynamodb scan --table-name "$state_table"             --projection-expression "pk, sk, entityType, sourceId, #id, #st, health, enabled, shadow, canonicalWritesEnabled, observedAt, startedAt, completedAt, lastScanAt, lastScheduledAt, nextScanAt, snapshotId, snapshotAt, counts, totals, skippedWithoutId, errors"             --expression-attribute-names '{"#id":"id","#st":"status"}'             --output json > "$audit_tmp/state.json"
+
+          aws sqs get-queue-attributes --queue-url "$source_queue"             --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible RedrivePolicy             --output json > "$audit_tmp/queue.json"
+          dlq_name="$(jq -r '.Attributes.RedrivePolicy | fromjson | .deadLetterTargetArn | split(":")[-1]' "$audit_tmp/queue.json")"
+          dlq_url="$(aws sqs get-queue-url --queue-name "$dlq_name" --query QueueUrl --output text)"
+          aws sqs get-queue-attributes --queue-url "$dlq_url"             --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible             --output json > "$audit_tmp/dlq.json"
+
+          aws events list-rules --name-prefix BndyEnrichmentStack-Lemonrock --output json > "$audit_tmp/rules.json"
+
+          aws s3 ls "s3://$evidence_bucket/source-observations/" --recursive --summarize > "$audit_tmp/evidence.txt"
+          evidence_total="$(sed -n 's/^Total Objects: //p' "$audit_tmp/evidence.txt" | tail -1)"
+          evidence_total="${evidence_total:-0}"
+
+          jq             --arg auditedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)"             --arg accountExpected "771551874768"             --arg accountActual "$(aws sts get-caller-identity --query Account --output text)"             --arg evidenceTotal "$evidence_total"             --slurpfile queue "$audit_tmp/queue.json"             --slurpfile dlq "$audit_tmp/dlq.json"             --slurpfile rules "$audit_tmp/rules.json" '
+            def ddb:
+              if type != "object" then .
+              elif has("S") then .S
+              elif has("N") then (.N | tonumber)
+              elif has("BOOL") then .BOOL
+              elif has("NULL") then null
+              elif has("M") then (.M | map_values(ddb))
+              elif has("L") then [.L[] | ddb]
+              else . end;
+            ([.Items[] | map_values(ddb)]) as $i |
+            ([ $i[] | select((.sourceId // "") | startswith("lemonrock-")) ]) as $lr |
+            ([ $i[] | select(.pk == "BOOTSTRAP#lemonrock" and (.sk | startswith("TASK#"))) ]) as $tasks |
+            ([ $i[] | select(.entityType == "GigSource" and ((.id // "") | startswith("lemonrock-"))) ]) as $sources |
+            ([ $i[] | select((.pk | startswith("BASELINE#")) and .sk == "META") ] | sort_by(.completedAt // .snapshotAt // .startedAt) | last // null) as $baseline |
+            {
+              auditedAt: $auditedAt,
+              scope: {
+                accountMatchesExpected: ($accountActual == $accountExpected),
+                region: "eu-west-2",
+                stackExists: true
+              },
+              lemonrock: {
+                observations: ([ $lr[] | select(.entityType == "SourceObservation") ] | length),
+                observationsBySource: ([ $lr[] | select(.entityType == "SourceObservation") ] | group_by(.sourceId) | map({key: .[0].sourceId, value: length}) | from_entries),
+                claims: ([ $lr[] | select(.entityType == "KnowledgeClaim") ] | length),
+                claimsBySource: ([ $lr[] | select(.entityType == "KnowledgeClaim") ] | group_by(.sourceId) | map({key: .[0].sourceId, value: length}) | from_entries),
+                resolutions: ([ $lr[] | select(.entityType == "EntityResolution") ] | length),
+                resolutionsBySource: ([ $lr[] | select(.entityType == "EntityResolution") ] | group_by(.sourceId) | map({key: .[0].sourceId, value: length}) | from_entries),
+                taskCount: ($tasks | length),
+                tasksByStatus: ($tasks | group_by(.status // "unknown") | map({key: (.[0].status // "unknown"), value: length}) | from_entries),
+                outstandingTasks: ([ $tasks[] | select((.status // "") != "complete" and (.status // "") != "completed" and (.status // "") != "succeeded") ] | length),
+                failedTasks: ([ $tasks[] | select((.status // "") == "failed" or (.status // "") == "error") ] | length),
+                sourceConfiguration: ($sources | map({
+                  id, enabled, shadow, health,
+                  lastScanAt: (.lastScanAt // null),
+                  lastScheduledAt: (.lastScheduledAt // null),
+                  nextScanAt: (.nextScanAt // null)
+                }) | sort_by(.id)),
+                lastObservationAt: ([ $lr[] | select(.entityType == "SourceObservation") | .observedAt ] | max // null),
+                queue: {
+                  visible: (($queue[0].Attributes.ApproximateNumberOfMessages // "0") | tonumber),
+                  inFlight: (($queue[0].Attributes.ApproximateNumberOfMessagesNotVisible // "0") | tonumber),
+                  deadLetterVisible: (($dlq[0].Attributes.ApproximateNumberOfMessages // "0") | tonumber),
+                  deadLetterInFlight: (($dlq[0].Attributes.ApproximateNumberOfMessagesNotVisible // "0") | tonumber)
+                },
+                schedules: ($rules[0].Rules | map({
+                  nameClass: (if (.Name|contains("Weekly")) then "weekly-directory-reconcile" elif (.Name|contains("Daily")) then "daily-reconcile" else "fast-change" end),
+                  state: .State,
+                  scheduleExpression: .ScheduleExpression
+                }) | sort_by(.nameClass)),
+                evidenceObjectsAllSources: ($evidenceTotal | tonumber)
+              },
+              canonicalBaseline: (if $baseline == null then {found:false} else {
+                found: true,
+                snapshotId: ($baseline.snapshotId // ($baseline.pk | sub("^BASELINE#";""))),
+                snapshotAt: ($baseline.snapshotAt // null),
+                startedAt: ($baseline.startedAt // null),
+                completedAt: ($baseline.completedAt // null),
+                status: ($baseline.status // null),
+                counts: ($baseline.counts // null),
+                totals: ($baseline.totals // null),
+                skippedWithoutId: ($baseline.skippedWithoutId // 0),
+                errors: ($baseline.errors // []),
+                shadow: ($baseline.shadow // null),
+                canonicalWritesEnabled: ($baseline.canonicalWritesEnabled // null)
+              } end)
+            }' "$audit_tmp/state.json" > docs/backline-live-audit.json
+
+          if grep -Eqi 'arn:aws|queueUrl|bucketName|tableName|evidenceKey|https?://' docs/backline-live-audit.json; then
+            echo "Sanitisation validation failed"
+            exit 1
+          fi
+          jq empty docs/backline-live-audit.json
+
+      - name: Publish aggregate audit result
+        run: |
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/backline-live-audit.json
+          git commit -m "Record sanitised Backline live AWS audit" || exit 0
+          git push origin HEAD:main
