@@ -1,0 +1,19 @@
+{
+  "auditedAt": "2026-08-24T16:19:01Z",
+  "scope": {
+    "accountMatchesExpected": null,
+    "region": "eu-west-2",
+    "stackExists": null
+  },
+  "access": {
+    "credentials": "unavailable",
+    "auditExecution": "skipped"
+  },
+  "lemonrock": {
+    "status": "UNVERIFIED"
+  },
+  "canonicalBaseline": {
+    "found": false,
+    "status": "UNVERIFIED"
+  }
+}
