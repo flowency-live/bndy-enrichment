@@ -40,6 +40,10 @@ That creates three complementary propositions:
 2. **For cultural funders:** durable digital infrastructure that can strengthen audience development, sector resilience, regional visibility and knowledge about grassroots live music.
 3. **For technology partners:** a live, bounded, socially useful proving ground for evidence-grounded agentic AI, graph reasoning, entity resolution and low-cost serverless data infrastructure.
 
+These are different conversations built on the same underlying model. The core of this paper explains the shared proposition; later sections deliberately translate it into the language of the music sector, cultural funding and technology partnership rather than assuming those audiences value the same details.
+
+There is also a compounding strategic effect. Every observation retained today becomes historical context tomorrow. Over time Backline accumulates not only listings, but resolved identities, changes, cancellations, disagreements, source behaviour and relationship history. Another system can inspect the same public sources in future; it cannot instantly recreate years of reconciled historical evidence that was observed as the ecosystem changed. The usefulness of the substrate therefore compounds as BNDY operates.
+
 ---
 
 # Part I — The non-technical explanation
@@ -195,7 +199,7 @@ BNDY can explain **what it believes, why it believes it and what evidence disagr
 
 ---
 
-## 4. The important idea: BNDY stores beliefs, not just rows
+## 4. The important idea: BNDY keeps the evidence behind its current view
 
 This is the conceptual shift behind Backline.
 
@@ -207,7 +211,7 @@ Backline can say:
 
 > These are the observations. These are the claims made by different sources. These appear to refer to the same real-world thing. This is the current best-supported conclusion, and this is the evidence behind it.
 
-That is much closer to how knowledge in the real world actually behaves.
+Internally, this can be thought of as a system that stores and revises beliefs. For external audiences, **best-supported current view** is usually the clearer description. The important point is not the philosophical terminology: Backline preserves the evidence, uncertainty and decision path behind the current product state.
 
 Information changes. Sources conflict. Identity can be uncertain. New evidence arrives.
 
@@ -580,6 +584,32 @@ It could help answer questions such as:
 - What happens to local live-music activity when a venue closes?
 
 Any use of this capability would require suitable privacy, governance and methodological controls. The underlying opportunity, however, is significant: BNDY could produce evidence about grassroots cultural activity that is currently fragmented across thousands of ephemeral web pages and social posts.
+
+### 16.1 The compounding data asset
+
+Backline's value can compound with time in a way that a conventional listings database does not.
+
+Each cycle through the ecosystem adds observations, identity evidence, changes and relationships. Those improve later resolution and interpretation, which in turn improve the quality and coverage of the public product.
+
+Conceptually, the flywheel is:
+
+```text
+more observation
+      ↓
+richer evidence
+      ↓
+better identity resolution
+      ↓
+better projections and derived knowledge
+      ↓
+wider coverage, participation and trust
+      ↓
+more observation
+```
+
+Historical evidence has particular value because it cannot always be recreated retrospectively. Social posts disappear, websites change, venues close, artists rename themselves and event pages expire. A future competitor may be able to copy a user interface, reproduce a source adapter or inspect the same sources that remain available. It cannot instantly reproduce the sequence of observations, reconciliations and relationships that Backline has accumulated while those changes were happening.
+
+This should not be described as an unassailable moat. Source access, software patterns and AI models can all be copied. The defensibility comes from the **depth of historical evidence, resolved identity graph, learned source behaviour, participation and accumulated trust** built over time.
 
 ---
 
@@ -1058,6 +1088,10 @@ Those statements are either indefensible or miss the interesting part.
 
 > **BNDY is building digital infrastructure for the part of live music that commercial event systems routinely miss.**
 
+### Strategic asset claim
+
+> **Backline becomes more useful as its history deepens: current listings can be copied, but years of reconciled evidence, identity history and source behaviour cannot be recreated instantly.**
+
 ### R&D claim
 
 > **The innovation is not the knowledge graph alone; it is making a living evidence graph the operating substrate for autonomous discovery, reconciliation and cultural insight.**
@@ -1142,6 +1176,7 @@ BNDY could become a continuously maintained digital model of grassroots live mus
 - local cultural activity becomes more visible;
 - AI agents can investigate and reconcile changes;
 - every automated conclusion remains grounded in inspectable evidence;
+- historical evidence and resolution quality compound rather than disappearing when listings expire;
 - and aggregated knowledge can help the sector understand itself.
 
 That is the direction in which Backline turns BNDY from a gig-listing application into **cultural knowledge infrastructure**.
