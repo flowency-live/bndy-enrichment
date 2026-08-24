@@ -22,19 +22,20 @@ describe('Lemonrock source-native identities', () => {
     expect(gigId('https://www.lemonrock.com/gig.php?foo=bar')).toBeUndefined();
   });
 
-  it('enumerates artist profiles and resumable result pages without canonical writes', () => {
+  it('enumerates artist profiles and A-Z directory pages without canonical writes', () => {
     const html = `
-      <html><head><title>Band Search - Lemonrock Gig Guide</title></head><body>
-        <p>Found 103 band/artists</p>
+      <html><head><title>Browse bands A - Z - Lemonrock Gig Guide</title></head><body>
         <a href="/alpha">Alpha</a>
         <a href="/beta">Beta</a>
-        <a href="/advancedsearchbands.php?_start=50">Next</a>
+        <a href="/allbands.php?_start=A&amp;all=0">A</a>
       </body></html>`;
-    const parsed = parseLemonrock(html, 'https://www.lemonrock.com/advancedsearchbands.php?_start=0', run('lemonrock-artist-index'));
+    const parsed = parseLemonrock(html, 'https://www.lemonrock.com/allbands.php', run('lemonrock-artist-index'));
     const tasks = parsed.nextRequests ?? [];
     expect(tasks.some((item) => item.taskKey === 'artist:lemonrock:artist:alpha')).toBe(true);
     expect(tasks.some((item) => item.taskKey === 'artist:lemonrock:artist:beta')).toBe(true);
-    expect(tasks.filter((item) => item.sourceId === 'lemonrock-artist-index').length).toBeGreaterThanOrEqual(2);
+    expect(tasks.filter((item) => item.sourceId === 'lemonrock-artist-index')).toEqual([
+      expect.objectContaining({ task: expect.objectContaining({ url: 'https://www.lemonrock.com/allbands.php?_start=A&all=0' }) }),
+    ]);
     expect(parsed.events).toEqual([]);
   });
 
@@ -117,15 +118,15 @@ describe('Lemonrock source-native identities', () => {
   it('enumerates national county gig indexes as completeness controls', () => {
     const html = `
       <html><body>
-        <a href="/gigs-in-greater-manchester">Greater Manchester 120</a>
-        <a href="/gigs-in-london">London 900</a>
+        <a href="/gigsincounty.php?county=Greater+Manchester">Greater Manchester 120</a>
+        <a href="/gigsincounty.php?county=London">London 900</a>
       </body></html>`;
-    const parsed = parseLemonrock(html, 'https://www.lemonrock.com/', run('lemonrock-future-reconcile', { kind: 'future-index' }));
-    expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigs-in-greater-manchester');
-    expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigs-in-london');
+    const parsed = parseLemonrock(html, 'https://www.lemonrock.com/gigsbycounty.php', run('lemonrock-future-reconcile', { kind: 'future-index' }));
+    expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigsincounty.php?county=Greater+Manchester');
+    expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigsincounty.php?county=London');
   });
 
-  it('fans a full reconciliation across national artist, venue and gig roots', () => {
+  it('fans a full reconciliation across every national Lemonrock surface', () => {
     const html = `
       <html><body>
         <a href="/gigs-in-london">London gigs</a>
@@ -148,11 +149,15 @@ describe('Lemonrock source-native identities', () => {
       }),
       expect.objectContaining({
         sourceId: 'lemonrock-future-reconcile',
-        task: expect.objectContaining({ kind: 'gig-index' }),
+        task: expect.objectContaining({ kind: 'future-index' }),
       }),
       expect.objectContaining({
-        sourceId: 'lemonrock-gig-hydration',
-        task: expect.objectContaining({ nativeId: 'lemonrock:gig:939252' }),
+        sourceId: 'lemonrock-new-gigs',
+        task: expect.objectContaining({ kind: 'new-gigs' }),
+      }),
+      expect.objectContaining({
+        sourceId: 'lemonrock-cancellations',
+        task: expect.objectContaining({ kind: 'cancellations' }),
       }),
     ]));
   });
