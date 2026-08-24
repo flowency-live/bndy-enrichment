@@ -18,7 +18,8 @@
     "source:klma": "tsx src/cli/klma-knowledge.ts",
     "sources:seed-wave1": "tsx src/cli/seed-wave1-sources.ts",
     "source:parity": "tsx src/cli/source-parity.ts",
-    "lemonrock:bootstrap": "tsx src/cli/lemonrock-bootstrap.ts"
+    "lemonrock:bootstrap": "tsx src/cli/lemonrock-bootstrap.ts",
+    "bndy:baseline": "tsx src/cli/bndy-corpus-bootstrap.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
