@@ -59,7 +59,9 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
     ddb?: DynamoDBDocumentClient,
     sqs?: SQSClient,
   ) {
-    this.ddb = ddb ?? DynamoDBDocumentClient.from(new DynamoDBClient({}));
+    this.ddb = ddb ?? DynamoDBDocumentClient.from(new DynamoDBClient({}), {
+      marshallOptions: { removeUndefinedValues: true },
+    });
     this.sqs = sqs ?? new SQSClient({});
   }
 
