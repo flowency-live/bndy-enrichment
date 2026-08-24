@@ -88,8 +88,12 @@ function fresh(claim: KnowledgeClaim, now: Date, freshnessDays: number): boolean
   return observed >= now.getTime() - freshnessDays * 24 * 60 * 60 * 1000;
 }
 
-function isStrongReinstatement(authority: AuthorityClass): boolean {
+function isOwnerAuthority(authority: AuthorityClass): boolean {
   return authority === 'owner' || authority === 'artist-owned' || authority === 'venue-owned';
+}
+
+function isStrongReinstatement(authority: AuthorityClass): boolean {
+  return isOwnerAuthority(authority);
 }
 
 export class AuthorityPolicy {
@@ -98,15 +102,25 @@ export class AuthorityPolicy {
     const freshnessDays = input.freshnessDays ?? 30;
     const proposedScore = authorityScore(input.predicate, input.proposedAuthority);
 
-    if (input.ownerManaged && (input.mutation || input.destructive)) {
-      const ownerAllowed = input.proposedAuthority === 'owner' || input.proposedAuthority === 'artist-owned';
-      if (!ownerAllowed) {
-        return {
-          allowed: false,
-          reason: `owner-managed event blocks ${input.proposedAuthority} mutation`,
-          proposedScore,
-        };
-      }
+    // Once a person with an active management relationship owns the projection,
+    // automated/aggregated evidence remains useful evidence but cannot silently
+    // mutate the canonical owner-managed value. Conflicts should be surfaced for
+    // review instead. Both artist-owned and venue-owned evidence are legitimate
+    // owner-class inputs depending on the entity being managed.
+    if (input.ownerManaged && input.mutation && !isOwnerAuthority(input.proposedAuthority)) {
+      return {
+        allowed: false,
+        reason: `owner-managed projection blocks ${input.proposedAuthority} mutation`,
+        proposedScore,
+      };
+    }
+
+    if (input.ownerManaged && input.destructive && !isOwnerAuthority(input.proposedAuthority)) {
+      return {
+        allowed: false,
+        reason: `owner-managed projection blocks ${input.proposedAuthority} destructive change`,
+        proposedScore,
+      };
     }
 
     if (input.tombstone?.status === 'active' && !input.destructive) {
