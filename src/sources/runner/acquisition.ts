@@ -11,6 +11,10 @@ export type AcquisitionRequest = {
   maxBytes?: number;
   complete?: boolean;
   fetchMethod?: string;
+  /** Follow external HTTP redirects only when the adapter explicitly opts in. Every hop is SSRF-validated. */
+  followRedirects?: boolean;
+  /** Maximum validated redirect hops when followRedirects is enabled. */
+  maxRedirects?: number;
   /** Browser-only: return rendered document text instead of serialized HTML. */
   bodyMode?: 'html' | 'innerText';
   /** Browser-only hydration grace period after navigation. */
@@ -27,6 +31,7 @@ export interface HostResolver {
 
 const DEFAULT_MAX_BYTES = 5 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = 20_000;
+const DEFAULT_MAX_REDIRECTS = 5;
 
 function privateIpv4(address: string): boolean {
   const parts = address.split('.').map(Number);
@@ -89,24 +94,44 @@ export class HttpAcquisitionRouter implements AcquisitionRouter {
     private readonly fetchImpl: typeof fetch = fetch,
   ) {}
 
-  async acquire(request: AcquisitionRequest): Promise<FetchedSource> {
-    const url = assertSafeUrl(request.url);
+  private async assertResolvedSafe(url: URL): Promise<void> {
     const addresses = await this.resolver.resolve(url.hostname);
     if (addresses.length === 0) throw new Error(`Source hostname did not resolve: ${url.hostname}`);
     const unsafe = addresses.find(isPrivateAddress);
     if (unsafe) throw new Error(`Source hostname resolves to blocked address: ${unsafe}`);
+  }
 
+  async acquire(request: AcquisitionRequest): Promise<FetchedSource> {
+    let url = assertSafeUrl(request.url);
     const timeoutMs = request.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     const maxBytes = request.maxBytes ?? DEFAULT_MAX_BYTES;
+    const maxRedirects = request.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await this.fetchImpl(url, {
-        method: request.method ?? 'GET',
-        headers: request.headers,
-        signal: controller.signal,
-        redirect: 'error',
-      });
+      let response: Response;
+      let redirects = 0;
+
+      while (true) {
+        await this.assertResolvedSafe(url);
+        response = await this.fetchImpl(url, {
+          method: request.method ?? 'GET',
+          headers: request.headers,
+          signal: controller.signal,
+          redirect: request.followRedirects ? 'manual' : 'error',
+        });
+
+        if (request.followRedirects && response.status >= 300 && response.status < 400) {
+          const location = response.headers.get('location');
+          if (!location) throw new Error(`Source redirect HTTP ${response.status} did not include Location`);
+          if (redirects >= maxRedirects) throw new Error(`Source exceeded ${maxRedirects} redirect hop cap`);
+          url = assertSafeUrl(new URL(location, url).toString());
+          redirects += 1;
+          continue;
+        }
+        break;
+      }
+
       if (!response.ok) throw new Error(`Source fetch returned HTTP ${response.status}`);
 
       const declaredLength = Number(response.headers.get('content-length') ?? '0');
