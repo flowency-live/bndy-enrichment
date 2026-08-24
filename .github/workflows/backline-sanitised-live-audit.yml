@@ -171,8 +171,7 @@ jobs:
       - name: Publish aggregate report
         if: always()
         run: |
-          test -f ops/backline-sanitised-live-audit.json || printf '{"generatedAt":"%s","sanitised":true,"errors":[{"section":"workflow","type":"NoReport"}]}
-' "$(date -u +%FT%TZ)" > ops/backline-sanitised-live-audit.json
+          test -f ops/backline-sanitised-live-audit.json || echo '{"generatedAt":null,"sanitised":true,"errors":[{"section":"workflow","type":"NoReport"}]}' > ops/backline-sanitised-live-audit.json
           git config user.name bndy-backline-audit
           git config user.email actions@users.noreply.github.com
           git add -f ops/backline-sanitised-live-audit.json
