@@ -22,6 +22,7 @@ function taskKind(run: SourceRunContext): string {
   if (run.sourceId.includes('artist-hydration')) return 'artist';
   if (run.sourceId.includes('venue-hydration')) return 'venue';
   if (run.sourceId.includes('gig-hydration')) return 'gig';
+  if (run.sourceId.includes('full-reconcile')) return 'full-reconcile';
   if (run.sourceId.includes('future-reconcile')) return 'future-index';
   if (run.sourceId.includes('cancellations')) return 'cancellations';
   return 'new-gigs';
@@ -99,6 +100,28 @@ function futureIndex(html: string, sourceUrl: string): ParsedSource {
   );
   const gigs = gigRequests(html, sourceUrl);
   return { events: [], nextRequests: uniqueBy([...counties, ...gigs], (item) => item.taskKey), parked: [], warnings: [] };
+}
+
+function fullReconcile(html: string, sourceUrl: string): ParsedSource {
+  const future = futureIndex(html, sourceUrl);
+  const roots = [
+    request(
+      'lemonrock-artist-index',
+      'artist-index',
+      'https://www.lemonrock.com/advancedsearchbands.php?_start=0',
+    ),
+    request(
+      'lemonrock-venue-index',
+      'venue-index',
+      'https://www.lemonrock.com/allvenues.php',
+    ),
+  ];
+  return {
+    events: [],
+    nextRequests: uniqueBy([...roots, ...(future.nextRequests ?? [])], (item) => `${item.sourceId}|${item.taskKey}`),
+    parked: future.parked,
+    warnings: future.warnings,
+  };
 }
 
 function listPage(html: string, sourceUrl: string): ParsedSource {
@@ -278,6 +301,7 @@ export function parseLemonrock(html: string, sourceUrl: string, run: SourceRunCo
   const kind = taskKind(run);
   if (kind === 'artist-index' || kind === 'artist-index-page') return artistIndex(html, sourceUrl);
   if (kind === 'venue-index' || kind === 'venue-index-page') return venueIndex(html, sourceUrl);
+  if (kind === 'full-reconcile') return fullReconcile(html, sourceUrl);
   if (kind === 'future-index') return futureIndex(html, sourceUrl);
   if (kind === 'gig-index' || kind === 'new-gigs' || kind === 'cancellations') return listPage(html, sourceUrl);
   if (kind === 'gig') return parseGig(html, sourceUrl);
