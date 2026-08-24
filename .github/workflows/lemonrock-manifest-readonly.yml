@@ -136,6 +136,8 @@ jobs:
               "lemonrock-artist-index",
               "lemonrock-venue-index",
               "lemonrock-future-reconcile",
+              "lemonrock-new-gigs",
+              "lemonrock-cancellations",
           }
           terminal = bool(discovered) and all(x.get("status") in ("complete", "completed", "succeeded") for x in discovered)
           root_succeeded = bool(root.get("lastSuccessfulRunAt")) and int(root.get("consecutiveFailures", 0)) == 0
