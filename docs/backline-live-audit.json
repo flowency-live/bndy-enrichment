@@ -1,37 +1,110 @@
 {
-  "auditedAt": "2026-08-24T17:05:09Z",
+  "auditedAt": "2026-08-24T18:53:51Z",
   "scope": {
     "accountMatchesExpected": true,
     "region": "eu-west-2",
     "stackExists": true
   },
   "lemonrock": {
-    "observations": 3862,
+    "observations": 4050,
     "observationsBySource": {
       "lemonrock-artist-hydration": 53,
       "lemonrock-artist-index": 5,
-      "lemonrock-cancellations": 83,
+      "lemonrock-cancellations": 90,
       "lemonrock-future-reconcile": 3,
-      "lemonrock-gig-hydration": 1131,
-      "lemonrock-new-gigs": 79,
+      "lemonrock-gig-hydration": 1305,
+      "lemonrock-new-gigs": 86,
       "lemonrock-venue-hydration": 2477,
       "lemonrock-venue-index": 31
     },
-    "claims": 32360,
+    "claims": 34618,
     "claimsBySource": {
       "lemonrock-artist-hydration": 299,
-      "lemonrock-gig-hydration": 14677,
+      "lemonrock-gig-hydration": 16935,
       "lemonrock-venue-hydration": 17384
     },
     "resolutions": 0,
     "resolutionsBySource": {},
-    "taskCount": 3707,
+    "taskCount": 2663,
     "tasksByStatus": {
-      "completed": 3706,
+      "completed": 2662,
       "failed": 1
     },
     "outstandingTasks": 1,
     "failedTasks": 1,
+    "failedTaskSummary": [
+      {
+        "sourceId": "unknown",
+        "taskKind": "unknown",
+        "errorClass": "FETCH",
+        "failedAt": "2026-08-24T05:06:49.041Z"
+      }
+    ],
+    "outstandingBySourceAndKind": [
+      {
+        "sourceId": "unknown",
+        "taskKind": "unknown",
+        "count": 1
+      }
+    ],
+    "sourceRuntimeState": [
+      {
+        "id": "lemonrock-artist-hydration",
+        "lastRunAt": "2026-08-24T05:12:01.587Z",
+        "lastSuccessfulRunAt": "2026-08-24T05:12:01.587Z",
+        "lastFailureAt": null,
+        "consecutiveFailures": 0
+      },
+      {
+        "id": "lemonrock-artist-index",
+        "lastRunAt": "2026-08-24T06:33:25.655Z",
+        "lastSuccessfulRunAt": "2026-08-24T06:33:25.655Z",
+        "lastFailureAt": "2026-08-24T05:06:48.979Z",
+        "consecutiveFailures": 0
+      },
+      {
+        "id": "lemonrock-cancellations",
+        "lastRunAt": "2026-08-24T18:42:02.942Z",
+        "lastSuccessfulRunAt": "2026-08-24T18:42:02.942Z",
+        "lastFailureAt": "2026-08-24T06:27:06.964Z",
+        "consecutiveFailures": 0
+      },
+      {
+        "id": "lemonrock-future-reconcile",
+        "lastRunAt": "2026-08-24T06:33:28.115Z",
+        "lastSuccessfulRunAt": "2026-08-24T06:33:28.115Z",
+        "lastFailureAt": null,
+        "consecutiveFailures": 0
+      },
+      {
+        "id": "lemonrock-gig-hydration",
+        "lastRunAt": "2026-08-24T18:12:45.194Z",
+        "lastSuccessfulRunAt": "2026-08-24T18:12:45.194Z",
+        "lastFailureAt": null,
+        "consecutiveFailures": 0
+      },
+      {
+        "id": "lemonrock-new-gigs",
+        "lastRunAt": "2026-08-24T18:42:02.893Z",
+        "lastSuccessfulRunAt": "2026-08-24T18:42:02.893Z",
+        "lastFailureAt": "2026-08-24T06:27:11.885Z",
+        "consecutiveFailures": 0
+      },
+      {
+        "id": "lemonrock-venue-hydration",
+        "lastRunAt": "2026-08-24T04:51:28.787Z",
+        "lastSuccessfulRunAt": "2026-08-24T04:51:28.787Z",
+        "lastFailureAt": null,
+        "consecutiveFailures": 0
+      },
+      {
+        "id": "lemonrock-venue-index",
+        "lastRunAt": "2026-08-24T06:33:25.731Z",
+        "lastSuccessfulRunAt": "2026-08-24T06:33:25.731Z",
+        "lastFailureAt": null,
+        "consecutiveFailures": 0
+      }
+    ],
     "sourceConfiguration": [
       {
         "id": "lemonrock-artist-hydration",
@@ -115,7 +188,7 @@
         "nextScanAt": null
       }
     ],
-    "lastObservationAt": "2026-08-24T16:57:03.260Z",
+    "lastObservationAt": "2026-08-24T18:42:03.226Z",
     "queue": {
       "visible": 0,
       "inFlight": 0,
@@ -139,7 +212,7 @@
         "scheduleExpression": "cron(20 2 ? * SUN *)"
       }
     ],
-    "evidenceObjectsAllSources": 19150
+    "evidenceObjectsAllSources": 19338
   },
   "canonicalBaseline": {
     "found": true,
