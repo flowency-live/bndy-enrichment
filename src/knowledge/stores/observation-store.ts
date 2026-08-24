@@ -30,6 +30,18 @@ function extensionFor(contentType?: string): string {
   return 'bin';
 }
 
+export function sourceObservationItem(observation: SourceObservation): Record<string, unknown> {
+  const stored = SourceObservationSchema.parse(observation);
+  return {
+    pk: `OBS#${stored.id}`,
+    sk: 'META',
+    entityType: 'SourceObservation',
+    ...stored,
+    GSI1PK: `SOURCE#${stored.sourceId}`,
+    GSI1SK: `OBS#${stored.observedAt}#${stored.id}`,
+  };
+}
+
 export class ObservationStore {
   constructor(
     private readonly tableName: string,
@@ -72,14 +84,7 @@ export class ObservationStore {
     const stored = SourceObservationSchema.parse({ ...parsed, evidenceKey, contentType });
     await this.ddb.send(new PutCommand({
       TableName: this.tableName,
-      Item: {
-        pk: `OBS#${stored.id}`,
-        sk: 'META',
-        entityType: 'SourceObservation',
-        ...stored,
-        GSI1PK: `SOURCE#${stored.sourceId}`,
-        GSI1SK: `OBS#${stored.observedAt}#${stored.id}`,
-      },
+      Item: sourceObservationItem(stored),
       ConditionExpression: 'attribute_not_exists(pk)',
     }));
 

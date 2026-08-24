@@ -1,13 +1,14 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { PutCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createDynamoStoreClient } from '../src/knowledge/stores/clients.js';
 
 describe('Dynamo document marshalling', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('removes undefined values instead of failing a Backline write', async () => {
-    const sendSpy = vi.spyOn(DynamoDBClient.prototype as any, 'send').mockResolvedValue({});
+  it('configures the Backline document client to remove undefined values', async () => {
+    const send = vi.fn().mockResolvedValue({});
+    const fromSpy = vi.spyOn(DynamoDBDocumentClient, 'from').mockReturnValue({ send } as any);
     const client = createDynamoStoreClient('eu-west-2');
 
     await expect(client.send(new PutCommand({
@@ -20,6 +21,9 @@ describe('Dynamo document marshalling', () => {
       },
     }))).resolves.toEqual({});
 
-    expect(sendSpy).toHaveBeenCalledOnce();
+    expect(fromSpy).toHaveBeenCalledWith(expect.any(DynamoDBClient), {
+      marshallOptions: { removeUndefinedValues: true },
+    });
+    expect(send).toHaveBeenCalledOnce();
   });
 });
