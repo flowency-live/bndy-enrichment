@@ -124,10 +124,11 @@ export function buildCanonicalBaselineClaims(input: CanonicalBaselineInput): Kno
   const provenance = provenanceForRecord(input.record);
   const evidence = { rawItemId: input.canonicalId, contentHash: input.contentHash };
   const claims: KnowledgeClaim[] = [];
+  const identity = [input.snapshotId, input.contentHash, input.entityType, input.canonicalId];
 
   for (const field of flattenCanonicalRecord(input.record)) {
     claims.push({
-      id: claimId([input.snapshotId, input.entityType, input.canonicalId, 'derivedFrom', field.path]),
+      id: claimId([...identity, 'derivedFrom', field.path]),
       observationId: input.observationId,
       sourceId: input.sourceId,
       subject,
@@ -143,7 +144,7 @@ export function buildCanonicalBaselineClaims(input: CanonicalBaselineInput): Kno
     const semantic = semanticClaim(input.entityType, field.path, field.value);
     if (semantic) {
       claims.push({
-        id: claimId([input.snapshotId, input.entityType, input.canonicalId, semantic.predicate, field.path]),
+        id: claimId([...identity, semantic.predicate, field.path]),
         observationId: input.observationId,
         sourceId: input.sourceId,
         subject,
@@ -159,7 +160,7 @@ export function buildCanonicalBaselineClaims(input: CanonicalBaselineInput): Kno
   }
 
   claims.push({
-    id: claimId([input.snapshotId, input.entityType, input.canonicalId, 'resolvesTo']),
+    id: claimId([...identity, 'resolvesTo']),
     observationId: input.observationId,
     sourceId: input.sourceId,
     subject,
