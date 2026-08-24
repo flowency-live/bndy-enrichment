@@ -1,0 +1,196 @@
+name: Inspect Lemonrock reconciliation manifest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/lemonrock-manifest-readonly.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Build sanitised manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          tmp_dir=$(mktemp -d)
+          trap 'rm -rf "$tmp_dir"' EXIT
+          mkdir -p ops
+
+          state_table=$(aws cloudformation describe-stacks \
+            --stack-name BndyEnrichmentStack \
+            --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" \
+            --output text)
+          queue_url=$(aws cloudformation describe-stacks \
+            --stack-name BndyEnrichmentStack \
+            --query "Stacks[0].Outputs[?OutputKey=='SourceScanQueueUrl'].OutputValue | [0]" \
+            --output text)
+
+          aws dynamodb query \
+            --table-name "$state_table" \
+            --key-condition-expression "pk = :pk AND begins_with(sk, :prefix)" \
+            --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#lemonrock"},":prefix":{"S":"TASK#"}}' \
+            --projection-expression "sourceId, taskKind, logicalTaskKey, #st, lastReconciliationId, lastDiscoveredAt, completedAt, failedAt, lastError" \
+            --expression-attribute-names '{"#st":"status"}' \
+            --output json > "$tmp_dir/tasks.json"
+
+          aws dynamodb get-item \
+            --table-name "$state_table" \
+            --key '{"pk":{"S":"SOURCE#lemonrock-full-reconcile"},"sk":{"S":"STATE"}}' \
+            --projection-expression "lastRunAt, lastSuccessfulRunAt, lastFailureAt, consecutiveFailures, metadata" \
+            --output json > "$tmp_dir/root.json"
+
+          aws sqs get-queue-attributes \
+            --queue-url "$queue_url" \
+            --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed RedrivePolicy \
+            --output json > "$tmp_dir/queue.json"
+          dlq_name=$(jq -r '.Attributes.RedrivePolicy | fromjson | .deadLetterTargetArn | split(":")[-1]' "$tmp_dir/queue.json")
+          dlq_url=$(aws sqs get-queue-url --queue-name "$dlq_name" --query QueueUrl --output text)
+          aws sqs get-queue-attributes \
+            --queue-url "$dlq_url" \
+            --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+            --output json > "$tmp_dir/dlq.json"
+
+          python <<'PY' "$tmp_dir/tasks.json" "$tmp_dir/root.json" "$tmp_dir/queue.json" "$tmp_dir/dlq.json"
+          import json, re, sys
+          from collections import Counter
+          from datetime import datetime, timezone
+
+          def ddb(v):
+              if not isinstance(v, dict):
+                  return v
+              if "S" in v: return v["S"]
+              if "N" in v:
+                  n = float(v["N"])
+                  return int(n) if n.is_integer() else n
+              if "BOOL" in v: return v["BOOL"]
+              if "NULL" in v: return None
+              if "M" in v: return {k: ddb(x) for k, x in v["M"].items()}
+              if "L" in v: return [ddb(x) for x in v["L"]]
+              return {k: ddb(x) for k, x in v.items()}
+
+          def row(item):
+              return {k: ddb(v) for k, v in item.items()}
+
+          def error_class(value):
+              value = str(value or "")
+              checks = [
+                  ("HTTP_403", r"HTTP 403"),
+                  ("HTTP_429", r"HTTP 429"),
+                  ("HTTP_5XX", r"HTTP 5\d\d"),
+                  ("TIMEOUT", r"timeout|timed out|abort"),
+                  ("STRUCTURAL_GATE", r"structural gate|recognisable HTML"),
+                  ("PARSER", r"parse|parser"),
+                  ("PERSISTENCE", r"Dynamo|marshall|undefined"),
+                  ("FETCH", r"fetch|network"),
+              ]
+              for label, pattern in checks:
+                  if re.search(pattern, value, re.I):
+                      return label
+              return "OTHER"
+
+          tasks = [row(x) for x in json.load(open(sys.argv[1])).get("Items", [])]
+          root = row(json.load(open(sys.argv[2])).get("Item", {}))
+          queue_attrs = json.load(open(sys.argv[3])).get("Attributes", {})
+          dlq_attrs = json.load(open(sys.argv[4])).get("Attributes", {})
+          reconciliation_id = (root.get("metadata") or {}).get("lastReconciliationId")
+          discovered = [x for x in tasks if reconciliation_id and x.get("lastReconciliationId") == reconciliation_id]
+          statuses = Counter(str(x.get("status", "unknown")) for x in discovered)
+          sources = Counter(str(x.get("sourceId", "unknown")) for x in discovered)
+          kinds = Counter(str(x.get("taskKind", "unknown")) for x in discovered)
+          failures = Counter(
+              (
+                  str(x.get("sourceId", "unknown")),
+                  str(x.get("taskKind", "unknown")),
+                  error_class(x.get("lastError")),
+              )
+              for x in discovered
+              if x.get("status") in ("failed", "error")
+          )
+          queue = {
+              "visible": int(queue_attrs.get("ApproximateNumberOfMessages", 0)),
+              "inFlight": int(queue_attrs.get("ApproximateNumberOfMessagesNotVisible", 0)),
+              "delayed": int(queue_attrs.get("ApproximateNumberOfMessagesDelayed", 0)),
+              "deadLetterVisible": int(dlq_attrs.get("ApproximateNumberOfMessages", 0)),
+              "deadLetterInFlight": int(dlq_attrs.get("ApproximateNumberOfMessagesNotVisible", 0)),
+          }
+          required = {
+              "lemonrock-artist-index",
+              "lemonrock-venue-index",
+              "lemonrock-future-reconcile",
+          }
+          terminal = bool(discovered) and all(x.get("status") in ("complete", "completed", "succeeded") for x in discovered)
+          root_succeeded = bool(root.get("lastSuccessfulRunAt")) and int(root.get("consecutiveFailures", 0)) == 0
+          coverage = required.issubset(sources)
+          queues_clear = not any(queue.values())
+          complete = terminal and root_succeeded and coverage and queues_clear
+
+          report = {
+              "generatedAt": datetime.now(timezone.utc).isoformat(),
+              "sanitised": True,
+              "shadow": True,
+              "canonicalWritesEnabled": False,
+              "status": "complete" if complete else "incomplete",
+              "reconciliationId": reconciliation_id,
+              "root": {
+                  "lastRunAt": root.get("lastRunAt"),
+                  "lastSuccessfulRunAt": root.get("lastSuccessfulRunAt"),
+                  "lastFailureAt": root.get("lastFailureAt"),
+                  "consecutiveFailures": root.get("consecutiveFailures", 0),
+              },
+              "discoveredTasks": len(discovered),
+              "tasksByStatus": dict(sorted(statuses.items())),
+              "tasksBySource": dict(sorted(sources.items())),
+              "tasksByKind": dict(sorted(kinds.items())),
+              "failedTaskSummary": [
+                  {"sourceId": key[0], "taskKind": key[1], "errorClass": key[2], "count": count}
+                  for key, count in sorted(failures.items())
+              ],
+              "requiredBranchesSeen": coverage,
+              "allDiscoveredTasksTerminal": terminal,
+              "queuesClear": queues_clear,
+              "queue": queue,
+          }
+          with open("ops/lemonrock-reconciliation-manifest.json", "w") as f:
+              json.dump(report, f, indent=2, sort_keys=True)
+          PY
+
+      - name: Publish sanitised manifest
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f ops/lemonrock-reconciliation-manifest.json ]; then
+            mkdir -p ops
+            jq -n --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              '{generatedAt:$generatedAt,sanitised:true,status:"diagnostic-failed"}' \
+              > ops/lemonrock-reconciliation-manifest.json
+          fi
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ops/lemonrock-reconciliation-manifest.json
+          git commit -m "Record Lemonrock reconciliation manifest" || exit 0
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main
+            git rebase --autostash origin/main
+          done
+          exit 1
