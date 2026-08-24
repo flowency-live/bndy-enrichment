@@ -95,15 +95,15 @@ jobs:
 
           weekly_rule=$(aws cloudformation list-stack-resources \
             --stack-name "$STACK_NAME" \
-            --query "StackResourceSummaries[?LogicalResourceId=='LemonrockWeeklyDirectoryReconcile'].PhysicalResourceId | [0]" \
+            --query "StackResourceSummaries[?starts_with(LogicalResourceId, 'LemonrockWeeklyDirectoryReconcile')].PhysicalResourceId | [0]" \
             --output text)
           daily_rule=$(aws cloudformation list-stack-resources \
             --stack-name "$STACK_NAME" \
-            --query "StackResourceSummaries[?LogicalResourceId=='LemonrockDailyReconcile'].PhysicalResourceId | [0]" \
+            --query "StackResourceSummaries[?starts_with(LogicalResourceId, 'LemonrockDailyReconcile')].PhysicalResourceId | [0]" \
             --output text)
           fast_rule=$(aws cloudformation list-stack-resources \
             --stack-name "$STACK_NAME" \
-            --query "StackResourceSummaries[?LogicalResourceId=='LemonrockFastGigTick'].PhysicalResourceId | [0]" \
+            --query "StackResourceSummaries[?starts_with(LogicalResourceId, 'LemonrockFastGigTick')].PhysicalResourceId | [0]" \
             --output text)
 
           test "$weekly_rule" != "None"
