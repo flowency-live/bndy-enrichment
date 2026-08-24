@@ -30,3 +30,5 @@ jobs:
           git commit -m 'Validate Join owner projection protection'
           git pull --rebase --autostash origin main
           git push origin HEAD:main
+
+# trigger revision 1
