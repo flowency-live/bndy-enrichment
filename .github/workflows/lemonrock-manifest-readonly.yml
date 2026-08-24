@@ -69,7 +69,7 @@ jobs:
             --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
             --output json > "$tmp_dir/dlq.json"
 
-          python <<'PY' "$tmp_dir/tasks.json" "$tmp_dir/root.json" "$tmp_dir/queue.json" "$tmp_dir/dlq.json"
+          python - "$tmp_dir/tasks.json" "$tmp_dir/root.json" "$tmp_dir/queue.json" "$tmp_dir/dlq.json" <<'PY'
           import json, re, sys
           from collections import Counter
           from datetime import datetime, timezone
