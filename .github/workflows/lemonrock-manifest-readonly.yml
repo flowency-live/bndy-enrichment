@@ -49,7 +49,7 @@ jobs:
             --table-name "$state_table" \
             --key-condition-expression "pk = :pk AND begins_with(sk, :prefix)" \
             --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#lemonrock"},":prefix":{"S":"TASK#"}}' \
-            --projection-expression "sourceId, taskKind, logicalTaskKey, task, #st, lastReconciliationId, lastDiscoveredAt, completedAt, failedAt, updatedAt, lastError" \
+            --projection-expression "sourceId, taskKind, taskKey, logicalTaskKey, task, #st, lastReconciliationId, queuedAt, lastDiscoveredAt, completedAt, failedAt, updatedAt, lastError" \
             --expression-attribute-names '{"#st":"status"}' \
             --output json > "$tmp_dir/tasks.json"
 
@@ -182,6 +182,17 @@ jobs:
               for x in discovered
               if x.get("status") in ("failed", "error")
           )
+          recovery_pages = [
+              x for x in discovered_rows
+              if x.get("taskKind") in ("artist-index-page", "venue-index-page")
+              and "@v3@" in str(x.get("taskKey", ""))
+          ]
+          recovery_page_statuses = Counter(str(x.get("status", "unknown")) for x in recovery_pages)
+          recovery_page_sources = Counter(str(x.get("sourceId", "unknown")) for x in recovery_pages)
+          recovery_latest = max(
+              (str(x.get("updatedAt") or x.get("lastDiscoveredAt") or x.get("queuedAt") or "") for x in recovery_pages),
+              default=None,
+          )
           queue = {
               "visible": int(queue_attrs.get("ApproximateNumberOfMessages", 0)),
               "inFlight": int(queue_attrs.get("ApproximateNumberOfMessagesNotVisible", 0)),
@@ -241,6 +252,12 @@ jobs:
                   {"sourceId": key[0], "taskKind": key[1], "errorClass": key[2], "count": count}
                   for key, count in sorted(failures.items())
               ],
+              "recoveryDiagnostics": {
+                  "v3DirectoryPageRows": len(recovery_pages),
+                  "v3DirectoryPagesBySource": dict(sorted(recovery_page_sources.items())),
+                  "v3DirectoryPagesByStatus": dict(sorted(recovery_page_statuses.items())),
+                  "latestV3DirectoryPageUpdateAt": recovery_latest,
+              },
               "requiredBranchesSeen": coverage,
               "allDiscoveredTasksTerminal": terminal,
               "queuesClear": queues_clear,
