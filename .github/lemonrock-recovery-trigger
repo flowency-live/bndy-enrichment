@@ -1,0 +1,2 @@
+requestedAt: 2026-08-25T20:42:00Z
+reason: deploy resilient fetch, replay directory controls, controlled DLQ redrive
