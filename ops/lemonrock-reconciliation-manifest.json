@@ -7,7 +7,7 @@
     "advertisedVenues": 0,
     "artistDirectoryControls": 0,
     "artistDirectoryPages": 28,
-    "artistIdentitiesDiscovered": 10527,
+    "artistIdentitiesDiscovered": 10530,
     "countyControls": 59,
     "directoriesCovered": false,
     "futureGigsCovered": false,
@@ -18,32 +18,38 @@
     "venueDirectoryPages": 28,
     "venueIdentitiesDiscovered": 8285
   },
-  "discoveredTaskRows": 57422,
-  "discoveredTasks": 42390,
+  "discoveredTaskRows": 61683,
+  "discoveredTasks": 42393,
   "failedTaskSummary": [
     {
-      "count": 214,
+      "count": 372,
       "errorClass": "FETCH",
       "sourceId": "lemonrock-future-reconcile",
       "taskKind": "gig-index"
     },
     {
-      "count": 7,
+      "count": 14,
       "errorClass": "FETCH",
       "sourceId": "lemonrock-gig-hydration",
       "taskKind": "gig"
     }
   ],
-  "generatedAt": "2026-08-25T20:57:39.248341+00:00",
+  "generatedAt": "2026-08-25T21:01:16.294529+00:00",
   "queue": {
     "deadLetterInFlight": 0,
-    "deadLetterVisible": 6,
+    "deadLetterVisible": 8,
     "delayed": 0,
-    "inFlight": 189,
-    "visible": 10596
+    "inFlight": 376,
+    "visible": 14557
   },
   "queuesClear": false,
   "reconciliationId": "run-dc81f472-d3cb-4bb6-88c9-6831c5ea3c70",
+  "recoveryDiagnostics": {
+    "latestV3DirectoryPageUpdateAt": null,
+    "v3DirectoryPageRows": 0,
+    "v3DirectoryPagesBySource": {},
+    "v3DirectoryPagesByStatus": {}
+  },
   "requiredBranchesSeen": true,
   "root": {
     "consecutiveFailures": 0,
@@ -55,7 +61,7 @@
   "shadow": true,
   "status": "incomplete",
   "tasksByKind": {
-    "artist": 10527,
+    "artist": 10530,
     "artist-index": 1,
     "artist-index-page": 28,
     "cancellations": 1,
@@ -68,7 +74,7 @@
     "venue-index-page": 28
   },
   "tasksBySource": {
-    "lemonrock-artist-hydration": 10527,
+    "lemonrock-artist-hydration": 10530,
     "lemonrock-artist-index": 29,
     "lemonrock-cancellations": 1,
     "lemonrock-future-reconcile": 15826,
@@ -78,9 +84,8 @@
     "lemonrock-venue-index": 29
   },
   "tasksByStatus": {
-    "completed": 36821,
-    "failed": 221,
-    "queued": 5345,
-    "running": 3
+    "completed": 34095,
+    "failed": 386,
+    "queued": 7912
   }
 }
