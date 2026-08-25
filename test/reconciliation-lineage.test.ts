@@ -15,6 +15,29 @@ const child = {
 };
 
 describe('Lemonrock reconciliation lineage', () => {
+  it('versions discovery work so a parser upgrade can replay the same-day national indexes', async () => {
+    const ddbSend = vi.fn().mockResolvedValue({});
+    const sqsSend = vi.fn().mockResolvedValue({});
+    const publisher = new DynamoSqsSourceFanoutPublisher(
+      'state-table',
+      'https://sqs.eu-west-2.amazonaws.com/771551874768/source',
+      { send: ddbSend } as any,
+      { send: sqsSend } as any,
+    );
+    const discovery = {
+      sourceId: 'lemonrock-future-reconcile',
+      taskKey: 'gig-index:https://www.lemonrock.com/gigs-in-torquay',
+      task: { kind: 'gig-index', url: 'https://www.lemonrock.com/gigs-in-torquay' },
+    };
+
+    await publisher.publish(discovery, '2026-08-25T15:00:00.000Z', 'run-parser-v2');
+
+    const put = ddbSend.mock.calls[0]?.[0] as any;
+    expect(put.input.Item.taskKey).toBe(`${discovery.taskKey}@2026-08-25@v2`);
+    const send = sqsSend.mock.calls[0]?.[0] as any;
+    expect(JSON.parse(send.input.MessageBody).taskKey).toBe(`${discovery.taskKey}@2026-08-25@v2`);
+  });
+
   it('persists lineage on a new durable task and forwards it through SQS', async () => {
     const ddbSend = vi.fn().mockResolvedValue({});
     const sqsSend = vi.fn().mockResolvedValue({});
