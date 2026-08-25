@@ -2,65 +2,80 @@
   "allDiscoveredTasksTerminal": false,
   "canonicalWritesEnabled": false,
   "completenessControls": {
-    "advertisedFutureGigs": 7776,
+    "advertisedFutureGigs": 7783,
     "artistDirectoryPages": 28,
-    "artistIdentitiesDiscovered": 1,
-    "countyControls": 58,
+    "artistIdentitiesDiscovered": 10453,
+    "countyControls": 59,
     "directoriesCovered": true,
-    "futureGigsCovered": false,
-    "gigIdentitiesDiscovered": 94,
-    "gigIndexPages": 58,
-    "inventoryCovered": false,
+    "futureGigsCovered": true,
+    "gigIdentitiesDiscovered": 20280,
+    "gigIndexPages": 15805,
+    "inventoryCovered": true,
     "venueDirectoryPages": 28,
-    "venueIdentitiesDiscovered": 8286
+    "venueIdentitiesDiscovered": 8285
   },
-  "discoveredTasks": 8500,
-  "failedTaskSummary": [],
-  "generatedAt": "2026-08-25T15:10:23.140031+00:00",
+  "discoveredTasks": 54884,
+  "failedTaskSummary": [
+    {
+      "count": 69,
+      "errorClass": "FETCH",
+      "sourceId": "lemonrock-future-reconcile",
+      "taskKind": "gig-index"
+    },
+    {
+      "count": 3,
+      "errorClass": "FETCH",
+      "sourceId": "lemonrock-gig-hydration",
+      "taskKind": "gig"
+    }
+  ],
+  "generatedAt": "2026-08-25T20:31:50.680857+00:00",
   "queue": {
     "deadLetterInFlight": 0,
-    "deadLetterVisible": 0,
+    "deadLetterVisible": 858,
     "delayed": 0,
-    "inFlight": 2,
-    "visible": 5855
+    "inFlight": 42,
+    "visible": 14912
   },
   "queuesClear": false,
-  "reconciliationId": "run-62fe271d-86b2-4efd-b343-b031b8a1f9f5",
+  "reconciliationId": "run-dc81f472-d3cb-4bb6-88c9-6831c5ea3c70",
   "requiredBranchesSeen": true,
   "root": {
     "consecutiveFailures": 0,
     "lastFailureAt": null,
-    "lastRunAt": "2026-08-25T15:08:30.930Z",
-    "lastSuccessfulRunAt": "2026-08-25T15:08:30.930Z"
+    "lastRunAt": "2026-08-25T16:09:52.909Z",
+    "lastSuccessfulRunAt": "2026-08-25T16:09:52.909Z"
   },
   "sanitised": true,
   "shadow": true,
   "status": "incomplete",
   "tasksByKind": {
-    "artist": 1,
+    "artist": 10453,
     "artist-index": 1,
     "artist-index-page": 28,
     "cancellations": 1,
     "future-index": 1,
-    "gig": 94,
-    "gig-index": 58,
+    "gig": 20280,
+    "gig-index": 15805,
     "new-gigs": 1,
-    "venue": 8286,
+    "venue": 8285,
     "venue-index": 1,
     "venue-index-page": 28
   },
   "tasksBySource": {
-    "lemonrock-artist-hydration": 1,
+    "lemonrock-artist-hydration": 10453,
     "lemonrock-artist-index": 29,
     "lemonrock-cancellations": 1,
-    "lemonrock-future-reconcile": 59,
-    "lemonrock-gig-hydration": 94,
+    "lemonrock-future-reconcile": 15806,
+    "lemonrock-gig-hydration": 20280,
     "lemonrock-new-gigs": 1,
-    "lemonrock-venue-hydration": 8286,
+    "lemonrock-venue-hydration": 8285,
     "lemonrock-venue-index": 29
   },
   "tasksByStatus": {
-    "completed": 2595,
-    "queued": 5905
+    "completed": 40009,
+    "failed": 72,
+    "queued": 14799,
+    "running": 4
   }
 }
