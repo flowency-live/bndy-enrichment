@@ -1,2 +1,2 @@
-requestedAt: 2026-08-25T20:53:00Z
-reason: monitor Lemonrock queue drain and inventory controls
+requestedAt: 2026-08-25T20:56:00Z
+reason: monitor Lemonrock recovery progress after DLQ redrive
