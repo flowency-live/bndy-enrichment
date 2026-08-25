@@ -3,13 +3,13 @@
   "canonicalWritesEnabled": false,
   "discoveredTasks": 2806,
   "failedTaskSummary": [],
-  "generatedAt": "2026-08-25T14:41:59.061914+00:00",
+  "generatedAt": "2026-08-25T14:44:29.907939+00:00",
   "queue": {
     "deadLetterInFlight": 0,
     "deadLetterVisible": 0,
     "delayed": 0,
     "inFlight": 1,
-    "visible": 1962
+    "visible": 1513
   },
   "queuesClear": false,
   "reconciliationId": "run-f9383a5f-08b4-4b32-aa26-9ad19c19dc01",
@@ -47,8 +47,8 @@
     "lemonrock-venue-index": 29
   },
   "tasksByStatus": {
-    "completed": 826,
-    "queued": 1979,
+    "completed": 1291,
+    "queued": 1514,
     "running": 1
   }
 }
