@@ -1,17 +1,17 @@
 {
-  "verifiedAt": "2026-08-25T14:36:23Z",
-  "workflowRunId": "32860495771",
+  "verifiedAt": "2026-08-25T14:41:56Z",
+  "workflowRunId": "32861095010",
   "workflowConclusion": "skipped",
-  "deployedSha": "25a4f065cd117d999697af70220939b0f512b0ce",
+  "deployedSha": "3bffbfd6704da2a9629f2c0eaad3acdf1e53240a",
   "stateTable": "BndyEnrichmentStack-StateTable9728C7E5-14HR6N3NEWGLM",
   "sourceWorker": "BndyEnrichmentStack-SourceWorker336FEA29-ghZk2mBRjOks",
   "queue": {
-    "ApproximateNumberOfMessages": "0",
-    "ApproximateNumberOfMessagesNotVisible": "0"
+    "ApproximateNumberOfMessages": "1980",
+    "ApproximateNumberOfMessagesNotVisible": "2"
   },
   "tasks": {
-    "count": 5835,
-    "scannedCount": 5835
+    "count": 8414,
+    "scannedCount": 8414
   },
   "artistIndexSource": {
     "enabled": {
