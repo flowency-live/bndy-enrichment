@@ -63,13 +63,55 @@ function pageRequests(html: string, sourceUrl: string, pathFragment: string, kin
   );
 }
 
+function directoryPageRequests(
+  html: string,
+  sourceUrl: string,
+  pathFragment: 'allbands.php' | 'allvenues.php',
+  kind: 'artist-index-page' | 'venue-index-page',
+  sourceId: 'lemonrock-artist-index' | 'lemonrock-venue-index',
+): SourceFanoutRequest[] {
+  return uniqueBy(
+    anchorsFromHtml(html, sourceUrl)
+      .filter((anchor) => anchor.href.includes(pathFragment))
+      .map((anchor) => {
+        const url = new URL(anchor.href);
+        // The directory defaults to profiles with current gigs. Backline's
+        // national inventory includes every discoverable profile, including
+        // artists and venues that do not currently advertise a gig.
+        url.searchParams.set('all', '1');
+        return request(sourceId, kind, url.toString());
+      }),
+    (item) => item.taskKey,
+  );
+}
+
+function gigListingRequests(html: string, sourceUrl: string): SourceFanoutRequest[] {
+  return uniqueBy(
+    anchorsFromHtml(html, sourceUrl)
+      .filter((anchor) => {
+        const url = new URL(anchor.href);
+        const pathname = url.pathname.toLowerCase();
+        if (pathname.startsWith('/gigs-in-')) return true;
+
+        // Town pages link to day/month listing views at the site root. Those
+        // views are required to move beyond the default current-week window.
+        return pathname === '/'
+          && url.searchParams.has('cityId')
+          && url.searchParams.has('gigfromdate')
+          && url.searchParams.has('listingPeriod');
+      })
+      .map((anchor) => request('lemonrock-future-reconcile', 'gig-index', anchor.href)),
+    (item) => item.taskKey,
+  );
+}
+
 function artistIndex(html: string, sourceUrl: string): ParsedSource {
   const profiles = safeProfileLinks(html, sourceUrl).map((anchor) => {
     const slug = lemonrockSlug(anchor.href)!;
     return request('lemonrock-artist-hydration', 'artist', anchor.href, `lemonrock:artist:${slug}`, anchor.text);
   });
   const pages = uniqueBy([
-    ...pageRequests(html, sourceUrl, 'allbands.php', 'artist-index-page', 'lemonrock-artist-index'),
+    ...directoryPageRequests(html, sourceUrl, 'allbands.php', 'artist-index-page', 'lemonrock-artist-index'),
     // Retain compatibility with previously captured advanced-search evidence.
     ...pageRequests(html, sourceUrl, 'advancedsearchbands.php', 'artist-index-page', 'lemonrock-artist-index'),
   ], (item) => item.taskKey);
@@ -91,7 +133,7 @@ function venueIndex(html: string, sourceUrl: string): ParsedSource {
     const slug = lemonrockSlug(anchor.href)!;
     return request('lemonrock-venue-hydration', 'venue', anchor.href, `lemonrock:venue:${slug}`, anchor.text);
   });
-  const pages = pageRequests(html, sourceUrl, 'allvenues.php', 'venue-index-page', 'lemonrock-venue-index');
+  const pages = directoryPageRequests(html, sourceUrl, 'allvenues.php', 'venue-index-page', 'lemonrock-venue-index');
   return { events: [], nextRequests: uniqueBy([...profiles, ...pages], (item) => item.taskKey), parked: [], warnings: [] };
 }
 
@@ -149,15 +191,15 @@ function fullReconcile(_html: string, _sourceUrl: string): ParsedSource {
 
 function listPage(html: string, sourceUrl: string): ParsedSource {
   const gigs = gigRequests(html, sourceUrl);
-  const pages = uniqueBy(
-    anchorsFromHtml(html, sourceUrl)
+  const pages = uniqueBy([
+    ...gigListingRequests(html, sourceUrl),
+    ...anchorsFromHtml(html, sourceUrl)
       .filter((anchor) => {
         const url = new URL(anchor.href);
         return url.pathname === new URL(sourceUrl).pathname && url.search !== new URL(sourceUrl).search && /(?:start|page|offset|date|period)/i.test(url.search);
       })
       .map((anchor) => request('lemonrock-future-reconcile', 'gig-index', anchor.href)),
-    (item) => item.taskKey,
-  );
+  ], (item) => item.taskKey);
   return { events: [], nextRequests: uniqueBy([...gigs, ...pages], (item) => item.taskKey), parked: [], warnings: gigs.length ? [] : ['No gig detail links discovered on Lemonrock listing page'] };
 }
 
