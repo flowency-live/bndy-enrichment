@@ -1,17 +1,30 @@
 {
-  "allDiscoveredTasksTerminal": false,
+  "allDiscoveredTasksTerminal": true,
   "canonicalWritesEnabled": false,
+  "completenessControls": {
+    "advertisedFutureGigs": 0,
+    "artistDirectoryPages": 28,
+    "artistIdentitiesDiscovered": 2592,
+    "countyControls": 0,
+    "directoriesCovered": true,
+    "futureGigsCovered": false,
+    "gigIdentitiesDiscovered": 94,
+    "gigIndexPages": 58,
+    "inventoryCovered": false,
+    "venueDirectoryPages": 28,
+    "venueIdentitiesDiscovered": 1
+  },
   "discoveredTasks": 2806,
   "failedTaskSummary": [],
-  "generatedAt": "2026-08-25T14:48:38.430671+00:00",
+  "generatedAt": "2026-08-25T15:04:43.303351+00:00",
   "queue": {
     "deadLetterInFlight": 0,
     "deadLetterVisible": 0,
     "delayed": 0,
-    "inFlight": 2,
-    "visible": 844
+    "inFlight": 0,
+    "visible": 0
   },
-  "queuesClear": false,
+  "queuesClear": true,
   "reconciliationId": "run-f9383a5f-08b4-4b32-aa26-9ad19c19dc01",
   "requiredBranchesSeen": true,
   "root": {
@@ -47,8 +60,6 @@
     "lemonrock-venue-index": 29
   },
   "tasksByStatus": {
-    "completed": 1956,
-    "queued": 848,
-    "running": 2
+    "completed": 2806
   }
 }
