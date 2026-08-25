@@ -1,2 +1,2 @@
-requestedAt: 2026-08-25T20:31:00Z
-reason: capture current terminal state after monitor token expiry
+requestedAt: 2026-08-25T20:50:00Z
+reason: verify controlled recovery, inventory controls, and queue drain
