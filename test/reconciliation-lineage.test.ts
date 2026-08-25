@@ -33,9 +33,9 @@ describe('Lemonrock reconciliation lineage', () => {
     await publisher.publish(discovery, '2026-08-25T15:00:00.000Z', 'run-parser-v2');
 
     const put = ddbSend.mock.calls[0]?.[0] as any;
-    expect(put.input.Item.taskKey).toBe(`${discovery.taskKey}@2026-08-25@v2`);
+    expect(put.input.Item.taskKey).toBe(`${discovery.taskKey}@2026-08-25@v2@run-parser-v2`);
     const send = sqsSend.mock.calls[0]?.[0] as any;
-    expect(JSON.parse(send.input.MessageBody).taskKey).toBe(`${discovery.taskKey}@2026-08-25@v2`);
+    expect(JSON.parse(send.input.MessageBody).taskKey).toBe(`${discovery.taskKey}@2026-08-25@v2@run-parser-v2`);
   });
 
   it('persists lineage on a new durable task and forwards it through SQS', async () => {
