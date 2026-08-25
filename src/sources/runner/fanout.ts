@@ -29,7 +29,7 @@ function isoWeek(date: Date): string {
   return `${utc.getUTCFullYear()}W${String(week).padStart(2, '0')}`;
 }
 
-function dedupeKey(request: SourceFanoutRequest, requestedAt: string): string {
+function dedupeKey(request: SourceFanoutRequest, requestedAt: string, reconciliationId?: string): string {
   if (!request.sourceId.startsWith('lemonrock-')) return request.taskKey;
   const date = new Date(requestedAt);
   if (Number.isNaN(date.getTime())) return request.taskKey;
@@ -48,7 +48,8 @@ function dedupeKey(request: SourceFanoutRequest, requestedAt: string): string {
 
   // Directory/county child pages are replayable daily. Within a bootstrap run,
   // duplicate links from multiple indexes collapse onto one durable task.
-  return `${request.taskKey}@${date.toISOString().slice(0, 10)}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}`;
+  const reconciliationScope = reconciliationId ? `@${reconciliationId}` : '';
+  return `${request.taskKey}@${date.toISOString().slice(0, 10)}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}${reconciliationScope}`;
 }
 
 export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
@@ -68,7 +69,7 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
   }
 
   async publish(request: SourceFanoutRequest, requestedAt: string, reconciliationId?: string): Promise<boolean> {
-    const resolvedTaskKey = dedupeKey(request, requestedAt);
+    const resolvedTaskKey = dedupeKey(request, requestedAt, reconciliationId);
     const key = taskKey(request.sourceId, resolvedTaskKey);
     try {
       await this.ddb.send(new PutCommand({
