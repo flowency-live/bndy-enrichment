@@ -3,6 +3,8 @@ import { DeleteCommand, DynamoDBDocumentClient, PutCommand, UpdateCommand } from
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import type { SourceFanoutRequest } from './types.js';
 
+const LEMONROCK_DISCOVERY_SCHEMA_VERSION = 'v2';
+
 export type SourceTaskStatus = 'queued' | 'running' | 'completed' | 'failed';
 
 export interface SourceFanoutPublisher {
@@ -46,7 +48,7 @@ function dedupeKey(request: SourceFanoutRequest, requestedAt: string): string {
 
   // Directory/county child pages are replayable daily. Within a bootstrap run,
   // duplicate links from multiple indexes collapse onto one durable task.
-  return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
+  return `${request.taskKey}@${date.toISOString().slice(0, 10)}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}`;
 }
 
 export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
