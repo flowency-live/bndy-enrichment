@@ -1,0 +1,9 @@
+{
+  "phase": "initialising",
+  "status": "failed",
+  "startedAt": "2026-08-25T20:43:20Z",
+  "deployedSha": "5616d6da3f6314beeebb195a8c40d24407333c19",
+  "shadow": true,
+  "canonicalWritesEnabled": false,
+  "completedAt": "2026-08-25T20:45:10Z"
+}
