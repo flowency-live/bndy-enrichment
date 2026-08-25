@@ -46,7 +46,7 @@ jobs:
 
       - name: Require dedicated deployment role
         env:
-          AWS_DEPLOY_ROLE_ARN: \${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
         run: |
           set -euo pipefail
           test -n "$AWS_DEPLOY_ROLE_ARN"
@@ -54,7 +54,7 @@ jobs:
       - name: Configure AWS deployment credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: \${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
 
       - name: Validate exact main revision
@@ -117,7 +117,7 @@ jobs:
             --query 'Attributes.RedrivePolicy' \
             --output text)
           dlq_arn=$(jq -r '.deadLetterTargetArn' <<<"$redrive_policy")
-          dlq_name="\${dlq_arn##*:}"
+          dlq_name="${dlq_arn##*:}"
           dlq_url=$(aws sqs get-queue-url --queue-name "$dlq_name" --query QueueUrl --output text)
           dlq_visible=$(aws sqs get-queue-attributes \
             --queue-url "$dlq_url" \
@@ -149,7 +149,7 @@ jobs:
       - name: Publish sanitised recovery evidence
         if: always()
         env:
-          JOB_STATUS: \${{ job.status }}
+          JOB_STATUS: ${{ job.status }}
         run: |
           set -euo pipefail
           if [ ! -f "$STATUS_FILE" ]; then
