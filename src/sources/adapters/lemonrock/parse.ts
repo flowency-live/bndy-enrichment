@@ -28,12 +28,19 @@ function taskKind(run: SourceRunContext): string {
   return 'new-gigs';
 }
 
-function request(sourceId: string, kind: string, url: string, nativeId?: string, name?: string): SourceFanoutRequest {
+function request(
+  sourceId: string,
+  kind: string,
+  url: string,
+  nativeId?: string,
+  name?: string,
+  taskFields?: Record<string, unknown>,
+): SourceFanoutRequest {
   const identity = nativeId ?? url;
   return {
     sourceId,
     taskKey: `${kind}:${identity}`,
-    task: { kind, url, ...(nativeId ? { nativeId } : {}), ...(name ? { name } : {}) },
+    task: { kind, url, ...(nativeId ? { nativeId } : {}), ...(name ? { name } : {}), ...taskFields },
   };
 }
 
@@ -146,7 +153,17 @@ function futureIndex(html: string, sourceUrl: string): ParsedSource {
         return pathname.startsWith('/gigs-in-')
           || (pathname === '/gigsincounty.php' && url.searchParams.has('county'));
       })
-      .map((anchor) => request('lemonrock-future-reconcile', 'gig-index', anchor.href)),
+      .map((anchor) => {
+        const advertised = Number(anchor.text.match(/([\d,]+)\s+gigs?/i)?.[1]?.replace(/,/g, '') ?? '0');
+        return request(
+          'lemonrock-future-reconcile',
+          'gig-index',
+          anchor.href,
+          undefined,
+          undefined,
+          advertised > 0 ? { expectedCount: advertised, inventoryLevel: 'county' } : undefined,
+        );
+      }),
     (item) => item.taskKey,
   );
   const gigs = gigRequests(html, sourceUrl);
