@@ -145,14 +145,14 @@ export class BndyEnrichmentStack extends cdk.Stack {
       handler: 'handler',
       timeout: cdk.Duration.minutes(14),
       memorySize: 1024,
-      reservedConcurrentExecutions: 2,
+      reservedConcurrentExecutions: 5,
       environment: sourceWorkerEnvironment,
       bundling: { minify: true, sourceMap: true },
     });
     sourceWorker.addEventSource(new sources.SqsEventSource(sourceScanQueue, {
       batchSize: 1,
       reportBatchItemFailures: true,
-      maxConcurrency: 2,
+      maxConcurrency: 5,
     }));
     table.grantReadWriteData(sourceWorker);
     evidenceBucket.grantReadWrite(sourceWorker);
