@@ -207,7 +207,7 @@ jobs:
             --table-name "$state_table" \
             --key-condition-expression "pk = :pk AND begins_with(sk, :prefix)" \
             --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#lemonrock"},":prefix":{"S":"TASK#"}}' \
-            --projection-expression "sourceId, taskKind, logicalTaskKey, #st, lastReconciliationId, lastDiscoveredAt, completedAt, failedAt" \
+            --projection-expression "sourceId, taskKind, logicalTaskKey, task, #st, lastReconciliationId, lastDiscoveredAt, completedAt, failedAt" \
             --expression-attribute-names '{"#st":"status"}' \
             --output json > /tmp/lemonrock-tasks.json
           aws dynamodb get-item \
@@ -245,6 +245,26 @@ jobs:
           statuses = Counter(str(x.get("status", "unknown")) for x in discovered)
           sources = Counter(str(x.get("sourceId", "unknown")) for x in discovered)
           kinds = Counter(str(x.get("taskKind", "unknown")) for x in discovered)
+          county_controls = [
+              x for x in discovered
+              if x.get("sourceId") == "lemonrock-future-reconcile"
+              and x.get("taskKind") == "gig-index"
+              and (x.get("task") or {}).get("inventoryLevel") == "county"
+          ]
+          advertised_future_gigs = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in county_controls)
+          artist_identities = int(kinds.get("artist", 0))
+          venue_identities = int(kinds.get("venue", 0))
+          gig_identities = int(kinds.get("gig", 0))
+          artist_pages = int(kinds.get("artist-index-page", 0))
+          venue_pages = int(kinds.get("venue-index-page", 0))
+          gig_index_pages = int(kinds.get("gig-index", 0))
+          directories_covered = artist_pages >= 28 and venue_pages >= 28 and artist_identities > 0 and venue_identities > 0
+          future_gigs_covered = (
+              advertised_future_gigs > 0
+              and gig_identities >= advertised_future_gigs
+              and gig_index_pages > len(county_controls)
+          )
+          inventory_covered = directories_covered and future_gigs_covered
           required_sources = {
               "lemonrock-artist-index",
               "lemonrock-venue-index",
@@ -263,7 +283,7 @@ jobs:
           root_succeeded = bool(root.get("lastSuccessfulRunAt")) and int(root.get("consecutiveFailures", 0)) == 0
           coverage = required_sources.issubset(sources)
           queues_clear = not any(queue.values())
-          complete = terminal and root_succeeded and coverage and queues_clear
+          complete = terminal and root_succeeded and coverage and queues_clear and inventory_covered
 
           status.update({
               "phase": "complete" if complete else "completion-gate-failed",
@@ -276,6 +296,19 @@ jobs:
               "tasksByStatus": dict(sorted(statuses.items())),
               "tasksBySource": dict(sorted(sources.items())),
               "tasksByKind": dict(sorted(kinds.items())),
+              "completenessControls": {
+                  "advertisedFutureGigs": advertised_future_gigs,
+                  "artistIdentitiesDiscovered": artist_identities,
+                  "venueIdentitiesDiscovered": venue_identities,
+                  "gigIdentitiesDiscovered": gig_identities,
+                  "artistDirectoryPages": artist_pages,
+                  "venueDirectoryPages": venue_pages,
+                  "gigIndexPages": gig_index_pages,
+                  "countyControls": len(county_controls),
+                  "directoriesCovered": directories_covered,
+                  "futureGigsCovered": future_gigs_covered,
+                  "inventoryCovered": inventory_covered,
+              },
               "requiredBranchesSeen": coverage,
               "allDiscoveredTasksTerminal": terminal,
               "queuesClear": queues_clear,
