@@ -1,0 +1,91 @@
+name: Probe Lemonrock directory response shapes
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    if: contains(github.event.head_commit.message, 'Probe Lemonrock directory shapes')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fetch sanitised directory aggregates
+        shell: bash
+        run: |
+          node <<'NODE'
+          const variants = [
+            ['bands-current', 'https://www.lemonrock.com/allbands.php?_start=A&all=0'],
+            ['bands-all', 'https://www.lemonrock.com/allbands.php?_start=A&all=1'],
+            ['bands-letter', 'https://www.lemonrock.com/allbands.php?_start=A'],
+            ['bands-root', 'https://www.lemonrock.com/allbands.php'],
+            ['venues-current', 'https://www.lemonrock.com/allvenues.php?_start=A&all=0'],
+            ['venues-all', 'https://www.lemonrock.com/allvenues.php?_start=A&all=1'],
+          ];
+          const reserved = new Set([
+            'about','install','join','login','help','faq','faqs','guide','contact','terms','privacy',
+            'bands','venues','gigs','festivals','reviews','songs','blog','news','search','home','index',
+          ]);
+
+          function decode(value) {
+            return value.replace(/&amp;/gi, '&').replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)));
+          }
+          function text(value) {
+            return value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+          }
+          function anchors(html, base) {
+            const out = [];
+            for (const match of html.matchAll(/<a\b[^>]*?href\s*=\s*(["'])(.*?)\1[^>]*>([\s\S]*?)<\/a>/gi)) {
+              try {
+                const url = new URL(decode(match[2]), base);
+                if (!/^(?:www\.)?lemonrock\.com$/i.test(url.hostname)) continue;
+                out.push({ url, text: text(match[3]) });
+              } catch {}
+            }
+            return out;
+          }
+
+          for (const [variant, url] of variants) {
+            const response = await fetch(url, {
+              headers: {
+                accept: 'text/html,application/xhtml+xml',
+                'user-agent': 'BNDY-Backline/1.0 (+https://bndy.live; source-reconciliation)',
+              },
+              redirect: 'follow',
+            });
+            const body = await response.text();
+            const links = anchors(body, url);
+            const profiles = new Set(links.flatMap(({url, text}) => {
+              const path = url.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+              return path && !path.includes('/') && !path.includes('.') && /^[a-z0-9_-]+$/.test(path)
+                && !reserved.has(path) && text.length > 0 && text.length < 180 ? [path] : [];
+            }));
+            const pageLinks = new Set(links
+              .filter(({url}) => /all(?:bands|venues)\.php$/i.test(url.pathname))
+              .map(({url}) => url.searchParams.get('_start'))
+              .filter(Boolean));
+            const inputs = [...body.matchAll(/<input\b([^>]*)>/gi)].map((match) => {
+              const attrs = match[1];
+              const name = attrs.match(/\bname\s*=\s*(["'])(.*?)\1/i)?.[2];
+              const value = attrs.match(/\bvalue\s*=\s*(["'])(.*?)\1/i)?.[2];
+              const type = attrs.match(/\btype\s*=\s*(["'])(.*?)\1/i)?.[2];
+              return name && /(?:all|gig|band|include|show)/i.test(name)
+                ? { name, value: value ?? null, type: type ?? null, checked: /\bchecked\b/i.test(attrs) }
+                : null;
+            }).filter(Boolean);
+            const title = text(body.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? '');
+            console.log(JSON.stringify({
+              variant,
+              status: response.status,
+              bytes: Buffer.byteLength(body),
+              title,
+              profileLinks: profiles.size,
+              directoryPageLinks: pageLinks.size,
+              inputControls: inputs.slice(0, 20),
+              challenge: /please wait while your request is being verified|one moment, please/i.test(body),
+            }));
+          }
+          NODE
