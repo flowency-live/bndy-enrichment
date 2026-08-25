@@ -1,9 +1,13 @@
 {
-  "phase": "initialising",
-  "status": "failed",
-  "startedAt": "2026-08-25T20:43:20Z",
-  "deployedSha": "5616d6da3f6314beeebb195a8c40d24407333c19",
+  "phase": "recovery-started",
+  "status": "recovery-started",
+  "startedAt": "2026-08-25T20:47:25Z",
+  "deployedSha": "bb1514d75031bc4e9863f33193b99ff43fecc94f",
   "shadow": true,
   "canonicalWritesEnabled": false,
-  "completedAt": "2026-08-25T20:45:10Z"
+  "reconciliationId": "run-dc81f472-d3cb-4bb6-88c9-6831c5ea3c70",
+  "directoryReplayQueued": 2,
+  "recoveredDLQMessages": 871,
+  "redriveStarted": true,
+  "completedAt": "2026-08-25T20:49:10Z"
 }
