@@ -118,12 +118,16 @@ describe('Lemonrock source-native identities', () => {
   it('enumerates national county gig indexes as completeness controls', () => {
     const html = `
       <html><body>
-        <a href="/gigsincounty.php?county=Greater+Manchester">Greater Manchester 120</a>
-        <a href="/gigsincounty.php?county=London">London 900</a>
+        <a href="/gigsincounty.php?county=Greater+Manchester">Greater Manchester (120 gigs)</a>
+        <a href="/gigsincounty.php?county=London">London (900 gigs)</a>
       </body></html>`;
     const parsed = parseLemonrock(html, 'https://www.lemonrock.com/gigsbycounty.php', run('lemonrock-future-reconcile', { kind: 'future-index' }));
     expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigsincounty.php?county=Greater+Manchester');
     expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigsincounty.php?county=London');
+    expect(parsed.nextRequests).toEqual(expect.arrayContaining([
+      expect.objectContaining({ task: expect.objectContaining({ expectedCount: 120, inventoryLevel: 'county' }) }),
+      expect.objectContaining({ task: expect.objectContaining({ expectedCount: 900, inventoryLevel: 'county' }) }),
+    ]));
   });
 
   it('enumerates every venue directory page including venues without current gigs', () => {
