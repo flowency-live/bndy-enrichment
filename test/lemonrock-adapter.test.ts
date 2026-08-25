@@ -34,7 +34,7 @@ describe('Lemonrock source-native identities', () => {
     expect(tasks.some((item) => item.taskKey === 'artist:lemonrock:artist:alpha')).toBe(true);
     expect(tasks.some((item) => item.taskKey === 'artist:lemonrock:artist:beta')).toBe(true);
     expect(tasks.filter((item) => item.sourceId === 'lemonrock-artist-index')).toEqual([
-      expect.objectContaining({ task: expect.objectContaining({ url: 'https://www.lemonrock.com/allbands.php?_start=A&all=0' }) }),
+      expect.objectContaining({ task: expect.objectContaining({ url: 'https://www.lemonrock.com/allbands.php?_start=A&all=1' }) }),
     ]);
     expect(parsed.events).toEqual([]);
   });
@@ -124,6 +124,50 @@ describe('Lemonrock source-native identities', () => {
     const parsed = parseLemonrock(html, 'https://www.lemonrock.com/gigsbycounty.php', run('lemonrock-future-reconcile', { kind: 'future-index' }));
     expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigsincounty.php?county=Greater+Manchester');
     expect(parsed.nextRequests?.map((item) => item.task.url)).toContain('https://www.lemonrock.com/gigsincounty.php?county=London');
+  });
+
+  it('enumerates every venue directory page including venues without current gigs', () => {
+    const html = `
+      <html><body>
+        <a href="/allvenues.php?_start=A&amp;all=0">A</a>
+        <a href="/allvenues.php?_start=B&amp;all=0">B</a>
+      </body></html>`;
+    const parsed = parseLemonrock(html, 'https://www.lemonrock.com/allvenues.php', run('lemonrock-venue-index'));
+    expect(parsed.nextRequests?.map((item) => item.task.url)).toEqual(expect.arrayContaining([
+      'https://www.lemonrock.com/allvenues.php?_start=A&all=1',
+      'https://www.lemonrock.com/allvenues.php?_start=B&all=1',
+    ]));
+  });
+
+  it('follows county pages into town and dated listing pages before hydrating gigs', () => {
+    const html = `
+      <html><body>
+        <a href="/gigs-in-torquay">Gigs near Torquay</a>
+        <a href="/?cityId=28398&amp;gigfromdate=2026-09-01&amp;listingPeriod=11&amp;maxMilesGig=20">September</a>
+        <a href="/gig.php?id=930726&amp;rd=2026-08-25">Gig details</a>
+      </body></html>`;
+    const parsed = parseLemonrock(
+      html,
+      'https://www.lemonrock.com/gigsincounty.php?county=Devon',
+      run('lemonrock-future-reconcile', { kind: 'gig-index' }),
+    );
+    expect(parsed.nextRequests).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        sourceId: 'lemonrock-future-reconcile',
+        task: expect.objectContaining({ kind: 'gig-index', url: 'https://www.lemonrock.com/gigs-in-torquay' }),
+      }),
+      expect.objectContaining({
+        sourceId: 'lemonrock-future-reconcile',
+        task: expect.objectContaining({
+          kind: 'gig-index',
+          url: 'https://www.lemonrock.com/?cityId=28398&gigfromdate=2026-09-01&listingPeriod=11&maxMilesGig=20',
+        }),
+      }),
+      expect.objectContaining({
+        sourceId: 'lemonrock-gig-hydration',
+        task: expect.objectContaining({ kind: 'gig', nativeId: 'lemonrock:gig:930726' }),
+      }),
+    ]));
   });
 
   it('fans a full reconciliation across every national Lemonrock surface', () => {
