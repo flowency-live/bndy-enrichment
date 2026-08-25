@@ -92,6 +92,32 @@ function directoryPageRequests(
   );
 }
 
+function directoryInventoryControl(
+  directoryKind: 'artist' | 'venue',
+  html: string,
+  sourceUrl: string,
+): SourceFanoutRequest[] {
+  const url = new URL(sourceUrl);
+  const page = url.searchParams.get('_start');
+  if (!page) return [];
+
+  const title = titleFromHtml(html) ?? '';
+  const countText = title.match(/\(([\d,]+)\)\s*-\s*Lemonrock\b/i)?.[1];
+  if (!countText) return [];
+
+  const expectedCount = Number(countText.replace(/,/g, ''));
+  const sourceId = directoryKind === 'artist' ? 'lemonrock-artist-index' : 'lemonrock-venue-index';
+  const nativeId = `lemonrock:${directoryKind}-directory:${page.toLowerCase()}`;
+  return [request(
+    sourceId,
+    `${directoryKind}-inventory-control`,
+    sourceUrl,
+    nativeId,
+    undefined,
+    { expectedCount, inventoryLevel: 'directory-page', directoryKind, page },
+  )];
+}
+
 function gigListingRequests(html: string, sourceUrl: string): SourceFanoutRequest[] {
   return uniqueBy(
     anchorsFromHtml(html, sourceUrl)
@@ -132,7 +158,8 @@ function artistIndex(html: string, sourceUrl: string): ParsedSource {
       generated.push(request('lemonrock-artist-index', 'artist-index-page', url.toString()));
     }
   }
-  return { events: [], nextRequests: uniqueBy([...profiles, ...pages, ...generated], (item) => item.taskKey), parked: [], warnings: [] };
+  const controls = directoryInventoryControl('artist', html, sourceUrl);
+  return { events: [], nextRequests: uniqueBy([...profiles, ...pages, ...generated, ...controls], (item) => item.taskKey), parked: [], warnings: [] };
 }
 
 function venueIndex(html: string, sourceUrl: string): ParsedSource {
@@ -141,7 +168,8 @@ function venueIndex(html: string, sourceUrl: string): ParsedSource {
     return request('lemonrock-venue-hydration', 'venue', anchor.href, `lemonrock:venue:${slug}`, anchor.text);
   });
   const pages = directoryPageRequests(html, sourceUrl, 'allvenues.php', 'venue-index-page', 'lemonrock-venue-index');
-  return { events: [], nextRequests: uniqueBy([...profiles, ...pages], (item) => item.taskKey), parked: [], warnings: [] };
+  const controls = directoryInventoryControl('venue', html, sourceUrl);
+  return { events: [], nextRequests: uniqueBy([...profiles, ...pages, ...controls], (item) => item.taskKey), parked: [], warnings: [] };
 }
 
 function futureIndex(html: string, sourceUrl: string): ParsedSource {
@@ -381,6 +409,9 @@ function parseProfile(kind: 'artist' | 'venue', html: string, sourceUrl: string,
 
 export function parseLemonrock(html: string, sourceUrl: string, run: SourceRunContext): ParsedSource {
   const kind = taskKind(run);
+  if (kind === 'artist-inventory-control' || kind === 'venue-inventory-control') {
+    return { events: [], nextRequests: [], parked: [], warnings: [] };
+  }
   if (kind === 'artist-index' || kind === 'artist-index-page') return artistIndex(html, sourceUrl);
   if (kind === 'venue-index' || kind === 'venue-index-page') return venueIndex(html, sourceUrl);
   if (kind === 'full-reconcile') return fullReconcile(html, sourceUrl);

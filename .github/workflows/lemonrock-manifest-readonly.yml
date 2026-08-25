@@ -49,7 +49,7 @@ jobs:
             --table-name "$state_table" \
             --key-condition-expression "pk = :pk AND begins_with(sk, :prefix)" \
             --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#lemonrock"},":prefix":{"S":"TASK#"}}' \
-            --projection-expression "sourceId, taskKind, logicalTaskKey, task, #st, lastReconciliationId, lastDiscoveredAt, completedAt, failedAt, lastError" \
+            --projection-expression "sourceId, taskKind, logicalTaskKey, task, #st, lastReconciliationId, lastDiscoveredAt, completedAt, failedAt, updatedAt, lastError" \
             --expression-attribute-names '{"#st":"status"}' \
             --output json > "$tmp_dir/tasks.json"
 
@@ -113,7 +113,20 @@ jobs:
           queue_attrs = json.load(open(sys.argv[3])).get("Attributes", {})
           dlq_attrs = json.load(open(sys.argv[4])).get("Attributes", {})
           reconciliation_id = (root.get("metadata") or {}).get("lastReconciliationId")
-          discovered = [x for x in tasks if reconciliation_id and x.get("lastReconciliationId") == reconciliation_id]
+          discovered_rows = [x for x in tasks if reconciliation_id and x.get("lastReconciliationId") == reconciliation_id]
+          current = {}
+          for task in discovered_rows:
+              details = task.get("task") if isinstance(task.get("task"), dict) else {}
+              identity = (
+                  str(task.get("sourceId", "")),
+                  str(details.get("nativeId") or task.get("logicalTaskKey") or task.get("taskKey") or task.get("sk")),
+              )
+              recency = str(task.get("updatedAt") or task.get("lastDiscoveredAt") or task.get("completedAt") or "")
+              previous = current.get(identity)
+              previous_recency = str((previous or {}).get("updatedAt") or (previous or {}).get("lastDiscoveredAt") or (previous or {}).get("completedAt") or "")
+              if previous is None or recency > previous_recency:
+                  current[identity] = task
+          discovered = list(current.values())
           statuses = Counter(str(x.get("status", "unknown")) for x in discovered)
           sources = Counter(str(x.get("sourceId", "unknown")) for x in discovered)
           kinds = Counter(str(x.get("taskKind", "unknown")) for x in discovered)
@@ -123,14 +136,37 @@ jobs:
               and x.get("taskKind") == "gig-index"
               and (x.get("task") or {}).get("inventoryLevel") == "county"
           ]
+          artist_controls = [
+              x for x in discovered
+              if x.get("sourceId") == "lemonrock-artist-index"
+              and x.get("taskKind") == "artist-inventory-control"
+              and (x.get("task") or {}).get("inventoryLevel") == "directory-page"
+          ]
+          venue_controls = [
+              x for x in discovered
+              if x.get("sourceId") == "lemonrock-venue-index"
+              and x.get("taskKind") == "venue-inventory-control"
+              and (x.get("task") or {}).get("inventoryLevel") == "directory-page"
+          ]
           advertised_future_gigs = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in county_controls)
+          advertised_artists = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in artist_controls)
+          advertised_venues = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in venue_controls)
           artist_identities = int(kinds.get("artist", 0))
           venue_identities = int(kinds.get("venue", 0))
           gig_identities = int(kinds.get("gig", 0))
           artist_pages = int(kinds.get("artist-index-page", 0))
           venue_pages = int(kinds.get("venue-index-page", 0))
           gig_index_pages = int(kinds.get("gig-index", 0))
-          directories_covered = artist_pages >= 28 and venue_pages >= 28 and artist_identities > 0 and venue_identities > 0
+          directories_covered = (
+              artist_pages >= 28
+              and venue_pages >= 28
+              and len(artist_controls) >= 28
+              and len(venue_controls) >= 28
+              and advertised_artists > 0
+              and advertised_venues > 0
+              and artist_identities >= advertised_artists
+              and venue_identities >= advertised_venues
+          )
           future_gigs_covered = (
               advertised_future_gigs > 0
               and gig_identities >= advertised_future_gigs
@@ -179,11 +215,14 @@ jobs:
                   "lastFailureAt": root.get("lastFailureAt"),
                   "consecutiveFailures": root.get("consecutiveFailures", 0),
               },
+              "discoveredTaskRows": len(discovered_rows),
               "discoveredTasks": len(discovered),
               "tasksByStatus": dict(sorted(statuses.items())),
               "tasksBySource": dict(sorted(sources.items())),
               "tasksByKind": dict(sorted(kinds.items())),
               "completenessControls": {
+                  "advertisedArtists": advertised_artists,
+                  "advertisedVenues": advertised_venues,
                   "advertisedFutureGigs": advertised_future_gigs,
                   "artistIdentitiesDiscovered": artist_identities,
                   "venueIdentitiesDiscovered": venue_identities,
@@ -192,6 +231,8 @@ jobs:
                   "venueDirectoryPages": venue_pages,
                   "gigIndexPages": gig_index_pages,
                   "countyControls": len(county_controls),
+                  "artistDirectoryControls": len(artist_controls),
+                  "venueDirectoryControls": len(venue_controls),
                   "directoriesCovered": directories_covered,
                   "futureGigsCovered": future_gigs_covered,
                   "inventoryCovered": inventory_covered,

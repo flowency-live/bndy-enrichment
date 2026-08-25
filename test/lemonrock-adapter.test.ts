@@ -39,6 +39,47 @@ describe('Lemonrock source-native identities', () => {
     expect(parsed.events).toEqual([]);
   });
 
+  it('records source-advertised artist and venue directory inventory controls', () => {
+    const artistHtml = `
+      <html><head><title>All Bands (A) (551) - Lemonrock Gig Guide</title></head><body>
+        <a href="a1covers"><strong>A1 Covers</strong></a>
+      </body></html>`;
+    const venueHtml = `
+      <html><head><title>All Venues (A) (259) - Lemonrock Gig Guide</title></head><body>
+        <a href="aardvarkarms"><strong>Aardvark Arms</strong></a>
+      </body></html>`;
+
+    const artists = parseLemonrock(
+      artistHtml,
+      'https://www.lemonrock.com/allbands.php?_start=A&all=1',
+      run('lemonrock-artist-index', { kind: 'artist-index-page' }),
+    );
+    const venues = parseLemonrock(
+      venueHtml,
+      'https://www.lemonrock.com/allvenues.php?_start=A&all=1',
+      run('lemonrock-venue-index', { kind: 'venue-index-page' }),
+    );
+
+    expect(artists.nextRequests).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        taskKey: 'artist:lemonrock:artist:a1covers',
+      }),
+      expect.objectContaining({
+        taskKey: 'artist-inventory-control:lemonrock:artist-directory:a',
+        task: expect.objectContaining({ expectedCount: 551, inventoryLevel: 'directory-page' }),
+      }),
+    ]));
+    expect(venues.nextRequests).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        taskKey: 'venue:lemonrock:venue:aardvarkarms',
+      }),
+      expect.objectContaining({
+        taskKey: 'venue-inventory-control:lemonrock:venue-directory:a',
+        task: expect.objectContaining({ expectedCount: 259, inventoryLevel: 'directory-page' }),
+      }),
+    ]));
+  });
+
   it('turns a rich artist page into an artist-candidate profile with multi-valued claims', () => {
     const html = `
       <html><head><title>Example Band : Rock covers - Lemonrock Gig Guide</title></head><body>
