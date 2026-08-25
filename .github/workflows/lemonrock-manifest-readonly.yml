@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/lemonrock-manifest-readonly.yml'
+      - '.github/lemonrock-manifest-trigger'
   workflow_dispatch:
 
 permissions:
