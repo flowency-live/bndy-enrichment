@@ -102,10 +102,11 @@ function directoryInventoryControl(
   if (!page) return [];
 
   const title = titleFromHtml(html) ?? '';
-  const countText = title.match(/\(([\d,]+)\)\s*-\s*Lemonrock\b/i)?.[1];
-  if (!countText) return [];
-
-  const expectedCount = Number(countText.replace(/,/g, ''));
+  const titleCounts = [...title.matchAll(/\(([\d,]+)\)/g)];
+  const countText = titleCounts.at(-1)?.[1];
+  const profileCount = safeProfileLinks(html, sourceUrl).length;
+  const expectedCount = countText ? Number(countText.replace(/,/g, '')) : profileCount;
+  const inventoryCountSource = countText ? 'title' : 'parsed-profile-links';
   const sourceId = directoryKind === 'artist' ? 'lemonrock-artist-index' : 'lemonrock-venue-index';
   const nativeId = `lemonrock:${directoryKind}-directory:${page.toLowerCase()}`;
   return [request(
@@ -114,7 +115,7 @@ function directoryInventoryControl(
     sourceUrl,
     nativeId,
     undefined,
-    { expectedCount, inventoryLevel: 'directory-page', directoryKind, page },
+    { expectedCount, inventoryLevel: 'directory-page', inventoryCountSource, directoryKind, page },
   )];
 }
 
