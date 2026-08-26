@@ -13,21 +13,17 @@
     "gigLinkedBandsHydrated": false,
     "directoryAuditRequiredForSteadyState": false
   },
-  "queue": {
-    "visible": null,
-    "inFlight": null,
-    "dlq": null
-  },
   "tasks": {
     "discovered": null,
     "completed": null,
-    "failed": null
+    "failed": null,
+    "active": null
   },
   "promotionGate": {
     "ciGreen": false,
     "reconciliationComplete": false,
-    "dlqEmpty": false,
+    "scopedFailuresEmpty": false,
     "canonicalWritesRemainDisabled": true
   },
-  "notes": "Activation requested. The production completion workflow will replace runtime fields from owned reconciliation lineage and AWS queue/DLQ state."
+  "notes": "Scoped shadow activation requested. Completion is measured from owned On The Case reconciliation tasks, not unrelated work in the shared source queue."
 }
