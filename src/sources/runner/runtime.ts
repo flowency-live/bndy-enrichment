@@ -2,6 +2,7 @@ import { ClaimStore, ObservationStore, SourceRegistryStore, SourceStateStore } f
 import '../adapters/gigs-news/index.js';
 import '../adapters/lemonrock/index.js';
 import '../adapters/onthecase/index.js';
+import '../adapters/sceniceye/index.js';
 import type { AcquisitionRouter } from './acquisition.js';
 import { getSourceAdapter } from './adapter.js';
 import { DynamoSqsSourceFanoutPublisher } from './fanout.js';
