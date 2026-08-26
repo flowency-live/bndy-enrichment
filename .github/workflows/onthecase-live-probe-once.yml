@@ -26,14 +26,9 @@ jobs:
           aws dynamodb query --table-name "$STATE_TABLE" \
             --key-condition-expression "pk = :pk" \
             --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#onthecase"}}' \
-            --projection-expression "lastReconciliationId,#status,sourceId,taskKey,updatedAt" \
-            --expression-attribute-names '{"#status":"status"}' \
             > onthecase-live-items.json
           RID=$(jq -r '[.Items[].lastReconciliationId.S // empty | select(startswith("onthecase-gig-led-"))] | sort | last // empty' onthecase-live-items.json)
-          if [ -z "$RID" ]; then
-            echo "No On The Case gig-led reconciliation found" >&2
-            exit 1
-          fi
+          if [ -z "$RID" ]; then echo "No On The Case gig-led reconciliation found" >&2; exit 1; fi
           jq --arg rid "$RID" '[.Items[] | select(.lastReconciliationId.S == $rid)]' onthecase-live-items.json > onthecase-latest.json
           DISCOVERED=$(jq 'length' onthecase-latest.json)
           COMPLETED=$(jq '[.[] | select(.status.S == "completed")] | length' onthecase-latest.json)
@@ -41,16 +36,12 @@ jobs:
           QUEUED=$(jq '[.[] | select(.status.S == "queued")] | length' onthecase-latest.json)
           RUNNING=$(jq '[.[] | select(.status.S == "running")] | length' onthecase-latest.json)
           jq -n \
-            --arg capturedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg rid "$RID" \
-            --argjson discovered "$DISCOVERED" \
-            --argjson completed "$COMPLETED" \
-            --argjson failed "$FAILED" \
-            --argjson queued "$QUEUED" \
-            --argjson running "$RUNNING" \
+            --arg capturedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg rid "$RID" \
+            --argjson discovered "$DISCOVERED" --argjson completed "$COMPLETED" --argjson failed "$FAILED" --argjson queued "$QUEUED" --argjson running "$RUNNING" \
             --argjson statusBreakdown "$(jq 'sort_by(.status.S // "unknown") | [group_by(.status.S // "unknown")[] | {status: (.[0].status.S // "unknown"), count:length}]' onthecase-latest.json)" \
             --argjson sourceBreakdown "$(jq 'sort_by(.sourceId.S // "unknown") | [group_by(.sourceId.S // "unknown")[] | {sourceId: (.[0].sourceId.S // "unknown"), count:length}]' onthecase-latest.json)" \
-            '{capturedAt:$capturedAt,reconciliationId:$rid,tasks:{discovered:$discovered,completed:$completed,failed:$failed,queued:$queued,running:$running},statusBreakdown:$statusBreakdown,sourceBreakdown:$sourceBreakdown}' \
+            --argjson failures "$(jq '[.[] | select(.status.S == "failed") | {taskKey:(.taskKey.S // null),sourceId:(.sourceId.S // null),url:(.url.S // null),error:(.error.S // null),attempts:(.attempts.N // null),updatedAt:(.updatedAt.S // null)}]' onthecase-latest.json)" \
+            '{capturedAt:$capturedAt,reconciliationId:$rid,tasks:{discovered:$discovered,completed:$completed,failed:$failed,queued:$queued,running:$running},statusBreakdown:$statusBreakdown,sourceBreakdown:$sourceBreakdown,failures:$failures}' \
             > ops/onthecase-live-probe.json
       - name: Publish probe
         run: |
