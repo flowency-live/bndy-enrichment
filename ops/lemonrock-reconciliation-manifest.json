@@ -2,12 +2,12 @@
   "allDiscoveredTasksTerminal": false,
   "canonicalWritesEnabled": false,
   "completenessControls": {
-    "advertisedArtists": 10534,
+    "advertisedArtists": 10531,
     "advertisedFutureGigs": 7783,
-    "advertisedVenues": 8285,
+    "advertisedVenues": 8279,
     "artistDirectoryControls": 27,
     "artistDirectoryPages": 28,
-    "artistIdentitiesDiscovered": 10535,
+    "artistIdentitiesDiscovered": 10536,
     "countyControls": 59,
     "directoriesCovered": false,
     "futureGigsCovered": false,
@@ -18,8 +18,8 @@
     "venueDirectoryPages": 28,
     "venueIdentitiesDiscovered": 8291
   },
-  "discoveredTaskRows": 85204,
-  "discoveredTasks": 42475,
+  "discoveredTaskRows": 85315,
+  "discoveredTasks": 42476,
   "failedTaskSummary": [
     {
       "count": 716,
@@ -34,12 +34,12 @@
       "taskKind": "gig"
     }
   ],
-  "generatedAt": "2026-08-26T07:14:47.488216+00:00",
+  "generatedAt": "2026-08-26T07:59:02.214149+00:00",
   "queue": {
     "deadLetterInFlight": 0,
-    "deadLetterVisible": 5124,
+    "deadLetterVisible": 4164,
     "delayed": 0,
-    "inFlight": 0,
+    "inFlight": 940,
     "visible": 0
   },
   "queuesClear": false,
@@ -66,7 +66,7 @@
   "shadow": true,
   "status": "incomplete",
   "tasksByKind": {
-    "artist": 10535,
+    "artist": 10536,
     "artist-index": 1,
     "artist-index-page": 28,
     "artist-inventory-control": 27,
@@ -81,7 +81,7 @@
     "venue-inventory-control": 27
   },
   "tasksBySource": {
-    "lemonrock-artist-hydration": 10535,
+    "lemonrock-artist-hydration": 10536,
     "lemonrock-artist-index": 56,
     "lemonrock-cancellations": 1,
     "lemonrock-future-reconcile": 15829,
@@ -91,7 +91,7 @@
     "lemonrock-venue-index": 56
   },
   "tasksByStatus": {
-    "completed": 41739,
+    "completed": 41740,
     "failed": 736
   }
 }
