@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-26T20:39:58Z",
+  "capturedAt": "2026-08-26T20:42:00Z",
   "reconciliationId": "onthecase-gig-led-2026-08-26T19-56-07-809Z",
   "tasks": {
     "discovered": 30,
@@ -26,6 +26,240 @@
     {
       "sourceId": "onthecase-venue-hydration",
       "count": 29
+    }
+  ],
+  "failures": [
+    {
+      "taskKey": "venue:onthecase:venue:108@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:51.921Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:185@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:48.636Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:273@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:41.561Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:333@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:34.285Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:337@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:42.678Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:348@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:51.579Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:375@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:53.015Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:463@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:52.576Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:493@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:31.540Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:572@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:45.392Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:5994@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:41.848Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6011@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:26.669Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6016@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:30.562Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6028@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:40.772Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6029@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:39.685Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6074@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:54.441Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6096@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:48.991Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6118@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:39.762Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6124@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:46.690Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6127@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:29.305Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6128@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:36.359Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6129@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:50.861Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:6130@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:37.476Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:638@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:44.167Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:753@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:50.080Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:892@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:47.847Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:90@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:54.027Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:915@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:46.564Z"
+    },
+    {
+      "taskKey": "venue:onthecase:venue:940@2026-08-26",
+      "sourceId": "onthecase-venue-hydration",
+      "url": null,
+      "error": null,
+      "attempts": null,
+      "updatedAt": "2026-08-26T20:26:44.349Z"
     }
   ]
 }
