@@ -29,5 +29,5 @@
     "dlqEmpty": false,
     "canonicalWritesRemainDisabled": true
   },
-  "notes": "Generated baseline only. Production workflow must replace runtime fields from owned reconciliation lineage and AWS queue/DLQ state before activation."
+  "notes": "Baseline only. The production completion workflow replaces runtime fields from owned reconciliation lineage and AWS queue/DLQ state before activation."
 }
