@@ -25,5 +25,5 @@
     "scopedFailuresEmpty": false,
     "canonicalWritesRemainDisabled": true
   },
-  "notes": "Scoped shadow activation requested. Completion is measured from owned On The Case reconciliation tasks, not unrelated work in the shared source queue."
+  "notes": "Final scoped shadow activation requested with only the hourly gig root enabled; directory roots remain disabled."
 }
