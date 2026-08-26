@@ -1,0 +1,62 @@
+name: Diagnose On The Case venue hydration once
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  diagnose:
+    if: contains(github.event.head_commit.message, 'Diagnose On The Case venue hydration')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Capture failed task records and recent Lambda errors
+        run: |
+          set -euo pipefail
+          mkdir -p ops
+          STATE_TABLE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" --output text)
+          aws dynamodb scan --table-name "$STATE_TABLE" \
+            --filter-expression "sourceFamily = :family AND #s = :failed" \
+            --expression-attribute-names '{"#s":"status"}' \
+            --expression-attribute-values '{":family":{"S":"onthecase"},":failed":{"S":"failed"}}' \
+            > /tmp/failed.json
+          jq '{capturedAt:(now|todate), failedItems:.Items}' /tmp/failed.json > ops/onthecase-failure-diagnostic.json
+
+          START_MS=$(( ($(date +%s) - 10800) * 1000 ))
+          : > /tmp/logs.txt
+          aws logs describe-log-groups --log-group-name-prefix '/aws/lambda/' --query 'logGroups[].logGroupName' --output text | tr '\t' '\n' | while read -r group; do
+            [ -z "$group" ] && continue
+            case "$group" in
+              *BndyEnrichment*|*bndy-enrichment*|*Source*|*source*)
+                echo "===== $group =====" >> /tmp/logs.txt
+                aws logs filter-log-events --log-group-name "$group" --start-time "$START_MS" --filter-pattern 'ERROR' --limit 100 --query 'events[].message' --output text >> /tmp/logs.txt 2>&1 || true
+                aws logs filter-log-events --log-group-name "$group" --start-time "$START_MS" --filter-pattern 'On The Case' --limit 100 --query 'events[].message' --output text >> /tmp/logs.txt 2>&1 || true
+                aws logs filter-log-events --log-group-name "$group" --start-time "$START_MS" --filter-pattern 'onthecase' --limit 100 --query 'events[].message' --output text >> /tmp/logs.txt 2>&1 || true
+                ;;
+            esac
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('ops/onthecase-failure-diagnostic.json')
+          data=json.loads(p.read_text())
+          data['recentLogs']=Path('/tmp/logs.txt').read_text()[-120000:]
+          p.write_text(json.dumps(data,indent=2))
+          PY
+      - name: Publish diagnostic
+        run: |
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git pull --rebase origin main
+          git add ops/onthecase-failure-diagnostic.json
+          git commit -m "Record On The Case venue hydration diagnostic" || exit 0
+          git push origin HEAD:main
