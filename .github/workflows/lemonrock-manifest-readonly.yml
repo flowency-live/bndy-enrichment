@@ -1,6 +1,7 @@
 name: Inspect Lemonrock reconciliation manifest
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
