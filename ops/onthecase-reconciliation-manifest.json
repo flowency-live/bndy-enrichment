@@ -1,0 +1,33 @@
+{
+  "status": "not-run",
+  "sourceFamily": "onthecase",
+  "operatingModel": "gig-led",
+  "shadow": true,
+  "canonicalWritesEnabled": false,
+  "reconciliationId": null,
+  "startedAt": null,
+  "completedAt": null,
+  "coverage": {
+    "gigIndexComplete": false,
+    "gigLinkedVenuesHydrated": false,
+    "gigLinkedBandsHydrated": false,
+    "directoryAuditRequiredForSteadyState": false
+  },
+  "queue": {
+    "visible": null,
+    "inFlight": null,
+    "dlq": null
+  },
+  "tasks": {
+    "discovered": null,
+    "completed": null,
+    "failed": null
+  },
+  "promotionGate": {
+    "ciGreen": false,
+    "reconciliationComplete": false,
+    "dlqEmpty": false,
+    "canonicalWritesRemainDisabled": true
+  },
+  "notes": "Generated baseline only. Production workflow must replace runtime fields from owned reconciliation lineage and AWS queue/DLQ state before activation."
+}
