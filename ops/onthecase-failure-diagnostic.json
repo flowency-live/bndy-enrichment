@@ -1,0 +1,2094 @@
+{
+  "capturedAt": "2026-08-26T21:05:17Z",
+  "failedItems": [
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/108/blacksmiths-arms-gosforth"
+          },
+          "name": {
+            "S": "Blacksmiths Arms Gosforth"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:108"
+          },
+          "kind": {
+            "S": "venue"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:47.078Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:51.921Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:108@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:108@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:108"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/108/blacksmiths-arms-gosforth"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/185/easington-colliery-wmc"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "Easington Colliery WMC"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:185"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:47.616Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:48.636Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:185@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:185@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:185"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/185/easington-colliery-wmc"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "name": {
+            "S": "Lochside"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/273/lochside"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:273"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:37.984Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:41.561Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:273@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:273@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:273"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/273/lochside"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/333/old-fox-felling-gateshead"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "Old Fox Felling Gateshead"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:333"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:31.980Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:34.285Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:333@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:333@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:333"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/333/old-fox-felling-gateshead"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/337/ox-and-plough-washington"
+          },
+          "name": {
+            "S": "Ox & Plough Washington"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:337"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:40.449Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:42.678Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:337@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:337@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:337"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/337/ox-and-plough-washington"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "name": {
+            "S": "Penny Gill Spennymoor"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:348"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/348/penny-gill-spennymoor"
+          },
+          "kind": {
+            "S": "venue"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:48.825Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:51.579Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:348@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:348@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:348"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/348/penny-gill-spennymoor"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/375/red-lion-earsdon-whitley-bay"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:375"
+          },
+          "name": {
+            "S": "Red Lion Earsdon Whitley Bay"
+          },
+          "kind": {
+            "S": "venue"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:49.549Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:53.015Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:375@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:375@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:375"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/375/red-lion-earsdon-whitley-bay"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "Three Tuns Gateshead"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:463"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/463/three-tuns-gateshead"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:48.293Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:52.576Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:463@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:463@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:463"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/463/three-tuns-gateshead"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/493/white-swan-morpeth"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:493"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "White Swan Morpeth"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:30.705Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:31.540Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:493@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:493@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:493"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/493/white-swan-morpeth"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "nativeId": {
+            "S": "onthecase:venue:572"
+          },
+          "name": {
+            "S": "New Hartley Club New Hartley"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/572/new-hartley-club-new-hartley"
+          },
+          "kind": {
+            "S": "venue"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:39.212Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:45.392Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:572@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:572@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:572"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/572/new-hartley-club-new-hartley"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "nativeId": {
+            "S": "onthecase:venue:5994"
+          },
+          "name": {
+            "S": "The Prior Doxford Sunderland"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/5994/the-prior-doxford-sunderland"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:40.467Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:41.848Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:5994@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:5994@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:5994"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/5994/the-prior-doxford-sunderland"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "nativeId": {
+            "S": "onthecase:venue:6011"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "Old Fat Ox Holywell"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6011/old-fat-ox-holywell"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:26.379Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:26.669Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6011@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6011@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6011"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6011/old-fat-ox-holywell"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "kind": {
+            "S": "venue"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6016/crown-and-cannon-winlaton"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:6016"
+          },
+          "name": {
+            "S": "Crown and Cannon Winlaton"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:29.572Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:30.562Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6016@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6016@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6016"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6016/crown-and-cannon-winlaton"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "kind": {
+            "S": "venue"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6028/clousden-hill-forest-hall"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:6028"
+          },
+          "name": {
+            "S": "Clousden Hill Forest Hall"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:33.749Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:40.772Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6028@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6028@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6028"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6028/clousden-hill-forest-hall"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "name": {
+            "S": "Live Lounge Sunderland"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:6029"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6029/live-lounge-sunderland"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:35.684Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:39.685Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6029@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6029@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6029"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6029/live-lounge-sunderland"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "name": {
+            "S": "Sea Horse Club at Whitley Bay FC"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6074/sea-horse-club-at-whitley-bay-fc"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:6074"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:50.853Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:54.441Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6074@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6074@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6074"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6074/sea-horse-club-at-whitley-bay-fc"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6096/clennel-hall-rothbury-bike-night"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "Clennel Hall Rothbury Bike Night"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:6096"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:46.499Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:48.991Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6096@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6096@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6096"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6096/clennel-hall-rothbury-bike-night"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "nativeId": {
+            "S": "onthecase:venue:6118"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6118/cross-keys-washington"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "Cross Keys Washington"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:36.791Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:39.762Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6118@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6118@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6118"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6118/cross-keys-washington"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "name": {
+            "S": "Angels Place Sunderland"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:6124"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6124/angels-place-sunderland"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:44.004Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:46.690Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6124@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6124@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6124"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6124/angels-place-sunderland"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6127/red-house-farm-whitley-bay"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:6127"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "Red House Farm Whitley Bay"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:28.699Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:29.305Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6127@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6127@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6127"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6127/red-house-farm-whitley-bay"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "nativeId": {
+            "S": "onthecase:venue:6128"
+          },
+          "name": {
+            "S": "Bridge Hotel Durham"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6128/bridge-hotel-durham"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:34.431Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:36.359Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6128@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6128@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6128"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6128/bridge-hotel-durham"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "name": {
+            "S": "The Peacock Newcastle"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:6129"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6129/the-peacock-newcastle"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:45.218Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:50.861Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6129@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6129@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6129"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6129/the-peacock-newcastle"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/6130/ivy-house-sunderland"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:6130"
+          },
+          "name": {
+            "S": "Ivy House Sunderland"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:33.184Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:37.476Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:6130@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:6130@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:6130"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/6130/ivy-house-sunderland"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "name": {
+            "S": "Runhead Bar & Grill Ryton"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:638"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/638/runhead-bar-and-grill-ryton"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:42.819Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:44.167Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:638@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:638@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:638"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/638/runhead-bar-and-grill-ryton"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "nativeId": {
+            "S": "onthecase:venue:753"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/753/bridlepath-whickham"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "Bridlepath Whickham"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:45.985Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:50.080Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:753@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:753@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:753"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/753/bridlepath-whickham"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "nativeId": {
+            "S": "onthecase:venue:892"
+          },
+          "kind": {
+            "S": "venue"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/892/melton-constable-seaton-sluice"
+          },
+          "name": {
+            "S": "Melton Constable Seaton Sluice"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:43.509Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:47.847Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:892@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:892@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:892"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/892/melton-constable-seaton-sluice"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "kind": {
+            "S": "venue"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/90/bebside-inn-blyth"
+          },
+          "name": {
+            "S": "Bebside Inn Blyth"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:90"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:50.127Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:54.027Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:90@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:90@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:90"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/90/bebside-inn-blyth"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/915/murton-officials-club-seaham"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:915"
+          },
+          "name": {
+            "S": "Murton Officials Club Seaham"
+          },
+          "kind": {
+            "S": "venue"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:45.212Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:46.564Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:915@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:915@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:915"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/915/murton-officials-club-seaham"
+      }
+    },
+    {
+      "entityType": {
+        "S": "SourceTask"
+      },
+      "task": {
+        "M": {
+          "kind": {
+            "S": "venue"
+          },
+          "name": {
+            "S": "Crook Hotel Crook"
+          },
+          "url": {
+            "S": "https://onthecasemusic.co.uk/venues/940/crook-hotel-crook"
+          },
+          "nativeId": {
+            "S": "onthecase:venue:940"
+          }
+        }
+      },
+      "status": {
+        "S": "failed"
+      },
+      "lastDiscoveredAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "sourceFamily": {
+        "S": "onthecase"
+      },
+      "lastError": {
+        "S": "The conditional request failed"
+      },
+      "sourceId": {
+        "S": "onthecase-venue-hydration"
+      },
+      "lastReconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "reconciliationId": {
+        "S": "onthecase-gig-led-2026-08-26T19-56-07-809Z"
+      },
+      "taskKind": {
+        "S": "venue"
+      },
+      "startedAt": {
+        "S": "2026-08-26T19:56:41.639Z"
+      },
+      "updatedAt": {
+        "S": "2026-08-26T20:54:32.425Z"
+      },
+      "failedAt": {
+        "S": "2026-08-26T20:26:44.349Z"
+      },
+      "taskKey": {
+        "S": "venue:onthecase:venue:940@2026-08-26"
+      },
+      "sk": {
+        "S": "TASK#venue:onthecase:venue:940@2026-08-26"
+      },
+      "logicalTaskKey": {
+        "S": "venue:onthecase:venue:940"
+      },
+      "pk": {
+        "S": "BOOTSTRAP#onthecase"
+      },
+      "queuedAt": {
+        "S": "2026-08-26T19:56:08.743Z"
+      },
+      "sourceUrl": {
+        "S": "https://onthecasemusic.co.uk/venues/940/crook-hotel-crook"
+      }
+    }
+  ],
+  "recentLogs": "===== /aws/lambda/BndyEnrichmentStack-GoogleDiscoveryWorker66B9CA30-Nc72FG6J3ShU =====\n===== /aws/lambda/BndyEnrichmentStack-ProjectionWorker2E654DBF-8omMuPbBsAna =====\n===== /aws/lambda/BndyEnrichmentStack-ScanPlannerBC522289-D9WXLIcdx9Wi =====\n===== /aws/lambda/BndyEnrichmentStack-SourceDispatcherB94114BB-RqgXyjZuSD0a =====\n===== /aws/lambda/BndyEnrichmentStack-SourceWorker336FEA29-ghZk2mBRjOks =====\n2026-08-26T19:56:27.859Z\td0e69f2d-0d86-5f92-8ef3-fc244a9dbb40\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:29.459Z\t696e3d1e-5041-5b9c-9bee-5e17176d7f4e\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:30.468Z\t371a7f39-14e4-572f-b2fe-1c3053c983fd\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:31.421Z\t75026479-c8a4-55de-8c2c-07708f8ac10c\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:32.971Z\t5ead9fa5-19c4-55af-9237-fcac5eeb717d\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:33.786Z\td2027fa6-b4f1-5c79-bb98-1caff3c028ab\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:34.792Z\t9ca8dc68-2feb-53c3-b39f-bf6168da9791\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:35.107Z\tc9a765ea-2947-54d3-a7ae-06e36e751001\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:36.702Z\t0f014dbb-2dde-568b-878d-2eb26aed5259\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:37.541Z\td5b9f933-cf6f-58a7-bd77-9a3a885b4c75\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:38.946Z\tcd7b728c-0025-53f7-ab7a-118547104725\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:40.241Z\tf1f558b0-0ba2-575b-92a1-3bb94c95a389\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:41.350Z\te7746faa-35b0-5c20-ac25-0ca37288f8f2\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:41.601Z\t61b2e589-b936-5cb7-8458-8680fe0e58e5\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:42.460Z\tc3e83787-8b4d-5ebc-bde3-548ecc744a6e\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:43.426Z\tee398f7c-40f4-535d-a0ab-ec7507ce278f\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:44.593Z\td801cbb8-e8fc-5917-84db-a8b1afc79d45\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:44.858Z\t01afbe90-0b9f-5b5c-9074-dd994ca44f8e\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:45.884Z\t69e50c31-0be0-519c-b975-6f384cdd95ce\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:46.105Z\ted6dcf11-4e15-5d69-97e0-ac180928d9bb\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:46.776Z\t8cd13310-dccd-5d2b-8455-50199bf07979\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:47.413Z\t34b70080-1fa2-5fb6-9c34-6389589cfb64\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:47.807Z\t1affea6f-4a68-5f98-80c5-89660d57abca\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:48.334Z\t0cdb3460-43eb-5cbc-9f01-576904d4e86e\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:49.148Z\t6bc0447a-57f5-572d-b42e-277310b5a37f\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:49.809Z\t41178c67-6a8b-5c23-8285-ef6e2dcbf8f1\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:50.517Z\tbd8cb1f7-efd3-59d6-b5ec-d2fea892dd84\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:50.720Z\t1aae51af-feb8-5fb7-bb20-32a6b9fa8b65\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T19:56:51.847Z\t85dc2cdd-c825-5bf0-9d9e-4fd48f67cfa2\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:27.575Z\td05dcc68-d8ae-5ac9-9382-af619207fd78\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:29.774Z\t9613c5c1-ccc1-5eec-8ba7-a6c886606846\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:32.716Z\t60c7d1eb-3fd4-580a-bce2-b2e27566bea0\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:32.739Z\t8e4603db-db46-5efa-b1ec-60d291f6c94b\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:34.501Z\t0be50994-ffd3-5db1-bb91-6a9db5662b1b\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:35.935Z\t723aa084-d53a-5467-993b-c38d9f8d93d6\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:36.746Z\t0552a5e2-e68a-583b-a561-c6ebac3d3e91\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:38.236Z\t073fb33d-b64a-5520-9bb3-d034fcf32291\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:39.259Z\t4f08bc12-a992-5b71-955b-df1be3286ddb\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:40.190Z\tbb4738a0-5aed-5a7e-8244-5ba910568dcf\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:41.216Z\t23a97a73-3403-5fe0-9c23-197a7ebf5851\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:41.233Z\t1d4453d8-ed09-5f79-8fe6-30d1a7b559d3\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:42.054Z\t7629e650-7fe5-519b-ac60-85593558162a\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:42.606Z\t4d1da20a-0cf6-5374-b90f-c103464b75de\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:43.485Z\t218647b5-8e70-5b08-b1f9-24bcc4ce7da2\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:43.596Z\tacc1b3ea-23de-5a36-a545-d0e369604d87\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:44.776Z\t0af60f94-5611-554a-afdd-6c9d1cae72fb\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:44.863Z\t69348e70-efb7-5f24-964e-ed79a508e98e\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:45.935Z\t250df425-df2e-55bd-aa17-972c95ee420c\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:45.948Z\t64dfc67c-a96b-5e05-bffd-a575e3aa98af\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:47.416Z\t1f874109-7982-5d27-81b9-220033405a96\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:47.530Z\taaeef2ce-4609-57d0-971e-91c70ccb017a\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:48.400Z\t8281b89f-c320-5dd8-8e5e-db9689e36b72\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:48.499Z\ta283d8cb-7dac-552f-a99f-bbc2376fd29e\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:49.831Z\t5d3b29a9-c3f0-567d-94f1-4aa08934f1cc\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:49.986Z\tba6edc21-4b6d-579a-9021-bf2801a94130\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:50.797Z\t82602220-c847-56d5-9a9a-412982824164\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:51.262Z\ta628ea4e-fd1f-572c-8c72-8947b7d96186\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:11:52.469Z\t543b28e8-2348-55d0-81e2-4be1698fc261\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:26.668Z\t660c767b-80d5-507a-bbc3-1572cef2bfa8\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:29.305Z\t132e8f12-192b-5483-b8e5-ec1b57090cb1\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:30.562Z\t254856ba-6bdb-55bf-8735-35b325e8ea6d\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:31.540Z\t6a5f5b08-02f8-5b02-add9-38014ccec330\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:34.284Z\tb62c2c20-5c7e-5105-8a8c-4f2912490937\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:36.358Z\tfde14ee7-7410-5ebe-a566-2dee3a26e16c\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:37.475Z\tc4e948a7-7743-5eec-9743-2bae397966de\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:39.685Z\t6ba4babc-9286-5630-9a0e-d9b5dcba09e2\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:39.762Z\td639cfeb-9219-55ac-a7a7-ace2dc272d9e\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:40.772Z\t6c5a0a8f-9e7c-5147-b1ef-6986d043be95\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:41.561Z\t2396457c-35f9-5da6-a1be-26757bb9e274\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:41.848Z\t9e401513-6ef6-5468-a8dd-761a20b6ec5a\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:42.678Z\t0cce3fd9-7634-5919-9aad-5cd03875b6cb\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:44.167Z\tb996e6f1-2ac5-57d9-9109-85f86486b80b\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:44.349Z\td5e2fcf0-dda9-5d27-91ee-9ff993ea1515\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:45.392Z\taccbd0bc-0a7b-5ac6-945a-b3b5443f2514\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:46.564Z\t8af6dc3b-f503-588f-b2eb-bf32bb46775d\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:46.690Z\t0e5b2ddd-32a9-5057-ae9f-4ed47cec1865\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:47.847Z\t352c956d-c518-5b16-a8b8-f6648b5ef4c4\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:48.635Z\t2c26738d-f185-55b8-a31d-1084bfc24d8a\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:48.991Z\t2b626535-35bf-5dc9-aa3a-063c7bf7021b\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:50.080Z\tc7bfa8ea-5468-56d0-b6b4-cbe31a214902\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:50.861Z\td09c7ab5-fa73-5463-a2a3-19bcb4396c51\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:51.579Z\t26f8741f-6740-5dec-a2d1-1716290aa23e\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:51.921Z\t4356a6c0-c2a2-5c32-9f6f-c5c98ce88400\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:52.576Z\t36ee4ca4-5830-5620-974e-2fad167bc9f2\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:53.015Z\t87aa3d3f-2e10-5127-ba58-5e36605c1915\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:54.027Z\ta1c14c40-8602-59c0-afe0-2f49c84fe612\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\t2026-08-26T20:26:54.441Z\te9157d36-0357-5657-9958-1e3f4d1ace65\tERROR\tSourceWorker failed Error: The conditional request failed\n    at Runtime.to [as handler] (/var/task/index.js:23:22483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n\n===== /aws/lambda/BndySourceRunner-dev-LogRetentionaae0aa3c5b4d4f87b-xEgUBaG6XHb0 =====\n===== /aws/lambda/BndySourceRunner-prod-LogRetentionaae0aa3c5b4d4f87-tNd3hAHRxcPu =====\n===== /aws/lambda/bndy-serverless-api-SourceRunsFunc-bUjoJCjAxPH2 =====\n===== /aws/lambda/bndy-serverless-api-SourceRunsFunction-cs6lAvjSuR6M =====\n===== /aws/lambda/bndy-source-inspector-SourceInspectorFunction-a7P9shrPou6W =====\n"
+}
