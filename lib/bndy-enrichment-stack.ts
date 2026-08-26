@@ -212,7 +212,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
     // Lemonrock fast-change surfaces are scheduled directly into the durable source queue.
     // The source family remains registry-backed and shadow/no-write; these rules only create observations/claims.
     new events.Rule(this, 'LemonrockFastGigTick', {
-      schedule: events.Schedule.rate(cdk.Duration.minutes(15)),
+      schedule: events.Schedule.rate(cdk.Duration.hours(1)),
       targets: [
         new targets.SqsQueue(sourceScanQueue, {
           message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-new-gigs', reason: 'scheduled' }),
@@ -223,29 +223,31 @@ export class BndyEnrichmentStack extends cdk.Stack {
       ],
     });
 
-    new events.Rule(this, 'LemonrockDailyReconcile', {
+    // One cheap root-page acquisition proves the future-gig surface is reachable
+    // and structurally recognisable without starting national child-task fan-out.
+    new events.Rule(this, 'LemonrockDailyHealthCheck', {
       schedule: events.Schedule.cron({ minute: '10', hour: '2' }),
       targets: [
         new targets.SqsQueue(sourceScanQueue, {
-          message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-future-reconcile', reason: 'scheduled' }),
-        }),
-        new targets.SqsQueue(sourceScanQueue, {
-          message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-artist-index', reason: 'scheduled' }),
-        }),
-        new targets.SqsQueue(sourceScanQueue, {
-          message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-venue-index', reason: 'scheduled' }),
+          message: events.RuleTargetInput.fromObject({
+            sourceId: 'lemonrock-future-reconcile',
+            reason: 'scheduled',
+            task: { kind: 'future-health', url: 'https://www.lemonrock.com/gigsbycounty.php' },
+          }),
         }),
       ],
     });
 
-    new events.Rule(this, 'LemonrockWeeklyDirectoryReconcile', {
-      schedule: events.Schedule.cron({ minute: '20', hour: '2', weekDay: 'SUN' }),
+    // A monthly future-gig sweep repairs gaps economically. Artist and venue
+    // profiles are hydrated only when a discovered gig references them.
+    new events.Rule(this, 'LemonrockMonthlyFutureReconcile', {
+      schedule: events.Schedule.cron({ minute: '20', hour: '2', day: '1' }),
       targets: [
         new targets.SqsQueue(sourceScanQueue, {
           message: events.RuleTargetInput.fromObject({
-            sourceId: 'lemonrock-full-reconcile',
+            sourceId: 'lemonrock-future-reconcile',
             reason: 'scheduled',
-            task: { kind: 'full-reconcile', url: 'https://www.lemonrock.com/' },
+            task: { kind: 'future-index', url: 'https://www.lemonrock.com/gigsbycounty.php' },
           }),
         }),
       ],

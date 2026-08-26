@@ -268,11 +268,15 @@ This is the pattern the next source must copy: source-specific, independently ch
 
 ### Schedules
 
-The deployed Lemonrock schedules are:
+The low-cost Lemonrock operating schedules are:
 
-- new gigs and cancellations: every 15 minutes;
-- future gigs plus artist and venue indexes: daily at 02:10 UTC;
-- full national directory reconciliation: Sundays at 02:20 UTC.
+- new gigs and cancellations: hourly;
+- future-gig root structural health check: daily at 02:10 UTC, one page and no fan-out;
+- national future-gig reconciliation: monthly on day 1 at 02:20 UTC;
+- artist and venue profiles: gig-triggered only;
+- full artist and venue directory reconciliation: manual only.
+
+Fast feeds hydrate gig details with hourly dedupe and do not follow global navigation. The monthly reconciliation uses monthly gig-detail dedupe. Profile hydration does not recursively enumerate gigs. This keeps the operating workload focused on live music rather than dormant Lemonrock members.
 
 The Source Registry remains the canonical source configuration model. Direct EventBridge rules are durable launchers for this national family, not a competing store of source truth.
 
@@ -428,9 +432,10 @@ The parser should fail closed if pagination or rendering behaviour changes. A ze
 
 ### Candidate cadence
 
-- gigs and cancellations: every 15 to 30 minutes;
-- band and venue indexes: daily;
-- full reconciliation: weekly.
+- gigs and cancellations: hourly;
+- lightweight root/source health: daily;
+- band and venue indexes: gig-led rather than unconditional where the source supports stable relationships;
+- full future-gig reconciliation: monthly by default, tightened only when measured change rates justify the extra cost.
 
 These are candidate cadences to confirm against actual update behaviour and source load. Do not enable them until fixture parity, bounded live acquisition and completion reporting are proven.
 
@@ -489,4 +494,3 @@ On The Case is ready for the resolution/graph stage only when:
 - [Projection engine](../src/projection/engine.ts)
 - [Authority policy](../src/projection/authority-policy.ts)
 - [AWS/CDK stack](../lib/bndy-enrichment-stack.ts)
-

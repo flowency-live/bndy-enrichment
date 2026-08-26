@@ -1,0 +1,184 @@
+name: Deploy Lemonrock low-cost operating model
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: lemonrock-operating-model
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Deploy Lemonrock low-cost operating model')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 60
+    env:
+      AWS_REGION: eu-west-2
+      STACK_NAME: BndyEnrichmentStack
+      STATUS_FILE: ops/lemonrock-low-cost-operating-status.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Initialise sanitised status
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ops
+          jq -n \
+            --arg startedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg deployedSha "$(git rev-parse HEAD)" \
+            '{
+              status:"running",
+              phase:"initialising",
+              startedAt:$startedAt,
+              deployedSha:$deployedSha,
+              shadow:true,
+              canonicalWritesEnabled:false
+            }' > "$STATUS_FILE"
+
+      - name: Require dedicated deployment role
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+        run: |
+          set -euo pipefail
+          test -n "$AWS_DEPLOY_ROLE_ARN"
+
+      - name: Configure AWS deployment credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Validate exact main revision
+        run: |
+          set -euo pipefail
+          jq '.phase = "validating"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
+          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+          npm ci
+          TZ=UTC npm test
+          npm run build
+          npx cdk synth >/tmp/cdk-synth.log
+
+      - name: Deploy schedule and fan-out controls
+        run: |
+          set -euo pipefail
+          jq '.phase = "deploying"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
+          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+          npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+
+      - name: Verify live low-cost schedules and safety flags
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq '.phase = "verifying"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
+          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+
+          find_rule() {
+            aws cloudformation list-stack-resources \
+              --stack-name "$STACK_NAME" \
+              --query "StackResourceSummaries[?starts_with(LogicalResourceId, '$1')].PhysicalResourceId | [0]" \
+              --output text
+          }
+
+          fast_rule=$(find_rule LemonrockFastGigTick)
+          health_rule=$(find_rule LemonrockDailyHealthCheck)
+          monthly_rule=$(find_rule LemonrockMonthlyFutureReconcile)
+          test "$fast_rule" != "None"
+          test "$health_rule" != "None"
+          test "$monthly_rule" != "None"
+
+          fast_schedule=$(aws events describe-rule --name "$fast_rule" --query ScheduleExpression --output text)
+          health_schedule=$(aws events describe-rule --name "$health_rule" --query ScheduleExpression --output text)
+          monthly_schedule=$(aws events describe-rule --name "$monthly_rule" --query ScheduleExpression --output text)
+          test "$fast_schedule" = "rate(1 hour)"
+          test "$health_schedule" = "cron(10 2 * * ? *)"
+          test "$monthly_schedule" = "cron(20 2 1 * ? *)"
+
+          fast_targets=$(aws events list-targets-by-rule --rule "$fast_rule" --query 'Targets[].Input' --output text)
+          health_targets=$(aws events list-targets-by-rule --rule "$health_rule" --query 'Targets[].Input' --output text)
+          monthly_targets=$(aws events list-targets-by-rule --rule "$monthly_rule" --query 'Targets[].Input' --output text)
+          grep -q 'lemonrock-new-gigs' <<<"$fast_targets"
+          grep -q 'lemonrock-cancellations' <<<"$fast_targets"
+          grep -q 'future-health' <<<"$health_targets"
+          grep -q 'future-index' <<<"$monthly_targets"
+
+          all_targets="$fast_targets $health_targets $monthly_targets"
+          ! grep -q 'lemonrock-artist-index' <<<"$all_targets"
+          ! grep -q 'lemonrock-venue-index' <<<"$all_targets"
+          ! grep -q 'lemonrock-full-reconcile' <<<"$all_targets"
+
+          state_table=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.StateTableName)")
+          source_safety=true
+          for source_id in lemonrock-new-gigs lemonrock-cancellations lemonrock-future-reconcile lemonrock-artist-hydration lemonrock-venue-hydration lemonrock-gig-hydration; do
+            item=$(aws dynamodb get-item \
+              --table-name "$state_table" \
+              --key "{\"pk\":{\"S\":\"SOURCE#$source_id\"},\"sk\":{\"S\":\"CONFIG\"}}" \
+              --projection-expression 'shadow,writerAuthority' \
+              --output json)
+            shadow=$(jq -r '.Item.shadow.BOOL // false' <<<"$item")
+            writer=$(jq -r '.Item.writerAuthority.S // "unknown"' <<<"$item")
+            if [ "$shadow" != "true" ] || [ "$writer" != "aws" ]; then source_safety=false; fi
+          done
+          test "$source_safety" = "true"
+
+          jq \
+            --arg fast "$fast_schedule" \
+            --arg health "$health_schedule" \
+            --arg monthly "$monthly_schedule" \
+            '.phase = "verified"
+             | .status = "deployed"
+             | .verifiedAt = (now | todateiso8601)
+             | .schedules = {
+                 newGigs:$fast,
+                 cancellations:$fast,
+                 futureHealth:$health,
+                 futureReconciliation:$monthly
+               }
+             | .scheduledArtistDirectory = false
+             | .scheduledVenueDirectory = false
+             | .scheduledFullDirectoryReconciliation = false
+             | .profileHydration = "gig-triggered"
+             | .scheduledRootRunsPerThirtyDays = 1471
+             | .shadow = true
+             | .canonicalWritesEnabled = false' \
+            "$STATUS_FILE" > "$STATUS_FILE.tmp"
+          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+
+      - name: Publish sanitised deployment evidence
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          if [ ! -f "$STATUS_FILE" ]; then
+            mkdir -p ops
+            jq -n '{status:"failed",phase:"unknown",shadow:true,canonicalWritesEnabled:false}' > "$STATUS_FILE"
+          fi
+          if [ "$JOB_STATUS" != "success" ]; then
+            jq --arg completedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              '.status = "failed" | .completedAt = $completedAt' \
+              "$STATUS_FILE" > "$STATUS_FILE.tmp"
+            mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+          fi
+
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$STATUS_FILE"
+          git commit -m "Record Lemonrock low-cost operating status" || exit 0
+          if ! git push origin HEAD:main; then
+            git pull --rebase --autostash origin main
+            git push origin HEAD:main
+          fi

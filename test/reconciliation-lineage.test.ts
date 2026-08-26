@@ -33,9 +33,34 @@ describe('Lemonrock reconciliation lineage', () => {
     await publisher.publish(discovery, '2026-08-25T15:00:00.000Z', 'run-parser-v4');
 
     const put = ddbSend.mock.calls[0]?.[0] as any;
-    expect(put.input.Item.taskKey).toBe(`${discovery.taskKey}@2026-08-25@v4@run-parser-v4`);
+    expect(put.input.Item.taskKey).toBe(`${discovery.taskKey}@v5@run-parser-v4`);
     const send = sqsSend.mock.calls[0]?.[0] as any;
-    expect(JSON.parse(send.input.MessageBody).taskKey).toBe(`${discovery.taskKey}@2026-08-25@v4@run-parser-v4`);
+    expect(JSON.parse(send.input.MessageBody).taskKey).toBe(`${discovery.taskKey}@v5@run-parser-v4`);
+  });
+
+  it('hydrates fast-feed gigs hourly and reconciliation gigs monthly', async () => {
+    const ddbSend = vi.fn().mockResolvedValue({});
+    const sqsSend = vi.fn().mockResolvedValue({});
+    const publisher = new DynamoSqsSourceFanoutPublisher(
+      'state-table',
+      'https://sqs.eu-west-2.amazonaws.com/771551874768/source',
+      { send: ddbSend } as any,
+      { send: sqsSend } as any,
+    );
+
+    await publisher.publish({
+      ...child,
+      task: { ...child.task, refreshWindow: 'hourly' },
+    }, '2026-08-24T19:05:00.000Z');
+    await publisher.publish({
+      ...child,
+      task: { ...child.task, refreshWindow: 'monthly' },
+    }, '2026-08-24T20:05:00.000Z');
+
+    const hourlyPut = ddbSend.mock.calls[0]?.[0] as any;
+    const monthlyPut = ddbSend.mock.calls[1]?.[0] as any;
+    expect(hourlyPut.input.Item.taskKey).toBe(`${child.taskKey}@2026-08-24T19`);
+    expect(monthlyPut.input.Item.taskKey).toBe(`${child.taskKey}@2026-08`);
   });
 
   it('persists lineage on a new durable task and forwards it through SQS', async () => {
@@ -172,6 +197,77 @@ describe('Lemonrock reconciliation lineage', () => {
       child,
       '2026-08-24T19:10:00.000Z',
       'run-full-reconcile-1',
+    );
+  });
+
+  it('starts a lineage at the scheduled monthly future-index root', async () => {
+    const source: GigSource = {
+      id: 'lemonrock-future-reconcile',
+      name: 'Lemonrock future reconciliation',
+      url: 'https://www.lemonrock.com/gigsbycounty.php',
+      type: 'AGGREGATOR',
+      timezone: 'Europe/London',
+      cadence: 'manual',
+      localTime: '05:00',
+      mode: 'append-only',
+      snapshotSemantics: 'incremental',
+      authorityClass: 'aggregator',
+      thresholds: {},
+      adapter: 'lemonrock',
+      runtimeClass: 'standard',
+      enabled: true,
+      shadow: true,
+      writerAuthority: 'aws',
+      health: 'unknown',
+    };
+    const adapter: SourceAdapter = {
+      async fetch() {
+        return {
+          kind: 'html',
+          body: '<html><body></body></html>',
+          sourceUrl: source.url,
+          fetchMethod: 'test',
+          fetchedAt: '2026-09-01T02:20:00.000Z',
+          complete: false,
+        };
+      },
+      async parse() {
+        return { events: [], nextRequests: [child], parked: [], warnings: [] };
+      },
+    };
+    const publish = vi.fn().mockResolvedValue(true);
+    const deps: RunnerDependencies = {
+      registry: { async get() { return source; } },
+      state: { async get() { return null; }, async put() {} },
+      observations: { async put(observation) { return observation; } },
+      claims: { async put() {} },
+      artifacts: {
+        async writeNormalised() { return 'runs/normalised.json'; },
+        async writeDiff() { return 'runs/diff.json'; },
+        async writeParity() { return 'runs/parity.json'; },
+        async writeReport() { return 'runs/report.json'; },
+        async loadNormalised() { return []; },
+      },
+      projection: { async publish() {} },
+      fanout: { publish, async mark() {} },
+      acquisition: { async acquire() { throw new Error('adapter owns acquisition'); } },
+      loadAdapter: () => adapter,
+      now: () => new Date('2026-09-01T02:20:00.000Z'),
+      newId: () => 'monthly-future-1',
+    };
+
+    const result = await runSource({
+      sourceId: 'lemonrock-future-reconcile',
+      reason: 'scheduled',
+      requestedAt: '2026-09-01T02:20:00.000Z',
+      task: { kind: 'future-index', url: source.url },
+    }, deps);
+
+    expect(result.report.reconciliationId).toBe('run-monthly-future-1');
+    expect(publish).toHaveBeenCalledWith(
+      child,
+      '2026-09-01T02:20:00.000Z',
+      'run-monthly-future-1',
     );
   });
 

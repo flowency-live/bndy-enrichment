@@ -51,12 +51,25 @@ function safeProfileLinks(html: string, sourceUrl: string) {
   });
 }
 
-function gigRequests(html: string, sourceUrl: string): SourceFanoutRequest[] {
+type GigRefreshWindow = 'hourly' | 'monthly';
+
+function gigRequests(
+  html: string,
+  sourceUrl: string,
+  refreshWindow: GigRefreshWindow,
+): SourceFanoutRequest[] {
   return uniqueBy(
     anchorsFromHtml(html, sourceUrl)
       .map((anchor) => ({ anchor, id: gigId(anchor.href) }))
       .filter((item): item is { anchor: { href: string; text: string }; id: string } => Boolean(item.id))
-      .map(({ anchor, id }) => request('lemonrock-gig-hydration', 'gig', anchor.href, `lemonrock:gig:${id}`, anchor.text)),
+      .map(({ anchor, id }) => request(
+        'lemonrock-gig-hydration',
+        'gig',
+        anchor.href,
+        `lemonrock:gig:${id}`,
+        anchor.text,
+        { refreshWindow },
+      )),
     (item) => item.taskKey,
   );
 }
@@ -195,8 +208,25 @@ function futureIndex(html: string, sourceUrl: string): ParsedSource {
       }),
     (item) => item.taskKey,
   );
-  const gigs = gigRequests(html, sourceUrl);
+  const gigs = gigRequests(html, sourceUrl, 'monthly');
   return { events: [], nextRequests: uniqueBy([...counties, ...gigs], (item) => item.taskKey), parked: [], warnings: [] };
+}
+
+function futureHealth(html: string, sourceUrl: string): ParsedSource {
+  const countyLinks = anchorsFromHtml(html, sourceUrl).filter((anchor) => {
+    const url = new URL(anchor.href);
+    const pathname = url.pathname.toLowerCase();
+    return pathname.startsWith('/gigs-in-')
+      || (pathname === '/gigsincounty.php' && url.searchParams.has('county'));
+  });
+  return {
+    events: [],
+    nextRequests: [],
+    parked: [],
+    warnings: countyLinks.length > 0
+      ? [`Lemonrock future-gig health check observed ${countyLinks.length} county/index links without fan-out`]
+      : ['Lemonrock future-gig health check found no county/index links'],
+  };
 }
 
 function fullReconcile(_html: string, _sourceUrl: string): ParsedSource {
@@ -235,9 +265,13 @@ function fullReconcile(_html: string, _sourceUrl: string): ParsedSource {
   };
 }
 
-function listPage(html: string, sourceUrl: string): ParsedSource {
-  const gigs = gigRequests(html, sourceUrl);
-  const pages = uniqueBy([
+function listPage(html: string, sourceUrl: string, kind: string): ParsedSource {
+  const fastFeed = kind === 'new-gigs' || kind === 'cancellations';
+  const gigs = gigRequests(html, sourceUrl, fastFeed ? 'hourly' : 'monthly');
+  // Fast feeds deliberately stop at the gig links on the current page. Following
+  // global town/date navigation from every hourly scan would recreate the full
+  // national crawl 1,440 times per month.
+  const pages = fastFeed ? [] : uniqueBy([
     ...gigListingRequests(html, sourceUrl),
     ...anchorsFromHtml(html, sourceUrl)
       .filter((anchor) => {
@@ -404,8 +438,9 @@ function parseGig(html: string, sourceUrl: string): ParsedSource {
 
 function parseProfile(kind: 'artist' | 'venue', html: string, sourceUrl: string, run: SourceRunContext): ParsedSource {
   const entity = profileEntity(kind, html, sourceUrl, run);
-  const gigs = gigRequests(html, sourceUrl);
-  return { events: [], entities: [entity], nextRequests: gigs, parked: [], warnings: [] };
+  // Ongoing Lemonrock operation is gig-led. A profile is hydrated because a gig
+  // referenced it; it must not recursively enumerate the profile's whole gig list.
+  return { events: [], entities: [entity], nextRequests: [], parked: [], warnings: [] };
 }
 
 export function parseLemonrock(html: string, sourceUrl: string, run: SourceRunContext): ParsedSource {
@@ -416,8 +451,9 @@ export function parseLemonrock(html: string, sourceUrl: string, run: SourceRunCo
   if (kind === 'artist-index' || kind === 'artist-index-page') return artistIndex(html, sourceUrl);
   if (kind === 'venue-index' || kind === 'venue-index-page') return venueIndex(html, sourceUrl);
   if (kind === 'full-reconcile') return fullReconcile(html, sourceUrl);
+  if (kind === 'future-health') return futureHealth(html, sourceUrl);
   if (kind === 'future-index') return futureIndex(html, sourceUrl);
-  if (kind === 'gig-index' || kind === 'new-gigs' || kind === 'cancellations') return listPage(html, sourceUrl);
+  if (kind === 'gig-index' || kind === 'new-gigs' || kind === 'cancellations') return listPage(html, sourceUrl, kind);
   if (kind === 'gig') return parseGig(html, sourceUrl);
   if (kind === 'artist') return parseProfile('artist', html, sourceUrl, run);
   if (kind === 'venue') return parseProfile('venue', html, sourceUrl, run);
