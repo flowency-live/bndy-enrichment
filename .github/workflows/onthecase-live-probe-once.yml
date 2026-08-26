@@ -23,9 +23,9 @@ jobs:
         run: |
           set -euo pipefail
           STATE_TABLE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" --output text)
-          timeout 180s aws dynamodb scan --table-name "$STATE_TABLE" \
-            --filter-expression "sourceFamily = :family" \
-            --expression-attribute-values '{":family":{"S":"onthecase"}}' \
+          aws dynamodb query --table-name "$STATE_TABLE" \
+            --key-condition-expression "pk = :pk" \
+            --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#onthecase"}}' \
             --projection-expression "lastReconciliationId,#status,sourceId,taskKey,updatedAt" \
             --expression-attribute-names '{"#status":"status"}' \
             > onthecase-live-items.json
@@ -48,8 +48,8 @@ jobs:
             --argjson failed "$FAILED" \
             --argjson queued "$QUEUED" \
             --argjson running "$RUNNING" \
-            --argjson statusBreakdown "$(jq '[group_by(.status.S // "unknown")[] | {status: (.[0].status.S // "unknown"), count:length}]' onthecase-latest.json)" \
-            --argjson sourceBreakdown "$(jq '[group_by(.sourceId.S // "unknown")[] | {sourceId: (.[0].sourceId.S // "unknown"), count:length}]' onthecase-latest.json)" \
+            --argjson statusBreakdown "$(jq 'sort_by(.status.S // "unknown") | [group_by(.status.S // "unknown")[] | {status: (.[0].status.S // "unknown"), count:length}]' onthecase-latest.json)" \
+            --argjson sourceBreakdown "$(jq 'sort_by(.sourceId.S // "unknown") | [group_by(.sourceId.S // "unknown")[] | {sourceId: (.[0].sourceId.S // "unknown"), count:length}]' onthecase-latest.json)" \
             '{capturedAt:$capturedAt,reconciliationId:$rid,tasks:{discovered:$discovered,completed:$completed,failed:$failed,queued:$queued,running:$running},statusBreakdown:$statusBreakdown,sourceBreakdown:$sourceBreakdown}' \
             > ops/onthecase-live-probe.json
       - name: Publish probe
