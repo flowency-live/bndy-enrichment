@@ -129,7 +129,7 @@ jobs:
           if [ "$dlq_visible" -gt 0 ]; then
             aws sqs start-message-move-task \
               --source-arn "$dlq_arn" \
-              --max-number-of-messages-per-second 3 >/dev/null
+              --max-number-of-messages-per-second 1 >/dev/null
             redrive_started=true
           fi
 
