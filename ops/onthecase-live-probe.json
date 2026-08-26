@@ -1,0 +1,31 @@
+{
+  "capturedAt": "2026-08-26T20:39:58Z",
+  "reconciliationId": "onthecase-gig-led-2026-08-26T19-56-07-809Z",
+  "tasks": {
+    "discovered": 30,
+    "completed": 1,
+    "failed": 29,
+    "queued": 0,
+    "running": 0
+  },
+  "statusBreakdown": [
+    {
+      "status": "completed",
+      "count": 1
+    },
+    {
+      "status": "failed",
+      "count": 29
+    }
+  ],
+  "sourceBreakdown": [
+    {
+      "sourceId": "onthecase-gig-index",
+      "count": 1
+    },
+    {
+      "sourceId": "onthecase-venue-hydration",
+      "count": 29
+    }
+  ]
+}
