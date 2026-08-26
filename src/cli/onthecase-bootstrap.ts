@@ -10,7 +10,12 @@ const queue = process.env.SOURCE_SCAN_QUEUE_URL;
 if (!table || !queue) throw new Error('STATE_TABLE and SOURCE_SCAN_QUEUE_URL are required');
 
 const registry = new SourceRegistryStore(table);
-for (const source of ONTHECASE_SOURCES) await registry.put(source);
+for (const source of ONTHECASE_SOURCES) {
+  // Production shadow activation enables only the scheduled gig root. Directory
+  // and profile sources remain disabled as scheduler roots; child tasks can still
+  // address them explicitly through the durable source queue.
+  await registry.put(source.id === 'onthecase-gig-index' ? { ...source, enabled: true } : source);
+}
 
 const roots: Array<[string, string, string]> = mode === 'inventory-audit'
   ? [
@@ -37,4 +42,4 @@ for (const [sourceId, kind, url] of roots) {
     }),
   }));
 }
-console.log(JSON.stringify({ mode, reconciliationId, sourcesSeeded: ONTHECASE_SOURCES.length, rootsQueued: roots.length, requestedAt: now, shadow: true }));
+console.log(JSON.stringify({ mode, reconciliationId, sourcesSeeded: ONTHECASE_SOURCES.length, scheduledRootsEnabled: ['onthecase-gig-index'], rootsQueued: roots.length, requestedAt: now, shadow: true }));
