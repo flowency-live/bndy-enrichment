@@ -128,7 +128,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
     browserScanQueue.grantSendMessages(sourceDispatcher);
 
     new events.Rule(this, 'SourceDispatchTick', {
-      schedule: events.Schedule.rate(cdk.Duration.minutes(15)),
+      schedule: events.Schedule.rate(cdk.Duration.hours(1)),
       targets: [new targets.LambdaFunction(sourceDispatcher)],
     });
 
@@ -219,6 +219,17 @@ export class BndyEnrichmentStack extends cdk.Stack {
         }),
         new targets.SqsQueue(sourceScanQueue, {
           message: events.RuleTargetInput.fromObject({ sourceId: 'lemonrock-cancellations', reason: 'scheduled' }),
+        }),
+      ],
+    });
+
+    // On The Case steady state is gig-led. The hourly complete /gigs snapshot
+    // is the only scheduled root; venue and band profiles are child hydration only.
+    new events.Rule(this, 'OnTheCaseHourlyGigTick', {
+      schedule: events.Schedule.rate(cdk.Duration.hours(1)),
+      targets: [
+        new targets.SqsQueue(sourceScanQueue, {
+          message: events.RuleTargetInput.fromObject({ sourceId: 'onthecase-gig-index', reason: 'scheduled' }),
         }),
       ],
     });
