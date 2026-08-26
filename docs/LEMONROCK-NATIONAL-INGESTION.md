@@ -120,7 +120,7 @@ Purpose:
 - discover previously unseen venues
 - capture posting provenance
 
-Cadence target: **every 10–15 minutes**.
+Cadence target: **hourly**.
 
 ### 4.2 Explicit cancellations
 
@@ -569,7 +569,7 @@ Poor imports should become attached to proper Lemonrock identities and gain evid
 
 ## 12. Ongoing change detection
 
-### Fast loop — every 10 to 15 minutes
+### Fast loop — hourly
 
 Scan:
 
@@ -579,33 +579,28 @@ Scan:
 Purpose:
 
 - new gig discovery
-- new artist discovery
-- new venue discovery
+- hydrate the artist and venue identities referenced by a new gig
 - explicit cancellation
 
-### Rolling future-gig reconciliation
+Fast-feed parsing is deliberately bounded to the gig links on the current feed page. It must not follow global town/date navigation and accidentally start a national crawl every hour.
 
-Suggested adaptive cadence:
+### Daily future-source health
 
-- >90 days away: every 7 days
-- 30–90 days: every 3 days
-- 7–30 days: daily
-- 1–7 days: every 6–12 hours
-- event day: every 2–4 hours
+Fetch the national future-gig root once per day and verify that its expected county/index structure remains present. This is a one-page structural health check with no child fan-out.
 
-Detect date/time/venue/lineup/admission/ticketing/status/description changes.
+### Monthly future-gig reconciliation
 
-### Artist directory diff
+Run the national future-gig discovery graph once per month to repair anything missed by the hourly new/cancellation feeds and refresh known future-gig details. Duplicate paths to the same gig collapse onto one monthly hydration key.
 
-Daily or twice daily: enumerate, compare source keys, enqueue new identities, and periodically rehydrate stale/updated artists.
+Detect date/time/venue/lineup/admission/ticketing/status/description changes. Disappearance is withdrawal evidence, not cancellation evidence.
 
-### Venue directory diff
+### Gig-led artist and venue hydration
 
-Same pattern as artist directory.
+Do not run recurring national artist or venue directory crawls. Hydrate an artist and venue when a new or reconciled gig references the source-native identity. Profile hydration does not recursively fan back out into every gig on that profile.
 
-### Full national reconciliation
+Artists and venues without an attached gig remain in the completed bootstrap corpus but are not continually refreshed. A full artist/venue directory reconciliation remains available as a deliberate manual audit, not a schedule.
 
-Weekly: re-enumerate national indexes, compare counts/identities, detect silent drift, emit completeness report.
+This operating model prioritises live-gig accuracy while keeping Lambda, SQS, DynamoDB and S3 activity bounded.
 
 ---
 
@@ -1084,7 +1079,7 @@ Authoritative audit: `2026-08-24T18:53:51Z`.
 | Dead-letter queue visible | 2 |
 | Full-reconcile Observations | 0 |
 
-The deployed weekly rule still targets the Artist and Venue index sources directly. The completion runtime now carries a single reconciliation ID through all fan-out levels, records deduped identities as discovered by the current run, verifies the national Artist/Venue/Gig branches, recovers source-scan dead letters, and refuses to mark completion unless the queues are clear and all discovered tasks are terminal.
+At this historical checkpoint the weekly rule still targeted the Artist and Venue index sources directly. That bootstrap configuration is replaced after completion by the low-cost gig-led model in section 12: hourly new/cancellation feeds, a one-page daily health check, monthly future-gig reconciliation and no recurring Artist/Venue directory crawl. The completion runtime carries a single reconciliation ID through all fan-out levels, records deduped identities as discovered by the current run, verifies the national Artist/Venue/Gig branches, recovers source-scan dead letters, and refuses to mark completion unless the queues are clear and all discovered tasks are terminal.
 
 **Execution action:** deploy this revision, recover the two dead-letter messages, start the immediate national reconciliation, and publish the sanitised reconciliation manifest.
 
@@ -1167,12 +1162,13 @@ The deployed operating model must include:
 
 | Loop | Target cadence | Purpose |
 |---|---|---|
-| New gigs | every 10–15 minutes | discover newly posted or changed gigs |
-| Explicit cancellations | every 10–15 minutes | retain and act on explicit cancellation evidence |
-| Artist directory diff | daily | discover new Artist identities and rehydrate changed/stale profiles |
-| Venue directory diff | daily | discover new Venue identities and rehydrate changed/stale profiles |
-| Future-gig reconciliation | adaptive by event proximity | refresh date, time, venue, lineup, admission, ticketing and state |
-| Full national reconciliation | weekly | prove continuing inventory completeness and repair silent drift |
+| New gigs | hourly | discover newly posted gigs and their attached Artist/Venue identities |
+| Explicit cancellations | hourly | retain explicit cancellation evidence |
+| Future-source health | daily | prove the national future-gig root is reachable and structurally recognisable without fan-out |
+| Future-gig reconciliation | monthly | repair silent gaps and refresh future-gig details with monthly logical dedupe |
+| Artist profile hydration | gig-triggered | hydrate only Artists referenced by new or reconciled gigs |
+| Venue profile hydration | gig-triggered | hydrate only Venues referenced by new or reconciled gigs |
+| Full artist/venue directory reconciliation | manual only | exceptional audit/bootstrap repair, never routine ingestion |
 
 Every loop must record:
 

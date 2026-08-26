@@ -155,11 +155,12 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
   const idFactory = deps.newId ?? randomUUID;
   const started = clock();
   const runId = `run-${idFactory()}`;
+  const startsReconciliation = request.sourceId === 'lemonrock-full-reconcile'
+    || (request.sourceId === 'lemonrock-future-reconcile' && request.task?.kind === 'future-index');
   const run: SourceRunContext = {
     runId,
     sourceId: config.id,
-    reconciliationId: request.reconciliationId
-      ?? (request.sourceId === 'lemonrock-full-reconcile' ? runId : undefined),
+    reconciliationId: request.reconciliationId ?? (startsReconciliation ? runId : undefined),
     startedAt: started.toISOString(),
     runDate: started.toISOString().slice(0, 10),
     reason: request.reason,

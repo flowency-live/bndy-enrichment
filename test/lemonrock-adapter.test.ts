@@ -105,7 +105,7 @@ describe('Lemonrock source-native identities', () => {
     ]));
   });
 
-  it('turns a rich artist page into an artist-candidate profile with multi-valued claims', () => {
+  it('turns a gig-linked artist page into a profile without recursively discovering more gigs', () => {
     const html = `
       <html><head><title>Example Band : Rock covers - Lemonrock Gig Guide</title></head><body>
         <p>Based: Manchester</p>
@@ -132,7 +132,7 @@ describe('Lemonrock source-native identities', () => {
     expect(entity?.claims.some((claim) => claim.predicate === 'hasFacebookUrl')).toBe(true);
     expect(entity?.claims.some((claim) => claim.predicate === 'hasInstagramUrl')).toBe(true);
     expect(entity?.claims.some((claim) => claim.predicate === 'hasBio')).toBe(true);
-    expect(parsed.nextRequests?.some((item) => item.taskKey === 'gig:lemonrock:gig:939252')).toBe(true);
+    expect(parsed.nextRequests).toEqual([]);
   });
 
   it('hydrates a venue without manufacturing unknown canonical fields', () => {
@@ -196,6 +196,47 @@ describe('Lemonrock source-native identities', () => {
     ]));
   });
 
+  it('performs a daily future health check without national fan-out', () => {
+    const html = `
+      <html><body>
+        <a href="/gigsincounty.php?county=Greater+Manchester">Greater Manchester (120 gigs)</a>
+        <a href="/gigsincounty.php?county=London">London (900 gigs)</a>
+      </body></html>`;
+    const parsed = parseLemonrock(
+      html,
+      'https://www.lemonrock.com/gigsbycounty.php',
+      run('lemonrock-future-reconcile', { kind: 'future-health' }),
+    );
+    expect(parsed.nextRequests).toEqual([]);
+    expect(parsed.warnings).toEqual([
+      'Lemonrock future-gig health check observed 2 county/index links without fan-out',
+    ]);
+  });
+
+  it('keeps hourly feeds bounded to current-page gigs', () => {
+    const html = `
+      <html><body>
+        <a href="/gigs-in-torquay">Global navigation</a>
+        <a href="/?cityId=28398&amp;gigfromdate=2026-09-01&amp;listingPeriod=11">Dated navigation</a>
+        <a href="/gig.php?id=930726">Gig details</a>
+      </body></html>`;
+    const parsed = parseLemonrock(
+      html,
+      'https://www.lemonrock.com/newestgigs.php',
+      run('lemonrock-new-gigs', { kind: 'new-gigs' }),
+    );
+    expect(parsed.nextRequests).toEqual([
+      expect.objectContaining({
+        sourceId: 'lemonrock-gig-hydration',
+        task: expect.objectContaining({
+          kind: 'gig',
+          nativeId: 'lemonrock:gig:930726',
+          refreshWindow: 'hourly',
+        }),
+      }),
+    ]);
+  });
+
   it('enumerates every venue directory page including venues without current gigs', () => {
     const html = `
       <html><body>
@@ -235,7 +276,11 @@ describe('Lemonrock source-native identities', () => {
       }),
       expect.objectContaining({
         sourceId: 'lemonrock-gig-hydration',
-        task: expect.objectContaining({ kind: 'gig', nativeId: 'lemonrock:gig:930726' }),
+        task: expect.objectContaining({
+          kind: 'gig',
+          nativeId: 'lemonrock:gig:930726',
+          refreshWindow: 'monthly',
+        }),
       }),
     ]));
   });

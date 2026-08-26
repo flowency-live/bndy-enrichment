@@ -3,7 +3,7 @@ import { DeleteCommand, DynamoDBDocumentClient, PutCommand, UpdateCommand } from
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import type { SourceFanoutRequest } from './types.js';
 
-const LEMONROCK_DISCOVERY_SCHEMA_VERSION = 'v4';
+const LEMONROCK_DISCOVERY_SCHEMA_VERSION = 'v5';
 
 export type SourceTaskStatus = 'queued' | 'running' | 'completed' | 'failed';
 
@@ -34,10 +34,13 @@ function dedupeKey(request: SourceFanoutRequest, requestedAt: string, reconcilia
   const date = new Date(requestedAt);
   if (Number.isNaN(date.getTime())) return request.taskKey;
 
-  // Gig detail is intentionally refreshable every hour so an explicit same-day
-  // cancellation or changed time is not suppressed by bootstrap dedupe.
+  // Only the new-gig and cancellation feeds may refresh a gig hourly. National
+  // reconciliation uses a monthly key so duplicate discovery paths collapse and
+  // the low-cost operating sweep hydrates each gig at most once per month.
   if (request.sourceId === 'lemonrock-gig-hydration') {
-    return `${request.taskKey}@${date.toISOString().slice(0, 13)}`;
+    const refreshWindow = request.task.refreshWindow;
+    if (refreshWindow === 'hourly') return `${request.taskKey}@${date.toISOString().slice(0, 13)}`;
+    return `${request.taskKey}@${date.toISOString().slice(0, 7)}`;
   }
 
   // Rich artist/venue profiles change more slowly; one hydration per ISO week is
@@ -46,10 +49,12 @@ function dedupeKey(request: SourceFanoutRequest, requestedAt: string, reconcilia
     return `${request.taskKey}@${isoWeek(date)}`;
   }
 
-  // Directory/county child pages are replayable daily. Within a bootstrap run,
-  // duplicate links from multiple indexes collapse onto one durable task.
-  const reconciliationScope = reconciliationId ? `@${reconciliationId}` : '';
-  return `${request.taskKey}@${date.toISOString().slice(0, 10)}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}${reconciliationScope}`;
+  // A named national reconciliation has one stable scope even when a bounded
+  // crawl crosses UTC midnight. Unscoped discovery remains replayable daily.
+  if (reconciliationId) {
+    return `${request.taskKey}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}@${reconciliationId}`;
+  }
+  return `${request.taskKey}@${date.toISOString().slice(0, 10)}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}`;
 }
 
 export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
