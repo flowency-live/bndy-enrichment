@@ -15,7 +15,10 @@ async function fetchWithRetry(
   acquisition: AcquisitionRouter,
 ): Promise<FetchedSource> {
   let lastError: unknown;
-  for (let attempt = 0; attempt < 6; attempt += 1) {
+  // Spread concurrent Lambda starts so the source sees a steady request rate
+  // instead of an aligned burst from each event-source poll.
+  await sleep(300 + Math.floor(Math.random() * 500));
+  for (let attempt = 0; attempt < 8; attempt += 1) {
     try {
       return await acquisition.acquire({
         url,
@@ -35,9 +38,9 @@ async function fetchWithRetry(
       lastError = error;
       const message = error instanceof Error ? error.message : String(error);
       const retryable = /HTTP (403|408|425|429|5\d\d)|fetch failed|timed? ?out|abort/i.test(message);
-      if (attempt === 5 || !retryable) throw error;
-      const backoffMs = Math.min(8_000, 750 * (2 ** attempt));
-      const jitterMs = Math.floor(Math.random() * 500);
+      if (attempt === 7 || !retryable) throw error;
+      const backoffMs = Math.min(12_000, 750 * (2 ** attempt));
+      const jitterMs = Math.floor(Math.random() * 1_000);
       await sleep(backoffMs + jitterMs);
     }
   }
