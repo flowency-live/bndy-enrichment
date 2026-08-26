@@ -1,2 +1,2 @@
-requestedAt: 2026-08-25T20:48:00Z
-reason: deploy resilient fetch, replay directory controls, controlled DLQ redrive
+requestedAt: 2026-08-26T07:40:48Z
+reason: deploy rate-safe v4 inventory recovery and redrive existing DLQ
