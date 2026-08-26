@@ -35,12 +35,8 @@ function dedupeKey(request: SourceFanoutRequest, requestedAt: string, reconcilia
   if (Number.isNaN(date.getTime())) return request.taskKey;
 
   if (request.sourceId.startsWith('onthecase-')) {
-    if (request.sourceId === 'onthecase-venue-hydration') {
-      return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
-    }
-    if (request.sourceId === 'onthecase-band-hydration') {
-      return `${request.taskKey}@${isoWeek(date)}`;
-    }
+    if (request.sourceId === 'onthecase-venue-hydration') return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
+    if (request.sourceId === 'onthecase-band-hydration') return `${request.taskKey}@${isoWeek(date)}`;
     if (reconciliationId) return `${request.taskKey}@${reconciliationId}`;
     return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
   }
@@ -57,9 +53,7 @@ function dedupeKey(request: SourceFanoutRequest, requestedAt: string, reconcilia
     return `${request.taskKey}@${isoWeek(date)}`;
   }
 
-  if (reconciliationId) {
-    return `${request.taskKey}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}@${reconciliationId}`;
-  }
+  if (reconciliationId) return `${request.taskKey}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}@${reconciliationId}`;
   return `${request.taskKey}@${date.toISOString().slice(0, 10)}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}`;
 }
 
@@ -79,12 +73,7 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
     this.sqs = sqs ?? new SQSClient({});
   }
 
-  private async send(
-    request: SourceFanoutRequest,
-    requestedAt: string,
-    reconciliationId: string | undefined,
-    resolvedTaskKey: string,
-  ): Promise<void> {
+  private async send(request: SourceFanoutRequest, requestedAt: string, reconciliationId: string | undefined, resolvedTaskKey: string): Promise<void> {
     await this.sqs.send(new SendMessageCommand({
       QueueUrl: this.queueUrl,
       MessageBody: JSON.stringify({
@@ -123,14 +112,18 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
           updatedAt: requestedAt,
         },
         ConditionExpression: 'attribute_not_exists(pk)',
+        ReturnValuesOnConditionCheckFailure: 'ALL_OLD',
       }));
     } catch (error) {
       if (!(error instanceof Error) || error.name !== 'ConditionalCheckFailedException') throw error;
 
-      // Ordinary scheduled discovery remains strictly deduped. A failed durable
-      // task may be replayed only when an explicit owned reconciliation carries
-      // lineage, so an hourly source tick can never become an unbounded retry loop.
-      if (reconciliationId) {
+      const existing = (error as Error & { Item?: { status?: string; attemptCount?: number } }).Item;
+      const attempts = existing?.attemptCount ?? 1;
+
+      // Replay is recovery behaviour, never BAU behaviour. It requires both an
+      // explicit owned reconciliation and retained proof that the durable task
+      // itself failed. Scheduled hourly discovery therefore remains deduped.
+      if (reconciliationId && existing?.status === 'failed' && attempts < MAX_RECONCILIATION_ATTEMPTS) {
         try {
           await this.ddb.send(new UpdateCommand({
             TableName: this.tableName,
@@ -151,13 +144,8 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
             await this.send(request, requestedAt, reconciliationId, resolvedTaskKey);
             return true;
           } catch (sendError) {
-            await this.mark(
-              request.sourceId,
-              resolvedTaskKey,
-              'failed',
-              requestedAt,
-              sendError instanceof Error ? `Requeue send failed: ${sendError.message}` : 'Requeue send failed',
-            );
+            await this.mark(request.sourceId, resolvedTaskKey, 'failed', requestedAt,
+              sendError instanceof Error ? `Requeue send failed: ${sendError.message}` : 'Requeue send failed');
             throw sendError;
           }
         } catch (requeueError) {
