@@ -1,0 +1,87 @@
+name: Monitor Lemonrock recovery drain
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  actions: write
+  contents: read
+  id-token: write
+
+jobs:
+  monitor:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Monitor Lemonrock recovery drain')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 240
+    env:
+      AWS_REGION: eu-west-2
+      STACK_NAME: BndyEnrichmentStack
+    steps:
+      - name: Configure read-only AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Wait for stable queue drain
+        id: drain
+        shell: bash
+        run: |
+          set -euo pipefail
+          state_table=$(aws cloudformation describe-stacks             --stack-name "$STACK_NAME"             --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]"             --output text)
+          queue_url=$(aws cloudformation describe-stacks             --stack-name "$STACK_NAME"             --query "Stacks[0].Outputs[?OutputKey=='SourceScanQueueUrl'].OutputValue | [0]"             --output text)
+          redrive_policy=$(aws sqs get-queue-attributes             --queue-url "$queue_url"             --attribute-names RedrivePolicy             --query 'Attributes.RedrivePolicy'             --output text)
+          dlq_arn=$(jq -r '.deadLetterTargetArn' <<<"$redrive_policy")
+          dlq_name=${dlq_arn##*:}
+          dlq_url=$(aws sqs get-queue-url --queue-name "$dlq_name" --query QueueUrl --output text)
+
+          stable_zero=0
+          result=timeout
+          for attempt in $(seq 1 230); do
+            attrs=$(aws sqs get-queue-attributes               --queue-url "$queue_url"               --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed               --output json)
+            dlq_attrs=$(aws sqs get-queue-attributes               --queue-url "$dlq_url"               --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible               --output json)
+            visible=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$attrs")
+            inflight=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$attrs")
+            delayed=$(jq -r '.Attributes.ApproximateNumberOfMessagesDelayed // "0"' <<<"$attrs")
+            dlq_visible=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$dlq_attrs")
+            dlq_inflight=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$dlq_attrs")
+
+            if (( attempt == 1 || attempt % 5 == 0 )); then
+              echo "::notice::Lemonrock drain attempt $attempt: visible=$visible inFlight=$inflight delayed=$delayed deadLetterVisible=$dlq_visible deadLetterInFlight=$dlq_inflight"
+            fi
+
+            if [ "$visible" -eq 0 ] && [ "$inflight" -eq 0 ] && [ "$delayed" -eq 0 ]               && [ "$dlq_visible" -eq 0 ] && [ "$dlq_inflight" -eq 0 ]; then
+              stable_zero=$((stable_zero + 1))
+              if [ "$stable_zero" -ge 2 ]; then
+                result=stable-zero
+                break
+              fi
+            else
+              stable_zero=0
+            fi
+            sleep 60
+          done
+
+          {
+            echo "result=$result"
+            echo "visible=$visible"
+            echo "inflight=$inflight"
+            echo "delayed=$delayed"
+            echo "dlq_visible=$dlq_visible"
+            echo "dlq_inflight=$dlq_inflight"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch final sanitised manifest
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run lemonrock-manifest-readonly.yml --ref main
+
+      - name: Require stable zero
+        if: steps.drain.outputs.result != 'stable-zero'
+        run: |
+          echo "Lemonrock queues did not reach stable zero before the monitor timeout"
+          exit 1
