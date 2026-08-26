@@ -30,9 +30,28 @@ function isoWeek(date: Date): string {
 }
 
 function dedupeKey(request: SourceFanoutRequest, requestedAt: string, reconciliationId?: string): string {
-  if (!request.sourceId.startsWith('lemonrock-')) return request.taskKey;
   const date = new Date(requestedAt);
   if (Number.isNaN(date.getTime())) return request.taskKey;
+
+  if (request.sourceId.startsWith('onthecase-')) {
+    // Gig-led discovery may repeatedly encounter the same venue. Refresh a
+    // referenced venue at most daily so a new performer link is discovered
+    // without turning the hourly gig sweep into an hourly profile crawl.
+    if (request.sourceId === 'onthecase-venue-hydration') {
+      return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
+    }
+    // Band profiles are richer but slower-moving. A weekly refresh is enough
+    // once a gig-linked venue has resolved the source-native band identity.
+    if (request.sourceId === 'onthecase-band-hydration') {
+      return `${request.taskKey}@${isoWeek(date)}`;
+    }
+    // Explicit bootstrap/audit lineage gets its own stable scope. Directory
+    // controls and index fanout therefore remain replayable across audits.
+    if (reconciliationId) return `${request.taskKey}@${reconciliationId}`;
+    return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
+  }
+
+  if (!request.sourceId.startsWith('lemonrock-')) return request.taskKey;
 
   // Only the new-gig and cancellation feeds may refresh a gig hourly. National
   // reconciliation uses a monthly key so duplicate discovery paths collapse and
