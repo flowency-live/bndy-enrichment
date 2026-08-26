@@ -1,9 +1,20 @@
 {
-  "status": "failed",
-  "phase": "validating",
-  "startedAt": "2026-08-26T13:08:49Z",
-  "deployedSha": "bba574aa9a16ed2cc9b1154d69ea4ee7291d5c85",
+  "status": "deployed",
+  "phase": "verified",
+  "startedAt": "2026-08-26T13:13:30Z",
+  "deployedSha": "2468fc7331838a68d28a25a437a7022a8c1fd32d",
   "shadow": true,
   "canonicalWritesEnabled": false,
-  "completedAt": "2026-08-26T13:08:52Z"
+  "verifiedAt": "2026-08-26T13:17:11Z",
+  "schedules": {
+    "newGigs": "rate(1 hour)",
+    "cancellations": "rate(1 hour)",
+    "futureHealth": "cron(10 2 * * ? *)",
+    "futureReconciliation": "cron(20 2 1 * ? *)"
+  },
+  "scheduledArtistDirectory": false,
+  "scheduledVenueDirectory": false,
+  "scheduledFullDirectoryReconciliation": false,
+  "profileHydration": "gig-triggered",
+  "scheduledRootRunsPerThirtyDays": 1471
 }
