@@ -1,0 +1,62 @@
+name: Probe On The Case live reconciliation once
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  probe:
+    if: contains(github.event.head_commit.message, 'Probe On The Case reconciliation')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Capture scoped live status
+        run: |
+          set -euo pipefail
+          STATE_TABLE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" --output text)
+          timeout 180s aws dynamodb scan --table-name "$STATE_TABLE" \
+            --filter-expression "sourceFamily = :family" \
+            --expression-attribute-values '{":family":{"S":"onthecase"}}' \
+            --projection-expression "lastReconciliationId,#status,sourceId,taskKey,updatedAt" \
+            --expression-attribute-names '{"#status":"status"}' \
+            > onthecase-live-items.json
+          RID=$(jq -r '[.Items[].lastReconciliationId.S // empty | select(startswith("onthecase-gig-led-"))] | sort | last // empty' onthecase-live-items.json)
+          if [ -z "$RID" ]; then
+            echo "No On The Case gig-led reconciliation found" >&2
+            exit 1
+          fi
+          jq --arg rid "$RID" '[.Items[] | select(.lastReconciliationId.S == $rid)]' onthecase-live-items.json > onthecase-latest.json
+          DISCOVERED=$(jq 'length' onthecase-latest.json)
+          COMPLETED=$(jq '[.[] | select(.status.S == "completed")] | length' onthecase-latest.json)
+          FAILED=$(jq '[.[] | select(.status.S == "failed")] | length' onthecase-latest.json)
+          QUEUED=$(jq '[.[] | select(.status.S == "queued")] | length' onthecase-latest.json)
+          RUNNING=$(jq '[.[] | select(.status.S == "running")] | length' onthecase-latest.json)
+          jq -n \
+            --arg capturedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg rid "$RID" \
+            --argjson discovered "$DISCOVERED" \
+            --argjson completed "$COMPLETED" \
+            --argjson failed "$FAILED" \
+            --argjson queued "$QUEUED" \
+            --argjson running "$RUNNING" \
+            --argjson statusBreakdown "$(jq '[group_by(.status.S // "unknown")[] | {status: (.[0].status.S // "unknown"), count:length}]' onthecase-latest.json)" \
+            --argjson sourceBreakdown "$(jq '[group_by(.sourceId.S // "unknown")[] | {sourceId: (.[0].sourceId.S // "unknown"), count:length}]' onthecase-latest.json)" \
+            '{capturedAt:$capturedAt,reconciliationId:$rid,tasks:{discovered:$discovered,completed:$completed,failed:$failed,queued:$queued,running:$running},statusBreakdown:$statusBreakdown,sourceBreakdown:$sourceBreakdown}' \
+            > ops/onthecase-live-probe.json
+      - name: Publish probe
+        run: |
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git pull --rebase origin main
+          git add ops/onthecase-live-probe.json
+          git commit -m "Record On The Case live reconciliation probe" || exit 0
+          git push origin HEAD:main
