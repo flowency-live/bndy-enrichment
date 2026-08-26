@@ -30,12 +30,12 @@ describe('Lemonrock reconciliation lineage', () => {
       task: { kind: 'gig-index', url: 'https://www.lemonrock.com/gigs-in-torquay' },
     };
 
-    await publisher.publish(discovery, '2026-08-25T15:00:00.000Z', 'run-parser-v3');
+    await publisher.publish(discovery, '2026-08-25T15:00:00.000Z', 'run-parser-v4');
 
     const put = ddbSend.mock.calls[0]?.[0] as any;
-    expect(put.input.Item.taskKey).toBe(`${discovery.taskKey}@2026-08-25@v3@run-parser-v3`);
+    expect(put.input.Item.taskKey).toBe(`${discovery.taskKey}@2026-08-25@v4@run-parser-v4`);
     const send = sqsSend.mock.calls[0]?.[0] as any;
-    expect(JSON.parse(send.input.MessageBody).taskKey).toBe(`${discovery.taskKey}@2026-08-25@v3@run-parser-v3`);
+    expect(JSON.parse(send.input.MessageBody).taskKey).toBe(`${discovery.taskKey}@2026-08-25@v4@run-parser-v4`);
   });
 
   it('persists lineage on a new durable task and forwards it through SQS', async () => {
