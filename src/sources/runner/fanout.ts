@@ -3,7 +3,7 @@ import { DeleteCommand, DynamoDBDocumentClient, PutCommand, UpdateCommand } from
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import type { SourceFanoutRequest } from './types.js';
 
-const LEMONROCK_DISCOVERY_SCHEMA_VERSION = 'v3';
+const LEMONROCK_DISCOVERY_SCHEMA_VERSION = 'v4';
 
 export type SourceTaskStatus = 'queued' | 'running' | 'completed' | 'failed';
 

@@ -80,6 +80,31 @@ describe('Lemonrock source-native identities', () => {
     ]));
   });
 
+  it('records a directory control from parsed profiles when the title omits a count', () => {
+    const html = `
+      <html><head><title>All Bands (0-9) - Lemonrock Gig Guide</title></head><body>
+        <a href="2fortheroad"><strong>2 For The Road</strong></a>
+        <a href="4play"><strong>4 Play</strong></a>
+      </body></html>`;
+
+    const parsed = parseLemonrock(
+      html,
+      'https://www.lemonrock.com/allbands.php?_start=0&all=1',
+      run('lemonrock-artist-index', { kind: 'artist-index-page' }),
+    );
+
+    expect(parsed.nextRequests).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        taskKey: 'artist-inventory-control:lemonrock:artist-directory:0',
+        task: expect.objectContaining({
+          expectedCount: 2,
+          inventoryCountSource: 'parsed-profile-links',
+          inventoryLevel: 'directory-page',
+        }),
+      }),
+    ]));
+  });
+
   it('turns a rich artist page into an artist-candidate profile with multi-valued claims', () => {
     const html = `
       <html><head><title>Example Band : Rock covers - Lemonrock Gig Guide</title></head><body>

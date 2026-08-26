@@ -145,14 +145,17 @@ export class BndyEnrichmentStack extends cdk.Stack {
       handler: 'handler',
       timeout: cdk.Duration.minutes(14),
       memorySize: 1024,
-      reservedConcurrentExecutions: 5,
+      // Lemonrock intermittently resets bursty AWS-origin traffic. Keep this
+      // worker deliberately small so recovery makes steady progress without
+      // amplifying retries against the source.
+      reservedConcurrentExecutions: 2,
       environment: sourceWorkerEnvironment,
       bundling: { minify: true, sourceMap: true },
     });
     sourceWorker.addEventSource(new sources.SqsEventSource(sourceScanQueue, {
       batchSize: 1,
       reportBatchItemFailures: true,
-      maxConcurrency: 5,
+      maxConcurrency: 2,
     }));
     table.grantReadWriteData(sourceWorker);
     evidenceBucket.grantReadWrite(sourceWorker);
