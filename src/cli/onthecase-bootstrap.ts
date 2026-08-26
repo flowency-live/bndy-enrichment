@@ -1,0 +1,11 @@
+import { SendMessageCommand,SQSClient } from '@aws-sdk/client-sqs';
+import { SourceRegistryStore } from '../knowledge/stores/source-registry-store.js';
+import { ONTHECASE_SOURCES } from '../sources/adapters/onthecase/sources.js';
+// Explicit bootstrap/audit can include directories; steady state never does.
+const mode=process.argv.find(a=>a.startsWith('--mode='))?.split('=')[1]??'gig-led';
+if(!['gig-led','inventory-audit'].includes(mode))throw new Error(`Unsupported --mode=${mode}`);
+const table=process.env.STATE_TABLE,queue=process.env.SOURCE_SCAN_QUEUE_URL;if(!table||!queue)throw new Error('STATE_TABLE and SOURCE_SCAN_QUEUE_URL are required');
+const registry=new SourceRegistryStore(table);for(const source of ONTHECASE_SOURCES)await registry.put(source);
+const roots:any[]=mode==='inventory-audit'?[['onthecase-gig-index','gig-index','https://onthecasemusic.co.uk/gigs'],['onthecase-band-index','band-index','https://onthecasemusic.co.uk/bands'],['onthecase-venue-index','venue-index','https://onthecasemusic.co.uk/venues']]:[['onthecase-gig-index','gig-index','https://onthecasemusic.co.uk/gigs']];
+const sqs=new SQSClient({}),now=new Date().toISOString(),token=now.replace(/[:.]/g,'-');for(const [sourceId,kind,url] of roots)await sqs.send(new SendMessageCommand({QueueUrl:queue,MessageBody:JSON.stringify({sourceId,reason:'manual',requestedAt:now,taskKey:`root:${mode}:${sourceId}:${token}`,task:{kind,url,bootstrapMode:mode,bootstrapToken:token}})}));
+console.log(JSON.stringify({mode,sourcesSeeded:ONTHECASE_SOURCES.length,rootsQueued:roots.length,requestedAt:now,shadow:true}));
