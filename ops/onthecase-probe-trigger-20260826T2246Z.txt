@@ -1,0 +1,1 @@
+One-shot trigger to capture the current scoped On The Case reconciliation state after the duplicate-claim fix.
