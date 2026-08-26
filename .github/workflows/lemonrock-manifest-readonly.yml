@@ -7,7 +7,6 @@ on:
     paths:
       - '.github/workflows/lemonrock-manifest-readonly.yml'
       - '.github/lemonrock-manifest-trigger'
-  workflow_dispatch:
 
 permissions:
   contents: write
