@@ -1,0 +1,94 @@
+name: On The Case shadow bootstrap
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  deploy-bootstrap-verify:
+    if: contains(github.event.head_commit.message, 'Activate On The Case shadow ingestion')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Deploy Backline runtime
+        run: |
+          set -euo pipefail
+          npx cdk bootstrap
+          npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+      - name: Seed and start gig-led shadow reconciliation
+        id: bootstrap
+        run: |
+          set -euo pipefail
+          export STATE_TABLE=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.StateTableName)")
+          export SOURCE_SCAN_QUEUE_URL=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.SourceScanQueueUrl)")
+          npm run onthecase:bootstrap -- --mode=gig-led | tee onthecase-bootstrap.json
+          echo "reconciliation_id=$(jq -r .reconciliationId onthecase-bootstrap.json)" >> "$GITHUB_OUTPUT"
+          echo "state_table=$STATE_TABLE" >> "$GITHUB_OUTPUT"
+          echo "queue_url=$SOURCE_SCAN_QUEUE_URL" >> "$GITHUB_OUTPUT"
+      - name: Wait for bounded source work to settle
+        env:
+          QUEUE_URL: ${{ steps.bootstrap.outputs.queue_url }}
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 80); do
+            ATTR=$(aws sqs get-queue-attributes --queue-url "$QUEUE_URL" --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible RedrivePolicy)
+            VISIBLE=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$ATTR")
+            INFLIGHT=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$ATTR")
+            if [ "$VISIBLE" = "0" ] && [ "$INFLIGHT" = "0" ]; then exit 0; fi
+            sleep 15
+          done
+          echo "Source queue did not settle inside 20 minutes" >&2
+          exit 1
+      - name: Generate completion manifest
+        env:
+          STATE_TABLE: ${{ steps.bootstrap.outputs.state_table }}
+          QUEUE_URL: ${{ steps.bootstrap.outputs.queue_url }}
+          RECONCILIATION_ID: ${{ steps.bootstrap.outputs.reconciliation_id }}
+        run: |
+          set -euo pipefail
+          ATTR=$(aws sqs get-queue-attributes --queue-url "$QUEUE_URL" --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible RedrivePolicy)
+          DLQ_ARN=$(jq -r '.Attributes.RedrivePolicy | fromjson | .deadLetterTargetArn' <<<"$ATTR")
+          DLQ_NAME=${DLQ_ARN##*:}
+          DLQ_URL=$(aws sqs get-queue-url --queue-name "$DLQ_NAME" --query QueueUrl --output text)
+          DLQ=$(aws sqs get-queue-attributes --queue-url "$DLQ_URL" --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible)
+          aws dynamodb scan --table-name "$STATE_TABLE" \
+            --filter-expression "sourceFamily = :family AND lastReconciliationId = :rid" \
+            --expression-attribute-values "{\":family\":{\"S\":\"onthecase\"},\":rid\":{\"S\":\"$RECONCILIATION_ID\"}}" \
+            > onthecase-tasks.json
+          DISCOVERED=$(jq '.Items | length' onthecase-tasks.json)
+          COMPLETED=$(jq '[.Items[] | select(.status.S == "completed")] | length' onthecase-tasks.json)
+          FAILED=$(jq '[.Items[] | select(.status.S == "failed")] | length' onthecase-tasks.json)
+          DLQ_VISIBLE=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$DLQ")
+          DLQ_INFLIGHT=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$DLQ")
+          STATUS=complete
+          if [ "$FAILED" != "0" ] || [ "$DLQ_VISIBLE" != "0" ] || [ "$DLQ_INFLIGHT" != "0" ]; then STATUS=incomplete; fi
+          jq -n \
+            --arg status "$STATUS" \
+            --arg rid "$RECONCILIATION_ID" \
+            --arg completedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson discovered "$DISCOVERED" --argjson completed "$COMPLETED" --argjson failed "$FAILED" \
+            --argjson visible "$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$ATTR")" \
+            --argjson inFlight "$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$ATTR")" \
+            --argjson dlq "$DLQ_VISIBLE" \
+            '{status:$status,sourceFamily:"onthecase",operatingModel:"gig-led",shadow:true,canonicalWritesEnabled:false,reconciliationId:$rid,completedAt:$completedAt,coverage:{gigIndexComplete:($status=="complete"),gigLinkedVenuesHydrated:($status=="complete"),gigLinkedBandsHydrated:($status=="complete"),directoryAuditRequiredForSteadyState:false},queue:{visible:$visible,inFlight:$inFlight,dlq:$dlq},tasks:{discovered:$discovered,completed:$completed,failed:$failed},promotionGate:{ciGreen:true,reconciliationComplete:($status=="complete"),dlqEmpty:($dlq==0),canonicalWritesRemainDisabled:true}}' \
+            > ops/onthecase-reconciliation-manifest.json
+      - name: Publish completion evidence
+        run: |
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ops/onthecase-reconciliation-manifest.json
+          git commit -m "Record On The Case shadow reconciliation status" || exit 0
+          git push origin HEAD:main
