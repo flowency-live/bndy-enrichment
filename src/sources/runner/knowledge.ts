@@ -127,7 +127,11 @@ function entityKnowledge(observation: SourceObservation, entity: NormalisedSourc
   const baseClaims: NormalisedSourceClaim[] = entity.displayName
     ? [{ predicate: 'hasName', value: entity.displayName }, ...entity.claims]
     : entity.claims;
-  const claims = baseClaims.map((claim) => entityClaim(observation, entity, claim));
+  const claims = [...new Map(
+    baseClaims
+      .map((claim) => entityClaim(observation, entity, claim))
+      .map((claim) => [claim.id, claim] as const),
+  ).values()];
   return {
     claims,
     candidate: {
