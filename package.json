@@ -19,6 +19,7 @@
     "sources:seed-wave1": "tsx src/cli/seed-wave1-sources.ts",
     "source:parity": "tsx src/cli/source-parity.ts",
     "lemonrock:bootstrap": "tsx src/cli/lemonrock-bootstrap.ts",
+    "onthecase:bootstrap": "tsx src/cli/onthecase-bootstrap.ts",
     "bndy:baseline": "tsx src/cli/bndy-corpus-bootstrap.ts"
   },
   "dependencies": {
