@@ -1,0 +1,4 @@
+const MONTHS:Record<string,number>={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
+const DAY=/(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+(\d{1,2})(?:st|nd|rd|th)?\s+([a-z]+)/gi;
+export function dayHeadingDates(body:string,runDate:string):string[]{const y=Number(runDate.slice(0,4)),rm=Number(runDate.slice(5,7)),out:string[]=[];for(const m of body.matchAll(DAY)){const mo=MONTHS[m[2].toLowerCase()],d=Number(m[1]);if(!mo||d<1||d>31)continue;let year=y;if(rm-mo>6)year++;else if(mo-rm>6)year--;out.push(`${year}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`);}return out;}
+export function editionIsFresh(body:string,runDate:string):boolean{const dates=dayHeadingDates(body,runDate);return dates.length>0&&dates.some(d=>d>=runDate);}
