@@ -68,6 +68,14 @@ export class BndyEnrichmentStack extends cdk.Stack {
     });
 
     const sourceScanDlq = new sqs.Queue(this, 'SourceScanDLQ', { retentionPeriod: cdk.Duration.days(14) });
+    // Failed delivery copies from superseded source reconciliations can be moved
+    // here for short-lived forensic retention. Keeping them off the active DLQ
+    // lets a fresh owned reconciliation prove current completeness without
+    // deleting evidence or blindly replaying stale requests.
+    const historicalSourceFailureQuarantine = new sqs.Queue(this, 'HistoricalSourceFailureQuarantine', {
+      retentionPeriod: cdk.Duration.days(14),
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
     const sourceScanQueue = new sqs.Queue(this, 'SourceScanQueue', {
       visibilityTimeout: cdk.Duration.minutes(15),
       deadLetterQueue: { queue: sourceScanDlq, maxReceiveCount: 3 },
@@ -364,6 +372,8 @@ export class BndyEnrichmentStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'CaptureScannerFunctionName', { value: captureScanner.functionName });
     new cdk.CfnOutput(this, 'CaptureProcessorFunctionName', { value: captureProcessor.functionName });
     new cdk.CfnOutput(this, 'SourceScanQueueUrl', { value: sourceScanQueue.queueUrl });
+    new cdk.CfnOutput(this, 'HistoricalSourceFailureQuarantineUrl', { value: historicalSourceFailureQuarantine.queueUrl });
+    new cdk.CfnOutput(this, 'HistoricalSourceFailureQuarantineArn', { value: historicalSourceFailureQuarantine.queueArn });
     new cdk.CfnOutput(this, 'BrowserScanQueueUrl', { value: browserScanQueue.queueUrl });
     new cdk.CfnOutput(this, 'ProjectionQueueUrl', { value: projectionQueue.queueUrl });
     new cdk.CfnOutput(this, 'EntityEnrichmentQueueUrl', { value: entityEnrichmentQueue.queueUrl });
