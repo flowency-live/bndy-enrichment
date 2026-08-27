@@ -15,6 +15,7 @@ describe('KLMA knowledge vertical slice', () => {
     expect(parseKlmaDate('21-08-26')).toBe('2026-08-21');
     expect(parseKlmaDate('2026-08-21')).toBe('2026-08-21');
     expect(parseKlmaDate('August 21, 2026')).toBe('2026-08-21');
+    expect(parseKlmaDate('21st August 2026')).toBe('2026-08-21');
     expect(parseKlmaDate('1/1/1899')).toBeNull();
   });
 

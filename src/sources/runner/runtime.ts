@@ -1,5 +1,6 @@
 import { ClaimStore, ObservationStore, SourceRegistryStore, SourceStateStore } from '../../knowledge/stores/index.js';
 import '../adapters/gigs-news/index.js';
+import '../adapters/klma/index.js';
 import '../adapters/lemonrock/index.js';
 import '../adapters/onthecase/index.js';
 import '../adapters/sceniceye/index.js';

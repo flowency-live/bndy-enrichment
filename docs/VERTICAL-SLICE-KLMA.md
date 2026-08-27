@@ -1,6 +1,6 @@
 # KLMA Knowledge Vertical Slice
 
-**Purpose:** prove the dual-path target today with one real source before the full scheduled-source infrastructure is complete.
+**Purpose:** document the original dual-path proof and its controlled migration into the generic Backline Source Runner.
 
 This is an execution slice of `TARGET-ARCHITECTURE.md`, not a competing architecture.
 
@@ -115,7 +115,7 @@ Once projection results exist, `graph.html` includes canonical Artist, Venue and
 
 ## Deliberate limitations of this slice
 
-This is not the scheduled production source runner yet.
+The original CLI is not the scheduled production source runner. The reusable parser is now also wrapped by the `klma-stoke` generic SourceAdapter, but its Source Registry entry remains disabled and Cowork-owned until live shadow parity passes.
 
 It deliberately does not implement:
 
@@ -144,3 +144,26 @@ The vertical slice is successful when one run can demonstrate all of the followi
 7. the graph displays the canonical BNDY IDs alongside the source claims.
 
 After that proof, the code is folded into WP-02/WP-04/WP-07 rather than maintained as a second runner.
+
+## Generic cutover contract
+
+The generic adapter:
+
+- acquires the Google Sheets export CSV through the standard SSRF-checked HTTP router;
+- falls back to the gviz CSV only when export acquisition or structural validation fails;
+- requires recognisable Date, Artist and Venue columns before treating a capture as complete;
+- parses UK dates without depending on the Lambda host timezone;
+- preserves deterministic KLMA event, Artist and Venue source identities;
+- parks invalid, past and non-gig rows with explicit reasons;
+- emits Artist/Venue candidate Claims alongside event Claims;
+- remains shadowed and produces no canonical writes.
+
+Production authority transfers only after:
+
+1. a manual AWS run matches the current Cowork future-event inventory within explained parked-row differences;
+2. a second run proves stable identities and correct added/updated/withdrawn behaviour;
+3. source metrics, run reports, queue and DLQ evidence are visible;
+4. Cowork scheduling is disabled before the AWS Source Registry entry is changed to `writerAuthority: aws` and enabled;
+5. the first scheduled AWS run completes and is read back from Backline evidence.
+
+The intended steady state is one daily run. KLMA does not justify an hourly poll. A failed structural gate or incomplete capture must never infer withdrawals.
