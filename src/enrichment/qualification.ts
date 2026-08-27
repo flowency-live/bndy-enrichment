@@ -1,4 +1,5 @@
-import type { ClaimPredicate } from '../knowledge/types.js';
+import { z } from 'zod';
+import { ClaimPredicateSchema, type ClaimPredicate } from '../knowledge/types.js';
 import { assessEnrichmentFacts, SAFE_ENRICHMENT_BUDGET } from './safety.js';
 import {
   CanonicalEntitySnapshotSchema,
@@ -18,7 +19,45 @@ export type EnrichmentQualificationCase = {
    * positive match so the contract remains backwards compatible.
    */
   expectedIdentity?: 'match' | 'park';
+  adjudicationNotes?: string;
 };
+
+export const EnrichmentQualificationCaseSchema = z.object({
+  caseId: z.string().min(1),
+  entity: CanonicalEntitySnapshotSchema,
+  requestedPredicates: z.array(ClaimPredicateSchema).min(1).max(12),
+  bundle: EnrichmentEvidenceBundleSchema,
+  expectedIdentity: z.enum(['match', 'park']).optional(),
+  adjudicationNotes: z.string().min(1).max(2_000).optional(),
+}).superRefine((item, context) => {
+  if (item.expectedIdentity === 'park' && !item.adjudicationNotes) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['adjudicationNotes'],
+      message: 'Expected-park cases require human adjudication notes',
+    });
+  }
+});
+
+export const EnrichmentQualificationFixtureSchema = z.object({
+  schemaVersion: z.literal(1),
+  providerId: z.string().min(1),
+  capturedAt: z.string().datetime(),
+  adjudicatedAt: z.string().datetime(),
+  adjudicatedBy: z.string().min(1),
+  cases: z.array(EnrichmentQualificationCaseSchema).min(1),
+}).superRefine((fixture, context) => {
+  for (const [index, item] of fixture.cases.entries()) {
+    if (item.bundle.providerId !== fixture.providerId) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['cases', index, 'bundle', 'providerId'],
+        message: 'Case providerId must match the fixture providerId',
+      });
+    }
+  }
+});
+export type EnrichmentQualificationFixture = z.infer<typeof EnrichmentQualificationFixtureSchema>;
 
 export type EnrichmentQualificationThresholds = {
   minCases: number;
@@ -50,6 +89,8 @@ export const DEFAULT_ENRICHMENT_QUALIFICATION_THRESHOLDS: EnrichmentQualificatio
 
 export type EnrichmentQualificationReport = {
   qualified: boolean;
+  providerIds: string[];
+  duplicateCaseIds: string[];
   cases: number;
   artistCases: number;
   venueCases: number;
@@ -115,11 +156,15 @@ export function qualifyEnrichmentProvider(
   let coveredRequestedPredicates = 0;
   let totalEstimatedCost = 0;
   let maximumEstimatedCost = 0;
+  const providerIds = new Set<string>();
+  const caseIdCounts = new Map<string, number>();
 
-  for (const rawCase of rawCases) {
-    if (!rawCase.caseId) throw new Error('Enrichment qualification caseId is required');
-    const entity = CanonicalEntitySnapshotSchema.parse(rawCase.entity);
-    const bundle = EnrichmentEvidenceBundleSchema.parse(rawCase.bundle);
+  for (const inputCase of rawCases) {
+    const rawCase = EnrichmentQualificationCaseSchema.parse(inputCase);
+    const entity = rawCase.entity;
+    const bundle = rawCase.bundle;
+    providerIds.add(bundle.providerId);
+    caseIdCounts.set(rawCase.caseId, (caseIdCounts.get(rawCase.caseId) ?? 0) + 1);
     const expectedIdentity = rawCase.expectedIdentity ?? 'match';
     const identityParked = bundle.identityConfidence < 0.98;
     if (entity.entityType === 'artist') artistCases += 1;
@@ -164,6 +209,12 @@ export function qualifyEnrichmentProvider(
     ? coveredRequestedPredicates / requestedPredicates
     : 1;
   const reasons: string[] = [];
+  const duplicateCaseIds = [...caseIdCounts.entries()]
+    .filter(([, count]) => count > 1)
+    .map(([caseId]) => caseId)
+    .sort();
+  if (providerIds.size !== 1) reasons.push('mixed-provider-cohort');
+  if (duplicateCaseIds.length > 0) reasons.push('duplicate-case-ids');
   if (rawCases.length < thresholds.minCases) reasons.push('insufficient-total-cases');
   if (artistCases < thresholds.minArtistCases) reasons.push('insufficient-artist-cases');
   if (venueCases < thresholds.minVenueCases) reasons.push('insufficient-venue-cases');
@@ -178,6 +229,8 @@ export function qualifyEnrichmentProvider(
 
   return {
     qualified: reasons.length === 0,
+    providerIds: [...providerIds].sort(),
+    duplicateCaseIds,
     cases: rawCases.length,
     artistCases,
     venueCases,

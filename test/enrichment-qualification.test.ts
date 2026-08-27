@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  EnrichmentQualificationFixtureSchema,
   qualifyEnrichmentProvider,
   type EnrichmentQualificationCase,
   type EnrichmentQualificationThresholds,
@@ -105,6 +106,7 @@ describe('entity enrichment provider qualification', () => {
   it('requires hard-negative identities to park instead of rewarding confident guesses', () => {
     const artist = sample('artist-ambiguous', 'artist', 'hasWebsiteUrl');
     artist.expectedIdentity = 'park';
+    artist.adjudicationNotes = 'The captured results belong to a different artist in another city.';
     artist.bundle.identityConfidence = 0.7;
     artist.bundle.facts = [];
     const venue = sample('venue-match', 'venue', 'hasAddress');
@@ -126,6 +128,7 @@ describe('entity enrichment provider qualification', () => {
   it('fails a provider that enriches an identity the truth set says is ambiguous', () => {
     const artist = sample('artist-wrong-match', 'artist', 'hasWebsiteUrl');
     artist.expectedIdentity = 'park';
+    artist.adjudicationNotes = 'The captured result is a same-name artist with conflicting location evidence.';
     const venue = sample('venue-match', 'venue', 'hasAddress');
     const report = qualifyEnrichmentProvider([artist, venue], {
       ...thresholds,
@@ -143,5 +146,30 @@ describe('entity enrichment provider qualification', () => {
     const report = qualifyEnrichmentProvider([artist, venue], thresholds);
     expect(report.qualified).toBe(false);
     expect(report.reasons).toContain('missing-provider-usage');
+  });
+
+  it('rejects a mixed-provider or duplicate-case cohort', () => {
+    const artist = sample('duplicate', 'artist', 'hasWebsiteUrl');
+    const venue = sample('duplicate', 'venue', 'hasAddress');
+    venue.bundle.providerId = 'different-provider';
+    const report = qualifyEnrichmentProvider([artist, venue], thresholds);
+    expect(report.qualified).toBe(false);
+    expect(report.providerIds).toEqual(['different-provider', 'fixture-provider']);
+    expect(report.duplicateCaseIds).toEqual(['duplicate']);
+    expect(report.reasons).toEqual(expect.arrayContaining(['mixed-provider-cohort', 'duplicate-case-ids']));
+  });
+
+  it('requires reviewed metadata and notes for every expected-park fixture case', () => {
+    const artist = sample('ambiguous', 'artist', 'hasWebsiteUrl');
+    artist.expectedIdentity = 'park';
+    artist.bundle.identityConfidence = 0.7;
+    expect(() => EnrichmentQualificationFixtureSchema.parse({
+      schemaVersion: 1,
+      providerId: 'fixture-provider',
+      capturedAt: '2026-08-27T13:00:00.000Z',
+      adjudicatedAt: '2026-08-27T13:10:00.000Z',
+      adjudicatedBy: 'reviewer',
+      cases: [artist],
+    })).toThrow(/adjudication notes/i);
   });
 });
