@@ -13,39 +13,44 @@
     "directoriesCovered": true,
     "directoryInventoryControlsExpected": 27,
     "directoryPageTasksExpected": 28,
+    "futureGigCoverageMode": "incomplete",
+    "futureGigIdentityGap": 74,
     "futureGigsCovered": false,
+    "futureGraphTerminal": false,
     "gigIdentitiesDiscovered": 7787,
     "gigIndexPages": 16128,
+    "goneGigDetails": 0,
+    "goneGigIndexPages": 0,
     "inventoryCovered": false,
     "venueDirectoryControls": 27,
     "venueDirectoryIdentitiesObserved": 8341,
     "venueDirectoryPages": 28,
-    "venueIdentitiesDiscovered": 1099
+    "venueIdentitiesDiscovered": 1206
   },
   "directoryMode": "inventory-controls-only",
-  "discoveredTaskRows": 27383,
-  "discoveredTasks": 27383,
+  "discoveredTaskRows": 27490,
+  "discoveredTasks": 27490,
   "failedTaskSummary": [
     {
-      "count": 838,
+      "count": 757,
       "errorClass": "FETCH",
       "sourceId": "lemonrock-future-reconcile",
       "taskKind": "gig-index"
     },
     {
-      "count": 4,
+      "count": 3,
       "errorClass": "FETCH",
       "sourceId": "lemonrock-gig-hydration",
       "taskKind": "gig"
     }
   ],
-  "generatedAt": "2026-08-27T20:00:30.397618+00:00",
+  "generatedAt": "2026-08-27T20:07:45.007848+00:00",
   "queue": {
     "deadLetterInFlight": 0,
-    "deadLetterVisible": 831,
+    "deadLetterVisible": 894,
     "delayed": 0,
-    "inFlight": 139,
-    "visible": 5814
+    "inFlight": 2,
+    "visible": 5433
   },
   "queuesClear": false,
   "reconciliationId": "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4",
@@ -75,7 +80,7 @@
     "gig": 7787,
     "gig-index": 16128,
     "new-gigs": 1,
-    "venue": 1099,
+    "venue": 1206,
     "venue-index": 1,
     "venue-index-page": 28,
     "venue-inventory-control": 27
@@ -87,14 +92,14 @@
     "lemonrock-future-reconcile": 16129,
     "lemonrock-gig-hydration": 7787,
     "lemonrock-new-gigs": 1,
-    "lemonrock-venue-hydration": 1099,
+    "lemonrock-venue-hydration": 1206,
     "lemonrock-venue-index": 56
   },
   "tasksByStatus": {
-    "completed": 20869,
-    "failed": 842,
-    "queued": 5669,
-    "running": 3
+    "completed": 21428,
+    "failed": 760,
+    "queued": 5301,
+    "running": 1
   },
   "verificationMode": "national-gig-led"
 }
