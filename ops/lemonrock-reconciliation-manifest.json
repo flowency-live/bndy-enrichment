@@ -8,14 +8,14 @@
     "artistDirectoryControls": 27,
     "artistDirectoryIdentitiesObserved": 10587,
     "artistDirectoryPages": 28,
-    "artistIdentitiesDiscovered": 522,
+    "artistIdentitiesDiscovered": 538,
     "countyControls": 59,
     "directoriesCovered": true,
     "directoryInventoryControlsExpected": 27,
     "directoryPageTasksExpected": 28,
     "futureGigsCovered": false,
-    "gigIdentitiesDiscovered": 6419,
-    "gigIndexPages": 14558,
+    "gigIdentitiesDiscovered": 6485,
+    "gigIndexPages": 14596,
     "inventoryCovered": false,
     "venueDirectoryControls": 27,
     "venueDirectoryIdentitiesObserved": 8341,
@@ -23,8 +23,8 @@
     "venueIdentitiesDiscovered": 0
   },
   "directoryMode": "inventory-controls-only",
-  "discoveredTaskRows": 21614,
-  "discoveredTasks": 21614,
+  "discoveredTaskRows": 21734,
+  "discoveredTasks": 21734,
   "failedTaskSummary": [
     {
       "count": 1,
@@ -33,13 +33,13 @@
       "taskKind": "gig"
     }
   ],
-  "generatedAt": "2026-08-27T12:23:22.680830+00:00",
+  "generatedAt": "2026-08-27T12:27:38.197092+00:00",
   "queue": {
     "deadLetterInFlight": 0,
     "deadLetterVisible": 1,
     "delayed": 0,
-    "inFlight": 1,
-    "visible": 16732
+    "inFlight": 2,
+    "visible": 16617
   },
   "queuesClear": false,
   "reconciliationId": "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4",
@@ -60,33 +60,33 @@
   "shadow": true,
   "status": "incomplete",
   "tasksByKind": {
-    "artist": 522,
+    "artist": 538,
     "artist-index": 1,
     "artist-index-page": 28,
     "artist-inventory-control": 27,
     "cancellations": 1,
     "future-index": 1,
-    "gig": 6419,
-    "gig-index": 14558,
+    "gig": 6485,
+    "gig-index": 14596,
     "new-gigs": 1,
     "venue-index": 1,
     "venue-index-page": 28,
     "venue-inventory-control": 27
   },
   "tasksBySource": {
-    "lemonrock-artist-hydration": 522,
+    "lemonrock-artist-hydration": 538,
     "lemonrock-artist-index": 56,
     "lemonrock-cancellations": 1,
-    "lemonrock-future-reconcile": 14559,
-    "lemonrock-gig-hydration": 6419,
+    "lemonrock-future-reconcile": 14597,
+    "lemonrock-gig-hydration": 6485,
     "lemonrock-new-gigs": 1,
     "lemonrock-venue-index": 56
   },
   "tasksByStatus": {
-    "completed": 4860,
+    "completed": 5086,
     "failed": 1,
-    "queued": 16752,
-    "running": 1
+    "queued": 16645,
+    "running": 2
   },
   "verificationMode": "national-gig-led"
 }
