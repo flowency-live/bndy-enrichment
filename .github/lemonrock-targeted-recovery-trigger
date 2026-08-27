@@ -1,5 +1,5 @@
-requestedAt: 2026-08-27T18:11:00Z
-reason: repair pre-deployment Venue fanout gap and retry current-run logical failures
+requestedAt: 2026-08-27T18:15:30Z
+reason: retry corrected pre-deployment Venue fanout recovery and current-run logical failures
 reconciliationId: run-907eba4a-b7eb-4d41-95f5-06bbc91beef4
 mode: bounded-targeted-recovery
 launchesNationalReconciliation: false
