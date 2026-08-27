@@ -1,0 +1,7 @@
+{
+  "venueFanout": {
+    "verifiedAt": "2026-08-27T18:03:34Z",
+    "deployedSha": "904c1f32ff55487745e75e630c9dc7dab740fc34",
+    "purpose": "stable boundary for the one-time pre-fix gig Venue fanout recovery"
+  }
+}
