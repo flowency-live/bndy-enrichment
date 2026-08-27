@@ -29,6 +29,16 @@ The target enrichment consumer will:
 
 It must not directly mutate `bndy-artists` or `bndy-venues` as target behaviour.
 
+The consumer is delivered in explicit safety stages:
+
+1. **Evidence-only processor:** one canonical entity per item, hard per-item budget caps, daily provider reservation, immutable raw evidence, canonical-subject Claims, no canonical writes.
+2. **Provider qualification:** fixture and sampled live runs prove identity matching, citation quality, conflict rates and cost before scheduling.
+3. **Prioritised planner:** selects entities attached to upcoming gigs and explicit quality gaps, with separate daily Artist/Venue/provider budgets. It must query an indexed due set rather than scan the corpus.
+4. **Human sanity gate:** every identity below 0.98 is parked, all owner-managed fields and conflicts require review, and a sample of otherwise clean runs is reviewed before projection is considered.
+5. **Controlled projection:** remains a later decision and uses canonical APIs with read-back. It is not enabled by deploying the worker.
+
+Initial per-entity ceilings are one entity, three searches, six fetches, one non-expensive model call, 12,000 input tokens, 2,000 output tokens, an estimated cost of 0.03 and a 60-second deadline. Lower item budgets are honoured; higher requested budgets are capped.
+
 ## Migration
 
 `GoogleDiscoveryWorker` remains a legacy runtime until its migration package replaces its direct-write path. The new `EntityEnrichmentQueue` is the strategic seam; newly migrated source projection emits only the new work item.
