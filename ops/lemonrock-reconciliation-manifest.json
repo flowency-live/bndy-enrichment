@@ -6,6 +6,7 @@
     "advertisedFutureGigs": 7783,
     "advertisedVenues": 8279,
     "artistDirectoryControls": 27,
+    "artistDirectoryIdentitiesObserved": 0,
     "artistDirectoryPages": 28,
     "artistIdentitiesDiscovered": 10536,
     "countyControls": 59,
@@ -15,9 +16,11 @@
     "gigIndexPages": 15828,
     "inventoryCovered": false,
     "venueDirectoryControls": 27,
+    "venueDirectoryIdentitiesObserved": 0,
     "venueDirectoryPages": 28,
     "venueIdentitiesDiscovered": 8291
   },
+  "directoryMode": "profile-hydration",
   "discoveredTaskRows": 85315,
   "discoveredTasks": 42476,
   "failedTaskSummary": [
@@ -34,12 +37,12 @@
       "taskKind": "gig"
     }
   ],
-  "generatedAt": "2026-08-26T07:59:02.214149+00:00",
+  "generatedAt": "2026-08-27T09:51:49.131609+00:00",
   "queue": {
     "deadLetterInFlight": 0,
-    "deadLetterVisible": 4164,
+    "deadLetterVisible": 5153,
     "delayed": 0,
-    "inFlight": 940,
+    "inFlight": 0,
     "visible": 0
   },
   "queuesClear": false,
@@ -93,5 +96,6 @@
   "tasksByStatus": {
     "completed": 41740,
     "failed": 736
-  }
+  },
+  "verificationMode": "legacy-full-directory"
 }
