@@ -1,0 +1,3 @@
+Purpose: trigger the bounded Lemonrock national verification from the tested main revision.
+Mode: shadow evidence and claims only; canonical writes disabled.
+Requested: 2026-08-27 UTC.
