@@ -52,6 +52,13 @@ describe('KLMA Gate A parity manifest', () => {
     expect(manifest.donor.acceptedEvents - manifest.backline.acceptedEvents).toBe(
       manifest.classifiedDifferences.reduce((total: number, item: { rows: number }) => total + item.rows, 0),
     );
-    expect(manifest.cutoverReady).toBe(false);
+    expect(manifest.operatorDisposition).toEqual(expect.objectContaining({
+      policy: 'retain-and-park',
+      ambiguousVenueLocality: 'PARK_RETAIN_EVIDENCE_NO_DEFAULT_LOCALITY',
+      sourceIdentityCollision: 'PARK_RETAIN_EVIDENCE_NO_AUTOMATIC_MERGE',
+      identicalDuplicate: 'ACCEPT_ONE_PARK_DUPLICATE_COPY',
+    }));
+    expect(manifest.cutoverReady).toBe(true);
+    expect(manifest.blockingReason).toBeNull();
   });
 });
