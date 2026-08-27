@@ -29,6 +29,10 @@ async function fetchWithRetry(
         fetchMethod: 'http-lemonrock',
         followRedirects: true,
         maxRedirects: 5,
+        // Listing and detail links can expire while a bounded reconciliation
+        // drains. HTTP 410 is durable evidence that the referenced URL is gone,
+        // not a transient delivery failure that should be retried into the DLQ.
+        acceptedStatuses: [410],
         headers: {
           accept: 'text/html,application/xhtml+xml',
           'user-agent': 'BNDY-Backline/1.0 (+https://bndy.live; source-reconciliation)',
@@ -63,6 +67,17 @@ export const lemonrockAdapter: SourceAdapter = {
   async parse(_config: GigSource, run: SourceRunContext, raw: FetchedSource): Promise<ParsedSource> {
     const sourceUrl = raw.sourceUrl;
     if (!sourceUrl) throw new Error('Lemonrock acquisition returned no source URL');
+    if (raw.httpStatus === 410) {
+      return {
+        events: [],
+        nextRequests: [],
+        parked: [{
+          reason: 'Lemonrock URL is permanently gone (HTTP 410)',
+          raw: { sourceUrl, taskKind: run.task?.kind ?? 'unknown' },
+        }],
+        warnings: ['Lemonrock returned HTTP 410; preserved as terminal gone evidence without inferring cancellation'],
+      };
+    }
     if (!/<(?:html|body|head|a)\b/i.test(raw.body)) throw new Error('Lemonrock structural gate failed: response is not recognisable HTML');
     return parseLemonrock(raw.body, sourceUrl, run);
   },
