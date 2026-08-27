@@ -98,17 +98,27 @@ jobs:
           queue = json.load(open(sys.argv[3]))["Attributes"]
           dlq = json.load(open(sys.argv[4]))["Attributes"]
 
-          failures = []
+          def error_signature(value):
+              value = str(value or "unknown")
+              value = re.sub(r"https?://\\S+", "<url>", value)
+              value = re.sub(r"\\s+", " ", value).strip()
+              return value[:240] or "unknown"
+
+          failures = Counter()
+          failure_times = []
           for task in current:
               if task.get("status") not in ("failed", "error"):
                   continue
               details = task.get("task") if isinstance(task.get("task"), dict) else {}
-              failures.append({
-                  "sourceId": task.get("sourceId", "unknown"),
-                  "taskKind": task.get("taskKind") or details.get("kind") or "unknown",
-                  "errorClass": error_class(task.get("lastError")),
-                  "failedAt": task.get("failedAt") or task.get("updatedAt"),
-              })
+              failures[(
+                  str(task.get("sourceId", "unknown")),
+                  str(task.get("taskKind") or details.get("kind") or "unknown"),
+                  error_class(task.get("lastError")),
+                  error_signature(task.get("lastError")),
+              )] += 1
+              failed_at = task.get("failedAt") or task.get("updatedAt")
+              if failed_at:
+                  failure_times.append(str(failed_at))
 
           outstanding = [
               x for x in current
@@ -128,7 +138,20 @@ jobs:
               "taskHistoryRows": len(tasks),
               "uniqueCurrentTasks": len(current),
               "tasksByStatus": dict(Counter(str(x.get("status", "unknown")) for x in current)),
-              "failedTaskSummary": sorted(failures, key=lambda x: (x["sourceId"], x["taskKind"])),
+              "failedTaskSummary": [
+                  {
+                      "sourceId": key[0],
+                      "taskKind": key[1],
+                      "errorClass": key[2],
+                      "errorSignature": key[3],
+                      "count": count,
+                  }
+                  for key, count in sorted(failures.items())
+              ],
+              "failureTimeRange": {
+                  "earliest": min(failure_times, default=None),
+                  "latest": max(failure_times, default=None),
+              },
               "outstandingBySourceAndKind": [
                   {"sourceId": k[0], "taskKind": k[1], "count": count}
                   for k, count in sorted(by_source_kind.items())
