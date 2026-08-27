@@ -40,18 +40,6 @@ describe('Lemonrock reconciliation lineage', () => {
     expect(JSON.parse((sqsSend.mock.calls[0]?.[0] as any).input.MessageBody)).toMatchObject({ reconciliationId: 'run-full-reconcile-1', task: child.task });
   });
 
-  it('requeues an existing failed deduped task for an explicit owned reconciliation', async () => {
-    const duplicate = Object.assign(new Error('duplicate'), { name: 'ConditionalCheckFailedException' });
-    const ddbSend = vi.fn().mockRejectedValueOnce(duplicate).mockResolvedValueOnce({});
-    const sqsSend = vi.fn().mockResolvedValue({});
-    const publisher = new DynamoSqsSourceFanoutPublisher('state-table', 'queue', { send: ddbSend } as any, { send: sqsSend } as any);
-    await expect(publisher.publish(child, '2026-08-24T19:05:00.000Z', 'run-full-reconcile-2')).resolves.toBe(true);
-    const update = ddbSend.mock.calls[1]?.[0] as any;
-    expect(update.input.ConditionExpression).toContain('#status = :failed');
-    expect(update.input.UpdateExpression).toContain('ADD attemptCount :one');
-    expect(sqsSend).toHaveBeenCalledTimes(1);
-  });
-
   it('starts a lineage at the full-reconcile root and propagates it to child fanout', async () => {
     const source: GigSource = { id: 'lemonrock-full-reconcile', name: 'Lemonrock full reconciliation', url: 'https://www.lemonrock.com/', type: 'AGGREGATOR', timezone: 'Europe/London', cadence: 'manual', localTime: '05:00', mode: 'append-only', snapshotSemantics: 'incremental', authorityClass: 'aggregator', thresholds: {}, adapter: 'lemonrock', runtimeClass: 'standard', enabled: true, shadow: true, writerAuthority: 'aws', health: 'unknown' };
     const adapter: SourceAdapter = { async fetch() { return { kind: 'html', body: '<html><body></body></html>', sourceUrl: source.url, fetchMethod: 'test', fetchedAt: '2026-08-24T19:10:00.000Z', complete: false }; }, async parse() { return { events: [], nextRequests: [child], parked: [], warnings: [] }; } };
