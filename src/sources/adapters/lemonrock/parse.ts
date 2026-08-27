@@ -44,6 +44,15 @@ function request(
   };
 }
 
+function comparableLabel(value: string): string {
+  return value
+    .normalize('NFKC')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([,.:;!?])/g, '$1')
+    .trim()
+    .toLowerCase();
+}
+
 function safeProfileLinks(html: string, sourceUrl: string) {
   return anchorsFromHtml(html, sourceUrl).filter((anchor) => {
     const slug = lemonrockSlug(anchor.href);
@@ -353,13 +362,16 @@ function fullReconcile(_html: string, _sourceUrl: string): ParsedSource {
 
 function listPage(html: string, sourceUrl: string, kind: string, run: SourceRunContext): ParsedSource {
   const fastFeed = kind === 'new-gigs' || kind === 'cancellations';
-  const auditFields = auditTaskFields(run);
-  const gigs = gigRequests(html, sourceUrl, fastFeed ? 'hourly' : 'monthly', auditFields);
+  const taskFields = {
+    ...auditTaskFields(run),
+    ...(kind === 'cancellations' ? { explicitCancellation: true } : {}),
+  };
+  const gigs = gigRequests(html, sourceUrl, fastFeed ? 'hourly' : 'monthly', taskFields);
   // Fast feeds deliberately stop at the gig links on the current page. Following
   // global town/date navigation from every hourly scan would recreate the full
   // national crawl 1,440 times per month.
   const pages = fastFeed ? [] : uniqueBy([
-    ...gigListingRequests(html, sourceUrl, auditFields),
+    ...gigListingRequests(html, sourceUrl, taskFields),
     ...anchorsFromHtml(html, sourceUrl)
       .filter((anchor) => {
         const url = new URL(anchor.href);
@@ -371,7 +383,7 @@ function listPage(html: string, sourceUrl: string, kind: string, run: SourceRunC
         anchor.href,
         undefined,
         undefined,
-        auditFields,
+        taskFields,
       )),
   ], (item) => item.taskKey);
   return { events: [], nextRequests: uniqueBy([...gigs, ...pages], (item) => item.taskKey), parked: [], warnings: gigs.length ? [] : ['No gig detail links discovered on Lemonrock listing page'] };
@@ -482,20 +494,21 @@ function parseGig(html: string, sourceUrl: string, run: SourceRunContext): Parse
   const anchors = anchorsFromHtml(html, sourceUrl);
   const artistName = titleMatch?.[1]?.trim();
   const venueName = titleMatch?.[2]?.replace(/\s+on\s+.*$/i, '').trim();
-  const artistAnchor = artistName ? anchors.find((anchor) => anchor.text.trim().toLowerCase() === artistName.toLowerCase() && lemonrockSlug(anchor.href)) : undefined;
-  const venueAnchor = venueName ? anchors.find((anchor) => anchor.text.trim().toLowerCase() === venueName.toLowerCase() && lemonrockSlug(anchor.href)) : undefined;
+  const artistAnchor = artistName ? anchors.find((anchor) => comparableLabel(anchor.text) === comparableLabel(artistName) && lemonrockSlug(anchor.href)) : undefined;
+  const venueAnchor = venueName ? anchors.find((anchor) => comparableLabel(anchor.text) === comparableLabel(venueName) && lemonrockSlug(anchor.href)) : undefined;
   const artistSlug = artistAnchor ? lemonrockSlug(artistAnchor.href) : undefined;
   const venueSlug = venueAnchor ? lemonrockSlug(venueAnchor.href) : undefined;
   const timeMatch = text.match(/\b(\d{1,2}(?:[.:]\d{2})?\s*(?:am|pm)|noon|midnight)\s*(?:-|–|to)\s*(\d{1,2}(?:[.:]\d{2})?\s*(?:am|pm)|noon|midnight)/i);
   const singleTime = text.match(/\b(\d{1,2}(?:[.:]\d{2})?\s*(?:am|pm)|noon|midnight)\b/i)?.[1];
-  const cancelledMatch = text.match(/Cancelled\s+([^\n.]+)(?:\.\s*([^\n]+))?/i);
-  const status = /\bCANCELLED\b/i.test(text) ? 'cancelled' : /\bSOLD OUT\b/i.test(text) ? 'sold-out' : undefined;
+  const cancelledMatch = text.match(/(?:^|\n)\s*(Cancelled(?!\s+Dates\b)[^\n]*)\s*(?=\n|$)/i);
+  const explicitCancellation = run.task?.explicitCancellation === true || Boolean(cancelledMatch);
+  const status = explicitCancellation ? 'cancelled' : /\bSOLD OUT\b/i.test(text) ? 'sold-out' : 'confirmed';
   const price = text.match(/\|\s*(FREE!|£\s*\d+(?:\.\d{1,2})?[^\n|]*)/i)?.[1]?.trim();
   const posted = text.match(/Posted by\s+([^\n]+?)\s+at\s+([^\n]+?\s+on\s+\d{1,2}\s+\w+)/i);
   const claims: NormalisedSourceClaim[] = [fieldClaim('sourceGigId', id), fieldClaim('sourceUrl', sourceUrl)];
   if (cancelledMatch) {
-    claims.push(fieldClaim('cancellationText', cancelledMatch[0].trim()));
-    const cancelledAt = extractDate(cancelledMatch[0]);
+    claims.push(fieldClaim('cancellationText', cancelledMatch[1].trim()));
+    const cancelledAt = extractDate(cancelledMatch[1]);
     if (cancelledAt) claims.push(fieldClaim('cancelledAt', cancelledAt));
   }
   if (posted) {
