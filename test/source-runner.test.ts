@@ -72,6 +72,7 @@ function fixtureDependencies(captureComplete: boolean) {
   const projection: ProjectionWorkItem[] = [];
   const states: any[] = [];
   const observations: SourceObservation[] = [];
+  const metrics: SourceRunReport[] = [];
 
   const adapter: SourceAdapter = {
     async fetch() {
@@ -115,13 +116,14 @@ function fixtureDependencies(captureComplete: boolean) {
     claims: { async put(claim) { claims.push(claim); } },
     artifacts,
     projection: { async publish(item) { projection.push(item); } },
+    metrics: { async put(report) { metrics.push(structuredClone(report)); } },
     acquisition: { async acquire() { throw new Error('adapter should not call acquisition in fixture'); } },
     loadAdapter: () => adapter,
     now: () => new Date('2026-08-20T10:00:00.000Z'),
     newId: () => 'run-fixed',
   };
 
-  return { deps, artifacts, claims, projection, states, observations };
+  return { deps, artifacts, claims, projection, states, observations, metrics };
 }
 
 describe('target Source Runner', () => {
@@ -156,6 +158,11 @@ describe('target Source Runner', () => {
     });
     expect(result.report.artifacts.parity).toBe('runs/current/parity.json');
     expect(fx.artifacts.reports).toHaveLength(1);
+    expect(fx.metrics).toHaveLength(1);
+    expect(fx.metrics[0]).toMatchObject({
+      sourceId: 'fixture-source', status: 'completed', added: 1, updated: 1, withdrawn: 1,
+    });
+    expect(fx.metrics[0]?.artifacts.report).toBe('runs/current/report.json');
     expect(fx.states.at(-1)?.lastCompleteObservationId).toBe(result.observation?.id);
     expect(fx.states.at(-1)?.metadata.lastCompleteNormalisedKey).toBe('runs/current/normalised.json');
     expect(fx.states.at(-1)?.metadata.lastParityKey).toBe('runs/current/parity.json');

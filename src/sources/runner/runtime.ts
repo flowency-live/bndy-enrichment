@@ -6,6 +6,7 @@ import '../adapters/sceniceye/index.js';
 import type { AcquisitionRouter } from './acquisition.js';
 import { getSourceAdapter } from './adapter.js';
 import { DynamoSqsSourceFanoutPublisher } from './fanout.js';
+import { DynamoSourceRunMetricStore } from './metrics.js';
 import { SqsProjectionPublisher } from './projection-publisher.js';
 import { S3SourceRunArtifactStore } from './storage.js';
 import type { RunnerDependencies } from './runner.js';
@@ -23,6 +24,7 @@ export function createRunnerDependencies(acquisition: AcquisitionRouter): Runner
     observations: new ObservationStore(tableName, evidenceBucket), claims: new ClaimStore(tableName),
     artifacts: new S3SourceRunArtifactStore(evidenceBucket), projection: new SqsProjectionPublisher(projectionQueueUrl),
     fanout: sourceQueueUrl ? new DynamoSqsSourceFanoutPublisher(tableName, sourceQueueUrl) : undefined,
+    metrics: new DynamoSourceRunMetricStore(tableName),
     acquisition, loadAdapter: getSourceAdapter,
   };
 }
