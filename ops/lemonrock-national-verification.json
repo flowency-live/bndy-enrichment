@@ -1,8 +1,8 @@
 {
-  "status": "blocked",
-  "phase": "preflight-blocked",
-  "startedAt": "2026-08-27T09:52:50Z",
-  "deployedSha": "e5ebc5c5babbb1651e8e3f163065cd4d49d60d86",
+  "status": "in-progress",
+  "phase": "launched",
+  "startedAt": "2026-08-27T10:39:39Z",
+  "deployedSha": "1f6c693e81268fadf2612406fb26906a1e468af2",
   "verificationMode": "national-gig-led",
   "directoryMode": "inventory-controls-only",
   "shadow": true,
@@ -10,11 +10,17 @@
   "automaticDeadLetterRedrive": false,
   "preflightQueue": {
     "visible": 0,
-    "inFlight": 1,
+    "inFlight": 0,
     "delayed": 0,
-    "deadLetterVisible": 5153,
+    "deadLetterVisible": 0,
     "deadLetterInFlight": 0
   },
-  "workflowStatus": "failure",
-  "updatedAt": "2026-08-27T09:54:48Z"
+  "requestedAt": "2026-08-27T10:40:44Z",
+  "reconciliationId": "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4",
+  "launchQueue": {
+    "ApproximateNumberOfMessages": "0",
+    "ApproximateNumberOfMessagesNotVisible": "0"
+  },
+  "workflowStatus": "success",
+  "updatedAt": "2026-08-27T10:40:54Z"
 }
