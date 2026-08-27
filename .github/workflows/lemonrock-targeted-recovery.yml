@@ -1,0 +1,150 @@
+name: Recover Lemonrock owned reconciliation gaps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/lemonrock-targeted-recovery-trigger'
+      - '.github/workflows/lemonrock-targeted-recovery.yml'
+      - 'scripts/lemonrock-targeted-recovery.mjs'
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: lemonrock-targeted-recovery
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Recover Lemonrock targeted gaps')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 45
+    env:
+      AWS_REGION: eu-west-2
+      STACK_NAME: BndyEnrichmentStack
+      STATUS_FILE: ops/lemonrock-targeted-recovery-status.json
+      DEPLOYMENT_STATUS_FILE: ops/lemonrock-low-cost-operating-status.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Initialise sanitised status
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ops
+          jq -n \
+            --arg startedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg recoverySha "$(git rev-parse HEAD)" \
+            '{
+              status:"running",
+              phase:"validating",
+              startedAt:$startedAt,
+              recoverySha:$recoverySha,
+              purpose:"repair the pre-deployment Venue fanout gap and retry only failed logical tasks from the owned reconciliation",
+              boundedToExistingReconciliation:true,
+              launchesNationalReconciliation:false,
+              automaticDeadLetterRedrive:false,
+              shadow:true,
+              canonicalWritesEnabled:false
+            }' > "$STATUS_FILE"
+
+      - name: Require bounded deployment role
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+        run: test -n "$AWS_DEPLOY_ROLE_ARN"
+
+      - name: Configure short-lived deployment credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Validate exact main revision
+        env:
+          TZ: UTC
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+          npm test
+          node --check scripts/lemonrock-targeted-recovery.mjs
+
+      - name: Require live shadow-only safety controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.status' "$DEPLOYMENT_STATUS_FILE")" = "deployed"
+          test "$(jq -r '.shadow' "$DEPLOYMENT_STATUS_FILE")" = "true"
+          test "$(jq -r '.canonicalWritesEnabled' "$DEPLOYMENT_STATUS_FILE")" = "false"
+          test "$(jq -r '.scheduledArtistDirectory' "$DEPLOYMENT_STATUS_FILE")" = "false"
+          test "$(jq -r '.scheduledVenueDirectory' "$DEPLOYMENT_STATUS_FILE")" = "false"
+          test "$(jq -r '.scheduledFullDirectoryReconciliation' "$DEPLOYMENT_STATUS_FILE")" = "false"
+
+          state_table=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" \
+            --output text)
+          queue_url=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='SourceScanQueueUrl'].OutputValue | [0]" \
+            --output text)
+          test -n "$state_table"
+          test -n "$queue_url"
+
+          for source_id in lemonrock-future-reconcile lemonrock-gig-hydration lemonrock-artist-hydration lemonrock-venue-hydration; do
+            item=$(aws dynamodb get-item \
+              --table-name "$state_table" \
+              --key "{\"pk\":{\"S\":\"SOURCE#$source_id\"},\"sk\":{\"S\":\"CONFIG\"}}" \
+              --projection-expression 'shadow,writerAuthority' \
+              --output json)
+            test "$(jq -r '.Item.shadow.BOOL // false' <<<"$item")" = "true"
+            test "$(jq -r '.Item.writerAuthority.S // "unknown"' <<<"$item")" = "aws"
+          done
+
+          {
+            echo "STATE_TABLE=$state_table"
+            echo "SOURCE_QUEUE_URL=$queue_url"
+          } >> "$GITHUB_ENV"
+
+      - name: Queue bounded recovery work
+        run: |
+          set -euo pipefail
+          node scripts/lemonrock-targeted-recovery.mjs
+
+      - name: Publish sanitised recovery evidence
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "$STATUS_FILE" ]; then
+            mkdir -p ops
+            jq -n '{status:"failed",phase:"unknown",shadow:true,canonicalWritesEnabled:false}' > "$STATUS_FILE"
+          fi
+          if [ "$JOB_STATUS" != "success" ]; then
+            jq \
+              --arg completedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              '.status = "failed" | .completedAt = $completedAt' \
+              "$STATUS_FILE" > "$STATUS_FILE.tmp"
+            mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+          fi
+
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$STATUS_FILE"
+          git commit -m "Record Lemonrock targeted recovery status" || exit 0
+          if ! git push origin HEAD:main; then
+            git pull --rebase --autostash origin main
+            git push origin HEAD:main
+          fi
