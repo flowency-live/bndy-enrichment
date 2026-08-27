@@ -299,4 +299,79 @@ describe('ProjectionEngine', () => {
     await expect(projectWorkItem(item('create'), fx.dependencies)).rejects.toThrow(/verification failed/i);
     expect(fx.failures).toHaveLength(1);
   });
+
+  it('blocks non-create work before any BNDY API call for an additive-only source', async () => {
+    const mockApi = api();
+    const fx = deps({
+      source: source({ projectionPolicy: { mode: 'additive-only' } }),
+      api: mockApi,
+    });
+    const result = await projectWorkItem(item('update'), fx.dependencies);
+
+    expect(result.status).toBe('exception');
+    expect(result.message).toContain('Additive-only projection blocks update');
+    expect(mockApi.resolveArtist).not.toHaveBeenCalled();
+    expect(mockApi.ensureEvent).not.toHaveBeenCalled();
+    expect(mockApi.updateEvent).not.toHaveBeenCalled();
+  });
+
+  it('fails closed if live KLMA projection has no explicit policy', async () => {
+    const mockApi = api();
+    const fx = deps({
+      source: source({ id: 'klma-stoke-gig-list' }),
+      api: mockApi,
+    });
+    const klmaItem = { ...item('create'), sourceId: 'klma-stoke-gig-list' };
+    const result = await projectWorkItem(klmaItem, fx.dependencies);
+
+    expect(result.status).toBe('exception');
+    expect(result.message).toContain('requires an explicit source projection policy');
+    expect(mockApi.resolveArtist).not.toHaveBeenCalled();
+    expect(mockApi.ensureEvent).not.toHaveBeenCalled();
+  });
+
+  it('matches and verifies an existing Event without mutating it in additive-only mode', async () => {
+    const mockApi = api({
+      resolveArtist: vi.fn(async () => ({ id: 'artist-1', created: false })),
+      resolveVenue: vi.fn(async () => ({ id: 'venue-1', created: false })),
+      ensureEvent: vi.fn(async () => ({ id: 'event-1', created: false, duplicate: true })),
+    });
+    const fx = deps({
+      source: source({ projectionPolicy: { mode: 'additive-only' } }),
+      api: mockApi,
+    });
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('success');
+    expect(result.eventId).toBe('event-1');
+    expect(mockApi.updateEvent).not.toHaveBeenCalled();
+    expect(mockApi.cancelEvent).not.toHaveBeenCalled();
+    expect(mockApi.hideEvent).not.toHaveBeenCalled();
+    expect(mockApi.restoreEvent).not.toHaveBeenCalled();
+    expect(mockApi.uncancelEvent).not.toHaveBeenCalled();
+  });
+
+  it('will not reinstate a tombstoned Event in additive-only mode', async () => {
+    const tombstone: Tombstone = {
+      id: 't-1', eventFingerprint: 'artist-1|venue-1|2026-08-30', canonicalEventId: 'event-1',
+      artistId: 'artist-1', venueId: 'venue-1', date: '2026-08-30', status: 'active', reason: 'cancelled',
+      authorityClass: 'curated', sourceId: 'old-source', claimId: 'old-cancel', observationId: 'old-obs',
+      createdAt: '2026-08-20T10:00:00.000Z',
+    };
+    const mockApi = api({
+      resolveArtist: vi.fn(async () => ({ id: 'artist-1', created: false })),
+      resolveVenue: vi.fn(async () => ({ id: 'venue-1', created: false })),
+    });
+    const fx = deps({
+      source: source({ projectionPolicy: { mode: 'additive-only' } }),
+      tombstone,
+      api: mockApi,
+    });
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('exception');
+    expect(mockApi.ensureEvent).not.toHaveBeenCalled();
+    expect(mockApi.restoreEvent).not.toHaveBeenCalled();
+    expect(mockApi.uncancelEvent).not.toHaveBeenCalled();
+  });
 });

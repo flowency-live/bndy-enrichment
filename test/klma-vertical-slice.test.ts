@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   buildKlmaKnowledge,
@@ -8,6 +9,13 @@ import {
   type KlmaFetchResult,
 } from '../src/vertical-slice/klma-source.js';
 import { buildKnowledgeGraph } from '../src/vertical-slice/graph-export.js';
+
+type TimeVector = { in: string; out: string | null };
+
+const timeVectors = JSON.parse(readFileSync(
+  new URL('./fixtures/klma/time-parse-vectors.json', import.meta.url),
+  'utf8',
+)) as TimeVector[];
 
 describe('KLMA knowledge vertical slice', () => {
   it('parses UK dates deterministically', () => {
@@ -25,6 +33,19 @@ describe('KLMA knowledge vertical slice', () => {
     expect(parseKlmaTime('8.30pm').time).toBe('20:30');
     expect(parseKlmaTime('').time).toBe('21:00');
     expect(parseKlmaTime('7:12').defaulted).toBe(true);
+  });
+
+  it('preserves every reviewed Cowork time-parser vector', () => {
+    for (const vector of timeVectors) {
+      const parsed = parseKlmaTime(vector.in);
+      expect(parsed.time, vector.in || '<blank>').toBe(vector.out ?? '21:00');
+      expect(parsed.defaulted, vector.in || '<blank>').toBe(vector.out === null || vector.in.toLowerCase().includes('7:12'));
+    }
+
+    expect(parseKlmaTime('£25 7pm')).toEqual({ time: '19:00', defaulted: false });
+    expect(parseKlmaTime('Tickets £15 7-30pm')).toEqual({ time: '19:30', defaulted: false });
+    expect(parseKlmaTime('9-15pm')).toEqual({ time: '21:15', defaulted: false });
+    expect(parseKlmaTime('12 noon')).toEqual({ time: '12:00', defaulted: false });
   });
 
   it('turns one source row into an Observation, graph-shaped Claims and a candidate', () => {

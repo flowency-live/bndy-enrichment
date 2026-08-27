@@ -44,7 +44,7 @@ describe('KLMA generic SourceAdapter', () => {
       { predicate: 'hasGenre', value: 'Rock' },
       { predicate: 'hasGenre', value: 'Indie' },
     ]));
-    expect(parsed.parked.map((item) => item.reason)).toEqual(['past_event', 'invalid_date']);
+    expect(parsed.parked.map((item) => item.reason)).toEqual(['past_event', 'unparseable']);
     expect(parsed.warnings).toContain("No stage time in 'TBC'");
   });
 
@@ -70,5 +70,65 @@ describe('KLMA generic SourceAdapter', () => {
       kind: 'csv', body: 'Unexpected,Columns\nvalue,value', sourceUrl: KLMA_EXPORT_URL,
       fetchMethod: 'fixture', fetchedAt: run.startedAt, complete: true,
     })).rejects.toThrow('structural gate');
+  });
+
+  it('accepts the live headerless helper-column shape without changing stored evidence', async () => {
+    const liveShape = [
+      ',1/1/0125,Keep Live Music Alive In Stoke On Trent And Surrounding Areas,,,,',
+      ',1/5/2026,You Can Add Your Own Gigs By Clicking On Gig List Form,,,,',
+      ',"Saturday, August 29, 2026",Test Artist,"The Swan, Stone",9pm,Rock,https://example.test/one',
+      ',"Sunday, August 30, 2026",Second Artist,"The Nags Head, Macclesfield",8.30pm,Indie,',
+    ].join('\n');
+    const acquisition: AcquisitionRouter = { async acquire(request) {
+      return {
+        kind: 'csv', body: liveShape, sourceUrl: request.url, fetchMethod: 'fixture',
+        fetchedAt: run.startedAt, complete: true, httpStatus: 200, contentType: 'text/csv',
+      };
+    } };
+
+    const raw = await klmaAdapter.fetch(config, run, acquisition);
+    const parsed = await klmaAdapter.parse(config, run, raw);
+
+    expect(raw.body).toBe(liveShape);
+    expect(parsed.events.map((event) => event.sourceEventKey)).toHaveLength(2);
+    expect(parsed.events[0]).toMatchObject({ date: '2026-08-29', venueName: 'The Swan, Stone' });
+    expect(parsed.parked.map((item) => item.reason)).toEqual(['form_metadata', 'form_metadata']);
+  });
+
+  it('parks specialist, multi-act and location-ambiguous rows before projection', async () => {
+    const body = [
+      'Date,Artist,Venue,Time,Genre,URL',
+      '29/08/2026,Specialist Act,Artisan Tap,9pm,,',
+      '29/08/2026,Lineup,The Rigger Venue,8pm,,',
+      '29/08/2026,Unknown Act,Venue With No Town,8pm,,',
+    ].join('\n');
+    const parsed = await klmaAdapter.parse(config, run, {
+      kind: 'csv', body, sourceUrl: KLMA_EXPORT_URL, fetchMethod: 'fixture',
+      fetchedAt: run.startedAt, complete: true,
+    });
+
+    expect(parsed.events).toHaveLength(0);
+    expect(parsed.parked.map((item) => item.reason)).toEqual([
+      'specialist_venue', 'multi_act', 'ambiguous_venue_location',
+    ]);
+  });
+
+  it('deduplicates identical rows and parks conflicting source-identity collisions', async () => {
+    const body = [
+      'Date,Artist,Venue,Time,Genre,URL',
+      '29/08/2026,Same Artist,"The Swan, Stone",9pm,Rock,',
+      '29/08/2026,Same Artist,"The Swan, Stone",9pm,Rock,',
+      '30/08/2026,Collision Artist,"The Swan, Stone",8pm,Rock,',
+      '30/08/2026,Collision Artist,"The Swan, Stone",9pm,Rock,',
+    ].join('\n');
+    const parsed = await klmaAdapter.parse(config, run, {
+      kind: 'csv', body, sourceUrl: KLMA_EXPORT_URL, fetchMethod: 'fixture',
+      fetchedAt: run.startedAt, complete: true,
+    });
+
+    expect(parsed.events).toHaveLength(1);
+    expect(parsed.parked.map((item) => item.reason)).toEqual([
+      'duplicate_source_row', 'source_identity_collision', 'source_identity_collision',
+    ]);
   });
 });

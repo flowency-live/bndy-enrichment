@@ -186,6 +186,7 @@ const MULTI_ACT_VENUE_PREFIXES = ['the-rigger'];
 // Cheshire towns for region detection
 const CHESHIRE_TOWNS = [
   'Crewe',
+  'Coppenhall',
   'Macclesfield',
   'Haslington',
   'Sandbach',
@@ -201,6 +202,7 @@ const CHESHIRE_TOWNS = [
 const STAFFORDSHIRE_TOWNS = [
   'Stoke-on-Trent',
   'Stone',
+  'Tean',
   'Leek',
   'Newcastle-under-Lyme',
   'Newcastle',
@@ -217,7 +219,76 @@ const STAFFORDSHIRE_TOWNS = [
   'Forsbrook',
   'Sandyford',
   'Smallthorne',
+  'Brown Edge',
+  'Blythe Bridge',
+  'Cannock',
+  'Denford',
+  'Dilhorne',
+  'Endon',
+  'Knutton',
+  'Mow Cop',
+  'Mowcop',
+  'Oulton',
+  'Stanley',
+  'Woodseaves',
 ];
+
+// Local districts should resolve to the canonical city used by BNDY rather
+// than being treated as separate cities or silently defaulted.
+const STOKE_DISTRICTS = [
+  'Stoke-on-Trent',
+  'Stoke',
+  'Hanley',
+  'Burslem',
+  'Longton',
+  'Tunstall',
+  'Fenton',
+  'Trent Vale',
+  'Blurton',
+  'Chell',
+  'Dresden',
+  'Eaton Park',
+  'Newstead',
+  'Norton',
+  'Weston Coyney',
+] as const;
+
+const OUT_OF_AREA_TOWNS: Array<{ town: string; region: string }> = [
+  { town: 'Hartington', region: 'Derbyshire' },
+  { town: 'Marchamley', region: 'Shropshire' },
+  { town: 'Shrewsbury', region: 'Shropshire' },
+];
+
+// These locations are backed by reviewed venue evidence. They affect only the
+// locality input; source-native Venue identity remains unchanged.
+const VERIFIED_VENUE_LOCATIONS: Array<{
+  names: string[];
+  city: string;
+  region: string;
+}> = [
+  { names: ['The Furlong', 'The Furlong Tavern'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['The John Marston', 'The John Marstons'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['Norton Central Social Club'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['Riff Factory', 'The Riff Factory'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['The Sugarmill'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['The Underground'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['Glebe', 'The Glebe', 'The Glebe Stoke'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['The Cuckoo Newstead'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['Foxlowe Arts Centre'], city: 'Leek', region: 'Staffordshire' },
+  { names: ['Sir Robert Peel', 'Robert Peel'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['Higher Ground Cafe'], city: 'Congleton', region: 'Cheshire' },
+  { names: ['The Bradeley', 'The Bradeley Stratheden'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['Oakhill Bowling Club', 'Oakhill Bowling & Recreation Club'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['The Green Star', 'Green Star'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+  { names: ['The Potters Bar', 'Potters Bar'], city: 'Stoke-on-Trent', region: 'Staffordshire' },
+];
+
+const SLUG_TO_LOCATION = new Map<string, RegionResult>();
+for (const location of VERIFIED_VENUE_LOCATIONS) {
+  for (const name of location.names) {
+    SLUG_TO_LOCATION.set(slugNormalise(name), { city: location.city, region: location.region });
+  }
+}
 
 /**
  * Lookup canonical name for a venue variant.
@@ -289,14 +360,27 @@ function findTownInList(text: string, towns: readonly string[]): string | null {
  * 4. If no town derivable -> empty city, Staffordshire default
  */
 export function detectRegion(venueString: string): RegionResult {
+  const verified = SLUG_TO_LOCATION.get(slugNormalise(venueString));
+  if (verified) return verified;
+
+  if (findTownInList(venueString, STOKE_DISTRICTS)) {
+    return { region: 'Staffordshire', city: 'Stoke-on-Trent' };
+  }
+
   const cheshireTown = findTownInList(venueString, CHESHIRE_TOWNS);
   if (cheshireTown) {
-    return { region: 'Cheshire', city: cheshireTown };
+    return { region: 'Cheshire', city: cheshireTown === 'Coppenhall' ? 'Crewe' : cheshireTown };
   }
 
   const staffsTown = findTownInList(venueString, STAFFORDSHIRE_TOWNS);
   if (staffsTown) {
     return { region: 'Staffordshire', city: staffsTown };
+  }
+
+  for (const location of OUT_OF_AREA_TOWNS) {
+    if (venueString.toLowerCase().includes(location.town.toLowerCase())) {
+      return { region: location.region, city: location.town };
+    }
   }
 
   const townCandidate = extractTownCandidate(venueString);

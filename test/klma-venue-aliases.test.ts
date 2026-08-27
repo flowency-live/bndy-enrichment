@@ -152,6 +152,17 @@ describe('KLMA venue aliases', () => {
       expect(result.region).toBe('Staffordshire');
       expect(result.city).toBe('');
     });
+
+    it('uses reviewed locality evidence without changing the Venue name', () => {
+      expect(detectRegion('The Furlong')).toEqual({ region: 'Staffordshire', city: 'Stoke-on-Trent' });
+      expect(detectRegion('Riff Factory')).toEqual({ region: 'Staffordshire', city: 'Stoke-on-Trent' });
+      expect(detectRegion('The John Marstons')).toEqual({ region: 'Staffordshire', city: 'Stoke-on-Trent' });
+    });
+
+    it('maps Stoke districts and explicit out-of-area towns deterministically', () => {
+      expect(detectRegion('The Underground - Hanley')).toEqual({ region: 'Staffordshire', city: 'Stoke-on-Trent' });
+      expect(detectRegion('Coolock Irish Bar Shrewsbury')).toEqual({ region: 'Shropshire', city: 'Shrewsbury' });
+    });
   });
 
   describe('isSpecialistVenue', () => {

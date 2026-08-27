@@ -45,6 +45,12 @@ export function waveOneSources(now = new Date()): GigSource[] {
       authorityClass: 'curated',
       adapter: 'klma-stoke',
       runtimeClass: 'standard',
+      projectionPolicy: {
+        mode: 'additive-only',
+        minAcceptedEventsPerRun: 50,
+        maxAcceptedEventsPerRun: 500,
+        maxProjectionActionsPerRun: 500,
+      },
     }, now),
     withNext({
       ...safeDefaults,

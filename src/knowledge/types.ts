@@ -38,6 +38,22 @@ export type AuthorityClass = z.infer<typeof AuthorityClassSchema>;
 export const WriterAuthoritySchema = z.enum(['cowork', 'aws']);
 export type WriterAuthority = z.infer<typeof WriterAuthoritySchema>;
 
+export const ProjectionModeSchema = z.enum(['full', 'additive-only']);
+export type ProjectionMode = z.infer<typeof ProjectionModeSchema>;
+
+export const SourceProjectionPolicySchema = z.object({
+  mode: ProjectionModeSchema,
+  minAcceptedEventsPerRun: z.number().int().nonnegative().optional(),
+  maxAcceptedEventsPerRun: z.number().int().positive().optional(),
+  maxProjectionActionsPerRun: z.number().int().positive().optional(),
+}).refine(
+  (policy) => policy.minAcceptedEventsPerRun === undefined
+    || policy.maxAcceptedEventsPerRun === undefined
+    || policy.minAcceptedEventsPerRun <= policy.maxAcceptedEventsPerRun,
+  { message: 'minAcceptedEventsPerRun must not exceed maxAcceptedEventsPerRun' },
+);
+export type SourceProjectionPolicy = z.infer<typeof SourceProjectionPolicySchema>;
+
 export const RuntimeClassSchema = z.enum(['standard', 'browser']);
 export type RuntimeClass = z.infer<typeof RuntimeClassSchema>;
 
@@ -80,6 +96,7 @@ export const GigSourceSchema = z.object({
   enabled: z.boolean().default(false),
   shadow: z.boolean().default(true),
   writerAuthority: WriterAuthoritySchema.default('cowork'),
+  projectionPolicy: SourceProjectionPolicySchema.optional(),
   health: SourceHealthSchema.default('unknown'),
   nextScanAt: IsoTimestampSchema.optional(),
   lastScheduledAt: IsoTimestampSchema.optional(),

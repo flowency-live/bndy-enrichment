@@ -187,6 +187,19 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     const raw = await adapter.fetch(config, run, deps.acquisition);
     const parsed = await adapter.parse(config, run, raw);
     const entities = parsed.entities ?? [];
+    const projectionPolicy = config.projectionPolicy;
+    if (projectionPolicy?.minAcceptedEventsPerRun !== undefined
+      && parsed.events.length < projectionPolicy.minAcceptedEventsPerRun) {
+      throw new Error(
+        `Source volume gate failed: ${parsed.events.length} accepted events is below minimum ${projectionPolicy.minAcceptedEventsPerRun}`,
+      );
+    }
+    if (projectionPolicy?.maxAcceptedEventsPerRun !== undefined
+      && parsed.events.length > projectionPolicy.maxAcceptedEventsPerRun) {
+      throw new Error(
+        `Source volume gate failed: ${parsed.events.length} accepted events exceeds maximum ${projectionPolicy.maxAcceptedEventsPerRun}`,
+      );
+    }
     report.rawItems = parsed.events.length + entities.length + parsed.parked.length;
     report.validEvents = parsed.events.length;
     report.entityProfiles = entities.length;
@@ -252,7 +265,30 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     const parityKey = await deps.artifacts.writeParity(config, run, parity);
     report.artifacts.parity = parityKey;
 
-    const projection = buildProjectionWork(storedObservation, diff, knowledge.claimsByCandidate);
+    const projectionBootstrap = request.task?.projectionBootstrap === true;
+    if (projectionBootstrap && request.reason !== 'manual') {
+      throw new Error('projectionBootstrap is allowed only for a manual source run');
+    }
+    if (projectionBootstrap && projectionPolicy?.mode !== 'additive-only') {
+      throw new Error('projectionBootstrap requires an additive-only source projection policy');
+    }
+    const projection = buildProjectionWork(storedObservation, diff, knowledge.claimsByCandidate, {
+      mode: projectionPolicy?.mode,
+      bootstrap: projectionBootstrap,
+    });
+    if (projection.blocked.length) {
+      const blockedByAction = projection.blocked.reduce<Record<string, number>>((counts, item) => {
+        counts[item.action] = (counts[item.action] ?? 0) + 1;
+        return counts;
+      }, {});
+      report.warnings.push(`Projection policy blocked actions: ${JSON.stringify(blockedByAction)}`);
+    }
+    if (projectionPolicy?.maxProjectionActionsPerRun !== undefined
+      && projection.workItems.length > projectionPolicy.maxProjectionActionsPerRun) {
+      throw new Error(
+        `Projection volume gate failed: ${projection.workItems.length} actions exceeds maximum ${projectionPolicy.maxProjectionActionsPerRun}`,
+      );
+    }
     for (const claim of projection.withdrawalClaims) await deps.claims.put(claim);
     report.claims += projection.withdrawalClaims.length;
 
