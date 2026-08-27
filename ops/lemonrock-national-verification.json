@@ -1,0 +1,20 @@
+{
+  "status": "blocked",
+  "phase": "preflight-blocked",
+  "startedAt": "2026-08-27T09:52:50Z",
+  "deployedSha": "e5ebc5c5babbb1651e8e3f163065cd4d49d60d86",
+  "verificationMode": "national-gig-led",
+  "directoryMode": "inventory-controls-only",
+  "shadow": true,
+  "canonicalWritesEnabled": false,
+  "automaticDeadLetterRedrive": false,
+  "preflightQueue": {
+    "visible": 0,
+    "inFlight": 1,
+    "delayed": 0,
+    "deadLetterVisible": 5153,
+    "deadLetterInFlight": 0
+  },
+  "workflowStatus": "failure",
+  "updatedAt": "2026-08-27T09:54:48Z"
+}
