@@ -181,6 +181,49 @@ describe('Lemonrock source-native identities', () => {
     expect(event?.claims?.some((claim) => claim.predicate === 'derivedFrom' && JSON.stringify(claim.value).includes('cancellationText'))).toBe(true);
   });
 
+  it('matches live venue markup and ignores the Cancelled Dates navigation label', () => {
+    const html = `
+      <html><head><title>Matt Dean gig at The Devon Arms, Torquay on Friday 1 May 2026 at 9.00pm - Lemonrock Gig Guide</title></head><body>
+        <nav><a href="/cancellations.php">Cancelled Dates</a></nav>
+        <span class="greybold"><a href="/mattdean">Matt Dean</a></span>
+        at <a href="/devonarms"><strong>The Devon Arms</strong>, Torquay</a>
+        <p>9pm - 11.30pm | FREE!</p>
+      </body></html>`;
+    const parsed = parseLemonrock(
+      html,
+      'https://www.lemonrock.com/gig.php?id=939252',
+      run('lemonrock-gig-hydration', { kind: 'gig', auditRun: true }),
+    );
+
+    expect(parsed.events[0]).toMatchObject({
+      artistExternalId: 'lemonrock:artist:mattdean',
+      venueExternalId: 'lemonrock:venue:devonarms',
+      status: 'confirmed',
+    });
+    expect(parsed.events[0]?.claims?.some((claim) => JSON.stringify(claim.value).includes('cancellationText'))).toBe(false);
+    expect(parsed.nextRequests).toEqual(expect.arrayContaining([
+      expect.objectContaining({ sourceId: 'lemonrock-artist-hydration' }),
+      expect.objectContaining({ sourceId: 'lemonrock-venue-hydration' }),
+    ]));
+  });
+
+  it('carries explicit cancellation authority from the cancellation feed to gig hydration', () => {
+    const listing = parseLemonrock(
+      '<html><body><a href="/gig.php?id=939252">Cancelled gig</a></body></html>',
+      'https://www.lemonrock.com/cancellations.php',
+      run('lemonrock-cancellations', { kind: 'cancellations' }),
+    );
+    const task = listing.nextRequests?.[0]?.task;
+    expect(task).toMatchObject({ kind: 'gig', explicitCancellation: true });
+
+    const gig = parseLemonrock(
+      '<html><head><title>Example Band gig at Example Arms on 27 August 2026 - Lemonrock Gig Guide</title></head><body><a href="/exampleband">Example Band</a><a href="/examplearms">Example Arms</a></body></html>',
+      'https://www.lemonrock.com/gig.php?id=939252',
+      run('lemonrock-gig-hydration', task),
+    );
+    expect(gig.events[0]?.status).toBe('cancelled');
+  });
+
   it('enumerates national county gig indexes as completeness controls', () => {
     const html = `
       <html><body>
