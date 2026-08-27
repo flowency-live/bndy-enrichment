@@ -1,5 +1,5 @@
 {
-  "allDiscoveredTasksTerminal": false,
+  "allDiscoveredTasksTerminal": true,
   "canonicalWritesEnabled": false,
   "completenessControls": {
     "advertisedArtists": 10533,
@@ -13,15 +13,15 @@
     "directoriesCovered": true,
     "directoryInventoryControlsExpected": 27,
     "directoryPageTasksExpected": 28,
-    "futureGigCoverageMode": "incomplete",
+    "futureGigCoverageMode": "terminal-gone-evidence",
     "futureGigIdentityGap": 74,
-    "futureGigsCovered": false,
-    "futureGraphTerminal": false,
+    "futureGigsCovered": true,
+    "futureGraphTerminal": true,
     "gigIdentitiesDiscovered": 7787,
     "gigIndexPages": 16128,
-    "goneGigDetails": 7,
-    "goneGigIndexPages": 2,
-    "inventoryCovered": false,
+    "goneGigDetails": 9,
+    "goneGigIndexPages": 756,
+    "inventoryCovered": true,
     "venueDirectoryControls": 27,
     "venueDirectoryIdentitiesObserved": 8341,
     "venueDirectoryPages": 28,
@@ -30,21 +30,8 @@
   "directoryMode": "inventory-controls-only",
   "discoveredTaskRows": 28504,
   "discoveredTasks": 28504,
-  "failedTaskSummary": [
-    {
-      "count": 754,
-      "errorClass": "FETCH",
-      "sourceId": "lemonrock-future-reconcile",
-      "taskKind": "gig-index"
-    },
-    {
-      "count": 2,
-      "errorClass": "FETCH",
-      "sourceId": "lemonrock-gig-hydration",
-      "taskKind": "gig"
-    }
-  ],
-  "generatedAt": "2026-08-27T21:42:10.690682+00:00",
+  "failedTaskSummary": [],
+  "generatedAt": "2026-08-27T21:56:36.142657+00:00",
   "queue": {
     "deadLetterInFlight": 0,
     "deadLetterVisible": 894,
@@ -96,8 +83,7 @@
     "lemonrock-venue-index": 56
   },
   "tasksByStatus": {
-    "completed": 27748,
-    "failed": 756
+    "completed": 28504
   },
   "verificationMode": "national-gig-led"
 }
