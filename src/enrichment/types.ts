@@ -26,6 +26,15 @@ export const EnrichmentEvidenceBundleSchema = z.object({
   retrievedAt: z.string().datetime(),
   identityConfidence: z.number().min(0).max(1),
   facts: z.array(EnrichmentEvidenceFactSchema).max(50),
+  usage: z.object({
+    searches: z.number().int().nonnegative(),
+    fetches: z.number().int().nonnegative(),
+    modelCalls: z.number().int().nonnegative(),
+    inputTokens: z.number().int().nonnegative(),
+    outputTokens: z.number().int().nonnegative(),
+    estimatedCost: z.number().nonnegative(),
+    durationMs: z.number().int().nonnegative(),
+  }).optional(),
   raw: z.unknown(),
 });
 export type EnrichmentEvidenceBundle = z.infer<typeof EnrichmentEvidenceBundleSchema>;
