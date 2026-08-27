@@ -74,6 +74,14 @@
     "Ye Olde Rose & Crown": 1,
     "Ye olde crown": 1
   },
-  "cutoverReady": false,
-  "blockingReason": "Gate A needs an operator decision for the 20 historically ambiguous Venue-locality rows and four source-identity collision rows."
+  "operatorDisposition": {
+    "decidedAt": "2026-08-27",
+    "policy": "retain-and-park",
+    "ambiguousVenueLocality": "PARK_RETAIN_EVIDENCE_NO_DEFAULT_LOCALITY",
+    "sourceIdentityCollision": "PARK_RETAIN_EVIDENCE_NO_AUTOMATIC_MERGE",
+    "identicalDuplicate": "ACCEPT_ONE_PARK_DUPLICATE_COPY",
+    "rationale": "Backline must preserve the historical source evidence but must not invent Stoke locality or collapse materially different source rows merely to reproduce donor acceptance counts. These rows may be resolved later by corroborating evidence or human curation without weakening the ingestion safety policy."
+  },
+  "cutoverReady": true,
+  "blockingReason": null
 }
