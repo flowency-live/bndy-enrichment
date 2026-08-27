@@ -23,7 +23,7 @@
   },
   "workflowStatus": "success",
   "updatedAt": "2026-08-27T10:40:54Z",
-  "lastManifestAt": "2026-08-27T22:19:04.516753+00:00",
+  "lastManifestAt": "2026-08-27T22:40:53.950888+00:00",
   "latestManifest": {
     "status": "complete",
     "tasksByStatus": {
@@ -63,5 +63,5 @@
       "visible": 0
     }
   },
-  "completedAt": "2026-08-27T22:19:04.516753+00:00"
+  "completedAt": "2026-08-27T22:40:53.950888+00:00"
 }
