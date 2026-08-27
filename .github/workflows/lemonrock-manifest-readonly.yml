@@ -53,7 +53,7 @@ jobs:
             --table-name "$state_table" \
             --key-condition-expression "pk = :pk AND begins_with(sk, :prefix)" \
             --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#lemonrock"},":prefix":{"S":"TASK#"}}' \
-            --projection-expression "sourceId, taskKind, taskKey, logicalTaskKey, task, #st, lastReconciliationId, queuedAt, lastDiscoveredAt, completedAt, failedAt, updatedAt, lastError" \
+            --projection-expression "sourceId, taskKind, taskKey, logicalTaskKey, task, #st, lastReconciliationId, queuedAt, lastDiscoveredAt, completedAt, failedAt, updatedAt, lastError, terminalDisposition" \
             --expression-attribute-names '{"#st":"status"}' \
             --output json > "$tmp_dir/tasks.json"
 
@@ -167,6 +167,25 @@ jobs:
           artist_pages = int(kinds.get("artist-index-page", 0))
           venue_pages = int(kinds.get("venue-index-page", 0))
           gig_index_pages = int(kinds.get("gig-index", 0))
+          future_graph = [
+              x for x in discovered
+              if x.get("sourceId") in ("lemonrock-future-reconcile", "lemonrock-gig-hydration")
+          ]
+          future_graph_terminal = bool(future_graph) and all(
+              x.get("status") in ("complete", "completed", "succeeded") for x in future_graph
+          )
+          gone_gig_index_pages = sum(
+              1 for x in discovered
+              if x.get("sourceId") == "lemonrock-future-reconcile"
+              and x.get("taskKind") == "gig-index"
+              and x.get("terminalDisposition") == "http-410-gone"
+          )
+          gone_gig_details = sum(
+              1 for x in discovered
+              if x.get("sourceId") == "lemonrock-gig-hydration"
+              and x.get("taskKind") == "gig"
+              and x.get("terminalDisposition") == "http-410-gone"
+          )
           # Lemonrock exposes A-Z plus one numeric "123" segment. The extra
           # page task is the all-members/root view and does not advertise a
           # separate inventory count, so it must not be treated as a 28th
@@ -191,10 +210,25 @@ jobs:
                   else venue_identities >= advertised_venues
               )
           )
-          future_gigs_covered = (
+          future_gig_identity_gap = max(advertised_future_gigs - gig_identities, 0)
+          future_gigs_exact = (
               advertised_future_gigs > 0
               and gig_identities >= advertised_future_gigs
               and gig_index_pages > len(county_controls)
+          )
+          future_gigs_terminal_gone = (
+              advertised_future_gigs > 0
+              and future_gig_identity_gap > 0
+              and future_graph_terminal
+              and gone_gig_index_pages > 0
+              and future_gig_identity_gap <= (gone_gig_index_pages + gone_gig_details)
+              and gig_index_pages > len(county_controls)
+          )
+          future_gigs_covered = future_gigs_exact or future_gigs_terminal_gone
+          future_gig_coverage_mode = (
+              "exact" if future_gigs_exact
+              else "terminal-gone-evidence" if future_gigs_terminal_gone
+              else "incomplete"
           )
           inventory_covered = directories_covered and future_gigs_covered
           failures = Counter(
@@ -266,6 +300,11 @@ jobs:
                   "artistDirectoryIdentitiesObserved": observed_directory_artists,
                   "venueDirectoryIdentitiesObserved": observed_directory_venues,
                   "gigIdentitiesDiscovered": gig_identities,
+                  "futureGigIdentityGap": future_gig_identity_gap,
+                  "futureGigCoverageMode": future_gig_coverage_mode,
+                  "futureGraphTerminal": future_graph_terminal,
+                  "goneGigIndexPages": gone_gig_index_pages,
+                  "goneGigDetails": gone_gig_details,
                   "artistDirectoryPages": artist_pages,
                   "venueDirectoryPages": venue_pages,
                   "directoryPageTasksExpected": directory_page_tasks_expected,
