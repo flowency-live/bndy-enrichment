@@ -74,4 +74,21 @@ describe('Lemonrock low-cost schedules', () => {
     expect(script).toContain("row.lastReconciliationId !== reconciliationId");
     expect(script).not.toContain("sourceId: 'lemonrock-full-reconcile'");
   });
+
+  it('finishes the owned run through existing bounded workflows', () => {
+    const workflow = readFileSync(
+      new URL('../.github/workflows/lemonrock-eod-completion.yml', import.meta.url),
+      'utf8',
+    );
+
+    expect(workflow).toContain('run-907eba4a-b7eb-4d41-95f5-06bbc91beef4');
+    expect(workflow).toContain('lemonrock-targeted-recovery.yml');
+    expect(workflow).toContain('lemonrock-quarantine-historical-failures.yml');
+    expect(workflow).toContain('lemonrock-manifest-readonly.yml');
+    expect(workflow).toContain("test \"$(jq -r '.status' /tmp/lemonrock-final-manifest.json)\" = \"complete\"");
+    expect(workflow).not.toContain('lemonrock-completion-deploy.yml');
+    expect(workflow).not.toContain('lemonrock-full-reconcile');
+    expect(workflow).not.toContain('start-message-move-task');
+    expect(workflow).not.toContain('canonicalWritesEnabled:true');
+  });
 });
