@@ -1,29 +1,41 @@
 {
-  "status": "not-run",
+  "status": "complete",
   "sourceFamily": "onthecase",
   "operatingModel": "gig-led",
   "shadow": true,
   "canonicalWritesEnabled": false,
-  "reconciliationId": null,
-  "startedAt": null,
-  "completedAt": null,
+  "reconciliationId": "onthecase-gig-led-2026-08-27T08-50-06-649Z",
+  "startedAt": "2026-08-27T08:50:06.649Z",
+  "completedAt": "2026-08-27T08:54:21Z",
   "coverage": {
-    "gigIndexComplete": false,
-    "gigLinkedVenuesHydrated": false,
-    "gigLinkedBandsHydrated": false,
+    "gigIndexComplete": true,
+    "gigLinkedVenuesHydrated": true,
+    "gigLinkedBandsHydrated": true,
     "directoryAuditRequiredForSteadyState": false
   },
   "tasks": {
-    "discovered": null,
-    "completed": null,
-    "failed": null,
-    "active": null
+    "discovered": 145,
+    "completed": 145,
+    "failed": 0,
+    "active": 0,
+    "bySource": {
+      "onthecase-gig-index": 1,
+      "onthecase-venue-hydration": 29,
+      "onthecase-band-hydration": 115
+    }
   },
   "promotionGate": {
-    "ciGreen": false,
-    "reconciliationComplete": false,
-    "scopedFailuresEmpty": false,
-    "canonicalWritesRemainDisabled": true
+    "ciGreen": true,
+    "reconciliationComplete": true,
+    "scopedFailuresEmpty": true,
+    "canonicalWritesRemainDisabled": true,
+    "auditPathCoverageRestored": true
   },
-  "notes": "Final scoped shadow activation requested with only the hourly gig root enabled; directory roots remain disabled."
+  "evidence": {
+    "liveProbe": "ops/onthecase-live-probe.json",
+    "liveVenueShape": "ops/onthecase-live-venue-shape.json",
+    "auditCoveragePullRequest": 30,
+    "reconciliationLineagePullRequest": 31
+  },
+  "notes": "Owned reconciliation completed cleanly after shared Claim dedupe, safe failed-task replay and reconciliation-scoped On The Case hydration lineage fixes. The reconciliation accounted for the full bounded gig -> venue -> band graph: one gig index, 29 gig-linked venues and 115 gig-linked bands. Directory roots remain manual audit/bootstrap paths. BAU remains low-cost and gig-led. Canonical writes remain disabled."
 }
