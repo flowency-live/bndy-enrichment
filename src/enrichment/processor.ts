@@ -25,7 +25,11 @@ export interface CanonicalEntityReader {
 
 export interface EntityEnrichmentProvider {
   readonly id: string;
-  gather(entity: CanonicalEntitySnapshot, budget: DiscoveryBudget): Promise<EnrichmentEvidenceBundle>;
+  gather(
+    entity: CanonicalEntitySnapshot,
+    budget: DiscoveryBudget,
+    requestedPredicates: EntityEnrichmentWorkItem['requestedPredicates'],
+  ): Promise<EnrichmentEvidenceBundle>;
 }
 
 export interface EntityEnrichmentControlStore {
@@ -83,7 +87,9 @@ export async function processEntityEnrichment(
     throw new Error('Canonical entity reader returned the wrong entity');
   }
 
-  const bundle = EnrichmentEvidenceBundleSchema.parse(await deps.provider.gather(entity, budget));
+  const bundle = EnrichmentEvidenceBundleSchema.parse(
+    await deps.provider.gather(entity, budget, item.requestedPredicates),
+  );
   if (bundle.providerId !== deps.provider.id) throw new Error('Enrichment provider identity mismatch');
   const sourceId = `entity-enrichment:${bundle.providerId}`;
   const observationId = `obs-enrich-${digest(item.id, bundle.providerId, bundle.providerRunId).slice(0, 32)}`;
