@@ -1215,3 +1215,34 @@ Progress reports must distinguish:
 - **projection applied**.
 
 Large Observation or Claim totals alone do not prove national completeness. Only the reconciliation manifest and the gates above can support the completion claim.
+
+## 32. Fresh national verification contract
+
+The historical bootstrap and the low-cost steady state answer different questions. A drained queue proves that previously discovered work finished. It does not prove that the current national source inventory was completely enumerated.
+
+The owned national verification therefore performs one fresh, rate-limited, shadow-only reconciliation with these boundaries:
+
+- traverse every current future-gig county, town and dated listing branch;
+- fetch every unique future gig discovered in that reconciliation;
+- hydrate only Artist and Venue profiles referenced by those gigs;
+- enumerate all Artist and Venue directory pages as inventory controls;
+- count directory identities without hydrating dormant directory members;
+- include the current new-gig and explicit-cancellation feeds;
+- scope every audit task to the owned reconciliation so BAU time-bucket dedupe cannot hide stale work;
+- leave canonical writes disabled;
+- never redrive a pre-existing DLQ automatically.
+
+The launch workflow requires the source queue and DLQ to be empty before it starts. If either contains work, the verification stops at preflight and publishes a sanitised blocked status for diagnosis.
+
+Completion requires:
+
+1. every audit task terminal with no failed tasks;
+2. all required source branches seen;
+3. all 28 Artist and 28 Venue directory controls present;
+4. observed directory identities meeting or exceeding the advertised controls;
+5. unique future-gig identities meeting or exceeding Lemonrock's advertised county total;
+6. every gig-linked Artist and Venue hydration task terminal;
+7. main queue and DLQ clear;
+8. shadow mode still enabled and canonical writes still disabled.
+
+While the verification is active, the hourly monitor dispatches a fresh sanitised manifest. It stops requesting AWS manifests once the run is complete or reaches an attention state. The temporary hourly monitor schedule should be removed after the verification closes.

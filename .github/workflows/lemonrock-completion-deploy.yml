@@ -1,4 +1,4 @@
-name: Deploy and complete Lemonrock national reconciliation
+name: Launch Lemonrock national verification
 
 on:
   workflow_dispatch:
@@ -10,19 +10,19 @@ permissions:
   id-token: write
 
 concurrency:
-  group: lemonrock-national-completion
+  group: lemonrock-national-verification
   cancel-in-progress: false
 
 jobs:
-  deploy-and-complete:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Deploy Lemonrock completion runtime')
+  launch:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Launch Lemonrock national verification')
     runs-on: ubuntu-latest
     environment: production
-    timeout-minutes: 240
+    timeout-minutes: 45
     env:
       AWS_REGION: eu-west-2
       STACK_NAME: BndyEnrichmentStack
-      STATUS_FILE: ops/lemonrock-completion-run.json
+      STATUS_FILE: ops/lemonrock-national-verification.json
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,68 +32,45 @@ jobs:
         with:
           node-version: 22
 
-      - name: Initialise sanitised execution status
+      - name: Initialise sanitised status
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p ops
-          deployed_sha=$(git rev-parse HEAD)
           jq -n \
             --arg startedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg deployedSha "$deployed_sha" \
+            --arg deployedSha "$(git rev-parse HEAD)" \
             '{
-              phase:"initialising",
               status:"running",
+              phase:"validating",
               startedAt:$startedAt,
               deployedSha:$deployedSha,
+              verificationMode:"national-gig-led",
+              directoryMode:"inventory-controls-only",
               shadow:true,
               canonicalWritesEnabled:false,
-              recurringTargetsVerified:false
+              automaticDeadLetterRedrive:false
             }' > "$STATUS_FILE"
 
-      - name: Require dedicated deployment role
+      - name: Require the bounded deployment role
         env:
           AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-        run: |
-          set -euo pipefail
-          jq '.phase = "authenticating"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
-          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
-          test -n "$AWS_DEPLOY_ROLE_ARN" || {
-            echo "AWS_DEPLOY_ROLE_ARN is not configured in the production environment"
-            exit 1
-          }
+        run: test -n "$AWS_DEPLOY_ROLE_ARN"
 
-      - name: Configure AWS bootstrap credentials
+      - name: Configure short-lived deployment credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
 
-      - name: Allow the deployment role to monitor the full drain
+      - name: Validate exact main revision
         env:
-          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          TZ: UTC
         run: |
           set -euo pipefail
-          role_name="${AWS_DEPLOY_ROLE_ARN##*/}"
-          aws iam update-role --role-name "$role_name" --max-session-duration 14400
-
-      - name: Configure four-hour reconciliation credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          role-duration-seconds: 14400
-          aws-region: eu-west-2
-          unset-current-credentials: true
-
-      - name: Install and validate
-        run: |
-          set -euo pipefail
-          jq '.phase = "validating"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
-          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
-          npm install
+          npm ci
           npm run build
-          npm run test
-          npm run check
+          npm test
           npx cdk synth >/tmp/cdk-synth.log
 
       - name: Deploy exact main revision
@@ -103,305 +80,195 @@ jobs:
           mv "$STATUS_FILE.tmp" "$STATUS_FILE"
           npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
 
-      - name: Verify deployed recurring targets
+      - name: Verify low-cost schedules and shadow controls
+        shell: bash
         run: |
           set -euo pipefail
-          jq '.phase = "verifying-recurring-targets"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
+          jq '.phase = "verifying-safety"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
           mv "$STATUS_FILE.tmp" "$STATUS_FILE"
 
-          weekly_rule=$(aws cloudformation list-stack-resources \
-            --stack-name "$STACK_NAME" \
-            --query "StackResourceSummaries[?starts_with(LogicalResourceId, 'LemonrockWeeklyDirectoryReconcile')].PhysicalResourceId | [0]" \
-            --output text)
-          daily_rule=$(aws cloudformation list-stack-resources \
-            --stack-name "$STACK_NAME" \
-            --query "StackResourceSummaries[?starts_with(LogicalResourceId, 'LemonrockDailyReconcile')].PhysicalResourceId | [0]" \
-            --output text)
-          fast_rule=$(aws cloudformation list-stack-resources \
-            --stack-name "$STACK_NAME" \
-            --query "StackResourceSummaries[?starts_with(LogicalResourceId, 'LemonrockFastGigTick')].PhysicalResourceId | [0]" \
-            --output text)
+          stack_resources=$(aws cloudformation list-stack-resources --stack-name "$STACK_NAME" --output json)
+          rule_for() {
+            local prefix="$1"
+            jq -r --arg prefix "$prefix" \
+              '.StackResourceSummaries[] | select(.LogicalResourceId | startswith($prefix)) | .PhysicalResourceId' \
+              <<<"$stack_resources" | head -n1
+          }
 
-          test "$weekly_rule" != "None"
-          test "$daily_rule" != "None"
-          test "$fast_rule" != "None"
+          dispatcher_rule=$(rule_for SourceDispatchTick)
+          fast_rule=$(rule_for LemonrockFastGigTick)
+          health_rule=$(rule_for LemonrockDailyHealthCheck)
+          monthly_rule=$(rule_for LemonrockMonthlyFutureReconcile)
+          test -n "$dispatcher_rule"
+          test -n "$fast_rule"
+          test -n "$health_rule"
+          test -n "$monthly_rule"
 
-          weekly_sources=$(aws events list-targets-by-rule --rule "$weekly_rule" --query "Targets[].Input" --output text)
-          daily_sources=$(aws events list-targets-by-rule --rule "$daily_rule" --query "Targets[].Input" --output text)
-          fast_sources=$(aws events list-targets-by-rule --rule "$fast_rule" --query "Targets[].Input" --output text)
+          test "$(aws events describe-rule --name "$dispatcher_rule" --query ScheduleExpression --output text)" = "rate(1 hour)"
+          test "$(aws events describe-rule --name "$fast_rule" --query ScheduleExpression --output text)" = "rate(1 hour)"
+          test "$(aws events describe-rule --name "$health_rule" --query ScheduleExpression --output text)" = "cron(10 2 * * ? *)"
+          test "$(aws events describe-rule --name "$monthly_rule" --query ScheduleExpression --output text)" = "cron(20 2 1 * ? *)"
 
-          grep -q 'lemonrock-full-reconcile' <<<"$weekly_sources"
-          grep -q 'full-reconcile' <<<"$weekly_sources"
-          grep -q 'lemonrock-future-reconcile' <<<"$daily_sources"
-          grep -q 'lemonrock-artist-index' <<<"$daily_sources"
-          grep -q 'lemonrock-venue-index' <<<"$daily_sources"
-          grep -q 'lemonrock-new-gigs' <<<"$fast_sources"
-          grep -q 'lemonrock-cancellations' <<<"$fast_sources"
+          directory_rules=$(jq -r \
+            '[.StackResourceSummaries[].LogicalResourceId | select(test("Lemonrock.*(Directory|Weekly)"))] | length' \
+            <<<"$stack_resources")
+          test "$directory_rules" -eq 0
 
-          jq '.recurringTargetsVerified = true' "$STATUS_FILE" > "$STATUS_FILE.tmp"
-          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
-
-      - name: Recover source-scan dead letters
-        run: |
-          set -euo pipefail
-          jq '.phase = "recovering-dead-letters"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
-          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
-
+          state_table=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.StateTableName)")
           queue_url=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.SourceScanQueueUrl)")
-          redrive_policy=$(aws sqs get-queue-attributes \
-            --queue-url "$queue_url" \
-            --attribute-names RedrivePolicy \
-            --query 'Attributes.RedrivePolicy' \
-            --output text)
-          dlq_arn=$(jq -r '.deadLetterTargetArn' <<<"$redrive_policy")
-          dlq_name=${dlq_arn##*:}
-          dlq_url=$(aws sqs get-queue-url --queue-name "$dlq_name" --query QueueUrl --output text)
-          dlq_visible=$(aws sqs get-queue-attributes \
-            --queue-url "$dlq_url" \
-            --attribute-names ApproximateNumberOfMessages \
-            --query 'Attributes.ApproximateNumberOfMessages' \
-            --output text)
-
-          if [ "$dlq_visible" -gt 0 ]; then
-            aws sqs start-message-move-task --source-arn "$dlq_arn" >/dev/null
-          fi
+          for source_id in \
+            lemonrock-new-gigs lemonrock-cancellations lemonrock-artist-index lemonrock-venue-index \
+            lemonrock-artist-hydration lemonrock-venue-hydration lemonrock-gig-hydration \
+            lemonrock-future-reconcile lemonrock-full-reconcile; do
+            source=$(aws dynamodb get-item \
+              --table-name "$state_table" \
+              --key "{\"pk\":{\"S\":\"SOURCE#$source_id\"},\"sk\":{\"S\":\"CONFIG\"}}" \
+              --projection-expression "enabled, shadow" \
+              --output json)
+            test "$(jq -r '.Item.enabled.BOOL' <<<"$source")" = "true"
+            test "$(jq -r '.Item.shadow.BOOL' <<<"$source")" = "true"
+          done
 
           {
+            echo "STATE_TABLE=$state_table"
             echo "SOURCE_SCAN_QUEUE_URL=$queue_url"
-            echo "SOURCE_SCAN_DLQ_URL=$dlq_url"
           } >> "$GITHUB_ENV"
 
-      - name: Start durable full national reconciliation
+      - name: Require an empty source queue and DLQ
+        shell: bash
         run: |
           set -euo pipefail
+          jq '.phase = "preflight"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
+          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+
+          queue_attrs=$(aws sqs get-queue-attributes \
+            --queue-url "$SOURCE_SCAN_QUEUE_URL" \
+            --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed RedrivePolicy \
+            --output json)
+          dlq_arn=$(jq -r '.Attributes.RedrivePolicy | fromjson | .deadLetterTargetArn' <<<"$queue_attrs")
+          dlq_name=${dlq_arn##*:}
+          dlq_url=$(aws sqs get-queue-url --queue-name "$dlq_name" --query QueueUrl --output text)
+          dlq_attrs=$(aws sqs get-queue-attributes \
+            --queue-url "$dlq_url" \
+            --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+            --output json)
+
+          visible=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$queue_attrs")
+          inflight=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$queue_attrs")
+          delayed=$(jq -r '.Attributes.ApproximateNumberOfMessagesDelayed // "0"' <<<"$queue_attrs")
+          dlq_visible=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$dlq_attrs")
+          dlq_inflight=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$dlq_attrs")
+
+          jq \
+            --argjson visible "$visible" \
+            --argjson inflight "$inflight" \
+            --argjson delayed "$delayed" \
+            --argjson dlqVisible "$dlq_visible" \
+            --argjson dlqInflight "$dlq_inflight" \
+            '.preflightQueue = {
+              visible:$visible,
+              inFlight:$inflight,
+              delayed:$delayed,
+              deadLetterVisible:$dlqVisible,
+              deadLetterInFlight:$dlqInflight
+            }' "$STATUS_FILE" > "$STATUS_FILE.tmp"
+          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+
+          if [ "$visible" -ne 0 ] || [ "$inflight" -ne 0 ] || [ "$delayed" -ne 0 ] \
+            || [ "$dlq_visible" -ne 0 ] || [ "$dlq_inflight" -ne 0 ]; then
+            jq '.phase = "preflight-blocked" | .status = "blocked"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
+            mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+            echo "Source queue or DLQ is not empty; national verification was not launched"
+            exit 1
+          fi
+
+      - name: Launch owned national verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          prior_reconciliation=$(aws dynamodb get-item \
+            --table-name "$STATE_TABLE" \
+            --key '{"pk":{"S":"SOURCE#lemonrock-full-reconcile"},"sk":{"S":"STATE"}}' \
+            --projection-expression "metadata" \
+            --query 'Item.metadata.M.lastReconciliationId.S' \
+            --output text 2>/dev/null || true)
+
           requested_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           body=$(jq -nc --arg requestedAt "$requested_at" '{
             sourceId:"lemonrock-full-reconcile",
             reason:"manual",
             requestedAt:$requestedAt,
-            task:{kind:"full-reconcile",url:"https://www.lemonrock.com/"}
+            task:{
+              kind:"full-reconcile",
+              url:"https://www.lemonrock.com/",
+              auditRun:true,
+              directoryAuditOnly:true,
+              verificationVersion:"national-audit-v1"
+            }
           }')
           aws sqs send-message --queue-url "$SOURCE_SCAN_QUEUE_URL" --message-body "$body" >/dev/null
 
-          jq --arg requestedAt "$requested_at" \
-            '.phase = "reconciliation-running" | .reconciliationRequestedAt = $requestedAt' \
+          reconciliation_id=""
+          for attempt in $(seq 1 60); do
+            reconciliation_id=$(aws dynamodb get-item \
+              --table-name "$STATE_TABLE" \
+              --key '{"pk":{"S":"SOURCE#lemonrock-full-reconcile"},"sk":{"S":"STATE"}}' \
+              --projection-expression "metadata" \
+              --query 'Item.metadata.M.lastReconciliationId.S' \
+              --output text 2>/dev/null || true)
+            if [ -n "$reconciliation_id" ] && [ "$reconciliation_id" != "None" ] \
+              && [ "$reconciliation_id" != "$prior_reconciliation" ]; then
+              break
+            fi
+            sleep 5
+          done
+          test -n "$reconciliation_id"
+          test "$reconciliation_id" != "None"
+          test "$reconciliation_id" != "$prior_reconciliation"
+
+          queue_attrs=$(aws sqs get-queue-attributes \
+            --queue-url "$SOURCE_SCAN_QUEUE_URL" \
+            --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+            --output json)
+          jq \
+            --arg requestedAt "$requested_at" \
+            --arg reconciliationId "$reconciliation_id" \
+            --argjson queue "$queue_attrs" \
+            '.phase = "launched"
+             | .status = "in-progress"
+             | .requestedAt = $requestedAt
+             | .reconciliationId = $reconciliationId
+             | .launchQueue = $queue.Attributes' \
             "$STATUS_FILE" > "$STATUS_FILE.tmp"
           mv "$STATUS_FILE.tmp" "$STATUS_FILE"
 
-      - name: Wait for completion and build reconciliation manifest
-        shell: bash
-        run: |
-          set -euo pipefail
-          stable_zero=0
-          for attempt in $(seq 1 360); do
-            attrs=$(aws sqs get-queue-attributes \
-              --queue-url "$SOURCE_SCAN_QUEUE_URL" \
-              --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed \
-              --output json)
-            dlq_attrs=$(aws sqs get-queue-attributes \
-              --queue-url "$SOURCE_SCAN_DLQ_URL" \
-              --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
-              --output json)
-            visible=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$attrs")
-            inflight=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$attrs")
-            delayed=$(jq -r '.Attributes.ApproximateNumberOfMessagesDelayed // "0"' <<<"$attrs")
-            dlq_visible=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$dlq_attrs")
-            dlq_inflight=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$dlq_attrs")
-
-            if [ "$visible" -eq 0 ] && [ "$inflight" -eq 0 ] && [ "$delayed" -eq 0 ] \
-              && [ "$dlq_visible" -eq 0 ] && [ "$dlq_inflight" -eq 0 ]; then
-              stable_zero=$((stable_zero + 1))
-              if [ "$stable_zero" -ge 2 ]; then break; fi
-            else
-              stable_zero=0
-            fi
-            sleep 30
-          done
-
-          state_table=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.StateTableName)")
-          aws dynamodb query \
-            --table-name "$state_table" \
-            --key-condition-expression "pk = :pk AND begins_with(sk, :prefix)" \
-            --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#lemonrock"},":prefix":{"S":"TASK#"}}' \
-            --projection-expression "sourceId, taskKind, logicalTaskKey, task, #st, lastReconciliationId, lastDiscoveredAt, completedAt, failedAt, updatedAt" \
-            --expression-attribute-names '{"#st":"status"}' \
-            --output json > /tmp/lemonrock-tasks.json
-          aws dynamodb get-item \
-            --table-name "$state_table" \
-            --key '{"pk":{"S":"SOURCE#lemonrock-full-reconcile"},"sk":{"S":"STATE"}}' \
-            --projection-expression "lastSuccessfulRunAt, lastFailureAt, consecutiveFailures, metadata" \
-            --output json > /tmp/full-reconcile-state.json
-
-          python - "$STATUS_FILE" /tmp/lemonrock-tasks.json /tmp/full-reconcile-state.json "$visible" "$inflight" "$delayed" "$dlq_visible" "$dlq_inflight" <<'PY'
-          import json, sys
-          from collections import Counter
-
-          def ddb(v):
-              if not isinstance(v, dict):
-                  return v
-              if "S" in v: return v["S"]
-              if "N" in v:
-                  n = float(v["N"])
-                  return int(n) if n.is_integer() else n
-              if "BOOL" in v: return v["BOOL"]
-              if "NULL" in v: return None
-              if "M" in v: return {k: ddb(x) for k, x in v["M"].items()}
-              if "L" in v: return [ddb(x) for x in v["L"]]
-              return {k: ddb(x) for k, x in v.items()}
-
-          def row(item):
-              return {k: ddb(v) for k, v in item.items()}
-
-          status_path = sys.argv[1]
-          status = json.load(open(status_path))
-          tasks = [row(x) for x in json.load(open(sys.argv[2])).get("Items", [])]
-          root = row(json.load(open(sys.argv[3])).get("Item", {}))
-          reconciliation_id = (root.get("metadata") or {}).get("lastReconciliationId")
-          discovered_rows = [x for x in tasks if reconciliation_id and x.get("lastReconciliationId") == reconciliation_id]
-          current = {}
-          for task in discovered_rows:
-              details = task.get("task") if isinstance(task.get("task"), dict) else {}
-              identity = (
-                  str(task.get("sourceId", "")),
-                  str(details.get("nativeId") or task.get("logicalTaskKey") or task.get("taskKey") or task.get("sk")),
-              )
-              recency = str(task.get("updatedAt") or task.get("lastDiscoveredAt") or task.get("completedAt") or "")
-              previous = current.get(identity)
-              previous_recency = str((previous or {}).get("updatedAt") or (previous or {}).get("lastDiscoveredAt") or (previous or {}).get("completedAt") or "")
-              if previous is None or recency > previous_recency:
-                  current[identity] = task
-          discovered = list(current.values())
-          statuses = Counter(str(x.get("status", "unknown")) for x in discovered)
-          sources = Counter(str(x.get("sourceId", "unknown")) for x in discovered)
-          kinds = Counter(str(x.get("taskKind", "unknown")) for x in discovered)
-          county_controls = [
-              x for x in discovered
-              if x.get("sourceId") == "lemonrock-future-reconcile"
-              and x.get("taskKind") == "gig-index"
-              and (x.get("task") or {}).get("inventoryLevel") == "county"
-          ]
-          artist_controls = [
-              x for x in discovered
-              if x.get("sourceId") == "lemonrock-artist-index"
-              and x.get("taskKind") == "artist-inventory-control"
-              and (x.get("task") or {}).get("inventoryLevel") == "directory-page"
-          ]
-          venue_controls = [
-              x for x in discovered
-              if x.get("sourceId") == "lemonrock-venue-index"
-              and x.get("taskKind") == "venue-inventory-control"
-              and (x.get("task") or {}).get("inventoryLevel") == "directory-page"
-          ]
-          advertised_future_gigs = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in county_controls)
-          advertised_artists = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in artist_controls)
-          advertised_venues = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in venue_controls)
-          artist_identities = int(kinds.get("artist", 0))
-          venue_identities = int(kinds.get("venue", 0))
-          gig_identities = int(kinds.get("gig", 0))
-          artist_pages = int(kinds.get("artist-index-page", 0))
-          venue_pages = int(kinds.get("venue-index-page", 0))
-          gig_index_pages = int(kinds.get("gig-index", 0))
-          directories_covered = (
-              artist_pages >= 28
-              and venue_pages >= 28
-              and len(artist_controls) >= 28
-              and len(venue_controls) >= 28
-              and advertised_artists > 0
-              and advertised_venues > 0
-              and artist_identities >= advertised_artists
-              and venue_identities >= advertised_venues
-          )
-          future_gigs_covered = (
-              advertised_future_gigs > 0
-              and gig_identities >= advertised_future_gigs
-              and gig_index_pages > len(county_controls)
-          )
-          inventory_covered = directories_covered and future_gigs_covered
-          required_sources = {
-              "lemonrock-artist-index",
-              "lemonrock-venue-index",
-              "lemonrock-future-reconcile",
-              "lemonrock-new-gigs",
-              "lemonrock-cancellations",
-          }
-          queue = {
-              "visible": int(sys.argv[4]),
-              "inFlight": int(sys.argv[5]),
-              "delayed": int(sys.argv[6]),
-              "deadLetterVisible": int(sys.argv[7]),
-              "deadLetterInFlight": int(sys.argv[8]),
-          }
-          terminal = bool(discovered) and all(x.get("status") in ("complete", "completed", "succeeded") for x in discovered)
-          root_succeeded = bool(root.get("lastSuccessfulRunAt")) and int(root.get("consecutiveFailures", 0)) == 0
-          coverage = required_sources.issubset(sources)
-          queues_clear = not any(queue.values())
-          complete = terminal and root_succeeded and coverage and queues_clear and inventory_covered
-
-          status.update({
-              "phase": "complete" if complete else "completion-gate-failed",
-              "status": "complete" if complete else "incomplete",
-              "completedAt": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
-              "reconciliationId": reconciliation_id,
-              "rootLastSuccessfulRunAt": root.get("lastSuccessfulRunAt"),
-              "rootLastFailureAt": root.get("lastFailureAt"),
-              "discoveredTaskRows": len(discovered_rows),
-              "discoveredTasks": len(discovered),
-              "tasksByStatus": dict(sorted(statuses.items())),
-              "tasksBySource": dict(sorted(sources.items())),
-              "tasksByKind": dict(sorted(kinds.items())),
-              "completenessControls": {
-                  "advertisedArtists": advertised_artists,
-                  "advertisedVenues": advertised_venues,
-                  "advertisedFutureGigs": advertised_future_gigs,
-                  "artistIdentitiesDiscovered": artist_identities,
-                  "venueIdentitiesDiscovered": venue_identities,
-                  "gigIdentitiesDiscovered": gig_identities,
-                  "artistDirectoryPages": artist_pages,
-                  "venueDirectoryPages": venue_pages,
-                  "gigIndexPages": gig_index_pages,
-                  "countyControls": len(county_controls),
-                  "artistDirectoryControls": len(artist_controls),
-                  "venueDirectoryControls": len(venue_controls),
-                  "directoriesCovered": directories_covered,
-                  "futureGigsCovered": future_gigs_covered,
-                  "inventoryCovered": inventory_covered,
-              },
-              "requiredBranchesSeen": coverage,
-              "allDiscoveredTasksTerminal": terminal,
-              "queuesClear": queues_clear,
-              "queue": queue,
-          })
-          with open(status_path, "w") as f:
-              json.dump(status, f, indent=2, sort_keys=True)
-
-          if not complete:
-              raise SystemExit("Lemonrock completion invariants did not pass")
-          PY
-
-      - name: Publish sanitised execution evidence
+      - name: Publish sanitised launch evidence
         if: always()
         env:
           JOB_STATUS: ${{ job.status }}
+        shell: bash
         run: |
           set -euo pipefail
           if [ ! -f "$STATUS_FILE" ]; then
             mkdir -p ops
-            jq -n \
-              --arg completedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-              '{phase:"unknown",status:"failed",completedAt:$completedAt,shadow:true,canonicalWritesEnabled:false}' \
+            jq -n --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              '{status:"failed",phase:"unknown",completedAt:$at,shadow:true,canonicalWritesEnabled:false}' \
               > "$STATUS_FILE"
           fi
-          jq --arg jobStatus "$JOB_STATUS" --arg completedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            'if $jobStatus != "success" and .status == "running" then .status = "failed" else . end
-             | .completedAt = (.completedAt // $completedAt)' \
+          jq --arg jobStatus "$JOB_STATUS" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '.workflowStatus = $jobStatus
+             | .updatedAt = $at
+             | if $jobStatus != "success" and .status == "running" then .status = "failed" else . end' \
             "$STATUS_FILE" > "$STATUS_FILE.tmp"
           mv "$STATUS_FILE.tmp" "$STATUS_FILE"
 
           git config user.name "bndy-backline-bot"
           git config user.email "actions@users.noreply.github.com"
           git add "$STATUS_FILE"
-          git commit -m "Record Lemonrock completion reconciliation status" || exit 0
-          if ! git push origin HEAD:main; then
-            git pull --rebase --autostash origin main
-            git push origin HEAD:main
-          fi
+          git commit -m "Record Lemonrock national verification launch" || exit 0
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main
+            git rebase --autostash origin/main
+          done
+          exit 1

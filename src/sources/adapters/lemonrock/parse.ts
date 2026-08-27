@@ -53,10 +53,15 @@ function safeProfileLinks(html: string, sourceUrl: string) {
 
 type GigRefreshWindow = 'hourly' | 'monthly';
 
+function auditTaskFields(run: SourceRunContext): Record<string, unknown> {
+  return run.task?.auditRun === true ? { auditRun: true } : {};
+}
+
 function gigRequests(
   html: string,
   sourceUrl: string,
   refreshWindow: GigRefreshWindow,
+  taskFields: Record<string, unknown> = {},
 ): SourceFanoutRequest[] {
   return uniqueBy(
     anchorsFromHtml(html, sourceUrl)
@@ -68,17 +73,24 @@ function gigRequests(
         anchor.href,
         `lemonrock:gig:${id}`,
         anchor.text,
-        { refreshWindow },
+        { refreshWindow, ...taskFields },
       )),
     (item) => item.taskKey,
   );
 }
 
-function pageRequests(html: string, sourceUrl: string, pathFragment: string, kind: string, sourceId: string): SourceFanoutRequest[] {
+function pageRequests(
+  html: string,
+  sourceUrl: string,
+  pathFragment: string,
+  kind: string,
+  sourceId: string,
+  taskFields: Record<string, unknown> = {},
+): SourceFanoutRequest[] {
   return uniqueBy(
     anchorsFromHtml(html, sourceUrl)
       .filter((anchor) => anchor.href.includes(pathFragment))
-      .map((anchor) => request(sourceId, kind, anchor.href)),
+      .map((anchor) => request(sourceId, kind, anchor.href, undefined, undefined, taskFields)),
     (item) => item.taskKey,
   );
 }
@@ -89,6 +101,7 @@ function directoryPageRequests(
   pathFragment: 'allbands.php' | 'allvenues.php',
   kind: 'artist-index-page' | 'venue-index-page',
   sourceId: 'lemonrock-artist-index' | 'lemonrock-venue-index',
+  taskFields: Record<string, unknown> = {},
 ): SourceFanoutRequest[] {
   return uniqueBy(
     anchorsFromHtml(html, sourceUrl)
@@ -99,7 +112,7 @@ function directoryPageRequests(
         // national inventory includes every discoverable profile, including
         // artists and venues that do not currently advertise a gig.
         url.searchParams.set('all', '1');
-        return request(sourceId, kind, url.toString());
+        return request(sourceId, kind, url.toString(), undefined, undefined, taskFields);
       }),
     (item) => item.taskKey,
   );
@@ -109,6 +122,7 @@ function directoryInventoryControl(
   directoryKind: 'artist' | 'venue',
   html: string,
   sourceUrl: string,
+  taskFields: Record<string, unknown> = {},
 ): SourceFanoutRequest[] {
   const url = new URL(sourceUrl);
   const page = url.searchParams.get('_start');
@@ -128,11 +142,23 @@ function directoryInventoryControl(
     sourceUrl,
     nativeId,
     undefined,
-    { expectedCount, inventoryLevel: 'directory-page', inventoryCountSource, directoryKind, page },
+    {
+      expectedCount,
+      observedCount: profileCount,
+      inventoryLevel: 'directory-page',
+      inventoryCountSource,
+      directoryKind,
+      page,
+      ...taskFields,
+    },
   )];
 }
 
-function gigListingRequests(html: string, sourceUrl: string): SourceFanoutRequest[] {
+function gigListingRequests(
+  html: string,
+  sourceUrl: string,
+  taskFields: Record<string, unknown> = {},
+): SourceFanoutRequest[] {
   return uniqueBy(
     anchorsFromHtml(html, sourceUrl)
       .filter((anchor) => {
@@ -147,20 +173,37 @@ function gigListingRequests(html: string, sourceUrl: string): SourceFanoutReques
           && url.searchParams.has('gigfromdate')
           && url.searchParams.has('listingPeriod');
       })
-      .map((anchor) => request('lemonrock-future-reconcile', 'gig-index', anchor.href)),
+      .map((anchor) => request(
+        'lemonrock-future-reconcile',
+        'gig-index',
+        anchor.href,
+        undefined,
+        undefined,
+        taskFields,
+      )),
     (item) => item.taskKey,
   );
 }
 
-function artistIndex(html: string, sourceUrl: string): ParsedSource {
-  const profiles = safeProfileLinks(html, sourceUrl).map((anchor) => {
+function artistIndex(html: string, sourceUrl: string, run: SourceRunContext): ParsedSource {
+  const auditFields = auditTaskFields(run);
+  const directoryAuditOnly = run.task?.directoryAuditOnly === true;
+  const childFields = { ...auditFields, ...(directoryAuditOnly ? { directoryAuditOnly: true } : {}) };
+  const profiles = directoryAuditOnly ? [] : safeProfileLinks(html, sourceUrl).map((anchor) => {
     const slug = lemonrockSlug(anchor.href)!;
-    return request('lemonrock-artist-hydration', 'artist', anchor.href, `lemonrock:artist:${slug}`, anchor.text);
+    return request(
+      'lemonrock-artist-hydration',
+      'artist',
+      anchor.href,
+      `lemonrock:artist:${slug}`,
+      anchor.text,
+      auditFields,
+    );
   });
   const pages = uniqueBy([
-    ...directoryPageRequests(html, sourceUrl, 'allbands.php', 'artist-index-page', 'lemonrock-artist-index'),
+    ...directoryPageRequests(html, sourceUrl, 'allbands.php', 'artist-index-page', 'lemonrock-artist-index', childFields),
     // Retain compatibility with previously captured advanced-search evidence.
-    ...pageRequests(html, sourceUrl, 'advancedsearchbands.php', 'artist-index-page', 'lemonrock-artist-index'),
+    ...pageRequests(html, sourceUrl, 'advancedsearchbands.php', 'artist-index-page', 'lemonrock-artist-index', childFields),
   ], (item) => item.taskKey);
   const text = textFromHtml(html);
   const total = Number(text.match(/Found\s+([\d,]+)\s+band\/artists?/i)?.[1]?.replace(/,/g, '') ?? '0');
@@ -169,24 +212,49 @@ function artistIndex(html: string, sourceUrl: string): ParsedSource {
     for (let start = 50; start < total; start += 50) {
       const url = new URL(sourceUrl);
       url.searchParams.set('_start', String(start));
-      generated.push(request('lemonrock-artist-index', 'artist-index-page', url.toString()));
+      generated.push(request(
+        'lemonrock-artist-index',
+        'artist-index-page',
+        url.toString(),
+        undefined,
+        undefined,
+        childFields,
+      ));
     }
   }
-  const controls = directoryInventoryControl('artist', html, sourceUrl);
+  const controls = directoryInventoryControl('artist', html, sourceUrl, auditFields);
   return { events: [], nextRequests: uniqueBy([...profiles, ...pages, ...generated, ...controls], (item) => item.taskKey), parked: [], warnings: [] };
 }
 
-function venueIndex(html: string, sourceUrl: string): ParsedSource {
-  const profiles = safeProfileLinks(html, sourceUrl).map((anchor) => {
+function venueIndex(html: string, sourceUrl: string, run: SourceRunContext): ParsedSource {
+  const auditFields = auditTaskFields(run);
+  const directoryAuditOnly = run.task?.directoryAuditOnly === true;
+  const childFields = { ...auditFields, ...(directoryAuditOnly ? { directoryAuditOnly: true } : {}) };
+  const profiles = directoryAuditOnly ? [] : safeProfileLinks(html, sourceUrl).map((anchor) => {
     const slug = lemonrockSlug(anchor.href)!;
-    return request('lemonrock-venue-hydration', 'venue', anchor.href, `lemonrock:venue:${slug}`, anchor.text);
+    return request(
+      'lemonrock-venue-hydration',
+      'venue',
+      anchor.href,
+      `lemonrock:venue:${slug}`,
+      anchor.text,
+      auditFields,
+    );
   });
-  const pages = directoryPageRequests(html, sourceUrl, 'allvenues.php', 'venue-index-page', 'lemonrock-venue-index');
-  const controls = directoryInventoryControl('venue', html, sourceUrl);
+  const pages = directoryPageRequests(
+    html,
+    sourceUrl,
+    'allvenues.php',
+    'venue-index-page',
+    'lemonrock-venue-index',
+    childFields,
+  );
+  const controls = directoryInventoryControl('venue', html, sourceUrl, auditFields);
   return { events: [], nextRequests: uniqueBy([...profiles, ...pages, ...controls], (item) => item.taskKey), parked: [], warnings: [] };
 }
 
-function futureIndex(html: string, sourceUrl: string): ParsedSource {
+function futureIndex(html: string, sourceUrl: string, run: SourceRunContext): ParsedSource {
+  const auditFields = auditTaskFields(run);
   const counties = uniqueBy(
     anchorsFromHtml(html, sourceUrl)
       .filter((anchor) => {
@@ -203,12 +271,14 @@ function futureIndex(html: string, sourceUrl: string): ParsedSource {
           anchor.href,
           undefined,
           undefined,
-          advertised > 0 ? { expectedCount: advertised, inventoryLevel: 'county' } : undefined,
+          advertised > 0
+            ? { expectedCount: advertised, inventoryLevel: 'county', ...auditFields }
+            : auditFields,
         );
       }),
     (item) => item.taskKey,
   );
-  const gigs = gigRequests(html, sourceUrl, 'monthly');
+  const gigs = gigRequests(html, sourceUrl, 'monthly', auditFields);
   return { events: [], nextRequests: uniqueBy([...counties, ...gigs], (item) => item.taskKey), parked: [], warnings: [] };
 }
 
@@ -230,31 +300,47 @@ function futureHealth(html: string, sourceUrl: string): ParsedSource {
 }
 
 function fullReconcile(_html: string, _sourceUrl: string): ParsedSource {
+  const directoryAuditFields = { auditRun: true, directoryAuditOnly: true };
   const roots = [
     request(
       'lemonrock-artist-index',
       'artist-index',
       'https://www.lemonrock.com/allbands.php',
+      undefined,
+      undefined,
+      directoryAuditFields,
     ),
     request(
       'lemonrock-venue-index',
       'venue-index',
       'https://www.lemonrock.com/allvenues.php',
+      undefined,
+      undefined,
+      directoryAuditFields,
     ),
     request(
       'lemonrock-future-reconcile',
       'future-index',
       'https://www.lemonrock.com/gigsbycounty.php',
+      undefined,
+      undefined,
+      { auditRun: true },
     ),
     request(
       'lemonrock-new-gigs',
       'new-gigs',
       'https://www.lemonrock.com/newestgigs.php',
+      undefined,
+      undefined,
+      { auditRun: true },
     ),
     request(
       'lemonrock-cancellations',
       'cancellations',
       'https://www.lemonrock.com/cancellations.php',
+      undefined,
+      undefined,
+      { auditRun: true },
     ),
   ];
   return {
@@ -265,20 +351,28 @@ function fullReconcile(_html: string, _sourceUrl: string): ParsedSource {
   };
 }
 
-function listPage(html: string, sourceUrl: string, kind: string): ParsedSource {
+function listPage(html: string, sourceUrl: string, kind: string, run: SourceRunContext): ParsedSource {
   const fastFeed = kind === 'new-gigs' || kind === 'cancellations';
-  const gigs = gigRequests(html, sourceUrl, fastFeed ? 'hourly' : 'monthly');
+  const auditFields = auditTaskFields(run);
+  const gigs = gigRequests(html, sourceUrl, fastFeed ? 'hourly' : 'monthly', auditFields);
   // Fast feeds deliberately stop at the gig links on the current page. Following
   // global town/date navigation from every hourly scan would recreate the full
   // national crawl 1,440 times per month.
   const pages = fastFeed ? [] : uniqueBy([
-    ...gigListingRequests(html, sourceUrl),
+    ...gigListingRequests(html, sourceUrl, auditFields),
     ...anchorsFromHtml(html, sourceUrl)
       .filter((anchor) => {
         const url = new URL(anchor.href);
         return url.pathname === new URL(sourceUrl).pathname && url.search !== new URL(sourceUrl).search && /(?:start|page|offset|date|period)/i.test(url.search);
       })
-      .map((anchor) => request('lemonrock-future-reconcile', 'gig-index', anchor.href)),
+      .map((anchor) => request(
+        'lemonrock-future-reconcile',
+        'gig-index',
+        anchor.href,
+        undefined,
+        undefined,
+        auditFields,
+      )),
   ], (item) => item.taskKey);
   return { events: [], nextRequests: uniqueBy([...gigs, ...pages], (item) => item.taskKey), parked: [], warnings: gigs.length ? [] : ['No gig detail links discovered on Lemonrock listing page'] };
 }
@@ -377,7 +471,7 @@ function profileEntity(kind: 'artist' | 'venue', html: string, sourceUrl: string
   return { entityType: kind, sourceEntityKey, sourceNativeId: sourceEntityKey, displayName, sourceUrl, confidence: 1, claims };
 }
 
-function parseGig(html: string, sourceUrl: string): ParsedSource {
+function parseGig(html: string, sourceUrl: string, run: SourceRunContext): ParsedSource {
   const id = gigId(sourceUrl);
   if (!id) throw new Error(`Lemonrock gig URL has no numeric id: ${sourceUrl}`);
   const text = textFromHtml(html);
@@ -427,8 +521,23 @@ function parseGig(html: string, sourceUrl: string): ParsedSource {
     claims,
   };
   const nextRequests: SourceFanoutRequest[] = [];
-  if (artistAnchor && artistSlug) nextRequests.push(request('lemonrock-artist-hydration', 'artist', artistAnchor.href, `lemonrock:artist:${artistSlug}`, artistName));
-  if (venueAnchor && venueSlug) nextRequests.push(request('lemonrock-venue-hydration', 'venue', venueAnchor.href, `lemonrock:venue:${venueSlug}`, venueName));
+  const auditFields = auditTaskFields(run);
+  if (artistAnchor && artistSlug) nextRequests.push(request(
+    'lemonrock-artist-hydration',
+    'artist',
+    artistAnchor.href,
+    `lemonrock:artist:${artistSlug}`,
+    artistName,
+    auditFields,
+  ));
+  if (venueAnchor && venueSlug) nextRequests.push(request(
+    'lemonrock-venue-hydration',
+    'venue',
+    venueAnchor.href,
+    `lemonrock:venue:${venueSlug}`,
+    venueName,
+    auditFields,
+  ));
   const warnings: string[] = [];
   if (!date) warnings.push(`Gig ${id} has no parseable date`);
   if (!artistName) warnings.push(`Gig ${id} has no parseable artist name`);
@@ -448,13 +557,13 @@ export function parseLemonrock(html: string, sourceUrl: string, run: SourceRunCo
   if (kind === 'artist-inventory-control' || kind === 'venue-inventory-control') {
     return { events: [], nextRequests: [], parked: [], warnings: [] };
   }
-  if (kind === 'artist-index' || kind === 'artist-index-page') return artistIndex(html, sourceUrl);
-  if (kind === 'venue-index' || kind === 'venue-index-page') return venueIndex(html, sourceUrl);
+  if (kind === 'artist-index' || kind === 'artist-index-page') return artistIndex(html, sourceUrl, run);
+  if (kind === 'venue-index' || kind === 'venue-index-page') return venueIndex(html, sourceUrl, run);
   if (kind === 'full-reconcile') return fullReconcile(html, sourceUrl);
   if (kind === 'future-health') return futureHealth(html, sourceUrl);
-  if (kind === 'future-index') return futureIndex(html, sourceUrl);
-  if (kind === 'gig-index' || kind === 'new-gigs' || kind === 'cancellations') return listPage(html, sourceUrl, kind);
-  if (kind === 'gig') return parseGig(html, sourceUrl);
+  if (kind === 'future-index') return futureIndex(html, sourceUrl, run);
+  if (kind === 'gig-index' || kind === 'new-gigs' || kind === 'cancellations') return listPage(html, sourceUrl, kind, run);
+  if (kind === 'gig') return parseGig(html, sourceUrl, run);
   if (kind === 'artist') return parseProfile('artist', html, sourceUrl, run);
   if (kind === 'venue') return parseProfile('venue', html, sourceUrl, run);
   return { events: [], parked: [{ reason: `Unsupported Lemonrock task kind: ${kind}` }], warnings: [] };
