@@ -50,6 +50,9 @@ describe('Lemonrock low-cost schedules', () => {
     expect(workflow).toContain('visibility-timeout 0');
     expect(workflow).toContain('automaticReplay:false');
     expect(workflow).toContain('canonicalWritesEnabled:false');
+    expect(workflow).toContain('if [ "$EXPECTED_MESSAGES" -eq 0 ]; then');
+    expect(workflow).toContain('queue_evidence_confirmations');
+    expect(workflow).toContain('COMPLETED_BY_QUEUE_EVIDENCE');
     expect(workflow).not.toContain('purge-queue');
   });
 
