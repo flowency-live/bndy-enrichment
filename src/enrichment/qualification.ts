@@ -12,13 +12,22 @@ export type EnrichmentQualificationCase = {
   entity: CanonicalEntitySnapshot;
   requestedPredicates: ClaimPredicate[];
   bundle: EnrichmentEvidenceBundle;
+  /**
+   * Hard-negative cases are expected to abstain by returning identityConfidence
+   * below the processor's 0.98 identity threshold. Older fixtures default to a
+   * positive match so the contract remains backwards compatible.
+   */
+  expectedIdentity?: 'match' | 'park';
 };
 
 export type EnrichmentQualificationThresholds = {
   minCases: number;
   minArtistCases: number;
   minVenueCases: number;
-  maxIdentityParkedCases: number;
+  minArtistParkCases: number;
+  minVenueParkCases: number;
+  maxFalsePositiveIdentityCases: number;
+  maxFalseNegativeIdentityCases: number;
   maxUnsafeFacts: number;
   maxBudgetViolationCases: number;
   maxMissingUsageCases: number;
@@ -29,7 +38,10 @@ export const DEFAULT_ENRICHMENT_QUALIFICATION_THRESHOLDS: EnrichmentQualificatio
   minCases: 20,
   minArtistCases: 5,
   minVenueCases: 5,
-  maxIdentityParkedCases: 0,
+  minArtistParkCases: 2,
+  minVenueParkCases: 2,
+  maxFalsePositiveIdentityCases: 0,
+  maxFalseNegativeIdentityCases: 0,
   maxUnsafeFacts: 0,
   maxBudgetViolationCases: 0,
   maxMissingUsageCases: 0,
@@ -46,6 +58,12 @@ export type EnrichmentQualificationReport = {
   reviewFacts: number;
   unsafeFacts: number;
   identityParkedCases: number;
+  expectedMatchCases: number;
+  expectedParkCases: number;
+  artistParkCases: number;
+  venueParkCases: number;
+  falsePositiveIdentityCases: number;
+  falseNegativeIdentityCases: number;
   missingUsageCases: number;
   budgetViolationCases: number;
   requestedPredicates: number;
@@ -85,6 +103,12 @@ export function qualifyEnrichmentProvider(
   let reviewFacts = 0;
   let unsafeFacts = 0;
   let identityParkedCases = 0;
+  let expectedMatchCases = 0;
+  let expectedParkCases = 0;
+  let artistParkCases = 0;
+  let venueParkCases = 0;
+  let falsePositiveIdentityCases = 0;
+  let falseNegativeIdentityCases = 0;
   let missingUsageCases = 0;
   let budgetViolationCases = 0;
   let requestedPredicates = 0;
@@ -96,9 +120,20 @@ export function qualifyEnrichmentProvider(
     if (!rawCase.caseId) throw new Error('Enrichment qualification caseId is required');
     const entity = CanonicalEntitySnapshotSchema.parse(rawCase.entity);
     const bundle = EnrichmentEvidenceBundleSchema.parse(rawCase.bundle);
+    const expectedIdentity = rawCase.expectedIdentity ?? 'match';
+    const identityParked = bundle.identityConfidence < 0.98;
     if (entity.entityType === 'artist') artistCases += 1;
     else venueCases += 1;
-    if (bundle.identityConfidence < 0.98) identityParkedCases += 1;
+    if (identityParked) identityParkedCases += 1;
+    if (expectedIdentity === 'park') {
+      expectedParkCases += 1;
+      if (entity.entityType === 'artist') artistParkCases += 1;
+      else venueParkCases += 1;
+      if (!identityParked) falsePositiveIdentityCases += 1;
+    } else {
+      expectedMatchCases += 1;
+      if (identityParked) falseNegativeIdentityCases += 1;
+    }
     if (!bundle.usage) missingUsageCases += 1;
     else {
       if (usageOverBudget(bundle)) budgetViolationCases += 1;
@@ -117,10 +152,12 @@ export function qualifyEnrichmentProvider(
     unsafeFacts += independentlyAssessedFacts
       .filter((fact) => fact.reason && UNSAFE_REASONS.has(fact.reason)).length;
 
-    const suppliedPredicates = new Set(bundle.facts.map((fact) => fact.predicate));
-    const requested = [...new Set(rawCase.requestedPredicates)];
-    requestedPredicates += requested.length;
-    coveredRequestedPredicates += requested.filter((predicate) => suppliedPredicates.has(predicate)).length;
+    if (expectedIdentity === 'match') {
+      const suppliedPredicates = new Set(bundle.facts.map((fact) => fact.predicate));
+      const requested = [...new Set(rawCase.requestedPredicates)];
+      requestedPredicates += requested.length;
+      coveredRequestedPredicates += requested.filter((predicate) => suppliedPredicates.has(predicate)).length;
+    }
   }
 
   const requestedPredicateCoverage = requestedPredicates
@@ -130,7 +167,10 @@ export function qualifyEnrichmentProvider(
   if (rawCases.length < thresholds.minCases) reasons.push('insufficient-total-cases');
   if (artistCases < thresholds.minArtistCases) reasons.push('insufficient-artist-cases');
   if (venueCases < thresholds.minVenueCases) reasons.push('insufficient-venue-cases');
-  if (identityParkedCases > thresholds.maxIdentityParkedCases) reasons.push('identity-park-rate-too-high');
+  if (artistParkCases < thresholds.minArtistParkCases) reasons.push('insufficient-artist-park-cases');
+  if (venueParkCases < thresholds.minVenueParkCases) reasons.push('insufficient-venue-park-cases');
+  if (falsePositiveIdentityCases > thresholds.maxFalsePositiveIdentityCases) reasons.push('false-positive-identities-present');
+  if (falseNegativeIdentityCases > thresholds.maxFalseNegativeIdentityCases) reasons.push('false-negative-identities-present');
   if (unsafeFacts > thresholds.maxUnsafeFacts) reasons.push('unsafe-facts-present');
   if (budgetViolationCases > thresholds.maxBudgetViolationCases) reasons.push('per-item-budget-violations');
   if (missingUsageCases > thresholds.maxMissingUsageCases) reasons.push('missing-provider-usage');
@@ -146,6 +186,12 @@ export function qualifyEnrichmentProvider(
     reviewFacts,
     unsafeFacts,
     identityParkedCases,
+    expectedMatchCases,
+    expectedParkCases,
+    artistParkCases,
+    venueParkCases,
+    falsePositiveIdentityCases,
+    falseNegativeIdentityCases,
     missingUsageCases,
     budgetViolationCases,
     requestedPredicates,
