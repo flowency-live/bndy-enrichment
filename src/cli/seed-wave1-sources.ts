@@ -35,6 +35,9 @@ export function waveOneSources(now = new Date()): GigSource[] {
     }, now),
     withNext({
       ...safeDefaults,
+      enabled: true,
+      shadow: true,
+      writerAuthority: 'cowork',
       id: 'klma-stoke-gig-list',
       name: 'KLMA Stoke Gig List',
       type: 'CURATED_SOURCE',
