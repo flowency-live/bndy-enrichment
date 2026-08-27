@@ -23,14 +23,13 @@
   },
   "workflowStatus": "success",
   "updatedAt": "2026-08-27T10:40:54Z",
-  "lastManifestAt": "2026-08-27T19:37:14.378154+00:00",
+  "lastManifestAt": "2026-08-27T19:41:19.169675+00:00",
   "latestManifest": {
     "status": "incomplete",
     "tasksByStatus": {
-      "completed": 19277,
-      "failed": 939,
-      "queued": 6895,
-      "running": 1
+      "completed": 19494,
+      "failed": 943,
+      "queued": 6675
     },
     "completenessControls": {
       "advertisedArtists": 10533,
@@ -55,10 +54,10 @@
     },
     "queue": {
       "deadLetterInFlight": 0,
-      "deadLetterVisible": 448,
+      "deadLetterVisible": 531,
       "delayed": 0,
-      "inFlight": 518,
-      "visible": 7142
+      "inFlight": 465,
+      "visible": 6884
     }
   }
 }

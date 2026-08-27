@@ -27,7 +27,7 @@
   "discoveredTasks": 27112,
   "failedTaskSummary": [
     {
-      "count": 935,
+      "count": 939,
       "errorClass": "FETCH",
       "sourceId": "lemonrock-future-reconcile",
       "taskKind": "gig-index"
@@ -39,13 +39,13 @@
       "taskKind": "gig"
     }
   ],
-  "generatedAt": "2026-08-27T19:37:14.378154+00:00",
+  "generatedAt": "2026-08-27T19:41:19.169675+00:00",
   "queue": {
     "deadLetterInFlight": 0,
-    "deadLetterVisible": 448,
+    "deadLetterVisible": 531,
     "delayed": 0,
-    "inFlight": 518,
-    "visible": 7142
+    "inFlight": 465,
+    "visible": 6884
   },
   "queuesClear": false,
   "reconciliationId": "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4",
@@ -91,10 +91,9 @@
     "lemonrock-venue-index": 56
   },
   "tasksByStatus": {
-    "completed": 19277,
-    "failed": 939,
-    "queued": 6895,
-    "running": 1
+    "completed": 19494,
+    "failed": 943,
+    "queued": 6675
   },
   "verificationMode": "national-gig-led"
 }
