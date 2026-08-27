@@ -1,3 +1,4 @@
 Purpose: trigger the bounded Lemonrock national verification from the tested main revision.
 Mode: shadow evidence and claims only; canonical writes disabled.
 Requested: 2026-08-27 UTC.
+Preflight retry: historical delivery copies are retained outside the active DLQ; source queue and DLQ are both zero.
