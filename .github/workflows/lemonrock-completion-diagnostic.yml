@@ -10,6 +10,10 @@ permissions:
   contents: write
   id-token: write
 
+concurrency:
+  group: lemonrock-completion-diagnostic
+  cancel-in-progress: true
+
 jobs:
   diagnose:
     runs-on: ubuntu-latest
@@ -39,7 +43,7 @@ jobs:
 
           aws dynamodb query             --table-name "$state_table"             --key-condition-expression "pk = :pk AND begins_with(sk, :prefix)"             --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#lemonrock"},":prefix":{"S":"TASK#"}}'             --projection-expression "pk, sk, sourceId, taskKind, taskKey, logicalTaskKey, #st, queuedAt, startedAt, completedAt, failedAt, updatedAt, lastError, task"             --expression-attribute-names '{"#st":"status"}'             --output json > "$tmp_dir/tasks.json"
 
-          aws dynamodb scan             --table-name "$state_table"             --filter-expression "begins_with(pk, :prefix) AND sk = :state"             --expression-attribute-values '{":prefix":{"S":"SOURCE#lemonrock-"},":state":{"S":"STATE"}}'             --projection-expression "pk, sk, sourceId, lastRunAt, lastSuccessfulRunAt, lastFailureAt, consecutiveFailures"             --output json > "$tmp_dir/source-state.json"
+          aws dynamodb get-item             --table-name "$state_table"             --key '{"pk":{"S":"SOURCE#lemonrock-full-reconcile"},"sk":{"S":"STATE"}}'             --projection-expression "pk, sk, sourceId, lastRunAt, lastSuccessfulRunAt, lastFailureAt, consecutiveFailures"             --output json             | jq '{Items: [(.Item // {})]}' > "$tmp_dir/source-state.json"
 
           aws sqs get-queue-attributes             --queue-url "$queue_url"             --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed RedrivePolicy             --output json > "$tmp_dir/queue.json"
           dlq_name=$(jq -r '.Attributes.RedrivePolicy | fromjson | .deadLetterTargetArn | split(":")[-1]' "$tmp_dir/queue.json")
