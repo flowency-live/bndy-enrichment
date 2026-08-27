@@ -297,6 +297,14 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
     return { status: 'shadow', sourceId: item.sourceId, candidateKey: item.candidateKey, action: item.action, message: reason };
   }
 
+  if (source.id === 'klma-stoke-gig-list' && !source.projectionPolicy) {
+    return await handledException(item, 'KLMA projection requires an explicit source projection policy', deps);
+  }
+  const additiveOnly = source.projectionPolicy?.mode === 'additive-only';
+  if (additiveOnly && item.action !== 'create') {
+    return await handledException(item, `Additive-only projection blocks ${item.action}`, deps);
+  }
+
   try {
     if (item.action === 'cancel' || item.action === 'withdraw') {
       let eventId = previous?.eventId;
@@ -378,6 +386,9 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
 
     const tombstone = await deps.tombstones.get(artist.id, venue.id, candidate.date);
     const proposedClaim = claims.find((claim) => item.claimIds.includes(claim.id));
+    if (additiveOnly && tombstone?.status === 'active') {
+      return await handledException(item, 'Additive-only projection will not reinstate a tombstoned Event', deps);
+    }
     if (tombstone?.status === 'active') {
       const evaluation = deps.authority.evaluate({
         predicate: 'hasStatus',
@@ -423,7 +434,7 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
       return await handledException(item, mutationEvaluation.reason, deps);
     }
 
-    if (!eventCreated && (item.action === 'update' || item.action === 'create')) {
+    if (!additiveOnly && !eventCreated && (item.action === 'update' || item.action === 'create')) {
       await deps.api.updateEvent(eventId!, updatePayload(candidate, artist.id, venue.id, event));
       event = await deps.api.getEvent(eventId!);
     }

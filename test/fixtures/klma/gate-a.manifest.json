@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "klma-stoke-gig-list",
+  "runDate": "2026-06-13",
+  "fixture": "source-2026-06-13.gviz-raw.csv",
+  "evidenceSha256": "c036562d71f063a5394c0c5d2d7b45896426ad40b25be028fe3b343e91cd663d",
+  "donor": {
+    "rawRows": 500,
+    "acceptedEvents": 378,
+    "parkedRows": 122,
+    "parkedByReason": {
+      "form_metadata": 19,
+      "multi_act": 24,
+      "non_artist_event": 8,
+      "specialist_venue": 70,
+      "unparseable": 1
+    }
+  },
+  "backline": {
+    "acceptedEvents": 353,
+    "entityProfiles": 326,
+    "parkedRows": 147,
+    "parkedByReason": {
+      "ambiguous_venue_location": 20,
+      "duplicate_source_row": 1,
+      "form_metadata": 19,
+      "multi_act": 24,
+      "non_artist_event": 8,
+      "source_identity_collision": 4,
+      "specialist_venue": 70,
+      "unparseable": 1
+    },
+    "distinctArtists": 145,
+    "distinctVenues": 181
+  },
+  "classifiedDifferences": [
+    {
+      "classification": "EXPECTED_RULE_CHANGE",
+      "reason": "ambiguous_venue_location",
+      "rows": 20,
+      "decision": "Park instead of defaulting an unverified Venue locality to Stoke-on-Trent."
+    },
+    {
+      "classification": "EXPECTED_RULE_CHANGE",
+      "reason": "source_identity_collision",
+      "rows": 4,
+      "decision": "Park every row when date, canonical Venue and Artist collide but material fields differ."
+    },
+    {
+      "classification": "EXPECTED_RULE_CHANGE",
+      "reason": "duplicate_source_row",
+      "rows": 1,
+      "decision": "Accept one identical row and park the repeated copy."
+    }
+  ],
+  "unresolvedVenueRows": {
+    "Cheshire County Showground": 1,
+    "Grumpy Bastards Motorcycles": 1,
+    "Holditch Club": 1,
+    "Lymelight Boulevard.": 1,
+    "The Albert": 1,
+    "The Ashcombury Music Festival": 1,
+    "The Black Cock Inn": 1,
+    "The Britannia Inn": 1,
+    "The Carlton": 1,
+    "The Linley Tavern": 1,
+    "The Old Bulldog": 1,
+    "The Old Star": 1,
+    "The Park Inn.": 1,
+    "The Quarter @ Potbank": 1,
+    "The Wellington Inn": 1,
+    "Waggon & Horses": 1,
+    "Ye Olde Crown": 2,
+    "Ye Olde Rose & Crown": 1,
+    "Ye olde crown": 1
+  },
+  "cutoverReady": false,
+  "blockingReason": "Gate A needs an operator decision for the 20 historically ambiguous Venue-locality rows and four source-identity collision rows."
+}

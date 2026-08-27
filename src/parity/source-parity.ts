@@ -45,6 +45,7 @@ export type SourceParityArtifact = {
   evidenceSha256: string;
   events: ComparableParityEvent[];
   parkedByReason: Record<string, number>;
+  parkedRows?: Array<{ reason: string; rawSha256: string }>;
   diff?: ParityDiffSummary;
   provenance?: Record<string, string>;
 };
@@ -94,6 +95,15 @@ function parkedSummary(parsed: ParsedSource): Record<string, number> {
   return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)));
 }
 
+function parkedRows(parsed: ParsedSource): Array<{ reason: string; rawSha256: string }> {
+  return parsed.parked
+    .map((item) => ({
+      reason: item.reason,
+      rawSha256: createHash('sha256').update(stable(item.raw ?? null)).digest('hex'),
+    }))
+    .sort((a, b) => `${a.reason}:${a.rawSha256}`.localeCompare(`${b.reason}:${b.rawSha256}`));
+}
+
 function keys(events: NormalisedSourceEvent[]): string[] {
   return events.map((event) => event.sourceEventKey).sort();
 }
@@ -125,6 +135,7 @@ export function buildParityArtifact(input: {
     evidenceSha256: createHash('sha256').update(body).digest('hex'),
     events: input.parsed.events.map(eventForParity).sort((a, b) => a.sourceEventKey.localeCompare(b.sourceEventKey)),
     parkedByReason: parkedSummary(input.parsed),
+    parkedRows: parkedRows(input.parsed),
     ...(input.diff ? { diff: summariseDiff(input.diff) } : {}),
     ...(input.provenance ? { provenance: input.provenance } : {}),
   };
@@ -212,6 +223,10 @@ export function compareParityArtifacts(
 
   if (stable(expected.parkedByReason) !== stable(actual.parkedByReason)) {
     pushDifference(differences, 'DEFECT', 'parkedByReason', expected.parkedByReason, actual.parkedByReason, expectedRuleChanges);
+  }
+  if (expected.parkedRows !== undefined && actual.parkedRows !== undefined
+    && stable(expected.parkedRows) !== stable(actual.parkedRows)) {
+    pushDifference(differences, 'DEFECT', 'parkedRows', expected.parkedRows, actual.parkedRows, expectedRuleChanges);
   }
   if (stable(expected.diff) !== stable(actual.diff)) {
     pushDifference(differences, 'DEFECT', 'diff', expected.diff, actual.diff, expectedRuleChanges);

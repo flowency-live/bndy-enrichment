@@ -1,14 +1,13 @@
 import type { GigSource } from '../../../knowledge/types.js';
 import {
   hasKlmaCsvShape,
+  klmaRowParkingReason,
   KLMA_EXPORT_URL,
   KLMA_GVIZ_URL,
   normaliseKlmaRows,
   parseKlmaCsv,
-  parseKlmaDate,
-  realignGvizCsv,
+  prepareKlmaCsv,
   type KlmaNormalisedEvent,
-  type KlmaRawRow,
 } from '../../../vertical-slice/klma-source.js';
 import type { AcquisitionRouter } from '../../runner/acquisition.js';
 import { registerSourceAdapter, type SourceAdapter } from '../../runner/adapter.js';
@@ -22,17 +21,11 @@ import type {
 
 export const KLMA_ADAPTER_ID = 'klma-stoke';
 
-function requiresGvizRealignment(body: string): boolean {
-  const firstLine = body.split(/\r?\n/, 1)[0] ?? '';
-  return firstLine.startsWith(',') || firstLine.startsWith('"",');
-}
-
-function fetched(body: string, source: FetchedSource, sourceUrl: string, fetchMethod: string): FetchedSource {
-  if (!hasKlmaCsvShape(body)) throw new Error(`KLMA structural gate failed for ${fetchMethod}: expected Date, Artist and Venue columns`);
+function fetched(source: FetchedSource, sourceUrl: string, fetchMethod: string): FetchedSource {
+  if (!hasKlmaCsvShape(source.body)) throw new Error(`KLMA structural gate failed for ${fetchMethod}: expected Date, Artist and Venue columns`);
   return {
     ...source,
     kind: 'csv',
-    body,
     sourceUrl,
     fetchMethod,
     complete: true,
@@ -52,8 +45,7 @@ async function acquireCsv(acquisition: AcquisitionRouter): Promise<FetchedSource
       fetchMethod: 'google-sheets-export-csv',
       followRedirects: true,
     });
-    const body = requiresGvizRealignment(primary.body) ? realignGvizCsv(primary.body) : primary.body;
-    return fetched(body, primary, KLMA_EXPORT_URL, 'google-sheets-export-csv');
+    return fetched(primary, KLMA_EXPORT_URL, 'google-sheets-export-csv');
   } catch (primaryError) {
     const fallback = await acquisition.acquire({
       url: KLMA_GVIZ_URL,
@@ -65,7 +57,7 @@ async function acquireCsv(acquisition: AcquisitionRouter): Promise<FetchedSource
       followRedirects: true,
     });
     try {
-      return fetched(realignGvizCsv(fallback.body), fallback, KLMA_GVIZ_URL, 'google-sheets-gviz-csv');
+      return fetched(fallback, KLMA_GVIZ_URL, 'google-sheets-gviz-csv');
     } catch (fallbackError) {
       const first = primaryError instanceof Error ? primaryError.message : String(primaryError);
       const second = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
@@ -132,13 +124,44 @@ function entityRows(events: KlmaNormalisedEvent[]): NormalisedSourceEntity[] {
   return [...artists.values(), ...venues.values()];
 }
 
-function parkedReason(row: KlmaRawRow, runDate: string): string {
-  if (!row.artist || !row.venue) return 'missing_artist_or_venue';
-  const date = parseKlmaDate(row.date);
-  if (!date) return 'invalid_date';
-  if (date < runDate) return 'past_event';
-  if (/you can add|keep live music alive|@everyone/i.test(`${row.artist} ${row.venue}`)) return 'non_gig_notice';
-  return 'unparsed_row';
+function eventSignature(event: KlmaNormalisedEvent): string {
+  return JSON.stringify({
+    artistName: event.artistName,
+    venueName: event.venueName,
+    date: event.date,
+    startTime: event.startTime,
+    genre: event.genre,
+    eventUrl: event.eventUrl,
+  });
+}
+
+function deduplicateEvents(events: KlmaNormalisedEvent[]): {
+  accepted: KlmaNormalisedEvent[];
+  parkedByRowRef: Map<string, string>;
+} {
+  const groups = new Map<string, KlmaNormalisedEvent[]>();
+  for (const event of events) {
+    const group = groups.get(event.sourceEventKey) ?? [];
+    group.push(event);
+    groups.set(event.sourceEventKey, group);
+  }
+
+  const accepted: KlmaNormalisedEvent[] = [];
+  const parkedByRowRef = new Map<string, string>();
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      accepted.push(group[0]!);
+      continue;
+    }
+    const signatures = new Set(group.map(eventSignature));
+    if (signatures.size === 1) {
+      accepted.push(group[0]!);
+      for (const duplicate of group.slice(1)) parkedByRowRef.set(duplicate.rawRowRef, 'duplicate_source_row');
+      continue;
+    }
+    for (const collision of group) parkedByRowRef.set(collision.rawRowRef, 'source_identity_collision');
+  }
+  return { accepted, parkedByRowRef };
 }
 
 export const klmaAdapter: SourceAdapter = {
@@ -147,13 +170,19 @@ export const klmaAdapter: SourceAdapter = {
   },
 
   async parse(_config: GigSource, run: SourceRunContext, raw: FetchedSource): Promise<ParsedSource> {
-    if (!hasKlmaCsvShape(raw.body)) throw new Error('KLMA structural gate failed: expected Date, Artist and Venue columns');
-    const rows = parseKlmaCsv(raw.body);
-    const events = normaliseKlmaRows(rows, run.runDate);
+    const prepared = prepareKlmaCsv(raw.body);
+    const rows = parseKlmaCsv(prepared);
+    const normalised = normaliseKlmaRows(rows, run.runDate);
+    const { accepted: events, parkedByRowRef } = deduplicateEvents(normalised);
     const acceptedRows = new Set(events.map((event) => event.rawRowRef));
     const parked = rows
       .filter((row) => !acceptedRows.has(`row:${row.rowIndex}`))
-      .map((row) => ({ reason: parkedReason(row, run.runDate), raw: { rowIndex: row.rowIndex } }));
+      .map((row) => ({
+        reason: parkedByRowRef.get(`row:${row.rowIndex}`)
+          ?? klmaRowParkingReason(row, run.runDate)
+          ?? 'unparsed_row',
+        raw: row,
+      }));
     return {
       events: events.map(eventRow),
       entities: entityRows(events),

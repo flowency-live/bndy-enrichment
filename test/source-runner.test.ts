@@ -63,8 +63,8 @@ class MemoryArtifacts implements SourceRunArtifactStore {
   async loadNormalised(): Promise<NormalisedSourceEvent[]> { return this.prior; }
 }
 
-function fixtureDependencies(captureComplete: boolean) {
-  const source = config();
+function fixtureDependencies(captureComplete: boolean, sourceOverrides: Partial<GigSource> = {}) {
+  const source = config(sourceOverrides);
   const prior = [event('e1', 'old'), event('e3', 'gone')];
   const current = [event('e1', 'new'), event('e2', 'new')];
   const artifacts = new MemoryArtifacts(prior);
@@ -212,6 +212,50 @@ describe('target Source Runner', () => {
     const result = await runSource({ sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z' }, fx.deps);
     expect(result.projectionWorkItems.find((entry) => entry.candidateKey.endsWith(':e2'))?.action).toBe('cancel');
     expect(result.projectionWorkItems.find((entry) => entry.candidateKey.endsWith(':e3'))?.action).toBe('withdraw');
+  });
+
+  it('enforces additive-only projection while retaining the full diff for parity', async () => {
+    const fx = fixtureDependencies(true, { projectionPolicy: { mode: 'additive-only' } });
+    const result = await runSource({
+      sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z',
+    }, fx.deps);
+
+    expect(result.diff).toMatchObject({
+      added: [expect.objectContaining({ sourceEventKey: 'e2' })],
+      updated: [expect.objectContaining({ sourceEventKey: 'e1' })],
+      withdrawn: [expect.objectContaining({ sourceEventKey: 'e3' })],
+    });
+    expect(result.projectionWorkItems.map((entry) => entry.action)).toEqual(['create']);
+    expect(fx.claims.some((claim) => claim.value === 'absent-from-complete-snapshot')).toBe(false);
+    expect(result.report.warnings).toContain('Projection policy blocked actions: {"update":1,"withdraw":1}');
+  });
+
+  it('builds a bounded additive bootstrap from every accepted row only on a manual run', async () => {
+    const fx = fixtureDependencies(true, {
+      projectionPolicy: { mode: 'additive-only', maxProjectionActionsPerRun: 2 },
+    });
+    const result = await runSource({
+      sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z',
+      task: { projectionBootstrap: true },
+    }, fx.deps);
+
+    expect(result.projectionWorkItems).toHaveLength(2);
+    expect(result.projectionWorkItems.every((entry) => entry.action === 'create')).toBe(true);
+    expect(result.projectionWorkItems.every((entry) => entry.runItemCount === 2)).toBe(true);
+  });
+
+  it('fails before publishing when the accepted-event volume is outside the source guard', async () => {
+    const fx = fixtureDependencies(true, {
+      projectionPolicy: { mode: 'additive-only', maxAcceptedEventsPerRun: 1 },
+    });
+    const result = await runSource({
+      sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z',
+    }, fx.deps);
+
+    expect(result.report.status).toBe('failed');
+    expect(result.report.errors[0]?.message).toContain('Source volume gate failed');
+    expect(fx.projection).toHaveLength(0);
+    expect(fx.observations).toHaveLength(0);
   });
 });
 

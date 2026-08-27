@@ -224,23 +224,42 @@ export function buildProjectionWork(
   observation: SourceObservation,
   diff: SourceEventDiff,
   claimsByCandidate: Map<string, KnowledgeClaim[]>,
-): { workItems: ProjectionWorkItem[]; withdrawalClaims: KnowledgeClaim[] } {
+  options: { mode?: 'full' | 'additive-only'; bootstrap?: boolean } = {},
+): {
+  workItems: ProjectionWorkItem[];
+  withdrawalClaims: KnowledgeClaim[];
+  blocked: Array<{ sourceEventKey: string; action: ProjectionAction }>;
+} {
   const workItems: ProjectionWorkItem[] = [];
   const withdrawalClaims: KnowledgeClaim[] = [];
+  const blocked: Array<{ sourceEventKey: string; action: ProjectionAction }> = [];
+  const mode = options.mode ?? 'full';
+  const added = options.bootstrap
+    ? [...diff.added, ...diff.updated, ...diff.unchanged]
+    : diff.added;
 
-  for (const event of diff.added) {
+  for (const event of added) {
     const claimIds = (claimsByCandidate.get(eventCandidateKey(observation.sourceId, event.sourceEventKey)) ?? []).map((claim) => claim.id);
-    workItems.push(workItem(observation, event, explicitlyCancelled(event) ? 'cancel' : 'create', claimIds));
+    const action = explicitlyCancelled(event) ? 'cancel' : 'create';
+    if (mode === 'additive-only' && action !== 'create') blocked.push({ sourceEventKey: event.sourceEventKey, action });
+    else workItems.push(workItem(observation, event, action, claimIds));
   }
   for (const event of diff.updated) {
+    if (options.bootstrap) continue;
     const claimIds = (claimsByCandidate.get(eventCandidateKey(observation.sourceId, event.sourceEventKey)) ?? []).map((claim) => claim.id);
-    workItems.push(workItem(observation, event, explicitlyCancelled(event) ? 'cancel' : 'update', claimIds));
+    const action = explicitlyCancelled(event) ? 'cancel' : 'update';
+    if (mode === 'additive-only') blocked.push({ sourceEventKey: event.sourceEventKey, action });
+    else workItems.push(workItem(observation, event, action, claimIds));
   }
   for (const prior of diff.withdrawn) {
+    if (mode === 'additive-only') {
+      blocked.push({ sourceEventKey: prior.sourceEventKey, action: 'withdraw' });
+      continue;
+    }
     const withdrawal = buildWithdrawalClaim(observation, prior);
     withdrawalClaims.push(withdrawal);
     workItems.push(workItem(observation, prior, 'withdraw', [withdrawal.id]));
   }
 
-  return { workItems, withdrawalClaims };
+  return { workItems, withdrawalClaims, blocked };
 }

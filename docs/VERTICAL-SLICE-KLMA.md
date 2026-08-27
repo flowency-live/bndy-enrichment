@@ -151,12 +151,16 @@ The generic adapter:
 
 - acquires the Google Sheets export CSV through the standard SSRF-checked HTTP router;
 - falls back to the gviz CSV only when export acquisition or structural validation fails;
-- requires recognisable Date, Artist and Venue columns before treating a capture as complete;
+- accepts the live headerless/helper-column export only after multiple rows prove the expected Date, Artist and Venue shape;
+- preserves the exact fetched body as immutable evidence and prepares the six-column parser input only in memory;
 - parses UK dates without depending on the Lambda host timezone;
 - preserves deterministic KLMA event, Artist and Venue source identities;
-- parks invalid, past and non-gig rows with explicit reasons;
+- uses the reviewed donor Venue aliases and locality evidence;
+- parks invalid, past, specialist, multi-act, duplicate, identity-collision and ambiguous-locality rows with explicit reasons;
 - emits Artist/Venue candidate Claims alongside event Claims;
 - remains shadowed and produces no canonical writes.
+
+The initial writer policy is additive-only. It can create or match an Event and verify the read-back, but it cannot update, cancel, hide, restore or uncancel an Event. A manual bounded bootstrap can propose every accepted current row after shadow parity; scheduled runs cannot request bootstrap mode. The full checklist and machine-checked Gate A manifest are in `docs/cutover/klma.md` and `test/fixtures/klma/gate-a.manifest.json`.
 
 Production authority transfers only after:
 
