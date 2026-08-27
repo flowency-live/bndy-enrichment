@@ -23,4 +23,17 @@ describe('Lemonrock national manifest directory gate', () => {
     expect(workflow).toContain('group: lemonrock-manifest-readonly');
     expect(workflow).toContain('cancel-in-progress: true');
   });
+
+  it('accounts explicitly for source pages that became permanently gone', () => {
+    const workflow = readFileSync(
+      new URL('../.github/workflows/lemonrock-manifest-readonly.yml', import.meta.url),
+      'utf8',
+    );
+    expect(workflow).toContain('terminalDisposition');
+    expect(workflow).toContain('future_gig_identity_gap');
+    expect(workflow).toContain('future_graph_terminal');
+    expect(workflow).toContain('gone_gig_index_pages > 0');
+    expect(workflow).toContain('future_gig_identity_gap <= (gone_gig_index_pages + gone_gig_details)');
+    expect(workflow).toContain('terminal-gone-evidence');
+  });
 });

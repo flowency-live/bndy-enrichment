@@ -30,7 +30,16 @@ export async function handler(event: SQSEvent): Promise<SQSBatchResponse> {
       if (request.taskKey) await deps.fanout?.mark(request.sourceId, request.taskKey, 'running', new Date().toISOString());
       const result = await runSource(request, deps);
       if (result.report.status === 'failed') throw new Error(result.report.errors.map((error) => error.message).join('; '));
-      if (request.taskKey) await deps.fanout?.mark(request.sourceId, request.taskKey, 'completed', result.report.completedAt);
+      if (request.taskKey) {
+        const terminalDisposition = result.observation?.httpStatus === 410 ? 'http-410-gone' : undefined;
+        await deps.fanout?.mark(
+          request.sourceId,
+          request.taskKey,
+          'completed',
+          result.report.completedAt,
+          terminalDisposition,
+        );
+      }
     } catch (error) {
       console.error('SourceWorker failed', error);
       if (request?.taskKey) {
