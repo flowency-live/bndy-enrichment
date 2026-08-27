@@ -199,6 +199,13 @@ jobs:
             --output json | jq -c '[.Results[]? | select(.Status == "RUNNING")] | sort_by(.StartedTimestamp) | last // empty')
           task_handle=$(jq -r '.TaskHandle // empty' <<<"$task")
 
+          # AWS can keep a completed move task listed as RUNNING after its
+          # source is empty. With zero preflight messages there is nothing to
+          # move, so ignore any stale handle and verify the queues directly.
+          if [ "$EXPECTED_MESSAGES" -eq 0 ]; then
+            task_handle=""
+          fi
+
           if [ -z "$task_handle" ] && [ "$EXPECTED_MESSAGES" -gt 0 ]; then
             move=$(aws sqs start-message-move-task \
               --source-arn "$SOURCE_DLQ_ARN" \
@@ -210,6 +217,7 @@ jobs:
 
           move_status="COMPLETED"
           moved=0
+          queue_evidence_confirmations=0
           if [ -n "$task_handle" ]; then
             move_status="RUNNING"
           fi
@@ -219,16 +227,119 @@ jobs:
               --source-arn "$SOURCE_DLQ_ARN" \
               --max-results 10 \
               --output json | jq -c --arg handle "$task_handle" '.Results[] | select(.TaskHandle == $handle)')
-            move_status=$(jq -r '.Status // "UNKNOWN"' <<<"$task")
-            moved=$(jq -r '.ApproximateNumberOfMessagesMoved // 0' <<<"$task")
+            if [ -n "$task" ]; then
+              move_status=$(jq -r '.Status // "UNKNOWN"' <<<"$task")
+              moved=$(jq -r '.ApproximateNumberOfMessagesMoved // 0' <<<"$task")
+            else
+              move_status="NOT_LISTED"
+              moved=0
+            fi
             if [ "$move_status" = "COMPLETED" ]; then break; fi
             if [ "$move_status" = "FAILED" ]; then
               jq -r '.FailureReason // "Message move failed"' <<<"$task"
               exit 1
             fi
+
+            source_evidence=$(aws sqs get-queue-attributes \
+              --queue-url "$SOURCE_DLQ_URL" \
+              --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+              --query '[Attributes.ApproximateNumberOfMessages,Attributes.ApproximateNumberOfMessagesNotVisible]' \
+              --output text)
+            retained_evidence=$(aws sqs get-queue-attributes \
+              --queue-url "$QUARANTINE_URL" \
+              --attribute-names ApproximateNumberOfMessages \
+              --query 'Attributes.ApproximateNumberOfMessages' \
+              --output text)
+            verified_moved=$((retained_evidence - QUARANTINE_INITIAL))
+            if [ "$source_evidence" = 
+            jq \
+              --arg moveStatus "$move_status" \
+              --argjson moved "$moved" \
+              '.phase = "quarantine-monitor-timeout"
+               | .moveTask = {status:$moveStatus,reportedMoved:$moved}' \
+              "$STATUS_FILE" > "$STATUS_FILE.tmp"
+            mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+            exit 1
+          fi
+
+          source_remaining=""
+          quarantine_visible=0
+          for attempt in $(seq 1 24); do
+            source_remaining=$(aws sqs get-queue-attributes \
+              --queue-url "$SOURCE_DLQ_URL" \
+              --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+              --query '[Attributes.ApproximateNumberOfMessages,Attributes.ApproximateNumberOfMessagesNotVisible]' \
+              --output text)
+            quarantine_visible=$(aws sqs get-queue-attributes \
+              --queue-url "$QUARANTINE_URL" \
+              --attribute-names ApproximateNumberOfMessages \
+              --query 'Attributes.ApproximateNumberOfMessages' \
+              --output text)
+            if [ "$source_remaining" = $'0\t0' ] && [ "$quarantine_visible" -gt 0 ]; then break; fi
             sleep 5
           done
-          if [ "$move_status" != "COMPLETED" ]; then
+          test "$source_remaining" = $'0\t0'
+
+          jq \
+            --arg completedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson expected "$EXPECTED_MESSAGES" \
+            --argjson moved "$moved" \
+            --argjson retained "$quarantine_visible" \
+            --argjson initiallyRetained "$QUARANTINE_INITIAL" \
+            '.phase = "quarantined"
+             | .status = "complete"
+             | .completedAt = $completedAt
+             | .result = {
+                 expectedDeliveryCopies:$expected,
+                 initiallyRetained:$initiallyRetained,
+                 reportedMoved:$moved,
+                 retainedInQuarantine:$retained,
+                 activeDlqVisible:0,
+                 activeDlqInFlight:0
+               }' "$STATUS_FILE" > "$STATUS_FILE.tmp"
+          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+
+      - name: Publish sanitised quarantine evidence
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "$STATUS_FILE" ]; then
+            mkdir -p ops
+            jq -n '{status:"failed",phase:"unknown",shadow:true,canonicalWritesEnabled:false}' > "$STATUS_FILE"
+          fi
+          jq --arg workflowStatus "$JOB_STATUS" --arg updatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '.workflowStatus = $workflowStatus
+             | .updatedAt = $updatedAt
+             | if $workflowStatus != "success" and .status == "running" then .status = "failed" else . end' \
+            "$STATUS_FILE" > "$STATUS_FILE.tmp"
+          mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$STATUS_FILE"
+          git commit -m "Record historical source failure quarantine" || exit 0
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main
+            git rebase --autostash origin/main
+          done
+          exit 1
+0\t0' ] && [ "$verified_moved" -ge "$EXPECTED_MESSAGES" ]; then
+              queue_evidence_confirmations=$((queue_evidence_confirmations + 1))
+              if [ "$queue_evidence_confirmations" -ge 2 ]; then
+                move_status="COMPLETED_BY_QUEUE_EVIDENCE"
+                moved="$verified_moved"
+                break
+              fi
+            else
+              queue_evidence_confirmations=0
+            fi
+            sleep 5
+          done
+          if [ "$move_status" != "COMPLETED" ] && [ "$move_status" != "COMPLETED_BY_QUEUE_EVIDENCE" ]; then
             jq \
               --arg moveStatus "$move_status" \
               --argjson moved "$moved" \
