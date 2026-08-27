@@ -23,13 +23,14 @@
   },
   "workflowStatus": "success",
   "updatedAt": "2026-08-27T10:40:54Z",
-  "lastManifestAt": "2026-08-27T19:53:47.451688+00:00",
+  "lastManifestAt": "2026-08-27T20:00:30.397618+00:00",
   "latestManifest": {
     "status": "incomplete",
     "tasksByStatus": {
-      "completed": 20318,
-      "failed": 966,
-      "queued": 5983
+      "completed": 20869,
+      "failed": 842,
+      "queued": 5669,
+      "running": 3
     },
     "completenessControls": {
       "advertisedArtists": 10533,
@@ -50,14 +51,14 @@
       "venueDirectoryControls": 27,
       "venueDirectoryIdentitiesObserved": 8341,
       "venueDirectoryPages": 28,
-      "venueIdentitiesDiscovered": 983
+      "venueIdentitiesDiscovered": 1099
     },
     "queue": {
       "deadLetterInFlight": 0,
-      "deadLetterVisible": 753,
+      "deadLetterVisible": 831,
       "delayed": 0,
-      "inFlight": 337,
-      "visible": 6187
+      "inFlight": 139,
+      "visible": 5814
     }
   }
 }
