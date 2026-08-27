@@ -1,2 +1,3 @@
-requestedAt: 2026-08-26T07:47:00Z
-reason: capture initial rate-safe recovery progress
+requestedAt: 2026-08-27T09:56:00Z
+reason: diagnose preflight-blocked national verification and classify historical failed tasks
+mode: read-only
