@@ -1,6 +1,6 @@
 {
-  "status": "in-progress",
-  "phase": "draining",
+  "status": "complete",
+  "phase": "complete",
   "startedAt": "2026-08-27T10:39:39Z",
   "deployedSha": "1f6c693e81268fadf2612406fb26906a1e468af2",
   "verificationMode": "national-gig-led",
@@ -23,9 +23,9 @@
   },
   "workflowStatus": "success",
   "updatedAt": "2026-08-27T10:40:54Z",
-  "lastManifestAt": "2026-08-27T21:56:36.142657+00:00",
+  "lastManifestAt": "2026-08-27T22:19:04.516753+00:00",
   "latestManifest": {
-    "status": "incomplete",
+    "status": "complete",
     "tasksByStatus": {
       "completed": 28504
     },
@@ -57,10 +57,11 @@
     },
     "queue": {
       "deadLetterInFlight": 0,
-      "deadLetterVisible": 894,
+      "deadLetterVisible": 0,
       "delayed": 0,
       "inFlight": 0,
       "visible": 0
     }
-  }
+  },
+  "completedAt": "2026-08-27T22:19:04.516753+00:00"
 }

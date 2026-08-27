@@ -31,15 +31,15 @@
   "discoveredTaskRows": 28504,
   "discoveredTasks": 28504,
   "failedTaskSummary": [],
-  "generatedAt": "2026-08-27T21:56:36.142657+00:00",
+  "generatedAt": "2026-08-27T22:19:04.516753+00:00",
   "queue": {
     "deadLetterInFlight": 0,
-    "deadLetterVisible": 894,
+    "deadLetterVisible": 0,
     "delayed": 0,
     "inFlight": 0,
     "visible": 0
   },
-  "queuesClear": false,
+  "queuesClear": true,
   "reconciliationId": "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4",
   "recoveryDiagnostics": {
     "latestV3DirectoryPageUpdateAt": null,
@@ -56,7 +56,7 @@
   },
   "sanitised": true,
   "shadow": true,
-  "status": "incomplete",
+  "status": "complete",
   "tasksByKind": {
     "artist": 2254,
     "artist-index": 1,
