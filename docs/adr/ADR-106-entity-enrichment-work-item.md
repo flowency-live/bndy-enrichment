@@ -32,7 +32,7 @@ It must not directly mutate `bndy-artists` or `bndy-venues` as target behaviour.
 The consumer is delivered in explicit safety stages:
 
 1. **Evidence-only processor:** one canonical entity per item, hard per-item budget caps, daily provider reservation, immutable raw evidence, canonical-subject Claims, no canonical writes.
-2. **Provider qualification:** fixture and sampled live runs prove identity matching, citation quality, conflict rates and cost before scheduling.
+2. **Provider qualification:** fixture and sampled live runs prove identity matching, safe abstention, citation quality, conflict rates and cost before scheduling. The default cohort contains at least 20 cases, including at least five Artists, five Venues and two deliberately ambiguous cases of each entity type. A provider fails if it enriches any expected-park identity or parks any expected match. Predicate coverage is measured only for expected matches, so the gate never rewards fabricating facts for an ambiguous identity.
 3. **Prioritised planner:** selects entities attached to upcoming gigs and explicit quality gaps, with separate daily Artist/Venue/provider budgets. It must query an indexed due set rather than scan the corpus.
 4. **Human sanity gate:** every identity below 0.98 is parked, all owner-managed fields and conflicts require review, and a sample of otherwise clean runs is reviewed before projection is considered.
 5. **Controlled projection:** remains a later decision and uses canonical APIs with read-back. It is not enabled by deploying the worker.
