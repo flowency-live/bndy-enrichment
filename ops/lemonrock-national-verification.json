@@ -23,14 +23,13 @@
   },
   "workflowStatus": "success",
   "updatedAt": "2026-08-27T10:40:54Z",
-  "lastManifestAt": "2026-08-27T12:08:00.861090+00:00",
+  "lastManifestAt": "2026-08-27T12:18:50.903569+00:00",
   "latestManifest": {
     "status": "incomplete",
     "tasksByStatus": {
-      "completed": 4087,
+      "completed": 4629,
       "failed": 1,
-      "queued": 17361,
-      "running": 1
+      "queued": 16927
     },
     "completenessControls": {
       "advertisedArtists": 10533,
@@ -39,14 +38,14 @@
       "artistDirectoryControls": 27,
       "artistDirectoryIdentitiesObserved": 10587,
       "artistDirectoryPages": 28,
-      "artistIdentitiesDiscovered": 498,
+      "artistIdentitiesDiscovered": 521,
       "countyControls": 59,
       "directoriesCovered": true,
       "directoryInventoryControlsExpected": 27,
       "directoryPageTasksExpected": 28,
       "futureGigsCovered": false,
-      "gigIdentitiesDiscovered": 6383,
-      "gigIndexPages": 14454,
+      "gigIdentitiesDiscovered": 6401,
+      "gigIndexPages": 14520,
       "inventoryCovered": false,
       "venueDirectoryControls": 27,
       "venueDirectoryIdentitiesObserved": 8341,
@@ -57,8 +56,8 @@
       "deadLetterInFlight": 0,
       "deadLetterVisible": 0,
       "delayed": 0,
-      "inFlight": 2,
-      "visible": 17329
+      "inFlight": 3,
+      "visible": 16890
     }
   }
 }
