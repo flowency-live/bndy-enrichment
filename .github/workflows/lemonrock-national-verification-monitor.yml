@@ -2,6 +2,9 @@ name: Monitor Lemonrock national verification
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Launch Lemonrock national verification"]
+    types: [completed]
   schedule:
     - cron: '17 * * * *'
 
