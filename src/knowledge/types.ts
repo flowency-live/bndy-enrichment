@@ -400,6 +400,7 @@ export const EntityEnrichmentWorkItemSchema = z.object({
   reason: EntityEnrichmentReasonSchema,
   sourceId: z.string().optional(),
   observationId: z.string().optional(),
+  requestedPredicates: z.array(ClaimPredicateSchema).max(12).optional(),
   budget: DiscoveryBudgetSchema.optional(),
   createdAt: IsoTimestampSchema,
 });
