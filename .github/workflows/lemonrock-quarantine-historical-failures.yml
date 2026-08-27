@@ -132,6 +132,7 @@ jobs:
             --wait-time-seconds 1 \
             --attribute-names ApproximateReceiveCount \
             --output json)
+          sample=${sample:-'{"Messages":[]}'}
           sample_summary=$(jq -c '[.Messages[]? | (.Body | fromjson? // {}) | {
             sourceId:(.sourceId // "unknown"),
             taskKind:(.task.kind // "unknown")
