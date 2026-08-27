@@ -78,4 +78,15 @@ describe('failed source-task replay', () => {
     expect(put.input.Item.attemptCount).toBe(1);
     expect(put.input.ReturnValuesOnConditionCheckFailure).toBe('ALL_OLD');
   });
+
+  it('records an explicit terminal disposition on completed source tasks', async () => {
+    const ddbSend = vi.fn().mockResolvedValue({});
+    const publisher = new DynamoSqsSourceFanoutPublisher('state', 'queue', { send: ddbSend } as any, { send: vi.fn() } as any);
+
+    await publisher.mark(request.sourceId, request.taskKey, 'completed', '2026-08-27T20:00:00.000Z', 'http-410-gone');
+
+    const update = ddbSend.mock.calls[0][0] as any;
+    expect(update.input.UpdateExpression).toContain('terminalDisposition = :detail');
+    expect(update.input.ExpressionAttributeValues[':detail']).toBe('http-410-gone');
+  });
 });
