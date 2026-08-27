@@ -1,0 +1,19 @@
+{
+  "status": "failed",
+  "phase": "queueing",
+  "startedAt": "2026-08-27T18:10:57Z",
+  "recoverySha": "f7ffadd0ef1b9e34ce55145eb7e8393e7a643030",
+  "purpose": "repair the pre-deployment Venue fanout gap and retry only failed logical tasks from the owned reconciliation",
+  "boundedToExistingReconciliation": true,
+  "launchesNationalReconciliation": false,
+  "automaticDeadLetterRedrive": false,
+  "shadow": true,
+  "canonicalWritesEnabled": false,
+  "reconciliationId": "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4",
+  "deploymentVerifiedAt": "2026-08-27T18:03:34Z",
+  "candidateCounts": {
+    "venue-fanout-gap": 5399,
+    "failed-logical-task": 112
+  },
+  "completedAt": "2026-08-27T18:12:35Z"
+}
