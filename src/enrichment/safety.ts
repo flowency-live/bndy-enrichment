@@ -15,7 +15,7 @@ export const SAFE_ENRICHMENT_BUDGET: DiscoveryBudget = {
   deadlineMs: 60_000,
 };
 
-const SAFE_PREDICATES = new Set([
+export const SAFE_ENRICHMENT_PREDICATES = new Set([
   'hasNameVariant', 'hasFacebookUrl', 'hasWebsiteUrl', 'hasInstagramUrl',
   'hasLocation', 'hasArtistType', 'hasActType', 'hasGenre', 'hasBio',
   'hasAddress', 'hasGooglePlaceId', 'locatedIn',
@@ -95,7 +95,7 @@ export function assessEnrichmentFacts(
     const current = entity.currentValues[fact.predicate];
     const conflict = current !== undefined && normalised(current) !== normalised(fact.value);
     const protectedFact = entity.ownerManagedPredicates.includes(fact.predicate);
-    const unsafePredicate = !SAFE_PREDICATES.has(fact.predicate);
+    const unsafePredicate = !SAFE_ENRICHMENT_PREDICATES.has(fact.predicate);
     const invalidValue = emptyValue(fact.value)
       || invalidUrlValue(fact)
       || (fact.predicate === 'hasBio' && (typeof fact.value !== 'string' || fact.value.length > 4_000));

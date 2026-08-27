@@ -50,3 +50,19 @@ export const ValidatedEnrichmentInputSchema = z.object({
   item: EntityEnrichmentWorkItemSchema,
   budget: DiscoveryBudgetSchema,
 });
+
+export const EntityEnrichmentCandidateSchema = z.object({
+  entityType: z.enum(['artist', 'venue']),
+  entityId: z.string().min(1),
+  displayName: z.string().min(1),
+  identityState: z.enum(['resolved', 'unresolved', 'conflicted']),
+  missingPredicates: z.array(ClaimPredicateSchema).default([]),
+  ownerManagedPredicates: z.array(ClaimPredicateSchema).default([]),
+  attachedToUpcomingGig: z.boolean().default(false),
+  upcomingGigCount: z.number().int().nonnegative().default(0),
+  sourceCount: z.number().int().nonnegative().default(0),
+  activeConflictCount: z.number().int().nonnegative().default(0),
+  lastEnrichedAt: z.string().datetime().optional(),
+  lastAttemptAt: z.string().datetime().optional(),
+});
+export type EntityEnrichmentCandidate = z.infer<typeof EntityEnrichmentCandidateSchema>;
