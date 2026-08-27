@@ -10,7 +10,7 @@ export type SourceTaskStatus = 'queued' | 'running' | 'completed' | 'failed';
 
 export interface SourceFanoutPublisher {
   publish(request: SourceFanoutRequest, requestedAt: string, reconciliationId?: string): Promise<boolean>;
-  mark(sourceId: string, taskKey: string, status: SourceTaskStatus, at: string, error?: string): Promise<void>;
+  mark(sourceId: string, taskKey: string, status: SourceTaskStatus, at: string, detail?: string): Promise<void>;
 }
 
 function sourceFamily(sourceId: string): string { return sourceId.split('-')[0] || sourceId; }
@@ -87,11 +87,14 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
     try { await this.send(request, requestedAt, reconciliationId, resolvedTaskKey); return true; }
     catch (error) { await this.ddb.send(new DeleteCommand({ TableName: this.tableName, Key: key })); throw error; }
   }
-  async mark(sourceId: string, keyText: string, status: SourceTaskStatus, at: string, error?: string): Promise<void> {
+  async mark(sourceId: string, keyText: string, status: SourceTaskStatus, at: string, detail?: string): Promise<void> {
     const key = taskKey(sourceId, keyText); const names: Record<string, string> = { '#status': 'status' }; const values: Record<string, unknown> = { ':status': status, ':at': at }; let update = 'SET #status = :status, updatedAt = :at';
     if (status === 'running') update += ', startedAt = if_not_exists(startedAt, :at)';
-    if (status === 'completed') update += ', completedAt = :at';
-    if (status === 'failed') { update += ', failedAt = :at, lastError = :error'; values[':error'] = error ?? 'Unknown failure'; }
+    if (status === 'completed') {
+      update += ', completedAt = :at';
+      if (detail) { update += ', terminalDisposition = :detail'; values[':detail'] = detail; }
+    }
+    if (status === 'failed') { update += ', failedAt = :at, lastError = :error'; values[':error'] = detail ?? 'Unknown failure'; }
     await this.ddb.send(new UpdateCommand({ TableName: this.tableName, Key: key, UpdateExpression: update, ExpressionAttributeNames: names, ExpressionAttributeValues: values }));
   }
 }
