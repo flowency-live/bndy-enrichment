@@ -1,2 +1,2 @@
-requestedAt: 2026-08-26T07:40:48Z
-reason: deploy rate-safe v4 inventory recovery and redrive existing DLQ
+requestedAt: 2026-08-27T19:51:00Z
+reason: deploy terminal HTTP 410 evidence handling without replaying or starting a reconciliation
