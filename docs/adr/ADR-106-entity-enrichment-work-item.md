@@ -41,6 +41,8 @@ Initial per-entity ceilings are one entity, three searches, six fetches, one non
 
 Initial daily provider ceilings are 20 entities, 60 searches, 120 fetches, 20 model calls, 240,000 input tokens, 40,000 output tokens and estimated cost 0.60. DynamoDB reserves all counters and the work-item idempotency record in one transaction before any provider call. Failed attempts keep their reservation, and a retry resumes the same item without spending the budget twice. Budget exhaustion is a terminal parked outcome for that item; a later planner run may create a new item on a later day.
 
+The first external provider seam uses at most two identity-and-location searches followed by one cheap reasoning call. It accepts only requested predicates and HTTPS citations returned by those searches, records the complete search/reasoner payload and measured usage, and fails if the reserved item budget is exceeded. The seam has no credentials, Lambda or schedule until a concrete provider passes the adversarial qualification cohort and sampled live review.
+
 ## Migration
 
 `GoogleDiscoveryWorker` remains a legacy runtime until its migration package replaces its direct-write path. The new `EntityEnrichmentQueue` is the strategic seam; newly migrated source projection emits only the new work item.
