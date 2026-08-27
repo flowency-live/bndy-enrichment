@@ -51,10 +51,12 @@ jobs:
           test "$(jq -r '.scheduledFullDirectoryReconciliation' "$status_file")" = "false"
 
       - name: Drain, recover current failures and require terminal manifest
+        id: control
         shell: bash
         run: |
           set -euo pipefail
           deadline=$(( $(date +%s) + 19000 ))
+          credential_handoff_at=$(( $(date +%s) + 2700 ))
           state_table=$(aws cloudformation describe-stacks \
             --stack-name "$STACK_NAME" \
             --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" \
@@ -65,6 +67,14 @@ jobs:
             --output text)
           test -n "$state_table"
           test -n "$queue_url"
+
+          handoff_if_needed() {
+            if [ "$(date +%s)" -lt "$credential_handoff_at" ]; then return; fi
+            echo "::notice::Short-lived AWS credentials are nearing expiry; handing completion to a fresh guarded run"
+            gh workflow run lemonrock-eod-completion.yml --ref main
+            echo "handoff=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
 
           run_workflow() {
             local workflow=$1
@@ -99,6 +109,7 @@ jobs:
             local stable_zero=0
             local attempt=0
             while true; do
+              handoff_if_needed
               attempt=$((attempt + 1))
               attrs=$(aws sqs get-queue-attributes \
                 --queue-url "$queue_url" \
@@ -153,8 +164,16 @@ jobs:
           test "$(jq -r '.canonicalWritesEnabled' /tmp/lemonrock-final-manifest.json)" = "false"
 
       - name: Record completion summary
+        if: steps.control.outputs.handoff != 'true'
         shell: bash
         run: |
           set -euo pipefail
           echo "### Lemonrock completion controller" >> "$GITHUB_STEP_SUMMARY"
           echo "Existing owned reconciliation reached its terminal manifest, active delivery copies were retained in quarantine, and the verified low-cost shadow operating model remains deployed." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Record credential handoff
+        if: steps.control.outputs.handoff == 'true'
+        shell: bash
+        run: |
+          echo "### Lemonrock completion controller" >> "$GITHUB_STEP_SUMMARY"
+          echo "The active reconciliation is still draining. Completion was handed to a fresh guarded run before the short-lived AWS session expired." >> "$GITHUB_STEP_SUMMARY"
