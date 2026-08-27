@@ -1238,7 +1238,7 @@ Completion requires:
 
 1. every audit task terminal with no failed tasks;
 2. all required source branches seen;
-3. all 28 Artist and 28 Venue directory controls present;
+3. all 27 Artist and 27 Venue inventory controls present, covering A-Z plus the numeric `123` segment, together with the separate all-members/root page task for each directory;
 4. observed directory identities meeting or exceeding the advertised controls;
 5. unique future-gig identities meeting or exceeding Lemonrock's advertised county total;
 6. every gig-linked Artist and Venue hydration task terminal;
