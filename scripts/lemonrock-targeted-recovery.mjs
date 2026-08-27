@@ -35,7 +35,7 @@ async function queryTasks() {
         ':pk': 'BOOTSTRAP#lemonrock',
         ':prefix': 'TASK#',
       },
-      ProjectionExpression: 'pk, sk, sourceId, taskKind, taskKey, logicalTaskKey, task, #status, attemptCount, reconciliationId, lastReconciliationId, completedAt, updatedAt',
+      ProjectionExpression: 'pk, sk, sourceId, taskKind, taskKey, logicalTaskKey, task, #status, attemptCount, reconciliationId, lastReconciliationId, completedAt, failedAt, updatedAt, venueFanoutRecoveryAt, targetedFailureRecoveryAt',
       ExpressionAttributeNames: { '#status': 'status' },
       ExclusiveStartKey,
     }));
@@ -63,6 +63,7 @@ function recoveryCandidates(rows, reconciliationId, deploymentVerifiedAt) {
       row.sourceId === 'lemonrock-gig-hydration'
       && row.taskKind === 'gig'
       && row.status === 'completed'
+      && !row.venueFanoutRecoveryAt
       && typeof row.completedAt === 'string'
       && row.completedAt < deploymentVerifiedAt
     ) {
@@ -72,6 +73,10 @@ function recoveryCandidates(rows, reconciliationId, deploymentVerifiedAt) {
     if (
       row.status === 'failed'
       && Number(row.attemptCount ?? 1) < 3
+      && (
+        !row.targetedFailureRecoveryAt
+        || (typeof row.failedAt === 'string' && row.targetedFailureRecoveryAt < row.failedAt)
+      )
     ) {
       return [{ row, mode: 'failed-logical-task' }];
     }
@@ -92,7 +97,7 @@ async function queueCandidate(candidate, reconciliationId, requestedAt) {
   };
   const condition = mode === 'venue-fanout-gap'
     ? '#status = :expected AND attribute_not_exists(venueFanoutRecoveryAt) AND lastReconciliationId = :reconciliationId'
-    : '#status = :expected AND attribute_not_exists(targetedFailureRecoveryAt) AND lastReconciliationId = :reconciliationId AND (attribute_not_exists(attemptCount) OR attemptCount < :maxAttempts)';
+    : '#status = :expected AND (attribute_not_exists(targetedFailureRecoveryAt) OR (attribute_exists(failedAt) AND targetedFailureRecoveryAt < failedAt)) AND lastReconciliationId = :reconciliationId AND (attribute_not_exists(attemptCount) OR attemptCount < :maxAttempts)';
   if (mode === 'failed-logical-task') values[':maxAttempts'] = 3;
 
   try {
