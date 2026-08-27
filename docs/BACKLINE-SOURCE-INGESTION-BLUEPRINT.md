@@ -93,10 +93,14 @@ The StateTable contains several logical record families rather than one table pe
 - `CLAIM#<claimId> / META` KnowledgeClaims;
 - `RESOLUTION#<candidateType>#<candidateKey> / META` EntityResolutions;
 - `BOOTSTRAP#<sourceFamily> / TASK#<taskKey>` durable discovery tasks;
+- `SOURCE_METRICS#<sourceFamily> / RUN#<completedAt>#<runId>` drill-down run metrics;
+- `SOURCE_METRICS#<sourceFamily> / DAY#<date>` atomic daily source-family roll-ups;
 - canonical support links, Tombstones and projection state;
 - `BASELINE#<snapshotId> / META` baseline manifests.
 
 The table has GSIs for due-source scheduling, Claims by Observation, and Claims by subject. Claim payloads are stored once and reached through indexes or lightweight support links.
+
+Every generic Source Runner invocation records a small metrics row and updates one daily roll-up. This reuses the run report already held in memory, so daily discovery reporting never scans the evidence bucket or the wider StateTable. Per-run rows expire after 180 days and daily rows after 400 days through the table's `expiresAt` TTL. The roll-up includes run health, items seen, valid gigs, entity profiles, Claims, added/updated/withdrawn/unchanged counts, fan-out, projection work, warnings, errors and duration. `reportKey` retains bounded drill-down to the exact immutable run report. Metrics failure is a warning and never turns an otherwise successful source capture into a failed ingestion.
 
 Raw source evidence is written to S3 with `IfNoneMatch: '*'`. This makes the evidence write-once. Run artefacts are also immutable and include:
 
@@ -454,13 +458,14 @@ On The Case is ready for the resolution/graph stage only when:
 
 ## 12. Immediate execution plan
 
-1. **Close Lemonrock completion:** allow the current rate-safe recovery to drain, publish the final live manifest, and repair only evidence-backed residual gaps.
-2. **Persist Lemonrock resolutions:** produce explicit resolved, unresolved and conflicted states against the canonical baseline.
-3. **Build the Godmode graph view:** add bounded read-only traversal over Sources, Observations, Claims, source-native identities, Resolutions, canonical entities and projection decisions.
-4. **Start On The Case reconnaissance:** capture live fixtures, prove HTTP versus browser acquisition, define cancellation and completeness semantics, and confirm source load limits.
-5. **Implement the On The Case adapter/source family:** reuse the generic runner, task, evidence, Claim and manifest machinery.
-6. **Run On The Case in shadow:** bootstrap, reconcile, repair and prove recurring diffs before any projection decision.
-7. **Compare intelligence to canonical BNDY:** use the canonical baseline and multiple sources to surface corroboration, conflicts, missing records and high-confidence additions.
+1. **Prove Lemonrock completion:** monitor the fresh owned national verification until inventory, gig-linked hydration, terminal-task and stable-zero queue/DLQ controls all pass.
+2. **Publish daily discovery metrics:** expose the retained run and daily source-family metrics to Godmode with bounded drill-down to exact reports and evidence.
+3. **Build safe entity enrichment:** prioritise canonical Artists and Venues attached to upcoming gigs and explicit quality gaps, with evidence-only output, daily budgets, owner protection, conflict gates and sampled sanity review.
+4. **Persist identity resolutions:** produce explicit resolved, unresolved and conflicted states across Lemonrock, On The Case and the canonical baseline without forcing ambiguous matches.
+5. **Build the Godmode graph view:** add bounded interactive traversal over Sources, Observations, Claims, source-native identities, Resolutions, canonical entities and projection decisions.
+6. **Complete priority source cutovers:** move KLMA into the generic runner and retire its Cowork runtime, then productionise GigsNews and a low-cost Scenic Eye cadence in shadow mode.
+7. **Add further source families:** widen corroboration before granting projection authority.
+8. **Defer controlled projection:** enable only a bounded high-confidence cohort after multiple sources and resolution behaviour are proven.
 
 ## 13. Non-negotiable controls
 

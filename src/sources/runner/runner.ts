@@ -6,6 +6,7 @@ import type { AcquisitionRouter } from './acquisition.js';
 import type { SourceAdapter } from './adapter.js';
 import { diffSourceEvents } from './diff.js';
 import type { SourceFanoutPublisher } from './fanout.js';
+import type { SourceRunMetricStore } from './metrics.js';
 import { buildKnowledge, buildProjectionWork } from './knowledge.js';
 import type { ProjectionPublisher } from './projection-publisher.js';
 import type { SourceRunArtifactStore } from './storage.js';
@@ -52,6 +53,7 @@ export type RunnerDependencies = {
   artifacts: SourceRunArtifactStore;
   projection: ProjectionPublisher;
   fanout?: SourceFanoutPublisher;
+  metrics?: SourceRunMetricStore;
   acquisition: AcquisitionRouter;
   loadAdapter: (config: GigSource) => SourceAdapter | undefined;
   now?: () => Date;
@@ -124,6 +126,16 @@ function initialReport(config: GigSource, run: SourceRunContext): SourceRunRepor
     errors: [],
     artifacts: {},
   };
+}
+
+async function recordRunMetric(store: SourceRunMetricStore | undefined, report: SourceRunReport): Promise<void> {
+  if (!store) return;
+  try {
+    await store.put(report);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    report.warnings.push(`Source run metric write failed: ${message}`);
+  }
 }
 
 async function recordFailure(
@@ -281,6 +293,7 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     report.completedAt = clock().toISOString();
     const reportKey = await deps.artifacts.writeReport(config, run, report);
     report.artifacts.report = reportKey;
+    await recordRunMetric(deps.metrics, report);
 
     return {
       config,
@@ -308,6 +321,7 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
         message: reportError instanceof Error ? reportError.message : String(reportError),
       });
     }
+    await recordRunMetric(deps.metrics, report);
     return {
       config,
       report,
