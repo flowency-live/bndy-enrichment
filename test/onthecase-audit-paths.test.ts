@@ -67,7 +67,7 @@ describe('On The Case manual directory/audit paths', () => {
     expect((parsed.nextRequests ?? []).filter((r) => r.task?.kind === 'gig-inventory-control')).toHaveLength(0);
   });
 
-  it('keeps directory roots manual while the gig root is the only BAU cadence candidate', () => {
+  it('keeps all registry seeds manual so directory audit paths cannot self-schedule', () => {
     const band = ONTHECASE_SOURCES.find((s) => s.id === 'onthecase-band-index');
     const venue = ONTHECASE_SOURCES.find((s) => s.id === 'onthecase-venue-index');
     const full = ONTHECASE_SOURCES.find((s) => s.id === 'onthecase-full-reconcile');
@@ -75,6 +75,6 @@ describe('On The Case manual directory/audit paths', () => {
     expect(band?.cadence).toBe('manual');
     expect(venue?.cadence).toBe('manual');
     expect(full?.cadence).toBe('manual');
-    expect(gig?.cadence).toBe('hourly');
+    expect(gig?.cadence).toBe('manual');
   });
 });
