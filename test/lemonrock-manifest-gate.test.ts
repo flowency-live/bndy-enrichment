@@ -14,4 +14,13 @@ describe('Lemonrock national manifest directory gate', () => {
     expect(workflow).not.toContain('len(artist_controls) >= 28');
     expect(workflow).not.toContain('len(venue_controls) >= 28');
   });
+
+  it('allows only one expensive manifest aggregation at a time', () => {
+    const workflow = readFileSync(
+      new URL('../.github/workflows/lemonrock-manifest-readonly.yml', import.meta.url),
+      'utf8',
+    );
+    expect(workflow).toContain('group: lemonrock-manifest-readonly');
+    expect(workflow).toContain('cancel-in-progress: true');
+  });
 });
