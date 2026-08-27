@@ -35,7 +35,7 @@ async function queryTasks() {
         ':pk': 'BOOTSTRAP#lemonrock',
         ':prefix': 'TASK#',
       },
-      ProjectionExpression: 'pk, sk, sourceId, taskKind, taskKey, task, #status, attemptCount, reconciliationId, lastReconciliationId, completedAt, updatedAt',
+      ProjectionExpression: 'pk, sk, sourceId, taskKind, taskKey, logicalTaskKey, task, #status, attemptCount, reconciliationId, lastReconciliationId, completedAt, updatedAt',
       ExpressionAttributeNames: { '#status': 'status' },
       ExclusiveStartKey,
     }));
@@ -46,8 +46,17 @@ async function queryTasks() {
 }
 
 function recoveryCandidates(rows, reconciliationId, deploymentVerifiedAt) {
-  return rows.flatMap((row) => {
-    if (row.lastReconciliationId !== reconciliationId || row.task?.auditRun !== true) return [];
+  const currentByIdentity = new Map();
+  for (const row of rows) {
+    if (row.lastReconciliationId !== reconciliationId || row.task?.auditRun !== true) continue;
+    const identity = `${row.sourceId}:${row.task?.nativeId ?? row.logicalTaskKey ?? row.taskKey ?? row.sk}`;
+    const previous = currentByIdentity.get(identity);
+    if (!previous || String(row.updatedAt ?? '') > String(previous.updatedAt ?? '')) {
+      currentByIdentity.set(identity, row);
+    }
+  }
+
+  return [...currentByIdentity.values()].flatMap((row) => {
     if (!row.pk || !row.sk || !row.sourceId || !row.taskKey || !row.task) return [];
 
     if (
@@ -80,11 +89,11 @@ async function queueCandidate(candidate, reconciliationId, requestedAt) {
     ':at': requestedAt,
     ':reconciliationId': reconciliationId,
     ':one': 1,
-    ':maxAttempts': 3,
   };
   const condition = mode === 'venue-fanout-gap'
     ? '#status = :expected AND attribute_not_exists(venueFanoutRecoveryAt) AND lastReconciliationId = :reconciliationId'
     : '#status = :expected AND attribute_not_exists(targetedFailureRecoveryAt) AND lastReconciliationId = :reconciliationId AND (attribute_not_exists(attemptCount) OR attemptCount < :maxAttempts)';
+  if (mode === 'failed-logical-task') values[':maxAttempts'] = 3;
 
   try {
     await ddb.send(new UpdateCommand({
