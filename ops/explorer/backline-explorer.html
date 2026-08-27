@@ -96,7 +96,7 @@ function selectedPos(){return selected?nodes.get(selected):null;}
 
 async function expand(ref){
   status('Expanding '+ref+' ...');
-  try{mergeNeighborhood(await api('/graph?node='+encodeURIComponent(ref)));}
+  try{mergeNeighborhood(await api('/graph?node='+encodeURIComponent(ref)+'&limit=200'));}
   catch(err){status(String(err.message||err));}
 }
 
