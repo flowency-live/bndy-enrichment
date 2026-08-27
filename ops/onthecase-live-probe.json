@@ -1,20 +1,32 @@
 {
-  "capturedAt": "2026-08-27T08:33:28Z",
-  "reconciliationId": "onthecase-gig-led-2026-08-27T08-10-10-518Z",
+  "capturedAt": "2026-08-27T08:51:58Z",
+  "reconciliationId": "onthecase-gig-led-2026-08-27T08-50-06-649Z",
   "tasks": {
-    "discovered": 30,
-    "completed": 30,
+    "discovered": 145,
+    "completed": 96,
     "failed": 0,
-    "queued": 0,
-    "running": 0
+    "queued": 47,
+    "running": 2
   },
   "statusBreakdown": [
     {
       "status": "completed",
-      "count": 30
+      "count": 96
+    },
+    {
+      "status": "queued",
+      "count": 47
+    },
+    {
+      "status": "running",
+      "count": 2
     }
   ],
   "sourceBreakdown": [
+    {
+      "sourceId": "onthecase-band-hydration",
+      "count": 115
+    },
     {
       "sourceId": "onthecase-gig-index",
       "count": 1
