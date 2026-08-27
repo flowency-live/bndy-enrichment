@@ -1,5 +1,84 @@
 {
-  "generatedAt": "2026-08-24T18:56:26Z",
+  "canonicalWritesEnabled": false,
+  "failedTaskSummary": [
+    {
+      "count": 4961,
+      "errorClass": "FETCH",
+      "errorSignature": "Source fetch returned HTTP 410",
+      "sourceId": "lemonrock-future-reconcile",
+      "taskKind": "gig-index"
+    },
+    {
+      "count": 12,
+      "errorClass": "FETCH",
+      "errorSignature": "Source fetch returned HTTP 410",
+      "sourceId": "lemonrock-gig-hydration",
+      "taskKind": "gig"
+    },
+    {
+      "count": 1,
+      "errorClass": "FETCH",
+      "errorSignature": "fetch failed",
+      "sourceId": "unknown",
+      "taskKind": "unknown"
+    }
+  ],
+  "failureTimeRange": {
+    "earliest": "2026-08-24T05:06:49.041Z",
+    "latest": "2026-08-27T19:42:33.638Z"
+  },
+  "generatedAt": "2026-08-27T19:43:46.508647+00:00",
+  "outstandingBySourceAndKind": [
+    {
+      "count": 414,
+      "sourceId": "lemonrock-artist-hydration",
+      "taskKind": "artist"
+    },
+    {
+      "count": 4971,
+      "sourceId": "lemonrock-future-reconcile",
+      "taskKind": "gig-index"
+    },
+    {
+      "count": 5367,
+      "sourceId": "lemonrock-gig-hydration",
+      "taskKind": "gig"
+    },
+    {
+      "count": 663,
+      "sourceId": "lemonrock-venue-hydration",
+      "taskKind": "venue"
+    },
+    {
+      "count": 1,
+      "sourceId": "unknown",
+      "taskKind": "unknown"
+    }
+  ],
+  "queue": {
+    "deadLetterInFlight": 0,
+    "deadLetterVisible": 568,
+    "delayed": 0,
+    "inFlight": 446,
+    "visible": 6746
+  },
   "sanitised": true,
-  "status": "diagnostic-failed"
+  "shadow": true,
+  "sourceRuntimeState": [
+    {
+      "consecutiveFailures": 0,
+      "id": "lemonrock-full-reconcile",
+      "lastFailureAt": null,
+      "lastRunAt": "2026-08-27T10:40:46.079Z",
+      "lastSuccessfulRunAt": "2026-08-27T10:40:46.079Z"
+    }
+  ],
+  "taskHistoryRows": 187623,
+  "tasksByStatus": {
+    "completed": 38033,
+    "failed": 4974,
+    "queued": 6439,
+    "running": 3
+  },
+  "uniqueCurrentTasks": 49449
 }
