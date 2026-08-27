@@ -1,0 +1,4 @@
+Purpose: wake the existing read-only scoped Lemonrock manifest workflow.
+Reconciliation: run-907eba4a-b7eb-4d41-95f5-06bbc91beef4
+Requested at: 2026-08-27T13:01:00Z
+No deployment, reconciliation launch, DLQ redrive or canonical write is authorised by this marker.
