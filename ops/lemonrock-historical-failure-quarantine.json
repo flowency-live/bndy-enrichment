@@ -1,13 +1,51 @@
 {
-  "status": "failed",
-  "phase": "preflight",
-  "startedAt": "2026-08-27T10:32:00Z",
-  "deployedSha": "7d204f84ceeae373795cf567fa1eea58e6eada3f",
+  "status": "complete",
+  "phase": "quarantined",
+  "startedAt": "2026-08-27T10:37:13Z",
+  "deployedSha": "2ba169acd2b69f665d2a582cdbdc743a8c29bb72",
   "purpose": "retain superseded source delivery copies outside the active DLQ",
   "automaticReplay": false,
   "destructivePurge": false,
   "shadow": true,
   "canonicalWritesEnabled": false,
-  "workflowStatus": "failure",
-  "updatedAt": "2026-08-27T10:33:28Z"
+  "preflight": {
+    "activeQueue": {
+      "visible": 0,
+      "inFlight": 0,
+      "delayed": 0
+    },
+    "activeDlqMessages": 0,
+    "alreadyRetainedInQuarantine": 5153,
+    "sampledDeliveryCopies": [],
+    "failedLogicalTasks": [
+      {
+        "sourceId": "lemonrock-future-reconcile",
+        "taskKind": "gig-index",
+        "uniqueLogicalFailures": 4008
+      },
+      {
+        "sourceId": "lemonrock-gig-hydration",
+        "taskKind": "gig",
+        "uniqueLogicalFailures": 21
+      },
+      {
+        "sourceId": "unknown",
+        "taskKind": "unknown",
+        "uniqueLogicalFailures": 1
+      }
+    ]
+  },
+  "sourceDlqArnClass": "SourceScanDLQ",
+  "quarantineArnClass": "HistoricalSourceFailureQuarantine",
+  "completedAt": "2026-08-27T10:38:43Z",
+  "result": {
+    "expectedDeliveryCopies": 0,
+    "initiallyRetained": 5153,
+    "reportedMoved": 0,
+    "retainedInQuarantine": 5153,
+    "activeDlqVisible": 0,
+    "activeDlqInFlight": 0
+  },
+  "workflowStatus": "success",
+  "updatedAt": "2026-08-27T10:38:43Z"
 }
