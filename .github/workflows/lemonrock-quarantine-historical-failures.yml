@@ -112,7 +112,6 @@ jobs:
             --output json)
           dlq_visible=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$dlq_attrs")
           dlq_inflight=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$dlq_attrs")
-          test "$dlq_visible" -gt 0
           test "$dlq_inflight" -eq 0
 
           quarantine_attrs=$(aws sqs get-queue-attributes \
@@ -121,8 +120,8 @@ jobs:
             --output json)
           quarantine_visible=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$quarantine_attrs")
           quarantine_inflight=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$quarantine_attrs")
-          test "$quarantine_visible" -eq 0
           test "$quarantine_inflight" -eq 0
+          test "$((dlq_visible + quarantine_visible))" -gt 0
 
           # A zero-visibility sample is observational. It neither deletes nor
           # delays a message, and only aggregate source/kind counts are kept.
@@ -146,13 +145,15 @@ jobs:
             --table-name "$state_table" \
             --key-condition-expression "pk = :pk AND begins_with(sk, :prefix)" \
             --expression-attribute-values '{":pk":{"S":"BOOTSTRAP#lemonrock"},":prefix":{"S":"TASK#"}}' \
-            --projection-expression "sourceId, taskKind, #st" \
+            --projection-expression "sourceId, taskKind, logicalTaskKey, taskKey, #st" \
             --expression-attribute-names '{"#st":"status"}' \
             --output json > /tmp/lemonrock-tasks.json
           failure_summary=$(jq -c '[.Items[] | select(.status.S == "failed") | {
             sourceId:(.sourceId.S // "unknown"),
-            taskKind:(.taskKind.S // "unknown")
-          }] | group_by([.sourceId,.taskKind]) | map({
+            taskKind:(.taskKind.S // "unknown"),
+            logicalTaskKey:(.logicalTaskKey.S // .taskKey.S // "unknown")
+          }] | unique_by([.sourceId,.taskKind,.logicalTaskKey])
+          | group_by([.sourceId,.taskKind]) | map({
             sourceId:.[0].sourceId,
             taskKind:.[0].taskKind,
             uniqueLogicalFailures:length
@@ -160,11 +161,13 @@ jobs:
 
           jq \
             --argjson activeDlqMessages "$dlq_visible" \
+            --argjson quarantineVisible "$quarantine_visible" \
             --argjson sample "$sample_summary" \
             --argjson logicalFailures "$failure_summary" \
             '.preflight = {
                activeQueue:{visible:0,inFlight:0,delayed:0},
                activeDlqMessages:$activeDlqMessages,
+               alreadyRetainedInQuarantine:$quarantineVisible,
                sampledDeliveryCopies:$sample,
                failedLogicalTasks:$logicalFailures
              }
@@ -179,6 +182,7 @@ jobs:
             echo "QUARANTINE_ARN=$quarantine_arn"
             echo "QUARANTINE_URL=$quarantine_url"
             echo "EXPECTED_MESSAGES=$dlq_visible"
+            echo "QUARANTINE_INITIAL=$quarantine_visible"
           } >> "$GITHUB_ENV"
 
       - name: Move delivery copies to retained quarantine
@@ -188,17 +192,28 @@ jobs:
           jq '.phase = "quarantining"' "$STATUS_FILE" > "$STATUS_FILE.tmp"
           mv "$STATUS_FILE.tmp" "$STATUS_FILE"
 
-          move=$(aws sqs start-message-move-task \
+          task=$(aws sqs list-message-move-tasks \
             --source-arn "$SOURCE_DLQ_ARN" \
-            --destination-arn "$QUARANTINE_ARN" \
-            --max-number-of-messages-per-second 10 \
-            --output json)
-          task_handle=$(jq -r '.TaskHandle' <<<"$move")
-          test -n "$task_handle"
+            --max-results 10 \
+            --output json | jq -c '[.Results[]? | select(.Status == "RUNNING")] | sort_by(.StartedTimestamp) | last // empty')
+          task_handle=$(jq -r '.TaskHandle // empty' <<<"$task")
 
-          move_status="RUNNING"
+          if [ -z "$task_handle" ] && [ "$EXPECTED_MESSAGES" -gt 0 ]; then
+            move=$(aws sqs start-message-move-task \
+              --source-arn "$SOURCE_DLQ_ARN" \
+              --destination-arn "$QUARANTINE_ARN" \
+              --max-number-of-messages-per-second 10 \
+              --output json)
+            task_handle=$(jq -r '.TaskHandle' <<<"$move")
+          fi
+
+          move_status="COMPLETED"
           moved=0
-          for attempt in $(seq 1 150); do
+          if [ -n "$task_handle" ]; then
+            move_status="RUNNING"
+          fi
+          for attempt in $(seq 1 360); do
+            if [ -z "$task_handle" ]; then break; fi
             task=$(aws sqs list-message-move-tasks \
               --source-arn "$SOURCE_DLQ_ARN" \
               --max-results 10 \
@@ -212,7 +227,16 @@ jobs:
             fi
             sleep 5
           done
-          test "$move_status" = "COMPLETED"
+          if [ "$move_status" != "COMPLETED" ]; then
+            jq \
+              --arg moveStatus "$move_status" \
+              --argjson moved "$moved" \
+              '.phase = "quarantine-monitor-timeout"
+               | .moveTask = {status:$moveStatus,reportedMoved:$moved}' \
+              "$STATUS_FILE" > "$STATUS_FILE.tmp"
+            mv "$STATUS_FILE.tmp" "$STATUS_FILE"
+            exit 1
+          fi
 
           source_remaining=""
           quarantine_visible=0
@@ -237,11 +261,13 @@ jobs:
             --argjson expected "$EXPECTED_MESSAGES" \
             --argjson moved "$moved" \
             --argjson retained "$quarantine_visible" \
+            --argjson initiallyRetained "$QUARANTINE_INITIAL" \
             '.phase = "quarantined"
              | .status = "complete"
              | .completedAt = $completedAt
              | .result = {
                  expectedDeliveryCopies:$expected,
+                 initiallyRetained:$initiallyRetained,
                  reportedMoved:$moved,
                  retainedInQuarantine:$retained,
                  activeDlqVisible:0,
