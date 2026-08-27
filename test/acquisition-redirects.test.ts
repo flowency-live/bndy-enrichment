@@ -57,4 +57,20 @@ describe('HTTP acquisition redirect safety', () => {
     const router = new HttpAcquisitionRouter(publicResolver, fetchImpl);
     await expect(router.acquire({ url: 'https://example.com/' })).resolves.toMatchObject({ httpStatus: 200 });
   });
+
+  it('preserves only explicitly accepted non-2xx responses', async () => {
+    const fetchImpl = (async () => new Response('<html><body>gone</body></html>', {
+      status: 410,
+      headers: { 'content-type': 'text/html' },
+    })) as typeof fetch;
+    const router = new HttpAcquisitionRouter(publicResolver, fetchImpl);
+
+    await expect(router.acquire({ url: 'https://example.com/gone' }))
+      .rejects.toThrow('Source fetch returned HTTP 410');
+    await expect(router.acquire({ url: 'https://example.com/gone', acceptedStatuses: [410] }))
+      .resolves.toMatchObject({
+        body: '<html><body>gone</body></html>',
+        httpStatus: 410,
+      });
+  });
 });
