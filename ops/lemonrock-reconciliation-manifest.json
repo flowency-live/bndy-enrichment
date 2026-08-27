@@ -19,17 +19,17 @@
     "futureGraphTerminal": false,
     "gigIdentitiesDiscovered": 7787,
     "gigIndexPages": 16128,
-    "goneGigDetails": 6,
+    "goneGigDetails": 7,
     "goneGigIndexPages": 2,
     "inventoryCovered": false,
     "venueDirectoryControls": 27,
     "venueDirectoryIdentitiesObserved": 8341,
     "venueDirectoryPages": 28,
-    "venueIdentitiesDiscovered": 2203
+    "venueIdentitiesDiscovered": 2218
   },
   "directoryMode": "inventory-controls-only",
-  "discoveredTaskRows": 28487,
-  "discoveredTasks": 28487,
+  "discoveredTaskRows": 28502,
+  "discoveredTasks": 28502,
   "failedTaskSummary": [
     {
       "count": 754,
@@ -38,19 +38,19 @@
       "taskKind": "gig-index"
     },
     {
-      "count": 3,
+      "count": 2,
       "errorClass": "FETCH",
       "sourceId": "lemonrock-gig-hydration",
       "taskKind": "gig"
     }
   ],
-  "generatedAt": "2026-08-27T21:11:48.310564+00:00",
+  "generatedAt": "2026-08-27T21:18:49.332486+00:00",
   "queue": {
     "deadLetterInFlight": 0,
     "deadLetterVisible": 894,
     "delayed": 0,
-    "inFlight": 2,
-    "visible": 1619
+    "inFlight": 1,
+    "visible": 1361
   },
   "queuesClear": false,
   "reconciliationId": "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4",
@@ -80,7 +80,7 @@
     "gig": 7787,
     "gig-index": 16128,
     "new-gigs": 1,
-    "venue": 2203,
+    "venue": 2218,
     "venue-index": 1,
     "venue-index-page": 28,
     "venue-inventory-control": 27
@@ -92,13 +92,13 @@
     "lemonrock-future-reconcile": 16129,
     "lemonrock-gig-hydration": 7787,
     "lemonrock-new-gigs": 1,
-    "lemonrock-venue-hydration": 2203,
+    "lemonrock-venue-hydration": 2218,
     "lemonrock-venue-index": 56
   },
   "tasksByStatus": {
-    "completed": 26158,
-    "failed": 757,
-    "queued": 1570,
+    "completed": 26421,
+    "failed": 756,
+    "queued": 1323,
     "running": 2
   },
   "verificationMode": "national-gig-led"

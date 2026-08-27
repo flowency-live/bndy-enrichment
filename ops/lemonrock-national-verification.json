@@ -23,13 +23,13 @@
   },
   "workflowStatus": "success",
   "updatedAt": "2026-08-27T10:40:54Z",
-  "lastManifestAt": "2026-08-27T21:11:48.310564+00:00",
+  "lastManifestAt": "2026-08-27T21:18:49.332486+00:00",
   "latestManifest": {
     "status": "incomplete",
     "tasksByStatus": {
-      "completed": 26158,
-      "failed": 757,
-      "queued": 1570,
+      "completed": 26421,
+      "failed": 756,
+      "queued": 1323,
       "running": 2
     },
     "completenessControls": {
@@ -50,20 +50,20 @@
       "futureGraphTerminal": false,
       "gigIdentitiesDiscovered": 7787,
       "gigIndexPages": 16128,
-      "goneGigDetails": 6,
+      "goneGigDetails": 7,
       "goneGigIndexPages": 2,
       "inventoryCovered": false,
       "venueDirectoryControls": 27,
       "venueDirectoryIdentitiesObserved": 8341,
       "venueDirectoryPages": 28,
-      "venueIdentitiesDiscovered": 2203
+      "venueIdentitiesDiscovered": 2218
     },
     "queue": {
       "deadLetterInFlight": 0,
       "deadLetterVisible": 894,
       "delayed": 0,
-      "inFlight": 2,
-      "visible": 1619
+      "inFlight": 1,
+      "visible": 1361
     }
   }
 }
