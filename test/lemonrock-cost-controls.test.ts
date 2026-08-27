@@ -72,6 +72,9 @@ describe('Lemonrock low-cost schedules', () => {
     expect(script).toContain("row.status === 'failed'");
     expect(script).toContain("Number(row.attemptCount ?? 1) < 3");
     expect(script).toContain("row.lastReconciliationId !== reconciliationId");
+    expect(script).toContain('venueFanoutCutoverAt');
+    expect(script).toContain("ops/lemonrock-runtime-cutovers.json");
+    expect(script).not.toContain('recoveryCandidates(rows, reconciliationId, deployment.verifiedAt)');
     expect(script).not.toContain("sourceId: 'lemonrock-full-reconcile'");
   });
 

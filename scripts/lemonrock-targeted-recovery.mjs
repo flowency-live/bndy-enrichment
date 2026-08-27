@@ -13,6 +13,8 @@ const queueUrl = process.env.SOURCE_QUEUE_URL;
 const statusFile = process.env.STATUS_FILE;
 const deploymentStatusFile = process.env.DEPLOYMENT_STATUS_FILE
   ?? 'ops/lemonrock-low-cost-operating-status.json';
+const runtimeCutoversFile = process.env.RUNTIME_CUTOVERS_FILE
+  ?? 'ops/lemonrock-runtime-cutovers.json';
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
   marshallOptions: { removeUndefinedValues: true },
@@ -45,7 +47,7 @@ async function queryTasks() {
   return rows;
 }
 
-function recoveryCandidates(rows, reconciliationId, deploymentVerifiedAt) {
+function recoveryCandidates(rows, reconciliationId, venueFanoutCutoverAt) {
   const currentByIdentity = new Map();
   for (const row of rows) {
     if (row.lastReconciliationId !== reconciliationId || row.task?.auditRun !== true) continue;
@@ -65,7 +67,7 @@ function recoveryCandidates(rows, reconciliationId, deploymentVerifiedAt) {
       && row.status === 'completed'
       && !row.venueFanoutRecoveryAt
       && typeof row.completedAt === 'string'
-      && row.completedAt < deploymentVerifiedAt
+      && row.completedAt < venueFanoutCutoverAt
     ) {
       return [{ row, mode: 'venue-fanout-gap' }];
     }
@@ -148,6 +150,11 @@ async function main() {
   if (typeof deployment.verifiedAt !== 'string' || !deployment.verifiedAt) {
     throw new Error('Low-cost deployment verification time is required');
   }
+  const runtimeCutovers = JSON.parse(await readFile(runtimeCutoversFile, 'utf8'));
+  const venueFanoutCutoverAt = runtimeCutovers.venueFanout?.verifiedAt;
+  if (typeof venueFanoutCutoverAt !== 'string' || !Number.isFinite(Date.parse(venueFanoutCutoverAt))) {
+    throw new Error('Stable Venue fanout cutover time is required');
+  }
 
   const root = await ddb.send(new GetCommand({
     TableName: tableName,
@@ -160,7 +167,7 @@ async function main() {
   }
 
   const rows = await queryTasks();
-  const candidates = recoveryCandidates(rows, reconciliationId, deployment.verifiedAt);
+  const candidates = recoveryCandidates(rows, reconciliationId, venueFanoutCutoverAt);
   const byMode = Object.fromEntries(
     ['venue-fanout-gap', 'failed-logical-task'].map((mode) => [mode, candidates.filter((x) => x.mode === mode).length]),
   );
@@ -168,6 +175,7 @@ async function main() {
     phase: 'queueing',
     reconciliationId,
     deploymentVerifiedAt: deployment.verifiedAt,
+    venueFanoutCutoverAt,
     candidateCounts: byMode,
     boundedToExistingReconciliation: true,
     launchesNationalReconciliation: false,

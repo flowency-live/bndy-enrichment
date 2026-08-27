@@ -28,6 +28,7 @@ jobs:
       STACK_NAME: BndyEnrichmentStack
       STATUS_FILE: ops/lemonrock-targeted-recovery-status.json
       DEPLOYMENT_STATUS_FILE: ops/lemonrock-low-cost-operating-status.json
+      RUNTIME_CUTOVERS_FILE: ops/lemonrock-runtime-cutovers.json
     steps:
       - uses: actions/checkout@v4
         with:
@@ -89,6 +90,7 @@ jobs:
           test "$(jq -r '.scheduledArtistDirectory' "$DEPLOYMENT_STATUS_FILE")" = "false"
           test "$(jq -r '.scheduledVenueDirectory' "$DEPLOYMENT_STATUS_FILE")" = "false"
           test "$(jq -r '.scheduledFullDirectoryReconciliation' "$DEPLOYMENT_STATUS_FILE")" = "false"
+          test "$(jq -r '.venueFanout.verifiedAt' "$RUNTIME_CUTOVERS_FILE")" = "2026-08-27T18:03:34Z"
 
           state_table=$(aws cloudformation describe-stacks \
             --stack-name "$STACK_NAME" \
