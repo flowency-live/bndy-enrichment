@@ -1,0 +1,53 @@
+name: Inspect On The Case live venue shape once
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    if: contains(github.event.head_commit.message, 'Inspect On The Case live venue shape')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - name: Fetch and parse representative live venue pages
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { parseOnTheCase } from './dist/src/sources/adapters/onthecase/parse.js';
+          const urls = [
+            'https://onthecasemusic.co.uk/venues/108/the-black-bull',
+            'https://onthecasemusic.co.uk/venues/6011/old-fat-ox-holywell'
+          ];
+          const out=[];
+          for (const url of urls) {
+            try {
+              const response=await fetch(url,{headers:{'user-agent':'bndy-backline/1.0 (+https://bndy.live)'}});
+              const html=await response.text();
+              const title=(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+              const bandLinks=[...html.matchAll(/href=["']([^"']*\/bands\/\d+\/[^"']+)["']/gi)].map(m=>m[1]);
+              let parsed=null, parseError=null;
+              try {
+                parsed=parseOnTheCase(html,url,{runId:'live-shape',sourceId:'onthecase-venue-hydration',startedAt:new Date().toISOString(),runDate:new Date().toISOString().slice(0,10),reason:'manual',requestedAt:new Date().toISOString(),task:{kind:'venue',url}});
+              } catch (e) { parseError=e instanceof Error?e.message:String(e); }
+              out.push({url,status:response.status,title,bytes:html.length,bandLinkCount:bandLinks.length,bandLinks:[...new Set(bandLinks)].slice(0,20),parsedBandTasks:(parsed?.nextRequests??[]).filter(r=>r.sourceId==='onthecase-band-hydration').map(r=>({taskKey:r.taskKey,url:r.task.url})),entity:parsed?.entities?.[0]?.displayName,parseError});
+            } catch(e) { out.push({url,error:e instanceof Error?e.message:String(e)}); }
+          }
+          fs.writeFileSync('ops/onthecase-live-venue-shape.json',JSON.stringify({capturedAt:new Date().toISOString(),venues:out},null,2)+'\n');
+          NODE
+      - name: Publish evidence
+        run: |
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git pull --rebase origin main
+          git add ops/onthecase-live-venue-shape.json
+          git commit -m "Record On The Case live venue shape" || exit 0
+          git push origin HEAD:main
