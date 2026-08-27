@@ -218,6 +218,34 @@ export class BndyEnrichmentStack extends cdk.Stack {
     entityEnrichmentQueue.grantSendMessages(projectionWorker);
     bndyServiceSecret.grantRead(projectionWorker);
 
+    // Backline Evidence Explorer admin read API. Read-only bounded graph
+    // traversal over the knowledge substrate for the Godmode explorer.
+    // Bearer-authenticated in-handler with the BNDY service token; the
+    // Function URL itself is open so the explorer page can call it directly.
+    const backlineAdminApi = new lambdaNode.NodejsFunction(this, 'BacklineAdminApi', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      entry: 'src/handlers/backline-admin-api.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 512,
+      environment: {
+        STATE_TABLE: table.tableName,
+        BNDY_SERVICE_SECRET_NAME: 'bndy/mcp-service',
+      },
+      bundling: { minify: true, sourceMap: true },
+    });
+    table.grantReadData(backlineAdminApi);
+    bndyServiceSecret.grantRead(backlineAdminApi);
+    const backlineAdminApiUrl = backlineAdminApi.addFunctionUrl({
+      authType: lambda.FunctionUrlAuthType.NONE,
+      cors: {
+        allowedOrigins: ['*'],
+        allowedMethods: [lambda.HttpMethod.GET],
+        allowedHeaders: ['authorization', 'content-type'],
+      },
+    });
+    new cdk.CfnOutput(this, 'BacklineAdminApiUrl', { value: backlineAdminApiUrl.url });
+
     // Lemonrock fast-change surfaces are scheduled directly into the durable source queue.
     // The source family remains registry-backed and shadow/no-write; these rules only create observations/claims.
     new events.Rule(this, 'LemonrockFastGigTick', {

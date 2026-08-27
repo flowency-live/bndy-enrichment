@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backline Evidence Explorer</title>
+<style>
+  :root{--bg:#0e1116;--panel:#161b23;--line:#2a3240;--txt:#e8edf4;--dim:#8b96a5;
+    --source:#f59e0b;--observation:#38bdf8;--claim:#a78bfa;--candidate:#34d399;--entity:#f472b6;}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--txt);font:13px/1.45 ui-sans-serif,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+  header b{font-size:14px;letter-spacing:.4px}
+  input,select,button{background:#0b0e13;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font:inherit}
+  input:focus{outline:1px solid #4b5a70}
+  button{cursor:pointer}
+  button:hover{border-color:#5b6b82}
+  #url{width:330px}#token{width:180px}#noderef{width:280px}
+  main{flex:1;display:flex;min-height:0}
+  #canvas{flex:1;min-width:0;position:relative}
+  svg{width:100%;height:100%;display:block;cursor:grab}
+  svg.dragging{cursor:grabbing}
+  #side{width:340px;border-left:1px solid var(--line);background:var(--panel);overflow:auto;padding:10px}
+  #side h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:6px}
+  #detail{white-space:pre-wrap;word-break:break-word;font:11px/1.5 ui-monospace,monospace;background:#0b0e13;border:1px solid var(--line);border-radius:6px;padding:8px;max-height:52vh;overflow:auto}
+  #sources{margin-top:10px}
+  .srcrow{display:flex;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid #1d2430;font-size:12px}
+  .srcrow button{padding:1px 7px;font-size:11px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .legend{display:flex;gap:10px;margin-left:auto;font-size:11px;color:var(--dim);align-items:center}
+  #status{position:absolute;left:10px;bottom:8px;color:var(--dim);font-size:11px;background:rgba(14,17,22,.8);padding:2px 8px;border-radius:6px}
+  text{fill:var(--txt);font-size:10px;pointer-events:none}
+  line{stroke:#39445699;stroke-width:1}
+  .edgeLabel{fill:#5c6b80;font-size:8px}
+  circle{cursor:pointer;stroke:#0e1116;stroke-width:1.5}
+  circle.center{stroke:#fff;stroke-width:2}
+</style>
+</head>
+<body>
+<header>
+  <b>BACKLINE EXPLORER</b>
+  <input id="url" placeholder="Admin API URL (https://....lambda-url.eu-west-2.on.aws)">
+  <input id="token" placeholder="Service token" type="password">
+  <button id="loadSources">Load sources</button>
+  <input id="noderef" placeholder="node ref e.g. candidate:venue-candidate:onthecase:venue:6011">
+  <button id="openref">Open</button>
+  <button id="clear">Clear graph</button>
+  <span class="legend">
+    <span class="dot" style="background:var(--source)"></span>source
+    <span class="dot" style="background:var(--observation)"></span>observation
+    <span class="dot" style="background:var(--claim)"></span>claim
+    <span class="dot" style="background:var(--candidate)"></span>candidate
+    <span class="dot" style="background:var(--entity)"></span>entity
+  </span>
+</header>
+<main>
+  <div id="canvas"><svg id="svg"></svg><div id="status">No graph loaded. Load sources, then click a source to expand.</div></div>
+  <aside id="side">
+    <h3>Node detail</h3>
+    <div id="detail">Click a node.</div>
+    <div id="sources"><h3 style="margin-top:12px">Sources</h3><div id="srclist">None loaded.</div></div>
+  </aside>
+</main>
+<script>
+// Backline Evidence Explorer. Self-contained: no external dependencies.
+// Talks to the BacklineAdminApi Function URL; every click expands one bounded
+// neighborhood from /graph?node=<ref>. State lives only in this page.
+const $=id=>document.getElementById(id);
+const KIND_COLOR={source:'#f59e0b',observation:'#38bdf8',claim:'#a78bfa',candidate:'#34d399',entity:'#f472b6'};
+const KIND_R={source:11,observation:8,claim:5,candidate:9,entity:11};
+let nodes=new Map(),edges=new Map(),sim=null,view={x:0,y:0,k:1},selected=null;
+try{$('url').value=localStorage.getItem('bx-url')||'';$('token').value=localStorage.getItem('bx-token')||'';}catch(e){}
+
+async function api(path){
+  const base=$('url').value.replace(/\/+$/,'');const token=$('token').value;
+  if(!base)throw new Error('Set the Admin API URL first');
+  try{localStorage.setItem('bx-url',base);localStorage.setItem('bx-token',token);}catch(e){}
+  const res=await fetch(base+path,{headers:{authorization:'Bearer '+token}});
+  if(!res.ok)throw new Error('API '+res.status+': '+await res.text());
+  return res.json();
+}
+function status(t){$('status').textContent=t;}
+
+function mergeNeighborhood(n){
+  for(const node of n.nodes){
+    const existing=nodes.get(node.ref);
+    if(existing){if(node.data&&!existing.data)existing.data=node.data;existing.label=node.label||existing.label;}
+    else nodes.set(node.ref,{...node,x:(Math.random()-0.5)*60+(selectedPos()?.x||0),y:(Math.random()-0.5)*60+(selectedPos()?.y||0),vx:0,vy:0,expanded:false});
+  }
+  for(const e of n.edges)edges.set(e.from+'|'+e.kind+'|'+e.to,e);
+  const center=nodes.get(n.center);if(center)center.expanded=true;
+  status(nodes.size+' nodes, '+edges.size+' edges'+(n.truncated?' (expansion truncated)':''));
+  restart();
+}
+function selectedPos(){return selected?nodes.get(selected):null;}
+
+async function expand(ref){
+  status('Expanding '+ref+' ...');
+  try{mergeNeighborhood(await api('/graph?node='+encodeURIComponent(ref)));}
+  catch(err){status(String(err.message||err));}
+}
+
+async function loadSources(){
+  status('Loading sources...');
+  try{
+    const out=await api('/sources');
+    const list=$('srclist');list.innerHTML='';
+    for(const s of out.sources){
+      const row=document.createElement('div');row.className='srcrow';
+      row.innerHTML='<span class="dot" style="background:'+(s.enabled?'#34d399':'#5c6b80')+'"></span>'
+        +'<span style="flex:1">'+s.id+(s.shadow?' <span style="color:#8b96a5">(shadow)</span>':'')+'</span>';
+      const btn=document.createElement('button');btn.textContent='expand';
+      btn.onclick=()=>expand('source:'+s.id);row.appendChild(btn);list.appendChild(row);
+    }
+    status(out.sources.length+' sources. Click expand.');
+  }catch(err){status(String(err.message||err));}
+}
+
+// --- tiny force layout ------------------------------------------------------
+function restart(){if(!sim)sim=setInterval(tick,16);}
+function tick(){
+  const ns=[...nodes.values()],es=[...edges.values()];
+  for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++){
+    const a=ns[i],b=ns[j];let dx=b.x-a.x,dy=b.y-a.y;let d2=dx*dx+dy*dy||1;const d=Math.sqrt(d2);
+    const rep=1400/d2;dx/=d;dy/=d;a.vx-=dx*rep;a.vy-=dy*rep;b.vx+=dx*rep;b.vy+=dy*rep;
+  }
+  for(const e of es){
+    const a=nodes.get(e.from),b=nodes.get(e.to);if(!a||!b)continue;
+    let dx=b.x-a.x,dy=b.y-a.y;const d=Math.sqrt(dx*dx+dy*dy)||1;const want=90;const f=(d-want)*0.02;
+    dx/=d;dy/=d;a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f;
+  }
+  let energy=0;
+  for(const n of ns){if(n.pinned){n.vx=0;n.vy=0;continue;}n.vx*=0.85;n.vy*=0.85;n.x+=n.vx;n.y+=n.vy;energy+=Math.abs(n.vx)+Math.abs(n.vy);}
+  draw();
+  if(energy<0.02*ns.length){clearInterval(sim);sim=null;}
+}
+function draw(){
+  const svg=$('svg');const w=svg.clientWidth,h=svg.clientHeight;
+  const tx=v=>((v.x*view.k)+w/2+view.x),ty=v=>((v.y*view.k)+h/2+view.y);
+  let out='';
+  for(const e of edges.values()){
+    const a=nodes.get(e.from),b=nodes.get(e.to);if(!a||!b)continue;
+    out+='<line x1="'+tx(a)+'" y1="'+ty(a)+'" x2="'+tx(b)+'" y2="'+ty(b)+'"/>';
+    out+='<text class="edgeLabel" x="'+((tx(a)+tx(b))/2)+'" y="'+((ty(a)+ty(b))/2-2)+'">'+e.kind+'</text>';
+  }
+  for(const n of nodes.values()){
+    const r=(KIND_R[n.kind]||6)*(view.k<0.7?0.8:1);
+    out+='<circle data-ref="'+encodeURIComponent(n.ref)+'" cx="'+tx(n)+'" cy="'+ty(n)+'" r="'+r+'" fill="'+(KIND_COLOR[n.kind]||'#999')+'"'+(n.ref===selected?' class="center"':'')+'/>';
+    if(view.k>0.55)out+='<text x="'+(tx(n)+r+3)+'" y="'+(ty(n)+3)+'">'+escapeHtml(n.label||n.ref).slice(0,42)+'</text>';
+  }
+  svg.innerHTML=out;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+// --- interactions -----------------------------------------------------------
+const svg=$('svg');
+let dragNode=null,panning=false,last=null;
+svg.addEventListener('pointerdown',ev=>{
+  const ref=ev.target.dataset&&ev.target.dataset.ref?decodeURIComponent(ev.target.dataset.ref):null;
+  if(ref){dragNode=nodes.get(ref);if(dragNode)dragNode.pinned=true;}
+  else{panning=true;svg.classList.add('dragging');}
+  last={x:ev.clientX,y:ev.clientY};svg.setPointerCapture(ev.pointerId);
+});
+svg.addEventListener('pointermove',ev=>{
+  if(!last)return;const dx=ev.clientX-last.x,dy=ev.clientY-last.y;last={x:ev.clientX,y:ev.clientY};
+  if(dragNode){dragNode.x+=dx/view.k;dragNode.y+=dy/view.k;draw();}
+  else if(panning){view.x+=dx;view.y+=dy;draw();}
+});
+svg.addEventListener('pointerup',ev=>{
+  const moved=dragNode&&(Math.abs(ev.clientX-(last?.x??0))+Math.abs(ev.clientY-(last?.y??0)))>3;
+  if(dragNode&&!moved){/* click on node */}
+  if(dragNode){dragNode.pinned=false;}
+  const ref=ev.target.dataset&&ev.target.dataset.ref?decodeURIComponent(ev.target.dataset.ref):null;
+  if(ref)selectNode(ref);
+  dragNode=null;panning=false;last=null;svg.classList.remove('dragging');
+});
+svg.addEventListener('wheel',ev=>{ev.preventDefault();const f=ev.deltaY<0?1.12:0.9;view.k=Math.min(3,Math.max(0.25,view.k*f));draw();},{passive:false});
+svg.addEventListener('dblclick',ev=>{
+  const ref=ev.target.dataset&&ev.target.dataset.ref?decodeURIComponent(ev.target.dataset.ref):null;
+  if(ref)expand(ref);
+});
+function selectNode(ref){
+  selected=ref;const n=nodes.get(ref);
+  $('detail').textContent=n?JSON.stringify({ref:n.ref,kind:n.kind,label:n.label,data:n.data??null},null,1):'';
+  draw();
+  if(n&&!n.expanded)expand(ref); // first click expands; double-click re-expands
+}
+$('loadSources').onclick=loadSources;
+$('openref').onclick=()=>{const v=$('noderef').value.trim();if(v)expand(v);};
+$('clear').onclick=()=>{nodes.clear();edges.clear();selected=null;$('detail').textContent='Click a node.';draw();status('Cleared.');};
+window.addEventListener('resize',draw);
+</script>
+</body>
+</html>
