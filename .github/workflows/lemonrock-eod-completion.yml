@@ -133,7 +133,8 @@ jobs:
           }
 
           failures=1
-          for recovery_cycle in 1 2 3; do
+          recovery_cycle=1
+          while [ "$recovery_cycle" -le 3 ]; do
             wait_for_active_queue
             run_workflow lemonrock-manifest-readonly.yml
             git fetch origin main
@@ -143,11 +144,14 @@ jobs:
             queued=$(jq -r '.tasksByStatus.queued // 0' /tmp/lemonrock-manifest.json)
             running=$(jq -r '.tasksByStatus.running // 0' /tmp/lemonrock-manifest.json)
             echo "::notice::Terminal check $recovery_cycle: failures=$failures queued=$queued running=$running"
-            test "$queued" -eq 0
-            test "$running" -eq 0
+            if [ "$queued" -ne 0 ] || [ "$running" -ne 0 ]; then
+              echo "::notice::The manifest observed renewed active work after approximate SQS zero; resuming drain without consuming a recovery cycle"
+              continue
+            fi
             if [ "$failures" -eq 0 ]; then break; fi
             test "$recovery_cycle" -lt 3
             run_workflow lemonrock-targeted-recovery.yml
+            recovery_cycle=$((recovery_cycle + 1))
           done
           test "$failures" -eq 0
 

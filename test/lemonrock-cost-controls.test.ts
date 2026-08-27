@@ -92,6 +92,10 @@ describe('Lemonrock low-cost schedules', () => {
     expect(workflow).toContain('gh workflow run lemonrock-eod-completion.yml --ref main');
     expect(workflow).toContain('echo "handoff=true" >> "$GITHUB_OUTPUT"');
     expect(workflow).toContain("if: steps.control.outputs.handoff != 'true'");
+    expect(workflow).toContain('resuming drain without consuming a recovery cycle');
+    expect(workflow).toContain('if [ "$queued" -ne 0 ] || [ "$running" -ne 0 ]');
+    expect(workflow).not.toContain('test "$queued" -eq 0');
+    expect(workflow).not.toContain('test "$running" -eq 0');
     expect(workflow).toContain("test \"$(jq -r '.status' /tmp/lemonrock-final-manifest.json)\" = \"complete\"");
     expect(workflow).not.toContain('lemonrock-completion-deploy.yml');
     expect(workflow).not.toContain('lemonrock-full-reconcile');
