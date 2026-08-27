@@ -163,11 +163,17 @@ jobs:
           artist_pages = int(kinds.get("artist-index-page", 0))
           venue_pages = int(kinds.get("venue-index-page", 0))
           gig_index_pages = int(kinds.get("gig-index", 0))
+          # Lemonrock exposes A-Z plus one numeric "123" segment. The extra
+          # page task is the all-members/root view and does not advertise a
+          # separate inventory count, so it must not be treated as a 28th
+          # inventory-bearing segment.
+          directory_inventory_segments_expected = 27
+          directory_page_tasks_expected = 28
           directories_covered = (
-              artist_pages >= 28
-              and venue_pages >= 28
-              and len(artist_controls) >= 28
-              and len(venue_controls) >= 28
+              artist_pages >= directory_page_tasks_expected
+              and venue_pages >= directory_page_tasks_expected
+              and len(artist_controls) >= directory_inventory_segments_expected
+              and len(venue_controls) >= directory_inventory_segments_expected
               and advertised_artists > 0
               and advertised_venues > 0
               and (
@@ -258,6 +264,8 @@ jobs:
                   "gigIdentitiesDiscovered": gig_identities,
                   "artistDirectoryPages": artist_pages,
                   "venueDirectoryPages": venue_pages,
+                  "directoryPageTasksExpected": directory_page_tasks_expected,
+                  "directoryInventoryControlsExpected": directory_inventory_segments_expected,
                   "gigIndexPages": gig_index_pages,
                   "countyControls": len(county_controls),
                   "artistDirectoryControls": len(artist_controls),
