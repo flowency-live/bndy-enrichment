@@ -31,6 +31,25 @@ describe('Lemonrock reconciliation lineage', () => {
     expect((ddbSend.mock.calls[1]?.[0] as any).input.Item.taskKey).toBe(`${child.taskKey}@2026-08`);
   });
 
+  it('replays every national-audit task within the owned reconciliation', async () => {
+    const ddbSend = vi.fn().mockResolvedValue({});
+    const sqsSend = vi.fn().mockResolvedValue({});
+    const publisher = new DynamoSqsSourceFanoutPublisher('state-table', 'queue', { send: ddbSend } as any, { send: sqsSend } as any);
+    await publisher.publish(
+      { ...child, task: { ...child.task, refreshWindow: 'monthly', auditRun: true } },
+      '2026-08-27T10:00:00.000Z',
+      'run-national-audit-1',
+    );
+    expect((ddbSend.mock.calls[0]?.[0] as any).input.Item.taskKey).toBe(
+      `${child.taskKey}@audit@run-national-audit-1`,
+    );
+    expect(JSON.parse((sqsSend.mock.calls[0]?.[0] as any).input.MessageBody)).toMatchObject({
+      reconciliationId: 'run-national-audit-1',
+      taskKey: `${child.taskKey}@audit@run-national-audit-1`,
+      task: expect.objectContaining({ auditRun: true }),
+    });
+  });
+
   it('persists lineage on a new durable task and forwards it through SQS', async () => {
     const ddbSend = vi.fn().mockResolvedValue({});
     const sqsSend = vi.fn().mockResolvedValue({});

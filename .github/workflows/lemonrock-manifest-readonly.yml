@@ -151,6 +151,12 @@ jobs:
           advertised_future_gigs = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in county_controls)
           advertised_artists = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in artist_controls)
           advertised_venues = sum(int((x.get("task") or {}).get("expectedCount", 0)) for x in venue_controls)
+          observed_directory_artists = sum(int((x.get("task") or {}).get("observedCount", 0)) for x in artist_controls)
+          observed_directory_venues = sum(int((x.get("task") or {}).get("observedCount", 0)) for x in venue_controls)
+          directory_audit_only = any(
+              (x.get("task") or {}).get("directoryAuditOnly") is True
+              for x in discovered
+          )
           artist_identities = int(kinds.get("artist", 0))
           venue_identities = int(kinds.get("venue", 0))
           gig_identities = int(kinds.get("gig", 0))
@@ -164,8 +170,16 @@ jobs:
               and len(venue_controls) >= 28
               and advertised_artists > 0
               and advertised_venues > 0
-              and artist_identities >= advertised_artists
-              and venue_identities >= advertised_venues
+              and (
+                  observed_directory_artists >= advertised_artists
+                  if directory_audit_only
+                  else artist_identities >= advertised_artists
+              )
+              and (
+                  observed_directory_venues >= advertised_venues
+                  if directory_audit_only
+                  else venue_identities >= advertised_venues
+              )
           )
           future_gigs_covered = (
               advertised_future_gigs > 0
@@ -220,6 +234,8 @@ jobs:
               "canonicalWritesEnabled": False,
               "status": "complete" if complete else "incomplete",
               "reconciliationId": reconciliation_id,
+              "verificationMode": "national-gig-led" if directory_audit_only else "legacy-full-directory",
+              "directoryMode": "inventory-controls-only" if directory_audit_only else "profile-hydration",
               "root": {
                   "lastRunAt": root.get("lastRunAt"),
                   "lastSuccessfulRunAt": root.get("lastSuccessfulRunAt"),
@@ -237,6 +253,8 @@ jobs:
                   "advertisedFutureGigs": advertised_future_gigs,
                   "artistIdentitiesDiscovered": artist_identities,
                   "venueIdentitiesDiscovered": venue_identities,
+                  "artistDirectoryIdentitiesObserved": observed_directory_artists,
+                  "venueDirectoryIdentitiesObserved": observed_directory_venues,
                   "gigIdentitiesDiscovered": gig_identities,
                   "artistDirectoryPages": artist_pages,
                   "venueDirectoryPages": venue_pages,
@@ -278,9 +296,37 @@ jobs:
               '{generatedAt:$generatedAt,sanitised:true,status:"diagnostic-failed"}' \
               > ops/lemonrock-reconciliation-manifest.json
           fi
+          if [ -f ops/lemonrock-national-verification.json ]; then
+            manifest_reconciliation=$(jq -r '.reconciliationId // ""' ops/lemonrock-reconciliation-manifest.json)
+            verification_reconciliation=$(jq -r '.reconciliationId // ""' ops/lemonrock-national-verification.json)
+            if [ -n "$manifest_reconciliation" ] && [ "$manifest_reconciliation" = "$verification_reconciliation" ]; then
+              jq \
+                --slurpfile manifest ops/lemonrock-reconciliation-manifest.json \
+                '($manifest[0]) as $m
+                 | .lastManifestAt = $m.generatedAt
+                 | .latestManifest = {
+                     status:$m.status,
+                     tasksByStatus:$m.tasksByStatus,
+                     completenessControls:$m.completenessControls,
+                     queue:$m.queue
+                   }
+                 | if $m.status == "complete" then
+                     .status = "complete" | .phase = "complete" | .completedAt = $m.generatedAt
+                   elif $m.allDiscoveredTasksTerminal == true and $m.queuesClear == true then
+                     .status = "attention" | .phase = "completion-gate-failed"
+                   else
+                     .status = "in-progress" | .phase = "draining"
+                   end' \
+                ops/lemonrock-national-verification.json > ops/lemonrock-national-verification.json.tmp
+              mv ops/lemonrock-national-verification.json.tmp ops/lemonrock-national-verification.json
+            fi
+          fi
           git config user.name "bndy-backline-bot"
           git config user.email "actions@users.noreply.github.com"
           git add ops/lemonrock-reconciliation-manifest.json
+          if [ -f ops/lemonrock-national-verification.json ]; then
+            git add ops/lemonrock-national-verification.json
+          fi
           git commit -m "Record Lemonrock reconciliation manifest" || exit 0
           for attempt in 1 2 3; do
             if git push origin HEAD:main; then exit 0; fi

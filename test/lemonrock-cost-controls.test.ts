@@ -19,4 +19,20 @@ describe('Lemonrock low-cost schedules', () => {
     expect(scheduledBlock).not.toContain('lemonrock-venue-index');
     expect(scheduledBlock).not.toContain('full-reconcile');
   });
+
+  it('keeps national verification bounded and never auto-redrives failures', () => {
+    const workflow = readFileSync(
+      new URL('../.github/workflows/lemonrock-completion-deploy.yml', import.meta.url),
+      'utf8',
+    );
+
+    expect(workflow).toContain('directoryMode:"inventory-controls-only"');
+    expect(workflow).toContain('automaticDeadLetterRedrive:false');
+    expect(workflow).toContain('Require an empty source queue and DLQ');
+    expect(workflow).toContain('auditRun:true');
+    expect(workflow).toContain('directoryAuditOnly:true');
+    expect(workflow).not.toContain('start-message-move-task');
+    expect(workflow).not.toContain('update-role');
+    expect(workflow).not.toContain('role-duration-seconds: 14400');
+  });
 });

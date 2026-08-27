@@ -40,6 +40,13 @@ function dedupeKey(request: SourceFanoutRequest, requestedAt: string, reconcilia
   }
 
   if (!request.sourceId.startsWith('lemonrock-')) return request.taskKey;
+  // A national verification is deliberately reconciliation-scoped. It must
+  // re-fetch the current gig graph even if BAU already saw the same native ID
+  // in this hour/week/month. Ordinary Lemonrock discovery keeps the cheaper
+  // time-bucketed dedupe rules below.
+  if (reconciliationId && request.task.auditRun === true) {
+    return `${request.taskKey}@audit@${reconciliationId}`;
+  }
   if (request.sourceId === 'lemonrock-gig-hydration') {
     const refreshWindow = request.task.refreshWindow;
     if (refreshWindow === 'hourly') return `${request.taskKey}@${date.toISOString().slice(0, 13)}`;

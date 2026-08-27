@@ -66,7 +66,7 @@ describe('Lemonrock source-native identities', () => {
       }),
       expect.objectContaining({
         taskKey: 'artist-inventory-control:lemonrock:artist-directory:a',
-        task: expect.objectContaining({ expectedCount: 551, inventoryLevel: 'directory-page' }),
+        task: expect.objectContaining({ expectedCount: 551, observedCount: 1, inventoryLevel: 'directory-page' }),
       }),
     ]));
     expect(venues.nextRequests).toEqual(expect.arrayContaining([
@@ -75,7 +75,7 @@ describe('Lemonrock source-native identities', () => {
       }),
       expect.objectContaining({
         taskKey: 'venue-inventory-control:lemonrock:venue-directory:a',
-        task: expect.objectContaining({ expectedCount: 259, inventoryLevel: 'directory-page' }),
+        task: expect.objectContaining({ expectedCount: 259, observedCount: 1, inventoryLevel: 'directory-page' }),
       }),
     ]));
   });
@@ -300,15 +300,15 @@ describe('Lemonrock source-native identities', () => {
     expect(tasks).toEqual(expect.arrayContaining([
       expect.objectContaining({
         sourceId: 'lemonrock-artist-index',
-        task: expect.objectContaining({ kind: 'artist-index' }),
+        task: expect.objectContaining({ kind: 'artist-index', auditRun: true, directoryAuditOnly: true }),
       }),
       expect.objectContaining({
         sourceId: 'lemonrock-venue-index',
-        task: expect.objectContaining({ kind: 'venue-index' }),
+        task: expect.objectContaining({ kind: 'venue-index', auditRun: true, directoryAuditOnly: true }),
       }),
       expect.objectContaining({
         sourceId: 'lemonrock-future-reconcile',
-        task: expect.objectContaining({ kind: 'future-index' }),
+        task: expect.objectContaining({ kind: 'future-index', auditRun: true }),
       }),
       expect.objectContaining({
         sourceId: 'lemonrock-new-gigs',
@@ -317,6 +317,76 @@ describe('Lemonrock source-native identities', () => {
       expect.objectContaining({
         sourceId: 'lemonrock-cancellations',
         task: expect.objectContaining({ kind: 'cancellations' }),
+      }),
+    ]));
+  });
+
+  it('counts directory inventory during a national audit without hydrating dormant profiles', () => {
+    const html = `
+      <html><head><title>All Bands (A) (2) - Lemonrock Gig Guide</title></head><body>
+        <a href="/alpha"><strong>Alpha</strong></a>
+        <a href="/beta"><strong>Beta</strong></a>
+        <a href="/allbands.php?_start=B&amp;all=0">B</a>
+      </body></html>`;
+    const parsed = parseLemonrock(
+      html,
+      'https://www.lemonrock.com/allbands.php?_start=A&all=1',
+      run('lemonrock-artist-index', {
+        kind: 'artist-index-page',
+        auditRun: true,
+        directoryAuditOnly: true,
+      }),
+    );
+    const tasks = parsed.nextRequests ?? [];
+    expect(tasks.some((item) => item.sourceId === 'lemonrock-artist-hydration')).toBe(false);
+    expect(tasks).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        sourceId: 'lemonrock-artist-index',
+        task: expect.objectContaining({
+          kind: 'artist-index-page',
+          auditRun: true,
+          directoryAuditOnly: true,
+        }),
+      }),
+      expect.objectContaining({
+        task: expect.objectContaining({
+          kind: 'artist-inventory-control',
+          auditRun: true,
+          expectedCount: 2,
+          observedCount: 2,
+        }),
+      }),
+    ]));
+  });
+
+  it('propagates national-audit lineage from listings through gigs to attached profiles', () => {
+    const listing = parseLemonrock(
+      '<html><body><a href="/gig.php?id=939252">Example Band at Example Arms</a></body></html>',
+      'https://www.lemonrock.com/gigs-in-manchester',
+      run('lemonrock-future-reconcile', { kind: 'gig-index', auditRun: true }),
+    );
+    expect(listing.nextRequests).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        sourceId: 'lemonrock-gig-hydration',
+        task: expect.objectContaining({ auditRun: true }),
+      }),
+    ]));
+
+    const gig = parseLemonrock(
+      `<html><head><title>Example Band gig at Example Arms on 27 August 2026 - Lemonrock Gig Guide</title></head><body>
+        <a href="/exampleband">Example Band</a><a href="/examplearms">Example Arms</a>
+      </body></html>`,
+      'https://www.lemonrock.com/gig.php?id=939252',
+      run('lemonrock-gig-hydration', { kind: 'gig', auditRun: true }),
+    );
+    expect(gig.nextRequests).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        sourceId: 'lemonrock-artist-hydration',
+        task: expect.objectContaining({ auditRun: true }),
+      }),
+      expect.objectContaining({
+        sourceId: 'lemonrock-venue-hydration',
+        task: expect.objectContaining({ auditRun: true }),
       }),
     ]));
   });
