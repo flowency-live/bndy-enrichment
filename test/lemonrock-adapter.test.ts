@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { GigSource } from '../src/knowledge/types.js';
 import type { SourceRunContext } from '../src/sources/runner/types.js';
 import { gigId, lemonrockSlug } from '../src/sources/adapters/lemonrock/html.js';
+import { lemonrockAdapter } from '../src/sources/adapters/lemonrock/index.js';
 import { parseLemonrock } from '../src/sources/adapters/lemonrock/parse.js';
 
 function run(sourceId: string, task?: Record<string, unknown>): SourceRunContext {
@@ -16,6 +18,32 @@ function run(sourceId: string, task?: Record<string, unknown>): SourceRunContext
 }
 
 describe('Lemonrock source-native identities', () => {
+  it('parks HTTP 410 as terminal gone evidence without inventing a cancellation', async () => {
+    const parsed = await lemonrockAdapter.parse(
+      {} as GigSource,
+      run('lemonrock-gig-hydration', { kind: 'gig', nativeId: 'lemonrock:gig:939252' }),
+      {
+        kind: 'html',
+        body: '<html><body>Gone</body></html>',
+        sourceUrl: 'https://www.lemonrock.com/gig.php?id=939252',
+        fetchMethod: 'http-lemonrock',
+        fetchedAt: '2026-08-27T19:45:00.000Z',
+        complete: false,
+        httpStatus: 410,
+        contentType: 'text/html',
+      },
+    );
+
+    expect(parsed.events).toEqual([]);
+    expect(parsed.nextRequests).toEqual([]);
+    expect(parsed.parked).toEqual([
+      expect.objectContaining({ reason: expect.stringContaining('HTTP 410') }),
+    ]);
+    expect(parsed.warnings).toEqual([
+      expect.stringContaining('without inferring cancellation'),
+    ]);
+  });
+
   it('keeps profile slugs and numeric gig IDs stable', () => {
     expect(lemonrockSlug('https://www.lemonrock.com/theexampleband')).toBe('theexampleband');
     expect(gigId('https://www.lemonrock.com/gig.php?id=939252')).toBe('939252');
