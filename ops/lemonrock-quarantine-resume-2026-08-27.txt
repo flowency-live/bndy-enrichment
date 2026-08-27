@@ -1,3 +1,4 @@
 Purpose: resume or verify the accepted historical SourceScan DLQ to retained quarantine move.
 No replay. No purge. Canonical writes disabled.
 Requested: 2026-08-27 UTC.
+Verification retry: normalise an empty source DLQ response and publish terminal retained counts.
