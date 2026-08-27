@@ -1,0 +1,141 @@
+{
+  "capturedAt": "2026-08-27T08:40:43.402Z",
+  "venues": [
+    {
+      "url": "https://onthecasemusic.co.uk/venues/108/the-black-bull",
+      "status": 200,
+      "title": "Venues",
+      "bytes": 25373,
+      "bandLinkCount": 18,
+      "bandLinks": [
+        "/bands/31119/missing-cats",
+        "/bands/30021/hard-wired",
+        "/bands/649/trilogy",
+        "/bands/1142/7-sins",
+        "/bands/808/the-flames",
+        "/bands/247/proper-boys",
+        "/bands/30023/undercover-band",
+        "/bands/250/diablo",
+        "/bands/8536/brit-pack",
+        "/bands/103/dakota",
+        "/bands/27778/we-3-colonels",
+        "/bands/671/oasisjam",
+        "/bands/28891/the-stones-story",
+        "/bands/1337/dreadnought",
+        "/bands/29972/stormy-monday",
+        "/bands/50/brydon-trio",
+        "/bands/27849/hybrids",
+        "/bands/1238/fossil"
+      ],
+      "parsedBandTasks": [
+        {
+          "taskKey": "band:onthecase:band:31119",
+          "url": "https://onthecasemusic.co.uk/bands/31119/missing-cats"
+        },
+        {
+          "taskKey": "band:onthecase:band:30021",
+          "url": "https://onthecasemusic.co.uk/bands/30021/hard-wired"
+        },
+        {
+          "taskKey": "band:onthecase:band:649",
+          "url": "https://onthecasemusic.co.uk/bands/649/trilogy"
+        },
+        {
+          "taskKey": "band:onthecase:band:1142",
+          "url": "https://onthecasemusic.co.uk/bands/1142/7-sins"
+        },
+        {
+          "taskKey": "band:onthecase:band:808",
+          "url": "https://onthecasemusic.co.uk/bands/808/the-flames"
+        },
+        {
+          "taskKey": "band:onthecase:band:247",
+          "url": "https://onthecasemusic.co.uk/bands/247/proper-boys"
+        },
+        {
+          "taskKey": "band:onthecase:band:30023",
+          "url": "https://onthecasemusic.co.uk/bands/30023/undercover-band"
+        },
+        {
+          "taskKey": "band:onthecase:band:250",
+          "url": "https://onthecasemusic.co.uk/bands/250/diablo"
+        },
+        {
+          "taskKey": "band:onthecase:band:8536",
+          "url": "https://onthecasemusic.co.uk/bands/8536/brit-pack"
+        },
+        {
+          "taskKey": "band:onthecase:band:103",
+          "url": "https://onthecasemusic.co.uk/bands/103/dakota"
+        },
+        {
+          "taskKey": "band:onthecase:band:27778",
+          "url": "https://onthecasemusic.co.uk/bands/27778/we-3-colonels"
+        },
+        {
+          "taskKey": "band:onthecase:band:671",
+          "url": "https://onthecasemusic.co.uk/bands/671/oasisjam"
+        },
+        {
+          "taskKey": "band:onthecase:band:28891",
+          "url": "https://onthecasemusic.co.uk/bands/28891/the-stones-story"
+        },
+        {
+          "taskKey": "band:onthecase:band:1337",
+          "url": "https://onthecasemusic.co.uk/bands/1337/dreadnought"
+        },
+        {
+          "taskKey": "band:onthecase:band:29972",
+          "url": "https://onthecasemusic.co.uk/bands/29972/stormy-monday"
+        },
+        {
+          "taskKey": "band:onthecase:band:50",
+          "url": "https://onthecasemusic.co.uk/bands/50/brydon-trio"
+        },
+        {
+          "taskKey": "band:onthecase:band:27849",
+          "url": "https://onthecasemusic.co.uk/bands/27849/hybrids"
+        },
+        {
+          "taskKey": "band:onthecase:band:1238",
+          "url": "https://onthecasemusic.co.uk/bands/1238/fossil"
+        }
+      ],
+      "entity": "Blacksmiths Arms Gosforth",
+      "parseError": null
+    },
+    {
+      "url": "https://onthecasemusic.co.uk/venues/6011/old-fat-ox-holywell",
+      "status": 200,
+      "title": "Venues",
+      "bytes": 21255,
+      "bandLinkCount": 8,
+      "bandLinks": [
+        "/bands/30015/buskers-night",
+        "/bands/22583/distant-suns",
+        "/bands/31075/midnight-echoes",
+        "/bands/50/brydon-trio"
+      ],
+      "parsedBandTasks": [
+        {
+          "taskKey": "band:onthecase:band:30015",
+          "url": "https://onthecasemusic.co.uk/bands/30015/buskers-night"
+        },
+        {
+          "taskKey": "band:onthecase:band:22583",
+          "url": "https://onthecasemusic.co.uk/bands/22583/distant-suns"
+        },
+        {
+          "taskKey": "band:onthecase:band:31075",
+          "url": "https://onthecasemusic.co.uk/bands/31075/midnight-echoes"
+        },
+        {
+          "taskKey": "band:onthecase:band:50",
+          "url": "https://onthecasemusic.co.uk/bands/50/brydon-trio"
+        }
+      ],
+      "entity": "Old Fat Ox Holywell",
+      "parseError": null
+    }
+  ]
+}
