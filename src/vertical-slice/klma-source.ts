@@ -176,6 +176,15 @@ export function parseKlmaCsv(csv: string): KlmaRawRow[] {
   }));
 }
 
+export function hasKlmaCsvShape(csv: string): boolean {
+  const records = parseCsvRecords(csv);
+  const header = (records[0] ?? []).slice(0, 6).map((value) => value.trim().toLowerCase());
+  return records.length > 1
+    && header[0]?.includes('date') === true
+    && header[1]?.includes('artist') === true
+    && header[2]?.includes('venue') === true;
+}
+
 function validDateParts(year: number, month: number, day: number): boolean {
   if (year < 2020 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return false;
   const d = new Date(Date.UTC(year, month - 1, day));
@@ -204,12 +213,14 @@ export function parseKlmaDate(raw: string): string | null {
     return isoDate(year, second, first);
   }
 
-  if (/[A-Za-z]/.test(value)) {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return isoDate(parsed.getUTCFullYear(), parsed.getUTCMonth() + 1, parsed.getUTCDate());
-    }
-  }
+  const months: Record<string, number> = {
+    january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+    july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+  };
+  const monthFirst = value.match(/^([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?[,]?\s+(\d{4})$/i);
+  if (monthFirst) return isoDate(Number(monthFirst[3]), months[monthFirst[1]!.toLowerCase()] ?? 0, Number(monthFirst[2]));
+  const dayFirst = value.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)[,]?\s+(\d{4})$/i);
+  if (dayFirst) return isoDate(Number(dayFirst[3]), months[dayFirst[2]!.toLowerCase()] ?? 0, Number(dayFirst[1]));
 
   return null;
 }
