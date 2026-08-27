@@ -1,21 +1,17 @@
 {
-  "capturedAt": "2026-08-26T22:46:18Z",
-  "reconciliationId": "onthecase-gig-led-2026-08-26T22-17-28-593Z",
+  "capturedAt": "2026-08-27T08:33:28Z",
+  "reconciliationId": "onthecase-gig-led-2026-08-27T08-10-10-518Z",
   "tasks": {
     "discovered": 30,
-    "completed": 1,
-    "failed": 29,
+    "completed": 30,
+    "failed": 0,
     "queued": 0,
     "running": 0
   },
   "statusBreakdown": [
     {
       "status": "completed",
-      "count": 1
-    },
-    {
-      "status": "failed",
-      "count": 29
+      "count": 30
     }
   ],
   "sourceBreakdown": [
@@ -28,209 +24,5 @@
       "count": 29
     }
   ],
-  "failures": [
-    {
-      "taskKey": "venue:onthecase:venue:108@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/108/blacksmiths-arms-gosforth",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:51.921Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:185@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/185/easington-colliery-wmc",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:48.636Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:273@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/273/lochside",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:41.561Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:333@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/333/old-fox-felling-gateshead",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:34.285Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:337@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/337/ox-and-plough-washington",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:42.678Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:348@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/348/penny-gill-spennymoor",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:51.579Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:375@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/375/red-lion-earsdon-whitley-bay",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:53.015Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:463@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/463/three-tuns-gateshead",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:52.576Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:493@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/493/white-swan-morpeth",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:31.540Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:572@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/572/new-hartley-club-new-hartley",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:45.392Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:5994@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/5994/the-prior-doxford-sunderland",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:41.848Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6011@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6011/old-fat-ox-holywell",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:26.669Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6016@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6016/crown-and-cannon-winlaton",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:30.562Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6028@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6028/clousden-hill-forest-hall",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:40.772Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6029@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6029/live-lounge-sunderland",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:39.685Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6074@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6074/sea-horse-club-at-whitley-bay-fc",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:54.441Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6096@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6096/clennel-hall-rothbury-bike-night",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:48.991Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6118@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6118/cross-keys-washington",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:39.762Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6124@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6124/angels-place-sunderland",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:46.690Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6127@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6127/red-house-farm-whitley-bay",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:29.305Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6128@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6128/bridge-hotel-durham",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:36.359Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6129@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6129/the-peacock-newcastle",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:50.861Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:6130@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/6130/ivy-house-sunderland",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:37.476Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:638@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/638/runhead-bar-and-grill-ryton",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:44.167Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:753@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/753/bridlepath-whickham",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:50.080Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:892@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/892/melton-constable-seaton-sluice",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:47.847Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:90@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/90/bebside-inn-blyth",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:54.027Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:915@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/915/murton-officials-club-seaham",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:46.564Z"
-    },
-    {
-      "taskKey": "venue:onthecase:venue:940@2026-08-26",
-      "sourceId": "onthecase-venue-hydration",
-      "sourceUrl": "https://onthecasemusic.co.uk/venues/940/crook-hotel-crook",
-      "lastError": "The conditional request failed",
-      "failedAt": "2026-08-26T20:26:44.349Z"
-    }
-  ]
+  "failures": []
 }
