@@ -4,6 +4,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import type { SourceFanoutRequest } from './types.js';
 
 const LEMONROCK_DISCOVERY_SCHEMA_VERSION = 'v5';
+const MAX_RECONCILIATION_ATTEMPTS = 3;
 
 export type SourceTaskStatus = 'queued' | 'running' | 'completed' | 'failed';
 
@@ -34,45 +35,25 @@ function dedupeKey(request: SourceFanoutRequest, requestedAt: string, reconcilia
   if (Number.isNaN(date.getTime())) return request.taskKey;
 
   if (request.sourceId.startsWith('onthecase-')) {
-    // Gig-led discovery may repeatedly encounter the same venue. Refresh a
-    // referenced venue at most daily so a new performer link is discovered
-    // without turning the hourly gig sweep into an hourly profile crawl.
-    if (request.sourceId === 'onthecase-venue-hydration') {
-      return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
-    }
-    // Band profiles are richer but slower-moving. A weekly refresh is enough
-    // once a gig-linked venue has resolved the source-native band identity.
-    if (request.sourceId === 'onthecase-band-hydration') {
-      return `${request.taskKey}@${isoWeek(date)}`;
-    }
-    // Explicit bootstrap/audit lineage gets its own stable scope. Directory
-    // controls and index fanout therefore remain replayable across audits.
+    if (request.sourceId === 'onthecase-venue-hydration') return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
+    if (request.sourceId === 'onthecase-band-hydration') return `${request.taskKey}@${isoWeek(date)}`;
     if (reconciliationId) return `${request.taskKey}@${reconciliationId}`;
     return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
   }
 
   if (!request.sourceId.startsWith('lemonrock-')) return request.taskKey;
 
-  // Only the new-gig and cancellation feeds may refresh a gig hourly. National
-  // reconciliation uses a monthly key so duplicate discovery paths collapse and
-  // the low-cost operating sweep hydrates each gig at most once per month.
   if (request.sourceId === 'lemonrock-gig-hydration') {
     const refreshWindow = request.task.refreshWindow;
     if (refreshWindow === 'hourly') return `${request.taskKey}@${date.toISOString().slice(0, 13)}`;
     return `${request.taskKey}@${date.toISOString().slice(0, 7)}`;
   }
 
-  // Rich artist/venue profiles change more slowly; one hydration per ISO week is
-  // enough during national reconciliation while still allowing future refreshes.
   if (request.sourceId === 'lemonrock-artist-hydration' || request.sourceId === 'lemonrock-venue-hydration') {
     return `${request.taskKey}@${isoWeek(date)}`;
   }
 
-  // A named national reconciliation has one stable scope even when a bounded
-  // crawl crosses UTC midnight. Unscoped discovery remains replayable daily.
-  if (reconciliationId) {
-    return `${request.taskKey}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}@${reconciliationId}`;
-  }
+  if (reconciliationId) return `${request.taskKey}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}@${reconciliationId}`;
   return `${request.taskKey}@${date.toISOString().slice(0, 10)}@${LEMONROCK_DISCOVERY_SCHEMA_VERSION}`;
 }
 
@@ -92,6 +73,20 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
     this.sqs = sqs ?? new SQSClient({});
   }
 
+  private async send(request: SourceFanoutRequest, requestedAt: string, reconciliationId: string | undefined, resolvedTaskKey: string): Promise<void> {
+    await this.sqs.send(new SendMessageCommand({
+      QueueUrl: this.queueUrl,
+      MessageBody: JSON.stringify({
+        sourceId: request.sourceId,
+        reason: 'manual',
+        requestedAt,
+        reconciliationId,
+        taskKey: resolvedTaskKey,
+        task: request.task,
+      }),
+    }));
+  }
+
   async publish(request: SourceFanoutRequest, requestedAt: string, reconciliationId?: string): Promise<boolean> {
     const resolvedTaskKey = dedupeKey(request, requestedAt, reconciliationId);
     const key = taskKey(request.sourceId, resolvedTaskKey);
@@ -109,6 +104,7 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
           sourceUrl: typeof request.task.url === 'string' ? request.task.url : undefined,
           task: request.task,
           status: 'queued',
+          attemptCount: 1,
           queuedAt: requestedAt,
           lastDiscoveredAt: requestedAt,
           reconciliationId,
@@ -116,38 +112,64 @@ export class DynamoSqsSourceFanoutPublisher implements SourceFanoutPublisher {
           updatedAt: requestedAt,
         },
         ConditionExpression: 'attribute_not_exists(pk)',
+        ReturnValuesOnConditionCheckFailure: 'ALL_OLD',
       }));
     } catch (error) {
-      if (error instanceof Error && error.name === 'ConditionalCheckFailedException') {
-        const values: Record<string, unknown> = { ':at': requestedAt };
-        let update = 'SET lastDiscoveredAt = :at, updatedAt = :at';
-        if (reconciliationId) {
-          update += ', lastReconciliationId = :reconciliationId';
-          values[':reconciliationId'] = reconciliationId;
+      if (!(error instanceof Error) || error.name !== 'ConditionalCheckFailedException') throw error;
+
+      const existing = (error as Error & { Item?: { status?: string; attemptCount?: number } }).Item;
+      const attempts = existing?.attemptCount ?? 1;
+
+      // Replay is recovery behaviour, never BAU behaviour. It requires both an
+      // explicit owned reconciliation and retained proof that the durable task
+      // itself failed. Scheduled hourly discovery therefore remains deduped.
+      if (reconciliationId && existing?.status === 'failed' && attempts < MAX_RECONCILIATION_ATTEMPTS) {
+        try {
+          await this.ddb.send(new UpdateCommand({
+            TableName: this.tableName,
+            Key: key,
+            UpdateExpression: 'SET #status = :queued, queuedAt = :at, lastDiscoveredAt = :at, updatedAt = :at, lastReconciliationId = :reconciliationId, reconciliationId = :reconciliationId REMOVE failedAt, lastError, completedAt, startedAt ADD attemptCount :one',
+            ConditionExpression: '#status = :failed AND (attribute_not_exists(attemptCount) OR attemptCount < :maxAttempts)',
+            ExpressionAttributeNames: { '#status': 'status' },
+            ExpressionAttributeValues: {
+              ':queued': 'queued',
+              ':failed': 'failed',
+              ':at': requestedAt,
+              ':reconciliationId': reconciliationId,
+              ':one': 1,
+              ':maxAttempts': MAX_RECONCILIATION_ATTEMPTS,
+            },
+          }));
+          try {
+            await this.send(request, requestedAt, reconciliationId, resolvedTaskKey);
+            return true;
+          } catch (sendError) {
+            await this.mark(request.sourceId, resolvedTaskKey, 'failed', requestedAt,
+              sendError instanceof Error ? `Requeue send failed: ${sendError.message}` : 'Requeue send failed');
+            throw sendError;
+          }
+        } catch (requeueError) {
+          if (!(requeueError instanceof Error) || requeueError.name !== 'ConditionalCheckFailedException') throw requeueError;
         }
-        await this.ddb.send(new UpdateCommand({
-          TableName: this.tableName,
-          Key: key,
-          UpdateExpression: update,
-          ExpressionAttributeValues: values,
-        }));
-        return false;
       }
-      throw error;
+
+      const values: Record<string, unknown> = { ':at': requestedAt };
+      let update = 'SET lastDiscoveredAt = :at, updatedAt = :at';
+      if (reconciliationId) {
+        update += ', lastReconciliationId = :reconciliationId';
+        values[':reconciliationId'] = reconciliationId;
+      }
+      await this.ddb.send(new UpdateCommand({
+        TableName: this.tableName,
+        Key: key,
+        UpdateExpression: update,
+        ExpressionAttributeValues: values,
+      }));
+      return false;
     }
 
     try {
-      await this.sqs.send(new SendMessageCommand({
-        QueueUrl: this.queueUrl,
-        MessageBody: JSON.stringify({
-          sourceId: request.sourceId,
-          reason: 'manual',
-          requestedAt,
-          reconciliationId,
-          taskKey: resolvedTaskKey,
-          task: request.task,
-        }),
-      }));
+      await this.send(request, requestedAt, reconciliationId, resolvedTaskKey);
       return true;
     } catch (error) {
       await this.ddb.send(new DeleteCommand({ TableName: this.tableName, Key: key }));
