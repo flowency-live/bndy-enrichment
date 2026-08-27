@@ -1,11 +1,11 @@
 {
   "status": "deployed",
   "phase": "verified",
-  "startedAt": "2026-08-27T19:51:16Z",
-  "deployedSha": "7f8e1540f971a6efaf05c60a4aaaad969cc56b50",
+  "startedAt": "2026-08-27T20:05:23Z",
+  "deployedSha": "281fd785b5b8c3a3c3e24b48a9f5b5499b4b1639",
   "shadow": true,
   "canonicalWritesEnabled": false,
-  "verifiedAt": "2026-08-27T19:52:57Z",
+  "verifiedAt": "2026-08-27T20:07:16Z",
   "schedules": {
     "newGigs": "rate(1 hour)",
     "cancellations": "rate(1 hour)",
