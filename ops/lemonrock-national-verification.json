@@ -1,6 +1,6 @@
 {
   "status": "in-progress",
-  "phase": "launched",
+  "phase": "draining",
   "startedAt": "2026-08-27T10:39:39Z",
   "deployedSha": "1f6c693e81268fadf2612406fb26906a1e468af2",
   "verificationMode": "national-gig-led",
@@ -22,5 +22,41 @@
     "ApproximateNumberOfMessagesNotVisible": "0"
   },
   "workflowStatus": "success",
-  "updatedAt": "2026-08-27T10:40:54Z"
+  "updatedAt": "2026-08-27T10:40:54Z",
+  "lastManifestAt": "2026-08-27T11:37:58.845206+00:00",
+  "latestManifest": {
+    "status": "incomplete",
+    "tasksByStatus": {
+      "completed": 2603,
+      "failed": 1,
+      "queued": 17238,
+      "running": 1
+    },
+    "completenessControls": {
+      "advertisedArtists": 10533,
+      "advertisedFutureGigs": 7861,
+      "advertisedVenues": 8287,
+      "artistDirectoryControls": 27,
+      "artistDirectoryIdentitiesObserved": 10587,
+      "artistDirectoryPages": 28,
+      "artistIdentitiesDiscovered": 418,
+      "countyControls": 59,
+      "directoriesCovered": false,
+      "futureGigsCovered": false,
+      "gigIdentitiesDiscovered": 5081,
+      "gigIndexPages": 14229,
+      "inventoryCovered": false,
+      "venueDirectoryControls": 27,
+      "venueDirectoryIdentitiesObserved": 8341,
+      "venueDirectoryPages": 28,
+      "venueIdentitiesDiscovered": 0
+    },
+    "queue": {
+      "deadLetterInFlight": 0,
+      "deadLetterVisible": 0,
+      "delayed": 0,
+      "inFlight": 2,
+      "visible": 17421
+    }
+  }
 }
