@@ -1,8 +1,8 @@
 {
   "status": "recovery-started",
   "phase": "queued",
-  "startedAt": "2026-08-27T18:15:49Z",
-  "recoverySha": "7790097f54113c8ebc73cc43955c88cb6d5c0d3e",
+  "startedAt": "2026-08-27T21:42:29Z",
+  "recoverySha": "6a1abeceb5fccd15b83bf495d71d250a35c096b7",
   "purpose": "repair the pre-deployment Venue fanout gap and retry only failed logical tasks from the owned reconciliation",
   "boundedToExistingReconciliation": true,
   "launchesNationalReconciliation": false,
@@ -10,19 +10,20 @@
   "shadow": true,
   "canonicalWritesEnabled": false,
   "reconciliationId": "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4",
-  "deploymentVerifiedAt": "2026-08-27T18:03:34Z",
+  "deploymentVerifiedAt": "2026-08-27T20:07:16Z",
+  "venueFanoutCutoverAt": "2026-08-27T18:03:34Z",
   "candidateCounts": {
-    "venue-fanout-gap": 5399,
-    "failed-logical-task": 51
+    "venue-fanout-gap": 0,
+    "failed-logical-task": 756
   },
-  "queuedAt": "2026-08-27T18:17:25.344Z",
+  "queuedAt": "2026-08-27T21:44:12.962Z",
   "recovered": {
-    "queued": 5431,
-    "skipped": 19,
+    "queued": 756,
+    "skipped": 0,
     "sendFailed": 0
   },
   "recoveredFailuresBySourceAndKind": {
-    "lemonrock-future-reconcile:gig-index": 24,
-    "lemonrock-gig-hydration:gig": 8
+    "lemonrock-future-reconcile:gig-index": 754,
+    "lemonrock-gig-hydration:gig": 2
   }
 }
