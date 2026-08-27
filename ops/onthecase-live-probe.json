@@ -1,25 +1,17 @@
 {
-  "capturedAt": "2026-08-27T08:51:58Z",
+  "capturedAt": "2026-08-27T08:54:21Z",
   "reconciliationId": "onthecase-gig-led-2026-08-27T08-50-06-649Z",
   "tasks": {
     "discovered": 145,
-    "completed": 96,
+    "completed": 145,
     "failed": 0,
-    "queued": 47,
-    "running": 2
+    "queued": 0,
+    "running": 0
   },
   "statusBreakdown": [
     {
       "status": "completed",
-      "count": 96
-    },
-    {
-      "status": "queued",
-      "count": 47
-    },
-    {
-      "status": "running",
-      "count": 2
+      "count": 145
     }
   ],
   "sourceBreakdown": [
