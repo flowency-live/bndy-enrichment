@@ -35,4 +35,21 @@ describe('Lemonrock low-cost schedules', () => {
     expect(workflow).not.toContain('update-role');
     expect(workflow).not.toContain('role-duration-seconds: 14400');
   });
+
+  it('quarantines superseded delivery copies without deleting or replaying them', () => {
+    const stack = readFileSync(new URL('../lib/bndy-enrichment-stack.ts', import.meta.url), 'utf8');
+    const workflow = readFileSync(
+      new URL('../.github/workflows/lemonrock-quarantine-historical-failures.yml', import.meta.url),
+      'utf8',
+    );
+
+    expect(stack).toContain("new sqs.Queue(this, 'HistoricalSourceFailureQuarantine'");
+    expect(stack).toContain("new cdk.CfnOutput(this, 'HistoricalSourceFailureQuarantineArn'");
+    expect(workflow).toContain('destination-arn "$QUARANTINE_ARN"');
+    expect(workflow).toContain('max-number-of-messages-per-second 10');
+    expect(workflow).toContain('visibility-timeout 0');
+    expect(workflow).toContain('automaticReplay:false');
+    expect(workflow).toContain('canonicalWritesEnabled:false');
+    expect(workflow).not.toContain('purge-queue');
+  });
 });

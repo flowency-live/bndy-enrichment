@@ -1246,3 +1246,25 @@ Completion requires:
 8. shadow mode still enabled and canonical writes still disabled.
 
 While the verification is active, the hourly monitor dispatches a fresh sanitised manifest. It stops requesting AWS manifests once the run is complete or reaches an attention state. The temporary hourly monitor schedule should be removed after the verification closes.
+
+## 33. Superseded delivery-copy quarantine
+
+An old DLQ is not itself proof that the current inventory is incomplete. SQS may
+contain several delivery copies for one logical task, and blindly redriving those
+copies can repeat stale requests without improving coverage.
+
+Before a fresh national verification:
+
+1. Classify failed logical tasks from the durable task ledger.
+2. Require the active source queue to be idle.
+3. Move superseded raw DLQ delivery copies into the retained
+   `HistoricalSourceFailureQuarantine` queue.
+4. Do not delete or replay those copies automatically.
+5. Keep the durable failed task rows and sanitised aggregate report as the
+   forensic record.
+6. Launch a new owned reconciliation that re-traverses today's future-gig
+   universe under the rate-safe runtime.
+
+The quarantine queue has 14-day retention and no consumer. It is outside the
+active completion gate, costs only the normal SQS request/storage footprint, and
+exists to separate historical delivery noise from current completeness proof.
