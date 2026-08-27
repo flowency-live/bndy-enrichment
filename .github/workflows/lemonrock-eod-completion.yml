@@ -1,0 +1,160 @@
+name: Complete Lemonrock into BAU
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/lemonrock-eod-completion.yml'
+
+permissions:
+  actions: write
+  contents: read
+  id-token: write
+
+concurrency:
+  group: lemonrock-eod-completion
+  cancel-in-progress: false
+
+jobs:
+  complete:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Own Lemonrock EOD completion')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 360
+    env:
+      AWS_REGION: eu-west-2
+      STACK_NAME: BndyEnrichmentStack
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Configure read-only AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Require shadow-only low-cost operating state
+        shell: bash
+        run: |
+          set -euo pipefail
+          status_file=ops/lemonrock-low-cost-operating-status.json
+          test "$(jq -r '.status' "$status_file")" = "deployed"
+          test "$(jq -r '.shadow' "$status_file")" = "true"
+          test "$(jq -r '.canonicalWritesEnabled' "$status_file")" = "false"
+          test "$(jq -r '.scheduledArtistDirectory' "$status_file")" = "false"
+          test "$(jq -r '.scheduledVenueDirectory' "$status_file")" = "false"
+          test "$(jq -r '.scheduledFullDirectoryReconciliation' "$status_file")" = "false"
+
+      - name: Drain, recover current failures and require terminal manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          deadline=$(( $(date +%s) + 19000 ))
+          state_table=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" \
+            --output text)
+          queue_url=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='SourceScanQueueUrl'].OutputValue | [0]" \
+            --output text)
+          test -n "$state_table"
+          test -n "$queue_url"
+
+          run_workflow() {
+            local workflow=$1
+            local started run_id status conclusion
+            started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            gh workflow run "$workflow" --ref main
+            run_id=""
+            for _ in $(seq 1 30); do
+              run_id=$(gh run list \
+                --workflow "$workflow" \
+                --event workflow_dispatch \
+                --limit 20 \
+                --json databaseId,createdAt \
+                --jq ".[] | select(.createdAt >= \"$started\") | .databaseId" | head -1)
+              if [ -n "$run_id" ]; then break; fi
+              sleep 2
+            done
+            test -n "$run_id"
+            while true; do
+              read -r status conclusion < <(gh run view "$run_id" --json status,conclusion --jq '[.status, (.conclusion // "pending")] | @tsv')
+              echo "::notice::$workflow run $run_id is $status/$conclusion"
+              if [ "$status" = "completed" ]; then
+                test "$conclusion" = "success"
+                break
+              fi
+              test "$(date +%s)" -lt "$deadline"
+              sleep 15
+            done
+          }
+
+          wait_for_active_queue() {
+            local stable_zero=0
+            local attempt=0
+            while true; do
+              attempt=$((attempt + 1))
+              attrs=$(aws sqs get-queue-attributes \
+                --queue-url "$queue_url" \
+                --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed \
+                --output json)
+              visible=$(jq -r '.Attributes.ApproximateNumberOfMessages // "0"' <<<"$attrs")
+              inflight=$(jq -r '.Attributes.ApproximateNumberOfMessagesNotVisible // "0"' <<<"$attrs")
+              delayed=$(jq -r '.Attributes.ApproximateNumberOfMessagesDelayed // "0"' <<<"$attrs")
+              if (( attempt == 1 || attempt % 5 == 0 )); then
+                echo "::notice::Lemonrock active queue attempt $attempt: visible=$visible inFlight=$inflight delayed=$delayed"
+              fi
+              if [ "$visible" -eq 0 ] && [ "$inflight" -eq 0 ] && [ "$delayed" -eq 0 ]; then
+                stable_zero=$((stable_zero + 1))
+                if [ "$stable_zero" -ge 2 ]; then break; fi
+              else
+                stable_zero=0
+              fi
+              test "$(date +%s)" -lt "$deadline"
+              sleep 60
+            done
+          }
+
+          failures=1
+          for recovery_cycle in 1 2 3; do
+            wait_for_active_queue
+            run_workflow lemonrock-manifest-readonly.yml
+            git fetch origin main
+            git show origin/main:ops/lemonrock-reconciliation-manifest.json > /tmp/lemonrock-manifest.json
+            test "$(jq -r '.reconciliationId' /tmp/lemonrock-manifest.json)" = "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4"
+            failures=$(jq '[.failedTaskSummary[].count] | add // 0' /tmp/lemonrock-manifest.json)
+            queued=$(jq -r '.tasksByStatus.queued // 0' /tmp/lemonrock-manifest.json)
+            running=$(jq -r '.tasksByStatus.running // 0' /tmp/lemonrock-manifest.json)
+            echo "::notice::Terminal check $recovery_cycle: failures=$failures queued=$queued running=$running"
+            test "$queued" -eq 0
+            test "$running" -eq 0
+            if [ "$failures" -eq 0 ]; then break; fi
+            test "$recovery_cycle" -lt 3
+            run_workflow lemonrock-targeted-recovery.yml
+          done
+          test "$failures" -eq 0
+
+          run_workflow lemonrock-quarantine-historical-failures.yml
+          run_workflow lemonrock-manifest-readonly.yml
+          git fetch origin main
+          git show origin/main:ops/lemonrock-reconciliation-manifest.json > /tmp/lemonrock-final-manifest.json
+          test "$(jq -r '.reconciliationId' /tmp/lemonrock-final-manifest.json)" = "run-907eba4a-b7eb-4d41-95f5-06bbc91beef4"
+          test "$(jq -r '.status' /tmp/lemonrock-final-manifest.json)" = "complete"
+          test "$(jq -r '.allDiscoveredTasksTerminal' /tmp/lemonrock-final-manifest.json)" = "true"
+          test "$(jq -r '.queuesClear' /tmp/lemonrock-final-manifest.json)" = "true"
+          test "$(jq -r '.completenessControls.inventoryCovered' /tmp/lemonrock-final-manifest.json)" = "true"
+          test "$(jq -r '.shadow' /tmp/lemonrock-final-manifest.json)" = "true"
+          test "$(jq -r '.canonicalWritesEnabled' /tmp/lemonrock-final-manifest.json)" = "false"
+
+      - name: Record completion summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "### Lemonrock completion controller" >> "$GITHUB_STEP_SUMMARY"
+          echo "Existing owned reconciliation reached its terminal manifest, active delivery copies were retained in quarantine, and the verified low-cost shadow operating model remains deployed." >> "$GITHUB_STEP_SUMMARY"
