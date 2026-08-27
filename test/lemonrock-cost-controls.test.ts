@@ -52,4 +52,26 @@ describe('Lemonrock low-cost schedules', () => {
     expect(workflow).toContain('canonicalWritesEnabled:false');
     expect(workflow).not.toContain('purge-queue');
   });
+
+  it('keeps end-of-run recovery scoped to owned tasks and out of the DLQ', () => {
+    const workflow = readFileSync(
+      new URL('../.github/workflows/lemonrock-targeted-recovery.yml', import.meta.url),
+      'utf8',
+    );
+    const script = readFileSync(
+      new URL('../scripts/lemonrock-targeted-recovery.mjs', import.meta.url),
+      'utf8',
+    );
+
+    expect(workflow).toContain('boundedToExistingReconciliation:true');
+    expect(workflow).toContain('launchesNationalReconciliation:false');
+    expect(workflow).toContain('automaticDeadLetterRedrive:false');
+    expect(workflow).toContain('canonicalWritesEnabled:false');
+    expect(workflow).not.toContain('start-message-move-task');
+    expect(script).toContain("row.sourceId === 'lemonrock-gig-hydration'");
+    expect(script).toContain("row.status === 'failed'");
+    expect(script).toContain("Number(row.attemptCount ?? 1) < 3");
+    expect(script).toContain("row.lastReconciliationId !== reconciliationId");
+    expect(script).not.toContain("sourceId: 'lemonrock-full-reconcile'");
+  });
 });
