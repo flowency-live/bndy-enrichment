@@ -39,6 +39,8 @@ The consumer is delivered in explicit safety stages:
 
 Initial per-entity ceilings are one entity, three searches, six fetches, one non-expensive model call, 12,000 input tokens, 2,000 output tokens, an estimated cost of 0.03 and a 60-second deadline. Lower item budgets are honoured; higher requested budgets are capped.
 
+Initial daily provider ceilings are 20 entities, 60 searches, 120 fetches, 20 model calls, 240,000 input tokens, 40,000 output tokens and estimated cost 0.60. DynamoDB reserves all counters and the work-item idempotency record in one transaction before any provider call. Failed attempts keep their reservation, and a retry resumes the same item without spending the budget twice. Budget exhaustion is a terminal parked outcome for that item; a later planner run may create a new item on a later day.
+
 ## Migration
 
 `GoogleDiscoveryWorker` remains a legacy runtime until its migration package replaces its direct-write path. The new `EntityEnrichmentQueue` is the strategic seam; newly migrated source projection emits only the new work item.
