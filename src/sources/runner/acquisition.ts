@@ -15,6 +15,8 @@ export type AcquisitionRequest = {
   followRedirects?: boolean;
   /** Maximum validated redirect hops when followRedirects is enabled. */
   maxRedirects?: number;
+  /** Preserve explicitly accepted non-2xx responses as evidence instead of throwing. */
+  acceptedStatuses?: number[];
   /** Browser-only: return rendered document text instead of serialized HTML. */
   bodyMode?: 'html' | 'innerText';
   /** Browser-only hydration grace period after navigation. */
@@ -133,7 +135,9 @@ export class HttpAcquisitionRouter implements AcquisitionRouter {
         break;
       }
 
-      if (!response.ok) throw new Error(`Source fetch returned HTTP ${response.status}`);
+      if (!response.ok && !request.acceptedStatuses?.includes(response.status)) {
+        throw new Error(`Source fetch returned HTTP ${response.status}`);
+      }
 
       const declaredLength = Number(response.headers.get('content-length') ?? '0');
       if (declaredLength > maxBytes) throw new Error(`Source response exceeds ${maxBytes} byte cap`);
