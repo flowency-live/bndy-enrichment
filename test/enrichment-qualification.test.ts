@@ -9,7 +9,10 @@ const thresholds: EnrichmentQualificationThresholds = {
   minCases: 2,
   minArtistCases: 1,
   minVenueCases: 1,
-  maxIdentityParkedCases: 0,
+  minArtistParkCases: 0,
+  minVenueParkCases: 0,
+  maxFalsePositiveIdentityCases: 0,
+  maxFalseNegativeIdentityCases: 0,
   maxUnsafeFacts: 0,
   maxBudgetViolationCases: 0,
   maxMissingUsageCases: 0,
@@ -78,7 +81,7 @@ describe('entity enrichment provider qualification', () => {
     expect(report.reasons).toEqual([]);
   });
 
-  it('fails closed on identity, citation, coverage and budget defects', () => {
+  it('fails closed on a false negative identity, citation, coverage and budget defects', () => {
     const broken = sample('broken', 'artist', 'hasWebsiteUrl');
     broken.bundle.identityConfidence = 0.9;
     broken.bundle.facts = [{
@@ -92,11 +95,45 @@ describe('entity enrichment provider qualification', () => {
     const report = qualifyEnrichmentProvider([broken, venue], thresholds);
     expect(report.qualified).toBe(false);
     expect(report.reasons).toEqual(expect.arrayContaining([
-      'identity-park-rate-too-high',
+      'false-negative-identities-present',
       'unsafe-facts-present',
       'per-item-budget-violations',
       'requested-predicate-coverage-too-low',
     ]));
+  });
+
+  it('requires hard-negative identities to park instead of rewarding confident guesses', () => {
+    const artist = sample('artist-ambiguous', 'artist', 'hasWebsiteUrl');
+    artist.expectedIdentity = 'park';
+    artist.bundle.identityConfidence = 0.7;
+    artist.bundle.facts = [];
+    const venue = sample('venue-match', 'venue', 'hasAddress');
+    const report = qualifyEnrichmentProvider([artist, venue], {
+      ...thresholds,
+      minArtistParkCases: 1,
+    });
+    expect(report).toMatchObject({
+      qualified: true,
+      expectedParkCases: 1,
+      artistParkCases: 1,
+      falsePositiveIdentityCases: 0,
+      falseNegativeIdentityCases: 0,
+      requestedPredicates: 1,
+      requestedPredicateCoverage: 1,
+    });
+  });
+
+  it('fails a provider that enriches an identity the truth set says is ambiguous', () => {
+    const artist = sample('artist-wrong-match', 'artist', 'hasWebsiteUrl');
+    artist.expectedIdentity = 'park';
+    const venue = sample('venue-match', 'venue', 'hasAddress');
+    const report = qualifyEnrichmentProvider([artist, venue], {
+      ...thresholds,
+      minArtistParkCases: 1,
+    });
+    expect(report.qualified).toBe(false);
+    expect(report.falsePositiveIdentityCases).toBe(1);
+    expect(report.reasons).toContain('false-positive-identities-present');
   });
 
   it('does not qualify fixtures that omit auditable usage metrics', () => {
