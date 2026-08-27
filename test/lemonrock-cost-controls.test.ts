@@ -88,6 +88,10 @@ describe('Lemonrock low-cost schedules', () => {
     expect(workflow).toContain('lemonrock-targeted-recovery.yml');
     expect(workflow).toContain('lemonrock-quarantine-historical-failures.yml');
     expect(workflow).toContain('lemonrock-manifest-readonly.yml');
+    expect(workflow).toContain('credential_handoff_at');
+    expect(workflow).toContain('gh workflow run lemonrock-eod-completion.yml --ref main');
+    expect(workflow).toContain('echo "handoff=true" >> "$GITHUB_OUTPUT"');
+    expect(workflow).toContain("if: steps.control.outputs.handoff != 'true'");
     expect(workflow).toContain("test \"$(jq -r '.status' /tmp/lemonrock-final-manifest.json)\" = \"complete\"");
     expect(workflow).not.toContain('lemonrock-completion-deploy.yml');
     expect(workflow).not.toContain('lemonrock-full-reconcile');
