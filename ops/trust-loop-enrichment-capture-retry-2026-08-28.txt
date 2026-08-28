@@ -1,0 +1,7 @@
+Backline Trust Loop grounded-enrichment qualification controlled retry
+
+Triggered: 2026-08-28
+Reason: the approved initial workflow exceeded its 45-minute hard limit without committing an evidence fixture.
+Repair: each grounded provider call now has a 60-second timeout.
+Scope: unchanged 20-case cohort and previously approved public identity/source context.
+Controls: one retry, shadow-only, cost-capped, zero canonical writes, no BAU schedule, no projection.
