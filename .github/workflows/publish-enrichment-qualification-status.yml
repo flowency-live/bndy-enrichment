@@ -37,12 +37,12 @@ jobs:
       - name: Publish the read-only qualification summary
         env:
           STATE_TABLE: ${{ steps.resources.outputs.state_table }}
-          QUALIFICATION_RUN_URL: https://github.com/flowency-live/bndy-enrichment/actions/runs/33206067020
+          QUALIFICATION_RUN_URL: https://github.com/flowency-live/bndy-enrichment/actions/runs/33214350278
           QUALIFICATION_ARTIFACT_URL: https://github.com/flowency-live/bndy-enrichment/blob/main/ops/enrichment/gemini-grounded-unreviewed.json
           QUALIFICATION_REVIEW_URL: https://github.com/flowency-live/bndy-enrichment/blob/main/ops/enrichment/gemini-grounded-review.md
         run: |
           set -euo pipefail
           npm run enrichment:qualification:publish | tee qualification-publish.log
           tail -n 1 qualification-publish.log | jq -e \
-            '.status == "published" and .canonicalWrites == 0 and .cases == 20 and .gateStatus == "awaiting-human-review"' \
+            '.status == "published" and .canonicalWrites == 0 and .cases == 20 and .captureErrors == 20 and .gateStatus == "capture-failed" and .costMeasurement == "unavailable"' \
             >/dev/null
