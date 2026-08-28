@@ -1,0 +1,26 @@
+{
+  "status": "healthy_live_shadow_bau",
+  "sourceId": "klma-stoke-gig-list",
+  "region": "Staffordshire / Cheshire",
+  "cadence": "daily",
+  "runtimeClass": "standard",
+  "enabled": true,
+  "shadow": true,
+  "writerAuthority": "cowork",
+  "canonicalWritesEnabled": false,
+  "coworkRetained": true,
+  "requestedAt": "2026-08-28T08:08:37.000Z",
+  "completedAt": "2026-08-28T08:09:19Z",
+  "observationId": "obs-bfcbd2f7-3944-4f8a-a41b-47c2ac38e43b",
+  "evidenceKey": "source-observations/klma-stoke-gig-list/2026/08/28/obs-bfcbd2f7-3944-4f8a-a41b-47c2ac38e43b/raw.csv",
+  "claimsPersisted": 2771,
+  "acceptance": {
+    "liveFetchCompleted": true,
+    "observationPersisted": true,
+    "rawEvidencePersisted": true,
+    "claimsPersisted": true,
+    "dailyScheduleEnabled": true,
+    "canonicalProjectionDisabled": true,
+    "coworkUntouched": true
+  }
+}
