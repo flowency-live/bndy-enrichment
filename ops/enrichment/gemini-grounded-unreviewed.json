@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "providerId": "gemini-grounded-v1",
-  "capturedAt": "2026-08-28T16:34:56.273Z",
+  "capturedAt": "2026-08-28T19:07:24.428Z",
   "sourceManifestGeneratedAt": "2026-08-28T14:31:49.401Z",
   "reviewStatus": "unreviewed",
   "qualificationGate": "Human adjudication is required before provider activation",
   "cases": 20,
   "artistCases": 10,
   "venueCases": 10,
-  "captureErrors": 17,
-  "totalEstimatedCost": 0.17139900000000002,
+  "captureErrors": 1,
+  "totalEstimatedCost": 1.5706884999999997,
   "canonicalWrites": 0,
   "items": [
     {
@@ -43,28 +43,29 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "e5b93b4b-6727-4142-b3ce-d5f91d32080f",
-        "retrievedAt": "2026-08-28T16:35:02.649Z",
-        "identityConfidence": 0,
+        "providerRunId": "da6cc0f6-7fa6-4244-a769-de313584a30b",
+        "retrievedAt": "2026-08-28T19:07:31.282Z",
+        "identityConfidence": 0.2,
         "facts": [],
         "usage": {
-          "searches": 3,
+          "searches": 2,
           "fetches": 0,
           "modelCalls": 1,
-          "inputTokens": 698,
-          "outputTokens": 103,
-          "estimatedCost": 0.04290975,
-          "durationMs": 6376
+          "inputTokens": 692,
+          "outputTokens": 126,
+          "estimatedCost": 0.0289915,
+          "durationMs": 6854
         },
         "raw": {
           "model": "gemini-3.6-flash",
-          "identityReason": "The name 'the Reform' is shared by multiple distinct musical acts (such as a 1970s Irish rock band, a Swedish progressive rock group, and 'The Reform Club') as well as non-musical entities. Without a specific gig footprint, venue location, or cross-linked official profile, it is impossible to establish the identity of this artist candidate.",
+          "identityReason": "The input name 'the Reform' is shared by multiple distinct musical acts and events across different eras and regions (e.g., 1970s Irish rock band Reform, Swedish jazz-rock group Reform, a New York group, and local event listings). Without a specific geographic footprint, gig schedule, venue detail, or cross-referenced official URL provided in the source metadata, it is not possible to safely establish which exact entity 'artist_the-reform' refers to.",
           "response": {
-            "identityConfidence": 0,
-            "identityReason": "The name 'the Reform' is shared by multiple distinct musical acts (such as a 1970s Irish rock band, a Swedish progressive rock group, and 'The Reform Club') as well as non-musical entities. Without a specific gig footprint, venue location, or cross-linked official profile, it is impossible to establish the identity of this artist candidate.",
+            "identityConfidence": 0.2,
+            "identityReason": "The input name 'the Reform' is shared by multiple distinct musical acts and events across different eras and regions (e.g., 1970s Irish rock band Reform, Swedish jazz-rock group Reform, a New York group, and local event listings). Without a specific geographic footprint, gig schedule, venue detail, or cross-referenced official URL provided in the source metadata, it is not possible to safely establish which exact entity 'artist_the-reform' refers to.",
             "facts": []
           },
-          "evidence": []
+          "evidence": [],
+          "rejectedFacts": []
         }
       },
       "review": {
@@ -80,7 +81,7 @@
       "caseId": "grounded-02-artist",
       "sourceId": "klma-stoke-gig-list",
       "sourceCandidateKey": "klma-artist-ff14ed763cec",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "artist",
         "entityId": "klma-stoke-gig-list:klma-artist-ff14ed763cec",
@@ -107,12 +108,29 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "0baae1a8-5979-4269-9a94-a81cbf6756a8",
-        "retrievedAt": "2026-08-28T16:35:28.900Z",
-        "identityConfidence": 0,
+        "providerRunId": "bb7cf5b9-8a02-458e-b053-fc4d8b6e2c2e",
+        "retrievedAt": "2026-08-28T19:07:37.224Z",
+        "identityConfidence": 0.1,
         "facts": [],
+        "usage": {
+          "searches": 2,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 700,
+          "outputTokens": 60,
+          "estimatedCost": 0.02875,
+          "durationMs": 5941
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEtqPZCub_8F3CMnsWo4grkHHdblpMmWlxoogo6Kt2GQ7YXVdu1OwbAhBGlONtJY25EJlWrIL7QRfcIdXZvvXi6-S8yHmswXCHvAfC6Z_T8DSFZDylIaL5PRwtpj1WxRknCvS1-06GEDSMMclICgB2Aw8amue7W8XVy6OCalYkhHnl6uy9ihxwL88uQv-1iyI0RO2Ruq_fm1O6FZFGf_Mwviq7S2lZ6_KO7fIohoj5mXvupVkMiZL52qssDAYm5P8gMft7cM6Pc"
+          "model": "gemini-3.6-flash",
+          "identityReason": "Multiple distinct musical acts perform under the name Catalyst, and no specific Stoke-on-Trent gig footprint or official profile could be definitively verified for this source entry.",
+          "response": {
+            "identityConfidence": 0.1,
+            "identityReason": "Multiple distinct musical acts perform under the name Catalyst, and no specific Stoke-on-Trent gig footprint or official profile could be definitively verified for this source entry.",
+            "facts": []
+          },
+          "evidence": [],
+          "rejectedFacts": []
         }
       },
       "review": {
@@ -128,7 +146,7 @@
       "caseId": "grounded-03-artist",
       "sourceId": "lemonrock-artist-hydration",
       "sourceCandidateKey": "lemonrock:artist:neovenator",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "artist",
         "entityId": "lemonrock-artist-hydration:lemonrock:artist:neovenator",
@@ -155,12 +173,143 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "8c5cd21d-1340-444a-b964-9c7786052d52",
-        "retrievedAt": "2026-08-28T16:35:55.456Z",
-        "identityConfidence": 0,
+        "providerRunId": "d71a3021-3dea-42c2-bc5b-4852eacb1ec1",
+        "retrievedAt": "2026-08-28T19:07:57.208Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 9,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 792,
+          "outputTokens": 1215,
+          "estimatedCost": 0.13115025,
+          "durationMs": 19983
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHEwPihH4-dUxQh_UgCFlHIZmV2WrVEFBOygzLkYbA6-dU_dM2ljCerwsOYGBwD5ck_qKqc2GGpxP3LeLJCoaQbSLS8WeOsQahlj7UOFGP4py4bO8FD"
+          "model": "gemini-3.6-flash",
+          "identityReason": "Neovenator is positively identified as a UK rock/post-punk band formed in 2021 by Simon Waller, Pete Walter, Phil Humphreys, and Felix Waller, signed to Flicknife Records with the album 'Songs From The End Of The Pier'.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "Neovenator is positively identified as a UK rock/post-punk band formed in 2021 by Simon Waller, Pete Walter, Phil Humphreys, and Felix Waller, signed to Flicknife Records with the album 'Songs From The End Of The Pier'.",
+            "facts": [
+              {
+                "predicate": "hasArtistType",
+                "value": "Band",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+                ],
+                "evidenceText": "The Band. Simon Waller. Vocals / Guitar. Pete Walter. Bass. Phil Humphreys. Drums. Felix Waller. Keys."
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+                ],
+                "evidenceText": "Formed in 2021 by Simon Waller, Neovenator released their first EP in 2022. ... Neovenator's debut album, on Flicknife Records, 'Songs From The End Of The Pier', continues in the great tradition of off-kilter but entertaining English psychedelic-pop, with a touch of post-punk and a little bit of rock n roll thrown in for good measure."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Rock",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+                ],
+                "evidenceText": "Vive Le Rock magazine who raved about this new 'psychedelia-tinged garage rock n roll'."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Punk",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+                ],
+                "evidenceText": "Neovenator's debut album, on Flicknife Records, 'Songs From The End Of The Pier', continues in the great tradition of off-kilter but entertaining English psychedelic-pop, with a touch of post-punk and a little bit of rock n roll thrown in for good measure."
+              },
+              {
+                "predicate": "hasBandcampUrl",
+                "value": "https://neovenator.bandcamp.com/",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHGtm8FgwY__tRs91pP_btkZbxtWYqMU_aPpNtKXTwlgGnBg1y3CvaA_43SS8sSKdWKJ9SPfXKsPZLAZSVO5hXiDB0s6gZPT8tjyczJCWLaAOpjzqV8VH2Vbt0FhX08X9lr1ulJAm7hWYGbOiQ3GA9F1jXW60lXXz2z9t8Odib2lHgWS7jge-RZ6GKrMHvn9ybil0n2PT03ZYuSMY-gPvLLTHH8oJyfq8MsvUCC17Az5t61VmHSL2FKcrjaF6rsqq8C5phVzXP4-WUMkg=="
+                ],
+                "evidenceText": "IF YOU WANT TO BE COOL LIKE RICHARD BUY ONE HERE... https://neovenator.bandcamp.com/merch"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "id": "ev_3667d41b9ca0",
+              "sourceUrl": "https://neovenatorband.com/about",
+              "sourceDomain": "neovenatorband.com",
+              "supports": []
+            }
+          ],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasArtistType",
+                "value": "Band",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+                ],
+                "evidenceText": "The Band. Simon Waller. Vocals / Guitar. Pete Walter. Bass. Phil Humphreys. Drums. Felix Waller. Keys."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+                ],
+                "evidenceText": "Formed in 2021 by Simon Waller, Neovenator released their first EP in 2022. ... Neovenator's debut album, on Flicknife Records, 'Songs From The End Of The Pier', continues in the great tradition of off-kilter but entertaining English psychedelic-pop, with a touch of post-punk and a little bit of rock n roll thrown in for good measure."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Rock",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+                ],
+                "evidenceText": "Vive Le Rock magazine who raved about this new 'psychedelia-tinged garage rock n roll'."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Punk",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+                ],
+                "evidenceText": "Neovenator's debut album, on Flicknife Records, 'Songs From The End Of The Pier', continues in the great tradition of off-kilter but entertaining English psychedelic-pop, with a touch of post-punk and a little bit of rock n roll thrown in for good measure."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG6AtLtQ3WJW6HCgm_Mhs4ujj2fGN6Bt7-d6LFEaeEQzeUo9PJicMICkHbIqrkpTHZh0q1Ta-aeV_HDmr0XOLGw89stM-Sdnhi854NI6DF1QrFkfL2"
+            },
+            {
+              "fact": {
+                "predicate": "hasBandcampUrl",
+                "value": "https://neovenator.bandcamp.com/",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHGtm8FgwY__tRs91pP_btkZbxtWYqMU_aPpNtKXTwlgGnBg1y3CvaA_43SS8sSKdWKJ9SPfXKsPZLAZSVO5hXiDB0s6gZPT8tjyczJCWLaAOpjzqV8VH2Vbt0FhX08X9lr1ulJAm7hWYGbOiQ3GA9F1jXW60lXXz2z9t8Odib2lHgWS7jge-RZ6GKrMHvn9ybil0n2PT03ZYuSMY-gPvLLTHH8oJyfq8MsvUCC17Az5t61VmHSL2FKcrjaF6rsqq8C5phVzXP4-WUMkg=="
+                ],
+                "evidenceText": "IF YOU WANT TO BE COOL LIKE RICHARD BUY ONE HERE... https://neovenator.bandcamp.com/merch"
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHGtm8FgwY__tRs91pP_btkZbxtWYqMU_aPpNtKXTwlgGnBg1y3CvaA_43SS8sSKdWKJ9SPfXKsPZLAZSVO5hXiDB0s6gZPT8tjyczJCWLaAOpjzqV8VH2Vbt0FhX08X9lr1ulJAm7hWYGbOiQ3GA9F1jXW60lXXz2z9t8Odib2lHgWS7jge-RZ6GKrMHvn9ybil0n2PT03ZYuSMY-gPvLLTHH8oJyfq8MsvUCC17Az5t61VmHSL2FKcrjaF6rsqq8C5phVzXP4-WUMkg=="
+            }
+          ]
         }
       },
       "review": {
@@ -176,7 +325,7 @@
       "caseId": "grounded-04-artist",
       "sourceId": "onthecase-band-hydration",
       "sourceCandidateKey": "onthecase:band:1211",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "artist",
         "entityId": "onthecase-band-hydration:onthecase:band:1211",
@@ -203,12 +352,136 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "737de7ed-434e-4e9c-a2be-c1efef5b6320",
-        "retrievedAt": "2026-08-28T16:36:29.758Z",
-        "identityConfidence": 0,
+        "providerRunId": "d7891b21-5f22-47ec-a53d-f21cac072146",
+        "retrievedAt": "2026-08-28T19:08:18.718Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 6,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 1487,
+          "outputTokens": 1161,
+          "estimatedCost": 0.089469,
+          "durationMs": 21510
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEy5_m9tBlDRRHcV-fqRAiU3A9gzK-SHSmtSZwchidjPr9kJ2MWM0zHYFKNzmmOJAPW-sDNkxGwDB-d8TQSmwwiC92QKJcn2UUvcy31doGKUqodfpZ2lAs5DpqrpMt1FQ=="
+          "model": "gemini-3.6-flash",
+          "identityReason": "Matches exact On The Case Music candidate profile (onthecase:band:1211) and gig footprint in North East England venues including Pelaw Inn and Crown and Cannon Winlaton.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "Matches exact On The Case Music candidate profile (onthecase:band:1211) and gig footprint in North East England venues including Pelaw Inn and Crown and Cannon Winlaton.",
+            "facts": [
+              {
+                "predicate": "hasArtistType",
+                "value": "Solo Act",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+                ],
+                "evidenceText": "Jonny Trax performs solo covers/dancefloor fillers and saxophone sets across North East venues."
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+                ],
+                "evidenceText": "Dancefloor fillers by Ray Charles, Tina Turner, Rod Stewart, Stereophonics, James Brown, Sam Cooke, Van Morrison, Bruce Springsteen, Amy Winehouse, Gerry Rafferty, Barry White, Mumford & Sons, Bob Marley and Paolo Nutini plus others."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Rock",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+                ],
+                "evidenceText": "Jonny Trax. Rock / Pop."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Pop",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+                ],
+                "evidenceText": "Jonny Trax. Rock / Pop."
+              },
+              {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/JonnySax15/",
+                "confidence": 0.92,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH6xKEJnRXyt3sk-DtSmmEkN6IZJFWyGs4-EajNiX6u5MJ8o0ecZUG--5Cn1sF8_NXDXJnulPmW44n4nLUJVljojPwXH5dSdCpISxAB8kDbiDyI6837uC7WsNSEWBmeY82KnWo1bFDdvfbsyRg6cA5EtakNIu-HE5qMEO9ZiMnr-QfzhV3mAoUTbOn_GMVlrxF9869Ot0lPxYl97u3kTjzZ"
+                ],
+                "evidenceText": "Official Facebook presence for Jonny Trax / Jonny Sax featuring gig announcements for Pelaw Inn, Crown and Cannon Winlaton, and performance videos."
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasArtistType",
+                "value": "Solo Act",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+                ],
+                "evidenceText": "Jonny Trax performs solo covers/dancefloor fillers and saxophone sets across North East venues."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+                ],
+                "evidenceText": "Dancefloor fillers by Ray Charles, Tina Turner, Rod Stewart, Stereophonics, James Brown, Sam Cooke, Van Morrison, Bruce Springsteen, Amy Winehouse, Gerry Rafferty, Barry White, Mumford & Sons, Bob Marley and Paolo Nutini plus others."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Rock",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+                ],
+                "evidenceText": "Jonny Trax. Rock / Pop."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Pop",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+                ],
+                "evidenceText": "Jonny Trax. Rock / Pop."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHICl1JhXBxSU1HkezsTzmlPQWykHeaRYVzO9ngfTdD0nU4tr3Uz_ZlSqpbFNXqT3oJ_6oH04KD3lMpi0i5T-qY70IjraEU_--rAKdJXfD5QO43g4tRzntr90I9gqqblTajp5cgOHWokw=="
+            },
+            {
+              "fact": {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/JonnySax15/",
+                "confidence": 0.92,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH6xKEJnRXyt3sk-DtSmmEkN6IZJFWyGs4-EajNiX6u5MJ8o0ecZUG--5Cn1sF8_NXDXJnulPmW44n4nLUJVljojPwXH5dSdCpISxAB8kDbiDyI6837uC7WsNSEWBmeY82KnWo1bFDdvfbsyRg6cA5EtakNIu-HE5qMEO9ZiMnr-QfzhV3mAoUTbOn_GMVlrxF9869Ot0lPxYl97u3kTjzZ"
+                ],
+                "evidenceText": "Official Facebook presence for Jonny Trax / Jonny Sax featuring gig announcements for Pelaw Inn, Crown and Cannon Winlaton, and performance videos."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH6xKEJnRXyt3sk-DtSmmEkN6IZJFWyGs4-EajNiX6u5MJ8o0ecZUG--5Cn1sF8_NXDXJnulPmW44n4nLUJVljojPwXH5dSdCpISxAB8kDbiDyI6837uC7WsNSEWBmeY82KnWo1bFDdvfbsyRg6cA5EtakNIu-HE5qMEO9ZiMnr-QfzhV3mAoUTbOn_GMVlrxF9869Ot0lPxYl97u3kTjzZ"
+            }
+          ]
         }
       },
       "review": {
@@ -224,7 +497,7 @@
       "caseId": "grounded-05-artist",
       "sourceId": "lemonrock-artist-hydration",
       "sourceCandidateKey": "lemonrock:artist:thehumbuckers",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "artist",
         "entityId": "lemonrock-artist-hydration:lemonrock:artist:thehumbuckers",
@@ -251,12 +524,182 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "4a6e745b-32d9-4182-b605-05f76e41f9c9",
-        "retrievedAt": "2026-08-28T16:37:06.657Z",
-        "identityConfidence": 0,
+        "providerRunId": "992b6535-e6ae-4a21-bb00-b924a029e91b",
+        "retrievedAt": "2026-08-28T19:08:41.616Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 10,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 1336,
+          "outputTokens": 1911,
+          "estimatedCost": 0.14816825,
+          "durationMs": 22898
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH9kgbB3DydzvmCVVWsOk2TV2z3qFTz76qMxYJNtfRh8ysJ0q7ICS_VDeRsFezFt0Wh54ootKYGqaK2DKlbsIv4pwYcvaVM89Ye2Wvy5TBuOtnT2i6r0UufUoj8hhBXR05msrxVAC4iyIczHSAPnr3-zTbwooPgh90DyDRq45Rn"
+          "model": "gemini-3.6-flash",
+          "identityReason": "The entity is positively identified as The Humbuckers, a South Coast/Sussex UK blues-rock live band featured on Lemonrock and local Sussex live venue gig listings (e.g. Duke of Wellington in Shoreham, The Bull Inn in Battle).",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "The entity is positively identified as The Humbuckers, a South Coast/Sussex UK blues-rock live band featured on Lemonrock and local Sussex live venue gig listings (e.g. Duke of Wellington in Shoreham, The Bull Inn in Battle).",
+            "facts": [
+              {
+                "predicate": "hasArtistType",
+                "value": "Band",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy",
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVDeJWUUudu2tlKkPdHyAy1e1zajFjcgQcNoiJIqaCFepj2KiLc2u1lbMV4kzt8xDLg2LX1flFKPeBfuZsLrZvkw0wkYRb1jQ3KJ3xcCoULaf4MBakL8QjuQXGHrLsOOrUKwOLX6NwOj_yWwFIXvGcnrwweLhBZBcLW16MztE="
+                ],
+                "evidenceText": "Line up of vocals, harmonica, guitar, bass and drums. The Humbuckers are a blues-rock band with grit and groove."
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy",
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVDeJWUUudu2tlKkPdHyAy1e1zajFjcgQcNoiJIqaCFepj2KiLc2u1lbMV4kzt8xDLg2LX1flFKPeBfuZsLrZvkw0wkYRb1jQ3KJ3xcCoULaf4MBakL8QjuQXGHrLsOOrUKwOLX6NwOj_yWwFIXvGcnrwweLhBZBcLW16MztE="
+                ],
+                "evidenceText": "They combine their experience in blues, rock'n'roll, Stones and cover bands to create a punchy brand of rocking blues. Expect some old favourites, some rarities... from the likes of Howlin' Wolf, Little Walter, Johnny Burnette... and there's always plenty of Stones."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Blues",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+                ],
+                "evidenceText": "The Humbuckers are a blues-rock band with grit and groove. We bring raw electric blues to life..."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Rock",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+                ],
+                "evidenceText": "The Humbuckers are a blues-rock band with grit and groove."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Rock n Roll",
+                "confidence": 0.92,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVDeJWUUudu2tlKkPdHyAy1e1zajFjcgQcNoiJIqaCFepj2KiLc2u1lbMV4kzt8xDLg2LX1flFKPeBfuZsLrZvkw0wkYRb1jQ3KJ3xcCoULaf4MBakL8QjuQXGHrLsOOrUKwOLX6NwOj_yWwFIXvGcnrwweLhBZBcLW16MztE="
+                ],
+                "evidenceText": "They combine their experience in blues, rock'n'roll, Stones and cover bands to create a punchy brand of rocking blues."
+              },
+              {
+                "predicate": "isAcoustic",
+                "value": false,
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+                ],
+                "evidenceText": "We bring raw electric blues to life... live and loud!"
+              },
+              {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+                ],
+                "evidenceText": "Searched for official standalone website or social media profiles for The Humbuckers; only community event listings and pub promotional posts were found."
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasArtistType",
+                "value": "Band",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy",
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVDeJWUUudu2tlKkPdHyAy1e1zajFjcgQcNoiJIqaCFepj2KiLc2u1lbMV4kzt8xDLg2LX1flFKPeBfuZsLrZvkw0wkYRb1jQ3KJ3xcCoULaf4MBakL8QjuQXGHrLsOOrUKwOLX6NwOj_yWwFIXvGcnrwweLhBZBcLW16MztE="
+                ],
+                "evidenceText": "Line up of vocals, harmonica, guitar, bass and drums. The Humbuckers are a blues-rock band with grit and groove."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy, https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVDeJWUUudu2tlKkPdHyAy1e1zajFjcgQcNoiJIqaCFepj2KiLc2u1lbMV4kzt8xDLg2LX1flFKPeBfuZsLrZvkw0wkYRb1jQ3KJ3xcCoULaf4MBakL8QjuQXGHrLsOOrUKwOLX6NwOj_yWwFIXvGcnrwweLhBZBcLW16MztE="
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy",
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVDeJWUUudu2tlKkPdHyAy1e1zajFjcgQcNoiJIqaCFepj2KiLc2u1lbMV4kzt8xDLg2LX1flFKPeBfuZsLrZvkw0wkYRb1jQ3KJ3xcCoULaf4MBakL8QjuQXGHrLsOOrUKwOLX6NwOj_yWwFIXvGcnrwweLhBZBcLW16MztE="
+                ],
+                "evidenceText": "They combine their experience in blues, rock'n'roll, Stones and cover bands to create a punchy brand of rocking blues. Expect some old favourites, some rarities... from the likes of Howlin' Wolf, Little Walter, Johnny Burnette... and there's always plenty of Stones."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy, https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVDeJWUUudu2tlKkPdHyAy1e1zajFjcgQcNoiJIqaCFepj2KiLc2u1lbMV4kzt8xDLg2LX1flFKPeBfuZsLrZvkw0wkYRb1jQ3KJ3xcCoULaf4MBakL8QjuQXGHrLsOOrUKwOLX6NwOj_yWwFIXvGcnrwweLhBZBcLW16MztE="
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Blues",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+                ],
+                "evidenceText": "The Humbuckers are a blues-rock band with grit and groove. We bring raw electric blues to life..."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Rock",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+                ],
+                "evidenceText": "The Humbuckers are a blues-rock band with grit and groove."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Rock n Roll",
+                "confidence": 0.92,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVDeJWUUudu2tlKkPdHyAy1e1zajFjcgQcNoiJIqaCFepj2KiLc2u1lbMV4kzt8xDLg2LX1flFKPeBfuZsLrZvkw0wkYRb1jQ3KJ3xcCoULaf4MBakL8QjuQXGHrLsOOrUKwOLX6NwOj_yWwFIXvGcnrwweLhBZBcLW16MztE="
+                ],
+                "evidenceText": "They combine their experience in blues, rock'n'roll, Stones and cover bands to create a punchy brand of rocking blues."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVDeJWUUudu2tlKkPdHyAy1e1zajFjcgQcNoiJIqaCFepj2KiLc2u1lbMV4kzt8xDLg2LX1flFKPeBfuZsLrZvkw0wkYRb1jQ3KJ3xcCoULaf4MBakL8QjuQXGHrLsOOrUKwOLX6NwOj_yWwFIXvGcnrwweLhBZBcLW16MztE="
+            },
+            {
+              "fact": {
+                "predicate": "isAcoustic",
+                "value": false,
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+                ],
+                "evidenceText": "We bring raw electric blues to life... live and loud!"
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+            },
+            {
+              "fact": {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+                ],
+                "evidenceText": "Searched for official standalone website or social media profiles for The Humbuckers; only community event listings and pub promotional posts were found."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGweuN1veSC3zt8KSMGORK_C4WZxGojn77O8klwkixSoaBHU_W9R9wjK-kLMvpY2WP01oiMQrE4OjAqCwplxMqK1QPuSC8tkvb5tTIIPjOF27zQOdmsjGNRdkL0VQ2GtivfqP2BO7t_w1XvJaHyosq7xrOzZhFpxHFDYYy"
+            }
+          ]
         }
       },
       "review": {
@@ -272,7 +715,7 @@
       "caseId": "grounded-06-artist",
       "sourceId": "onthecase-band-hydration",
       "sourceCandidateKey": "onthecase:band:26683",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "artist",
         "entityId": "onthecase-band-hydration:onthecase:band:26683",
@@ -299,12 +742,178 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "a175ba69-a62b-421d-b7b7-c187e6510192",
-        "retrievedAt": "2026-08-28T16:37:34.223Z",
-        "identityConfidence": 0,
+        "providerRunId": "ec0d5681-b95e-4a20-bd1e-34b6ea54970d",
+        "retrievedAt": "2026-08-28T19:09:02.490Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 3,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 726,
+          "outputTokens": 1530,
+          "estimatedCost": 0.048282000000000005,
+          "durationMs": 20873
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE0rVq_A8ytyNISdLH1Z_tmBtkpnkSzkPGvnC8SBI6D0nh1J9O09sIDNqG-QNu6ctdZYdwelBmud7EsfZMXRP94NkLJd6SPu0X-kMji4i93lEr0r29FeFThrC5APwPK9CLYr2gECphCAIcnSbRDkKw="
+          "model": "gemini-3.6-flash",
+          "identityReason": "Charlotte Forman is positively identified as a North East UK-based solo singer-songwriter and live performer listed on On The Case Music (onthecasemusic.co.uk) with performance listings at North East venues including Clousden Hill Forest Hall.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "Charlotte Forman is positively identified as a North East UK-based solo singer-songwriter and live performer listed on On The Case Music (onthecasemusic.co.uk) with performance listings at North East venues including Clousden Hill Forest Hall.",
+            "facts": [
+              {
+                "predicate": "hasArtistType",
+                "value": "Solo Act",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEaMNxCSuwDWhWApnC25Vjzts41RVxb6vhIo4dUrpPEQGnJqr4kelDgeLf6QVvhs0aYiN0FgV0hHeNaw1NyT5QrdFCX7X4-t6Y73gh0VbgBhaWuzeY89oojP3mfCBYQj3ENn7gdG9bpWvgF4MCMgbb7lg=="
+                ],
+                "evidenceText": "Taking her musical influences from Adele, lady gaga and Amy Winehouse Charlotte Forman is a soul pop singer songwriter with an emotional powerhouse vocal. Originally based in Essex, Charlotte moved to the beautiful northeast to pursue her career as a full time musician"
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHj_I4W3ewFQY4njTHPd3bFfRDbQpR-J1gRXs8o456Tv3QSI5r-iMeMYqrF6xJ9n4dwRzgJ514dhfbEw8UGLlrckOI3c9z6clqZpkfhspTRWi_vxZexlrT9Ywc3pzZECoQXZEWm5o7w5lgb=="
+                ],
+                "evidenceText": "Hear Me – the new EP from Charlotte Forman – is a genuine investigation into what it means to be truly authentic... I've really tried to focus the EP onto the songs rather than anything else"
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEcdD8uZlYYZ3sLDWMHUImF2lef8gBpAF-1h6GXZmgMsxX4swLBg7bViyk3P8FXS6ECKQ6eGEGVj62deJr8iSR2RfMieKyMcV8gq6d-ZKclblDw04KBAzsVFhekomzWwaso"
+                ],
+                "evidenceText": "Charlotte sang her rendition of skyfall as its one of her lifelong goals to be the next james bond singer."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Pop",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEaMNxCSuwDWhWApnC25Vjzts41RVxb6vhIo4dUrpPEQGnJqr4kelDgeLf6QVvhs0aYiN0FgV0hHeNaw1NyT5QrdFCX7X4-t6Y73gh0VbgBhaWuzeY89oojP3mfCBYQj3ENn7gdG9bpWvgF4MCMgbb7lg=="
+                ],
+                "evidenceText": "Charlotte Forman is a soul pop singer songwriter with an emotional powerhouse vocal."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Soul",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHj_I4W3ewFQY4njTHPd3bFfRDbQpR-J1gRXs8o456Tv3QSI5r-iMeMYqrF6xJ9n4dwRzgJ514dhfbEw8UGLlrckOI3c9z6clqZpkfhspTRWi_vxZexlrT9Ywc3pzZECoQXZEWm5o7w5lgb=="
+                ],
+                "evidenceText": "Combining strong elements of jazz and soul, the focus of Hear Me is an intentional reflection on how it feels to be an artist keen to put their art before anything else."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Indie",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGj4dPnx1FCI5BwDEYogeIdyJB0oiA3IigejcF5pdZt_-XDEBs-USmuNY3Oq99D_3qadolX78bDXkgRthjAB17fViy79UpO9mTmdC7v5Bl-WqW5I0j_LJMLgA3vY84GgqZYRLGZAzDj"
+                ],
+                "evidenceText": "The excellent British artist Charlotte Forman has established herself in the thriving Pop and Indie Pop music scenes."
+              },
+              {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/Charlottef94",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGUbUzA8t6hP_VNGi-Q7wIxGMKK8FpJafL-CGkiImBzTq48VUezMm7iMjE3t47ufdmZsuvGOjv7WCL-gSMGZrfMGIMcEeCZw0A1NAziAEuYFrg5_SiVRKFActKWcg=="
+                ],
+                "evidenceText": "Charlotte Forman (@Charlottef94) - Facebook"
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasArtistType",
+                "value": "Solo Act",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEaMNxCSuwDWhWApnC25Vjzts41RVxb6vhIo4dUrpPEQGnJqr4kelDgeLf6QVvhs0aYiN0FgV0hHeNaw1NyT5QrdFCX7X4-t6Y73gh0VbgBhaWuzeY89oojP3mfCBYQj3ENn7gdG9bpWvgF4MCMgbb7lg=="
+                ],
+                "evidenceText": "Taking her musical influences from Adele, lady gaga and Amy Winehouse Charlotte Forman is a soul pop singer songwriter with an emotional powerhouse vocal. Originally based in Essex, Charlotte moved to the beautiful northeast to pursue her career as a full time musician"
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEaMNxCSuwDWhWApnC25Vjzts41RVxb6vhIo4dUrpPEQGnJqr4kelDgeLf6QVvhs0aYiN0FgV0hHeNaw1NyT5QrdFCX7X4-t6Y73gh0VbgBhaWuzeY89oojP3mfCBYQj3ENn7gdG9bpWvgF4MCMgbb7lg=="
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHj_I4W3ewFQY4njTHPd3bFfRDbQpR-J1gRXs8o456Tv3QSI5r-iMeMYqrF6xJ9n4dwRzgJ514dhfbEw8UGLlrckOI3c9z6clqZpkfhspTRWi_vxZexlrT9Ywc3pzZECoQXZEWm5o7w5lgb=="
+                ],
+                "evidenceText": "Hear Me – the new EP from Charlotte Forman – is a genuine investigation into what it means to be truly authentic... I've really tried to focus the EP onto the songs rather than anything else"
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHj_I4W3ewFQY4njTHPd3bFfRDbQpR-J1gRXs8o456Tv3QSI5r-iMeMYqrF6xJ9n4dwRzgJ514dhfbEw8UGLlrckOI3c9z6clqZpkfhspTRWi_vxZexlrT9Ywc3pzZECoQXZEWm5o7w5lgb=="
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEcdD8uZlYYZ3sLDWMHUImF2lef8gBpAF-1h6GXZmgMsxX4swLBg7bViyk3P8FXS6ECKQ6eGEGVj62deJr8iSR2RfMieKyMcV8gq6d-ZKclblDw04KBAzsVFhekomzWwaso"
+                ],
+                "evidenceText": "Charlotte sang her rendition of skyfall as its one of her lifelong goals to be the next james bond singer."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEcdD8uZlYYZ3sLDWMHUImF2lef8gBpAF-1h6GXZmgMsxX4swLBg7bViyk3P8FXS6ECKQ6eGEGVj62deJr8iSR2RfMieKyMcV8gq6d-ZKclblDw04KBAzsVFhekomzWwaso"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Pop",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEaMNxCSuwDWhWApnC25Vjzts41RVxb6vhIo4dUrpPEQGnJqr4kelDgeLf6QVvhs0aYiN0FgV0hHeNaw1NyT5QrdFCX7X4-t6Y73gh0VbgBhaWuzeY89oojP3mfCBYQj3ENn7gdG9bpWvgF4MCMgbb7lg=="
+                ],
+                "evidenceText": "Charlotte Forman is a soul pop singer songwriter with an emotional powerhouse vocal."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEaMNxCSuwDWhWApnC25Vjzts41RVxb6vhIo4dUrpPEQGnJqr4kelDgeLf6QVvhs0aYiN0FgV0hHeNaw1NyT5QrdFCX7X4-t6Y73gh0VbgBhaWuzeY89oojP3mfCBYQj3ENn7gdG9bpWvgF4MCMgbb7lg=="
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Soul",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHj_I4W3ewFQY4njTHPd3bFfRDbQpR-J1gRXs8o456Tv3QSI5r-iMeMYqrF6xJ9n4dwRzgJ514dhfbEw8UGLlrckOI3c9z6clqZpkfhspTRWi_vxZexlrT9Ywc3pzZECoQXZEWm5o7w5lgb=="
+                ],
+                "evidenceText": "Combining strong elements of jazz and soul, the focus of Hear Me is an intentional reflection on how it feels to be an artist keen to put their art before anything else."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHj_I4W3ewFQY4njTHPd3bFfRDbQpR-J1gRXs8o456Tv3QSI5r-iMeMYqrF6xJ9n4dwRzgJ514dhfbEw8UGLlrckOI3c9z6clqZpkfhspTRWi_vxZexlrT9Ywc3pzZECoQXZEWm5o7w5lgb=="
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Indie",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGj4dPnx1FCI5BwDEYogeIdyJB0oiA3IigejcF5pdZt_-XDEBs-USmuNY3Oq99D_3qadolX78bDXkgRthjAB17fViy79UpO9mTmdC7v5Bl-WqW5I0j_LJMLgA3vY84GgqZYRLGZAzDj"
+                ],
+                "evidenceText": "The excellent British artist Charlotte Forman has established herself in the thriving Pop and Indie Pop music scenes."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGj4dPnx1FCI5BwDEYogeIdyJB0oiA3IigejcF5pdZt_-XDEBs-USmuNY3Oq99D_3qadolX78bDXkgRthjAB17fViy79UpO9mTmdC7v5Bl-WqW5I0j_LJMLgA3vY84GgqZYRLGZAzDj"
+            },
+            {
+              "fact": {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/Charlottef94",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGUbUzA8t6hP_VNGi-Q7wIxGMKK8FpJafL-CGkiImBzTq48VUezMm7iMjE3t47ufdmZsuvGOjv7WCL-gSMGZrfMGIMcEeCZw0A1NAziAEuYFrg5_SiVRKFActKWcg=="
+                ],
+                "evidenceText": "Charlotte Forman (@Charlottef94) - Facebook"
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGUbUzA8t6hP_VNGi-Q7wIxGMKK8FpJafL-CGkiImBzTq48VUezMm7iMjE3t47ufdmZsuvGOjv7WCL-gSMGZrfMGIMcEeCZw0A1NAziAEuYFrg5_SiVRKFActKWcg=="
+            }
+          ]
         }
       },
       "review": {
@@ -320,7 +929,7 @@
       "caseId": "grounded-07-artist",
       "sourceId": "onthecase-band-hydration",
       "sourceCandidateKey": "onthecase:band:27822",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "artist",
         "entityId": "onthecase-band-hydration:onthecase:band:27822",
@@ -347,12 +956,262 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "b2f82cc0-c24e-4b70-abb0-d85d0f302e36",
-        "retrievedAt": "2026-08-28T16:37:51.122Z",
-        "identityConfidence": 0,
+        "providerRunId": "dc9efaac-bfce-4d91-b2b2-281ccd0610f5",
+        "retrievedAt": "2026-08-28T19:09:20.427Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 4,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 766,
+          "outputTokens": 1566,
+          "estimatedCost": 0.062447,
+          "durationMs": 17937
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://amvlivemusic.com/images/artists/anna-reay-band-yt-tn.jpg"
+          "model": "gemini-3.6-flash",
+          "identityReason": "Anna Reay is a professional vocalist and bandleader based in Newcastle upon Tyne, North East England, whose official website (annareay.co.uk) and social presence match the Newcastle venue footprint and booking records.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "Anna Reay is a professional vocalist and bandleader based in Newcastle upon Tyne, North East England, whose official website (annareay.co.uk) and social presence match the Newcastle venue footprint and booking records.",
+            "facts": [
+              {
+                "predicate": "hasArtistType",
+                "value": "Solo Act",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "International vocalist, Anna Reay, is an incredibly versatile singer who performs a vast array of musical styles."
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://amvlivemusic.com/images/artists/anna-reay-duo.jpg"
+                ],
+                "evidenceText": "They have a vast repertoire which spans many genres from pop to opera, jazz to rock and requests are always welcome."
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://amvlivemusic.com/images/artists/anna-reay-duo.jpg"
+                ],
+                "evidenceText": "Anna and Deon are also in the process of recording an original album. The first single has already been released."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Pop",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Jazz",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Soul",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Blues",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Classical",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              {
+                "predicate": "hasWebsiteUrl",
+                "value": "http://www.annareay.co.uk",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://yt3.googleusercontent.com/ytc/AIdro_lB8rUMYFOHytXg1YwNaFylMM7uETZObLovof4jugsdZnc=s900-c-k-c0x00ffffff-no-rj"
+                ],
+                "evidenceText": "Anna Reay | Anna Reay Band | ANNAGRAMS | www.annagramsgift.com | www.annareay.co.uk"
+              },
+              {
+                "predicate": "hasOfficialUrl",
+                "value": "http://www.annareay.co.uk",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://yt3.googleusercontent.com/ytc/AIdro_lB8rUMYFOHytXg1YwNaFylMM7uETZObLovof4jugsdZnc=s900-c-k-c0x00ffffff-no-rj"
+                ],
+                "evidenceText": "Anna Reay | Anna Reay Band | ANNAGRAMS | www.annagramsgift.com | www.annareay.co.uk"
+              },
+              {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/annareayband",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=576044713875562"
+                ],
+                "evidenceText": "Anna Reay Singer (@annareayband) on Facebook"
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasArtistType",
+                "value": "Solo Act",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "International vocalist, Anna Reay, is an incredibly versatile singer who performs a vast array of musical styles."
+              },
+              "reason": "uncaptured citation: https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://amvlivemusic.com/images/artists/anna-reay-duo.jpg"
+                ],
+                "evidenceText": "They have a vast repertoire which spans many genres from pop to opera, jazz to rock and requests are always welcome."
+              },
+              "reason": "uncaptured citation: https://amvlivemusic.com/images/artists/anna-reay-duo.jpg"
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://amvlivemusic.com/images/artists/anna-reay-duo.jpg"
+                ],
+                "evidenceText": "Anna and Deon are also in the process of recording an original album. The first single has already been released."
+              },
+              "reason": "uncaptured citation: https://amvlivemusic.com/images/artists/anna-reay-duo.jpg"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Pop",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              "reason": "uncaptured citation: https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Jazz",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              "reason": "uncaptured citation: https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Soul",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              "reason": "uncaptured citation: https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Blues",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              "reason": "uncaptured citation: https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Classical",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+                ],
+                "evidenceText": "Anna Reay performs a vast array of musical styles including soul, blues & jazz as well as musical theatre, classical and popular music."
+              },
+              "reason": "uncaptured citation: https://www.entertainersworldwide.com/graphics/products/cache/s_1200_800_00d89d94e63f70b297b475442ae079db.jpg"
+            },
+            {
+              "fact": {
+                "predicate": "hasWebsiteUrl",
+                "value": "http://www.annareay.co.uk",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://yt3.googleusercontent.com/ytc/AIdro_lB8rUMYFOHytXg1YwNaFylMM7uETZObLovof4jugsdZnc=s900-c-k-c0x00ffffff-no-rj"
+                ],
+                "evidenceText": "Anna Reay | Anna Reay Band | ANNAGRAMS | www.annagramsgift.com | www.annareay.co.uk"
+              },
+              "reason": "uncaptured citation: https://yt3.googleusercontent.com/ytc/AIdro_lB8rUMYFOHytXg1YwNaFylMM7uETZObLovof4jugsdZnc=s900-c-k-c0x00ffffff-no-rj"
+            },
+            {
+              "fact": {
+                "predicate": "hasOfficialUrl",
+                "value": "http://www.annareay.co.uk",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://yt3.googleusercontent.com/ytc/AIdro_lB8rUMYFOHytXg1YwNaFylMM7uETZObLovof4jugsdZnc=s900-c-k-c0x00ffffff-no-rj"
+                ],
+                "evidenceText": "Anna Reay | Anna Reay Band | ANNAGRAMS | www.annagramsgift.com | www.annareay.co.uk"
+              },
+              "reason": "uncaptured citation: https://yt3.googleusercontent.com/ytc/AIdro_lB8rUMYFOHytXg1YwNaFylMM7uETZObLovof4jugsdZnc=s900-c-k-c0x00ffffff-no-rj"
+            },
+            {
+              "fact": {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/annareayband",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=576044713875562"
+                ],
+                "evidenceText": "Anna Reay Singer (@annareayband) on Facebook"
+              },
+              "reason": "uncaptured citation: https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=576044713875562"
+            }
+          ]
         }
       },
       "review": {
@@ -395,28 +1254,29 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "0e937c8f-f2a1-4f9a-ac65-05bf881d5972",
-        "retrievedAt": "2026-08-28T16:38:00.664Z",
-        "identityConfidence": 0.2,
+        "providerRunId": "66129179-74b9-4ed9-b3c2-09afbdf1764a",
+        "retrievedAt": "2026-08-28T19:09:29.372Z",
+        "identityConfidence": 0,
         "facts": [],
         "usage": {
-          "searches": 2,
+          "searches": 4,
           "fetches": 0,
           "modelCalls": 1,
-          "inputTokens": 756,
-          "outputTokens": 74,
-          "estimatedCost": 0.028844500000000002,
-          "durationMs": 9542
+          "inputTokens": 776,
+          "outputTokens": 65,
+          "estimatedCost": 0.05682575,
+          "durationMs": 8945
         },
         "raw": {
           "model": "gemini-3.6-flash",
-          "identityReason": "Search results for 'the Select Committee' predominantly refer to legislative select committees. While sparse pub gig posts mention 'The Select Committee Band', no official profiles, dedicated website, or verified footprint could be established to safely confirm entity identity.",
+          "identityReason": "Unable to safely establish the exact locality, gig footprint, or official presence for 'the Select Committee' without risk of conflating with parliamentary select committees or distinct same-named musical acts.",
           "response": {
-            "identityConfidence": 0.2,
-            "identityReason": "Search results for 'the Select Committee' predominantly refer to legislative select committees. While sparse pub gig posts mention 'The Select Committee Band', no official profiles, dedicated website, or verified footprint could be established to safely confirm entity identity.",
+            "identityConfidence": 0,
+            "identityReason": "Unable to safely establish the exact locality, gig footprint, or official presence for 'the Select Committee' without risk of conflating with parliamentary select committees or distinct same-named musical acts.",
             "facts": []
           },
-          "evidence": []
+          "evidence": [],
+          "rejectedFacts": []
         }
       },
       "review": {
@@ -432,7 +1292,7 @@
       "caseId": "grounded-09-artist",
       "sourceId": "gigs-news-daily-import",
       "sourceCandidateKey": "artist_the-tall-faces",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "artist",
         "entityId": "gigs-news-daily-import:artist_the-tall-faces",
@@ -459,12 +1319,241 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "cbbf948c-cf1f-41e6-b570-205972b9beb3",
-        "retrievedAt": "2026-08-28T16:38:21.102Z",
-        "identityConfidence": 0,
+        "providerRunId": "fbcb8fc9-bd6f-40d5-a9ec-fa06e7a016fa",
+        "retrievedAt": "2026-08-28T19:09:42.945Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 2,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 759,
+          "outputTokens": 1225,
+          "estimatedCost": 0.033163,
+          "durationMs": 13572
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+          "model": "gemini-3.6-flash",
+          "identityReason": "Established entity identity as the UK (Stockport/Manchester) 4-piece Mod/60s beat band 'The Tall Faces', verified through gig listings, release records, and official Facebook page.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "Established entity identity as the UK (Stockport/Manchester) 4-piece Mod/60s beat band 'The Tall Faces', verified through gig listings, release records, and official Facebook page.",
+            "facts": [
+              {
+                "predicate": "hasArtistType",
+                "value": "Band",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing classic 60s Mod, Pop, Soul, and R&B."
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces Mod 60's Beat deliver a high-energy evening of Mod and 1960s beat classics."
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "Including the great new single from The Tall Faces... http://shop.detourrecords.co.uk/TALL-FACES-THE-The-Model-/"
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Mod",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing their take on classic 60s' Mod, Pop, Soul, and R&B."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Pop",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing their take on classic 60s' Mod, Pop, Soul, and R&B."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Soul",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing their take on classic 60s' Mod, Pop, Soul, and R&B."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "R&B",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing their take on classic 60s' Mod, Pop, Soul, and R&B."
+              },
+              {
+                "predicate": "isAcoustic",
+                "value": false,
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "Electric band performance driven by upright drum kit and guitar setup."
+              },
+              {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/TheTallFaces/",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "Official Facebook page URL https://www.facebook.com/TheTallFaces/"
+              },
+              {
+                "predicate": "hasOfficialUrl",
+                "value": "https://www.facebook.com/TheTallFaces/",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "Official presence page https://www.facebook.com/TheTallFaces/"
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasArtistType",
+                "value": "Band",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing classic 60s Mod, Pop, Soul, and R&B."
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Covers",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces Mod 60's Beat deliver a high-energy evening of Mod and 1960s beat classics."
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "Including the great new single from The Tall Faces... http://shop.detourrecords.co.uk/TALL-FACES-THE-The-Model-/"
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Mod",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing their take on classic 60s' Mod, Pop, Soul, and R&B."
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Pop",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing their take on classic 60s' Mod, Pop, Soul, and R&B."
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Soul",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing their take on classic 60s' Mod, Pop, Soul, and R&B."
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "R&B",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "The Tall Faces are a four piece, four part harmony band, playing their take on classic 60s' Mod, Pop, Soul, and R&B."
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            },
+            {
+              "fact": {
+                "predicate": "isAcoustic",
+                "value": false,
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "Electric band performance driven by upright drum kit and guitar setup."
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            },
+            {
+              "fact": {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/TheTallFaces/",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "Official Facebook page URL https://www.facebook.com/TheTallFaces/"
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            },
+            {
+              "fact": {
+                "predicate": "hasOfficialUrl",
+                "value": "https://www.facebook.com/TheTallFaces/",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+                ],
+                "evidenceText": "Official presence page https://www.facebook.com/TheTallFaces/"
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+            }
+          ]
         }
       },
       "review": {
@@ -480,7 +1569,7 @@
       "caseId": "grounded-10-artist",
       "sourceId": "gigs-news-daily-import",
       "sourceCandidateKey": "artist_tom-meighan-raw26",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "artist",
         "entityId": "gigs-news-daily-import:artist_tom-meighan-raw26",
@@ -507,12 +1596,304 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "bda7b001-540e-4e0c-93f9-70e886438e00",
-        "retrievedAt": "2026-08-28T16:38:55.670Z",
-        "identityConfidence": 0,
+        "providerRunId": "d46c21f9-5173-4a25-851c-540925a28b2a",
+        "retrievedAt": "2026-08-28T19:10:13.160Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 12,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 2262,
+          "outputTokens": 1384,
+          "estimatedCost": 0.1748865,
+          "durationMs": 30215
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEfocgAGmR-BjzQFUOIu-DDwgEZtaAWlBV0htBRrLbp5A2xdk_MSUQ6wAqw4ujAZ2Rz6vaFgoZhGJofeG0JOoDbQ72vSHOdNWJh8jvP7oWALL3G"
+          "model": "gemini-3.6-flash",
+          "identityReason": "The entity 'Tom Meighan Raw26' corresponds directly to English rock singer Tom Meighan (former Kasabian lead vocalist) performing under his official 2026 solo tour title 'RAW26' / 'RAW 26', verified through official self-identification, tour listings, and linked official profiles.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "The entity 'Tom Meighan Raw26' corresponds directly to English rock singer Tom Meighan (former Kasabian lead vocalist) performing under his official 2026 solo tour title 'RAW26' / 'RAW 26', verified through official self-identification, tour listings, and linked official profiles.",
+            "facts": [
+              {
+                "predicate": "hasArtistType",
+                "value": "Solo Act",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "Step into an unforgettable night with Tom Meighan, British rock's most electrifying performer and the original frontman of the multi-platinum band Kasabian."
+              },
+              {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "The set will also include songs from Tom's critically acclaimed solo albums, showcasing the next chapter in his musical journey."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Rock",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "Step into an unforgettable night with Tom Meighan, British rock's most electrifying performer..."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Indie",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "Regarded as true Indie royalty and rated by Q Magazine and XFMs in the top 20 greatest frontmen..."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Britpop",
+                "confidence": 0.92,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "...delivering the raw energy and swagger that made him a fixture on the British music scene."
+              },
+              {
+                "predicate": "hasGenre",
+                "value": "Alternative",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "Tom Meighan solo works and Kasabian catalogue defining modern British alternative rock."
+              },
+              {
+                "predicate": "isAcoustic",
+                "value": false,
+                "confidence": 0.92,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TomMeighanOfficial/"
+                ],
+                "evidenceText": "EMPIRE 2026 — LEICESTER Full live band. Special guest. One night only."
+              },
+              {
+                "predicate": "hasOfficialUrl",
+                "value": "https://www.tommeighanofficial.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "www.tommeighanofficial.com"
+              },
+              {
+                "predicate": "hasWebsiteUrl",
+                "value": "https://www.tommeighanofficial.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "www.tommeighanofficial.com"
+              },
+              {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/TomMeighanOfficial",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TomMeighanOfficial/"
+                ],
+                "evidenceText": "The official Facebook Page of Tom Meighan. Links: http://www.tommeighanofficial.com/"
+              },
+              {
+                "predicate": "hasInstagramUrl",
+                "value": "https://www.instagram.com/tommeighanofficial",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TomMeighanOfficial/"
+                ],
+                "evidenceText": "Tune in on my Instagram for a sneaky peak from the tour... https://www.instagram.com/tommeighanofficial"
+              },
+              {
+                "predicate": "hasSpotifyUrl",
+                "value": "https://open.spotify.com/artist/56mQD0Le056ynVaCInwJc2",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TomMeighanOfficial/"
+                ],
+                "evidenceText": "Spotify https://open.spotify.com/artist/56mQD0Le056ynVaCInwJc2"
+              },
+              {
+                "predicate": "hasBandcampUrl",
+                "value": "https://tommeighan-raw.bandcamp.com",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://tommeighan-raw.bandcamp.com/album/the-past-the-present-the-raw"
+                ],
+                "evidenceText": "Get your vinyl copy and full video performance of The Past, The Present, The Raw here: https://tommeighan-raw.bandcamp.com/album/the-past-the-present-the-raw"
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasArtistType",
+                "value": "Solo Act",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "Step into an unforgettable night with Tom Meighan, British rock's most electrifying performer and the original frontman of the multi-platinum band Kasabian."
+              },
+              "reason": "uncaptured citation: https://www.tommeighanofficial.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasActType",
+                "value": "Originals",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "The set will also include songs from Tom's critically acclaimed solo albums, showcasing the next chapter in his musical journey."
+              },
+              "reason": "uncaptured citation: https://www.tommeighanofficial.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Rock",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "Step into an unforgettable night with Tom Meighan, British rock's most electrifying performer..."
+              },
+              "reason": "uncaptured citation: https://www.tommeighanofficial.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Indie",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "Regarded as true Indie royalty and rated by Q Magazine and XFMs in the top 20 greatest frontmen..."
+              },
+              "reason": "uncaptured citation: https://www.tommeighanofficial.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Britpop",
+                "confidence": 0.92,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "...delivering the raw energy and swagger that made him a fixture on the British music scene."
+              },
+              "reason": "uncaptured citation: https://www.tommeighanofficial.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasGenre",
+                "value": "Alternative",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "Tom Meighan solo works and Kasabian catalogue defining modern British alternative rock."
+              },
+              "reason": "uncaptured citation: https://www.tommeighanofficial.com/"
+            },
+            {
+              "fact": {
+                "predicate": "isAcoustic",
+                "value": false,
+                "confidence": 0.92,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TomMeighanOfficial/"
+                ],
+                "evidenceText": "EMPIRE 2026 — LEICESTER Full live band. Special guest. One night only."
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TomMeighanOfficial/"
+            },
+            {
+              "fact": {
+                "predicate": "hasOfficialUrl",
+                "value": "https://www.tommeighanofficial.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "www.tommeighanofficial.com"
+              },
+              "reason": "uncaptured citation: https://www.tommeighanofficial.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasWebsiteUrl",
+                "value": "https://www.tommeighanofficial.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.tommeighanofficial.com/"
+                ],
+                "evidenceText": "www.tommeighanofficial.com"
+              },
+              "reason": "uncaptured citation: https://www.tommeighanofficial.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/TomMeighanOfficial",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TomMeighanOfficial/"
+                ],
+                "evidenceText": "The official Facebook Page of Tom Meighan. Links: http://www.tommeighanofficial.com/"
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TomMeighanOfficial/"
+            },
+            {
+              "fact": {
+                "predicate": "hasInstagramUrl",
+                "value": "https://www.instagram.com/tommeighanofficial",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TomMeighanOfficial/"
+                ],
+                "evidenceText": "Tune in on my Instagram for a sneaky peak from the tour... https://www.instagram.com/tommeighanofficial"
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TomMeighanOfficial/"
+            },
+            {
+              "fact": {
+                "predicate": "hasSpotifyUrl",
+                "value": "https://open.spotify.com/artist/56mQD0Le056ynVaCInwJc2",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TomMeighanOfficial/"
+                ],
+                "evidenceText": "Spotify https://open.spotify.com/artist/56mQD0Le056ynVaCInwJc2"
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TomMeighanOfficial/"
+            },
+            {
+              "fact": {
+                "predicate": "hasBandcampUrl",
+                "value": "https://tommeighan-raw.bandcamp.com",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://tommeighan-raw.bandcamp.com/album/the-past-the-present-the-raw"
+                ],
+                "evidenceText": "Get your vinyl copy and full video performance of The Past, The Present, The Raw here: https://tommeighan-raw.bandcamp.com/album/the-past-the-present-the-raw"
+              },
+              "reason": "uncaptured citation: https://tommeighan-raw.bandcamp.com/album/the-past-the-present-the-raw"
+            }
+          ]
         }
       },
       "review": {
@@ -528,7 +1909,7 @@
       "caseId": "grounded-11-venue",
       "sourceId": "gigs-news-daily-import",
       "sourceCandidateKey": "venue_whittles-oldham",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "venue",
         "entityId": "gigs-news-daily-import:venue_whittles-oldham",
@@ -552,12 +1933,115 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "4d9b4c6f-4462-41a2-9cfa-2ef0f0ca0f63",
-        "retrievedAt": "2026-08-28T16:39:25.466Z",
-        "identityConfidence": 0,
+        "providerRunId": "dd8c056c-0edb-4d8a-ad9d-9f95ef3b7abd",
+        "retrievedAt": "2026-08-28T19:10:29.590Z",
+        "identityConfidence": 0.99,
         "facts": [],
+        "usage": {
+          "searches": 8,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 1155,
+          "outputTokens": 460,
+          "estimatedCost": 0.11459125,
+          "durationMs": 16430
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHw0-fm5cUhXKGhWxl0AdIeA7OtVLHQzKmG08tlZLuRjyeksDyqQNiGM-XvRLAFTSXUHauOZVfowW-DahsTFbNqm8UvwXFSfE-6h0Az0yH-1jM="
+          "model": "gemini-3.6-flash",
+          "identityReason": "Confirmed as Whittles (also known as Whittles Oldham / Whittles@tokyo), an active live music venue located at 57 Roscoe St, Oldham OL1 1EA, UK, with official website whittlesoldham.com.",
+          "response": {
+            "identityConfidence": 0.99,
+            "identityReason": "Confirmed as Whittles (also known as Whittles Oldham / Whittles@tokyo), an active live music venue located at 57 Roscoe St, Oldham OL1 1EA, UK, with official website whittlesoldham.com.",
+            "facts": [
+              {
+                "predicate": "hasAddress",
+                "value": "57 Roscoe St, Oldham OL1 1EA",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://whittlesoldham.com/"
+                ],
+                "evidenceText": "Get In Touch... 07738 903 174.. 57 Roscoe St, Oldham OL1 1EA."
+              },
+              {
+                "predicate": "hasLocation",
+                "value": "Oldham, England, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://whittlesoldham.com/"
+                ],
+                "evidenceText": "Whittles is a live music venue based in the heart of Oldham."
+              },
+              {
+                "predicate": "hasWebsiteUrl",
+                "value": "https://whittlesoldham.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://whittlesoldham.com/"
+                ],
+                "evidenceText": "Web Design by Cubicle Creative Copyright 2025 Whittles Oldham. Website: https://whittlesoldham.com/"
+              },
+              {
+                "predicate": "hasOfficialUrl",
+                "value": "https://whittlesoldham.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://whittlesoldham.com/"
+                ],
+                "evidenceText": "Official site of Whittles Oldham live music venue."
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasAddress",
+                "value": "57 Roscoe St, Oldham OL1 1EA",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://whittlesoldham.com/"
+                ],
+                "evidenceText": "Get In Touch... 07738 903 174.. 57 Roscoe St, Oldham OL1 1EA."
+              },
+              "reason": "uncaptured citation: https://whittlesoldham.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasLocation",
+                "value": "Oldham, England, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://whittlesoldham.com/"
+                ],
+                "evidenceText": "Whittles is a live music venue based in the heart of Oldham."
+              },
+              "reason": "uncaptured citation: https://whittlesoldham.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasWebsiteUrl",
+                "value": "https://whittlesoldham.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://whittlesoldham.com/"
+                ],
+                "evidenceText": "Web Design by Cubicle Creative Copyright 2025 Whittles Oldham. Website: https://whittlesoldham.com/"
+              },
+              "reason": "uncaptured citation: https://whittlesoldham.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasOfficialUrl",
+                "value": "https://whittlesoldham.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://whittlesoldham.com/"
+                ],
+                "evidenceText": "Official site of Whittles Oldham live music venue."
+              },
+              "reason": "uncaptured citation: https://whittlesoldham.com/"
+            }
+          ]
         }
       },
       "review": {
@@ -573,7 +2057,7 @@
       "caseId": "grounded-12-venue",
       "sourceId": "klma-stoke-gig-list",
       "sourceCandidateKey": "klma-venue-fef3609d34f8",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "venue",
         "entityId": "klma-stoke-gig-list:klma-venue-fef3609d34f8",
@@ -597,12 +2081,115 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "66771454-b8f0-41b8-9be1-8a2a583e0530",
-        "retrievedAt": "2026-08-28T16:39:38.883Z",
-        "identityConfidence": 0,
+        "providerRunId": "338eed9d-12f7-4115-b341-4da05abd3a34",
+        "retrievedAt": "2026-08-28T19:10:43.047Z",
+        "identityConfidence": 0.99,
         "facts": [],
+        "usage": {
+          "searches": 9,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 934,
+          "outputTokens": 498,
+          "estimatedCost": 0.128568,
+          "durationMs": 13456
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://www.theshoulderofmuttonfulford.com/"
+          "model": "gemini-3.6-flash",
+          "identityReason": "The venue 'Shoulder, Fulford' from the Stoke-on-Trent gig footprint matches 'The Shoulder of Mutton' in Fulford, Stoke-on-Trent (Meadow Lane, ST11 9QS) with confirmed address, official website, and local pub directory listings.",
+          "response": {
+            "identityConfidence": 0.99,
+            "identityReason": "The venue 'Shoulder, Fulford' from the Stoke-on-Trent gig footprint matches 'The Shoulder of Mutton' in Fulford, Stoke-on-Trent (Meadow Lane, ST11 9QS) with confirmed address, official website, and local pub directory listings.",
+            "facts": [
+              {
+                "predicate": "hasAddress",
+                "value": "Meadow Ln, Fulford, Stoke-on-Trent ST11 9QS",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.theshoulderofmuttonfulford.com/"
+                ],
+                "evidenceText": "Address. Meadow Ln, Fulford, Stoke-on-Trent ST11 9QS."
+              },
+              {
+                "predicate": "hasLocation",
+                "value": "Fulford, Stoke-on-Trent, Staffordshire",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.theshoulderofmuttonfulford.com/"
+                ],
+                "evidenceText": "Located in the heart of Staffordshire... Meadow Ln, Fulford, Stoke-on-Trent ST11 9QS."
+              },
+              {
+                "predicate": "hasWebsiteUrl",
+                "value": "https://www.theshoulderofmuttonfulford.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.theshoulderofmuttonfulford.com/"
+                ],
+                "evidenceText": "Discover the charm of The Shoulder of Mutton, Fulford... eat@theshoulderofmuttonfulford.com"
+              },
+              {
+                "predicate": "hasOfficialUrl",
+                "value": "https://www.theshoulderofmuttonfulford.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.theshoulderofmuttonfulford.com/"
+                ],
+                "evidenceText": "Official site for The Shoulder of Mutton, Fulford."
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasAddress",
+                "value": "Meadow Ln, Fulford, Stoke-on-Trent ST11 9QS",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.theshoulderofmuttonfulford.com/"
+                ],
+                "evidenceText": "Address. Meadow Ln, Fulford, Stoke-on-Trent ST11 9QS."
+              },
+              "reason": "uncaptured citation: https://www.theshoulderofmuttonfulford.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasLocation",
+                "value": "Fulford, Stoke-on-Trent, Staffordshire",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.theshoulderofmuttonfulford.com/"
+                ],
+                "evidenceText": "Located in the heart of Staffordshire... Meadow Ln, Fulford, Stoke-on-Trent ST11 9QS."
+              },
+              "reason": "uncaptured citation: https://www.theshoulderofmuttonfulford.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasWebsiteUrl",
+                "value": "https://www.theshoulderofmuttonfulford.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.theshoulderofmuttonfulford.com/"
+                ],
+                "evidenceText": "Discover the charm of The Shoulder of Mutton, Fulford... eat@theshoulderofmuttonfulford.com"
+              },
+              "reason": "uncaptured citation: https://www.theshoulderofmuttonfulford.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasOfficialUrl",
+                "value": "https://www.theshoulderofmuttonfulford.com/",
+                "confidence": 0.99,
+                "evidenceUrls": [
+                  "https://www.theshoulderofmuttonfulford.com/"
+                ],
+                "evidenceText": "Official site for The Shoulder of Mutton, Fulford."
+              },
+              "reason": "uncaptured citation: https://www.theshoulderofmuttonfulford.com/"
+            }
+          ]
         }
       },
       "review": {
@@ -618,7 +2205,7 @@
       "caseId": "grounded-13-venue",
       "sourceId": "onthecase-gig-index",
       "sourceCandidateKey": "onthecase:venue:90",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "venue",
         "entityId": "onthecase-gig-index:onthecase:venue:90",
@@ -642,12 +2229,94 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "08bb1446-d239-4418-b640-3ed2e51e5a90",
-        "retrievedAt": "2026-08-28T16:39:58.057Z",
-        "identityConfidence": 0,
+        "providerRunId": "43ebdcf5-17dd-4238-880c-6ea91a8798e9",
+        "retrievedAt": "2026-08-28T19:11:02.825Z",
+        "identityConfidence": 0.99,
         "facts": [],
+        "usage": {
+          "searches": 2,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 689,
+          "outputTokens": 783,
+          "estimatedCost": 0.031453,
+          "durationMs": 19779
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGWtzI2UtuNElNaz6E8mmoc3XEQRmvYT4DS09E21Fh3BmvodDTpT8IfWeBnyONvPhX7SBRjGmJvrMDVItP0RXeGLmnxbZyqfKXm0Vlz4fGjCS6Sw1Cl4CKm850SySJm1zJ8fMRtyuN8-ziw0RPUYg=="
+          "model": "gemini-3.6-flash",
+          "identityReason": "The venue entity source candidate key 'onthecase:venue:90' matches the Bebside Inn Blyth listed on On The Case Music and corroborated by news coverage for the pub in Blyth, Northumberland.",
+          "response": {
+            "identityConfidence": 0.99,
+            "identityReason": "The venue entity source candidate key 'onthecase:venue:90' matches the Bebside Inn Blyth listed on On The Case Music and corroborated by news coverage for the pub in Blyth, Northumberland.",
+            "facts": [
+              {
+                "predicate": "hasAddress",
+                "value": "Front Street, Bebside, Blyth, NE24 4HT, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHIZgTXX4MAv_v9xKoR1_CeZZbPE26qjQR_xvdQ-hkjd0jNHG0CVrOjDUyQ6nAo0VOBqAfBjubPnZtxwI6uH4sK2ryE4ZlSoRShwydBwmBUVrhz5rsWFvDUrEZTH_YMmpt4RHTj6WVwFy8pJcHzJg=="
+                ],
+                "evidenceText": "Bebside Inn Blyth. Front Street / Bebside / Bedlington. 01670 828 883 / / Front Street, Bebside / Bedlington, NE24 4HT"
+              },
+              {
+                "predicate": "hasLocation",
+                "value": "Blyth, Northumberland, England",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHqMrTr0SKyjs1KtYlJeA52SZsPFFCIzwRGD04Tjs0iM-b4SajOtE_sY_K7jiDFceu4lpW2sR-wLiDg7gVdTLoCo69fsof7Pu8N7HG-n35DpY80S9tUXyrdNSQZFxb_94abJ6A_FwaOkGn3vW5nPA8by2e1IIpxXqwrzRfnsw4tjOxv418QvyqlVatSLXENf9s1bBh6qpWQng=="
+                ],
+                "evidenceText": "The Bebside Inn, Blyth, Northumberland"
+              },
+              {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHIZgTXX4MAv_v9xKoR1_CeZZbPE26qjQR_xvdQ-hkjd0jNHG0CVrOjDUyQ6nAo0VOBqAfBjubPnZtxwI6uH4sK2ryE4ZlSoRShwydBwmBUVrhz5rsWFvDUrEZTH_YMmpt4RHTj6WVwFy8pJcHzJg=="
+                ],
+                "evidenceText": "Searched for official website and social presence for Bebside Inn Blyth; no verified official website domain or direct official social handle URL was found."
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasAddress",
+                "value": "Front Street, Bebside, Blyth, NE24 4HT, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHIZgTXX4MAv_v9xKoR1_CeZZbPE26qjQR_xvdQ-hkjd0jNHG0CVrOjDUyQ6nAo0VOBqAfBjubPnZtxwI6uH4sK2ryE4ZlSoRShwydBwmBUVrhz5rsWFvDUrEZTH_YMmpt4RHTj6WVwFy8pJcHzJg=="
+                ],
+                "evidenceText": "Bebside Inn Blyth. Front Street / Bebside / Bedlington. 01670 828 883 / / Front Street, Bebside / Bedlington, NE24 4HT"
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHIZgTXX4MAv_v9xKoR1_CeZZbPE26qjQR_xvdQ-hkjd0jNHG0CVrOjDUyQ6nAo0VOBqAfBjubPnZtxwI6uH4sK2ryE4ZlSoRShwydBwmBUVrhz5rsWFvDUrEZTH_YMmpt4RHTj6WVwFy8pJcHzJg=="
+            },
+            {
+              "fact": {
+                "predicate": "hasLocation",
+                "value": "Blyth, Northumberland, England",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHqMrTr0SKyjs1KtYlJeA52SZsPFFCIzwRGD04Tjs0iM-b4SajOtE_sY_K7jiDFceu4lpW2sR-wLiDg7gVdTLoCo69fsof7Pu8N7HG-n35DpY80S9tUXyrdNSQZFxb_94abJ6A_FwaOkGn3vW5nPA8by2e1IIpxXqwrzRfnsw4tjOxv418QvyqlVatSLXENf9s1bBh6qpWQng=="
+                ],
+                "evidenceText": "The Bebside Inn, Blyth, Northumberland"
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHqMrTr0SKyjs1KtYlJeA52SZsPFFCIzwRGD04Tjs0iM-b4SajOtE_sY_K7jiDFceu4lpW2sR-wLiDg7gVdTLoCo69fsof7Pu8N7HG-n35DpY80S9tUXyrdNSQZFxb_94abJ6A_FwaOkGn3vW5nPA8by2e1IIpxXqwrzRfnsw4tjOxv418QvyqlVatSLXENf9s1bBh6qpWQng=="
+            },
+            {
+              "fact": {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHIZgTXX4MAv_v9xKoR1_CeZZbPE26qjQR_xvdQ-hkjd0jNHG0CVrOjDUyQ6nAo0VOBqAfBjubPnZtxwI6uH4sK2ryE4ZlSoRShwydBwmBUVrhz5rsWFvDUrEZTH_YMmpt4RHTj6WVwFy8pJcHzJg=="
+                ],
+                "evidenceText": "Searched for official website and social presence for Bebside Inn Blyth; no verified official website domain or direct official social handle URL was found."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHIZgTXX4MAv_v9xKoR1_CeZZbPE26qjQR_xvdQ-hkjd0jNHG0CVrOjDUyQ6nAo0VOBqAfBjubPnZtxwI6uH4sK2ryE4ZlSoRShwydBwmBUVrhz5rsWFvDUrEZTH_YMmpt4RHTj6WVwFy8pJcHzJg=="
+            }
+          ]
         }
       },
       "review": {
@@ -687,28 +2356,29 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "7d9397ff-f716-4365-bb35-383479ebf1ad",
-        "retrievedAt": "2026-08-28T16:40:13.933Z",
+        "providerRunId": "99257b99-2a0a-4208-96bb-e96401805b1a",
+        "retrievedAt": "2026-08-28T19:11:19.835Z",
         "identityConfidence": 0.3,
         "facts": [],
         "usage": {
-          "searches": 7,
+          "searches": 8,
           "fetches": 0,
           "modelCalls": 1,
-          "inputTokens": 1768,
-          "outputTokens": 85,
-          "estimatedCost": 0.09964475,
-          "durationMs": 15876
+          "inputTokens": 1405,
+          "outputTokens": 108,
+          "estimatedCost": 0.11345875,
+          "durationMs": 17009
         },
         "raw": {
           "model": "gemini-3.6-flash",
-          "identityReason": "No venue or official entity by the name 'Town House Festival Oswestry' could be verified. While 'Townhouse Oswestry' (a restaurant and bar on Willow Street) and various Oswestry town festivals exist, this specific entity name cannot be safely tied to an official venue footprint.",
+          "identityReason": "No venue or official entity named 'Town House Festival Oswestry' could be verified in public records. Search results show a restaurant/venue named 'Townhouse' in Oswestry (35 Willow Street) and distinct town festivals such as the Oswestry Balloon Carnival and Oswestry Youth Music Festival, but 'Town House Festival Oswestry' cannot be safely identified with 0.98+ confidence.",
           "response": {
             "identityConfidence": 0.3,
-            "identityReason": "No venue or official entity by the name 'Town House Festival Oswestry' could be verified. While 'Townhouse Oswestry' (a restaurant and bar on Willow Street) and various Oswestry town festivals exist, this specific entity name cannot be safely tied to an official venue footprint.",
+            "identityReason": "No venue or official entity named 'Town House Festival Oswestry' could be verified in public records. Search results show a restaurant/venue named 'Townhouse' in Oswestry (35 Willow Street) and distinct town festivals such as the Oswestry Balloon Carnival and Oswestry Youth Music Festival, but 'Town House Festival Oswestry' cannot be safely identified with 0.98+ confidence.",
             "facts": []
           },
-          "evidence": []
+          "evidence": [],
+          "rejectedFacts": []
         }
       },
       "review": {
@@ -724,7 +2394,7 @@
       "caseId": "grounded-15-venue",
       "sourceId": "onthecase-gig-index",
       "sourceCandidateKey": "onthecase:venue:915",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "venue",
         "entityId": "onthecase-gig-index:onthecase:venue:915",
@@ -748,12 +2418,94 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "fff66bdf-bf4b-41b6-9f2d-b8bfcbe93c54",
-        "retrievedAt": "2026-08-28T16:40:32.904Z",
-        "identityConfidence": 0,
+        "providerRunId": "06319d27-59df-4432-8bb7-b807e06d9a8c",
+        "retrievedAt": "2026-08-28T19:11:38.097Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 4,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 1107,
+          "outputTokens": 785,
+          "estimatedCost": 0.059774,
+          "durationMs": 18262
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQENCJXwKe9Re42qcE3NqW7LXkoDlNjewCsNxUjDy_YKRjQIXTSUsQuk-EpS5iN76ctSp1ZKYD2dJYlVJjjPKvL33eKHJAlApovpf4MGS5yxDnOoRE8Hlv9Mr8xGIIrF_DiUmpBKWlnhCCU69R3RJd_FPePJug=="
+          "model": "gemini-3.6-flash",
+          "identityReason": "Verified match for Murton Officials Club Seaham located at Woods Terrace East, Murton, Seaham (SR7 9AA), cross-referenced with On The Case Music event listings and local directory sources.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "Verified match for Murton Officials Club Seaham located at Woods Terrace East, Murton, Seaham (SR7 9AA), cross-referenced with On The Case Music event listings and local directory sources.",
+            "facts": [
+              {
+                "predicate": "hasAddress",
+                "value": "22a Woods Terrace East, Murton, Seaham, Durham, SR7 9AA, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEk3lI57E_HlX7lMkU6dnW-tdDq1rKHfQ74ta8EmivjjR0IGfcj5pJ8KwuCsMMdAt4oO9d82EHopkeLcaUCZ490YtGoGT6in472cW8ZXzSXh4-d6tUce8Zum8K407Ver8peQeLaCHhuOZ2Q4XdTpPSPPuNSsPt9XB_7OYHgeqEP"
+                ],
+                "evidenceText": "Murton Officials Club. Address: 22a Woods Terrace East, Seaham, Durham England, SR7 9AA."
+              },
+              {
+                "predicate": "hasLocation",
+                "value": "Murton, Seaham, County Durham, England, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEu4krqpj7-g_9YQtj7cO1HGr5isQf74mXQ3D3Z19sRA8gPiCBwnO-1umemh706815jQB2oj1zljq_N2LC0D3xL4AQiU6016lpySL9SA6yKlCezgYbjvcMOuS_53ZAZ6CfbXCSKNpssg_odETm1nGW4WB-aEA=="
+                ],
+                "evidenceText": "Find Murton Officials Club in Seaham, SR7. Get contact details, videos, photos, opening times and map directions."
+              },
+              {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF5VtTi3l6K_JNcdEZlBZOx7HokBIh0uu1bCmEof_iboGXmfXdChVmi8yRPnYM9daJ1STCnrBaWoluwx5CiFcnvGdMC-bhYVxtYz2Bln9JDy41X4Znwoz4nAxmJEY52tH6i93iwKn59NTZEmjCGo56C8n-WL4ZdGUTIAA=="
+                ],
+                "evidenceText": "Inspected On The Case venue records and public search results for Murton Officials Club Seaham; no official standalone website URL was identified."
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasAddress",
+                "value": "22a Woods Terrace East, Murton, Seaham, Durham, SR7 9AA, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEk3lI57E_HlX7lMkU6dnW-tdDq1rKHfQ74ta8EmivjjR0IGfcj5pJ8KwuCsMMdAt4oO9d82EHopkeLcaUCZ490YtGoGT6in472cW8ZXzSXh4-d6tUce8Zum8K407Ver8peQeLaCHhuOZ2Q4XdTpPSPPuNSsPt9XB_7OYHgeqEP"
+                ],
+                "evidenceText": "Murton Officials Club. Address: 22a Woods Terrace East, Seaham, Durham England, SR7 9AA."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEk3lI57E_HlX7lMkU6dnW-tdDq1rKHfQ74ta8EmivjjR0IGfcj5pJ8KwuCsMMdAt4oO9d82EHopkeLcaUCZ490YtGoGT6in472cW8ZXzSXh4-d6tUce8Zum8K407Ver8peQeLaCHhuOZ2Q4XdTpPSPPuNSsPt9XB_7OYHgeqEP"
+            },
+            {
+              "fact": {
+                "predicate": "hasLocation",
+                "value": "Murton, Seaham, County Durham, England, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEu4krqpj7-g_9YQtj7cO1HGr5isQf74mXQ3D3Z19sRA8gPiCBwnO-1umemh706815jQB2oj1zljq_N2LC0D3xL4AQiU6016lpySL9SA6yKlCezgYbjvcMOuS_53ZAZ6CfbXCSKNpssg_odETm1nGW4WB-aEA=="
+                ],
+                "evidenceText": "Find Murton Officials Club in Seaham, SR7. Get contact details, videos, photos, opening times and map directions."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEu4krqpj7-g_9YQtj7cO1HGr5isQf74mXQ3D3Z19sRA8gPiCBwnO-1umemh706815jQB2oj1zljq_N2LC0D3xL4AQiU6016lpySL9SA6yKlCezgYbjvcMOuS_53ZAZ6CfbXCSKNpssg_odETm1nGW4WB-aEA=="
+            },
+            {
+              "fact": {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF5VtTi3l6K_JNcdEZlBZOx7HokBIh0uu1bCmEof_iboGXmfXdChVmi8yRPnYM9daJ1STCnrBaWoluwx5CiFcnvGdMC-bhYVxtYz2Bln9JDy41X4Znwoz4nAxmJEY52tH6i93iwKn59NTZEmjCGo56C8n-WL4ZdGUTIAA=="
+                ],
+                "evidenceText": "Inspected On The Case venue records and public search results for Murton Officials Club Seaham; no official standalone website URL was identified."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF5VtTi3l6K_JNcdEZlBZOx7HokBIh0uu1bCmEof_iboGXmfXdChVmi8yRPnYM9daJ1STCnrBaWoluwx5CiFcnvGdMC-bhYVxtYz2Bln9JDy41X4Znwoz4nAxmJEY52tH6i93iwKn59NTZEmjCGo56C8n-WL4ZdGUTIAA=="
+            }
+          ]
         }
       },
       "review": {
@@ -769,7 +2521,7 @@
       "caseId": "grounded-16-venue",
       "sourceId": "onthecase-gig-index",
       "sourceCandidateKey": "onthecase:venue:940",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "venue",
         "entityId": "onthecase-gig-index:onthecase:venue:940",
@@ -793,12 +2545,94 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "3dd81bfc-d80d-4f29-a7cb-1ae0422607e5",
-        "retrievedAt": "2026-08-28T16:41:02.514Z",
-        "identityConfidence": 0,
+        "providerRunId": "cd0e51d3-b249-440d-8187-ddfa012c884d",
+        "retrievedAt": "2026-08-28T19:12:00.259Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 8,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 1179,
+          "outputTokens": 779,
+          "estimatedCost": 0.1158055,
+          "durationMs": 22162
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGUy9Hg-FiMdqBBuaoubJwvif3NMp5DMufjzSh1RMdvdHrnQ46KkSkdNaXdW2Vgy7z0kwHeYPHMiy74AnOLPejSpk6qHQQat7NIcMjGYBOn3CMntWy1QzvDXr86pUAQ_6pbREGCqcAmj_GV"
+          "model": "gemini-3.6-flash",
+          "identityReason": "The Crook Hotel in Crook, County Durham (56 Hope Street, DL15 9HU, UK) matches the entity name, location, and gig footprint associated with source key onthecase:venue:940.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "The Crook Hotel in Crook, County Durham (56 Hope Street, DL15 9HU, UK) matches the entity name, location, and gig footprint associated with source key onthecase:venue:940.",
+            "facts": [
+              {
+                "predicate": "hasAddress",
+                "value": "56 Hope Street, Crook, County Durham, DL15 9HU, United Kingdom",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEDP8tuifYPQy7LewCeNEslkcUMn4kvo8rerz_VqxbvwrXE2KbCvmUNp9p83rybIQwG2_EeShr2hTZPmVbbIhJKm0AcQCRu1Ya9Q85Y2FfM91GqzN188UjeVDhC35V55i5gMmD9i7G8NE8u"
+                ],
+                "evidenceText": "The Crook Hotel is located at 56 Hope Street, Crook, DL15 9HU, United Kingdom."
+              },
+              {
+                "predicate": "hasLocation",
+                "value": "Crook, County Durham, United Kingdom",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE5FP6DMjCUymFEib-DPzrvejoiZls0QH_B2chtgnKL__XNseQfWyG33ZCA2PdnrAJPTATCLr6Ds9YSykw1pWAvnWihs3qS52mTgG0GyPibOmkafzsJ3tp9AbM7pMB3VwYdRSG2bwxJ9w9X2ro1Vki3huF0JI-9xm7B6xFCaeWPf7SzCRU8_pazElPJVW06gQVz6NtulhZdZFlwkDwlf_shEPWIHg=="
+                ],
+                "evidenceText": "The pub in Crook, County Durham, was a fixture in Hope Street for decades before being renamed Bar 56... It has now reopened again as Crook Hotel."
+              },
+              {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGk8yeHpNDCJxzMo7rUJw6UGM0St-xmBBAKEyy1JJosiTPAEMMinZ3haMdjF5muB5bApib-E8dxK-EmRSgAwBlW3_f09WB5-IxUUrAGB3d-GHSxbEAIl22KLMP2OJNbtbroXryOrjm8VA=="
+                ],
+                "evidenceText": "Searches for official web presence returned directory listings and community groups, but no active official website or official social media pages owned directly by the establishment."
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasAddress",
+                "value": "56 Hope Street, Crook, County Durham, DL15 9HU, United Kingdom",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEDP8tuifYPQy7LewCeNEslkcUMn4kvo8rerz_VqxbvwrXE2KbCvmUNp9p83rybIQwG2_EeShr2hTZPmVbbIhJKm0AcQCRu1Ya9Q85Y2FfM91GqzN188UjeVDhC35V55i5gMmD9i7G8NE8u"
+                ],
+                "evidenceText": "The Crook Hotel is located at 56 Hope Street, Crook, DL15 9HU, United Kingdom."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEDP8tuifYPQy7LewCeNEslkcUMn4kvo8rerz_VqxbvwrXE2KbCvmUNp9p83rybIQwG2_EeShr2hTZPmVbbIhJKm0AcQCRu1Ya9Q85Y2FfM91GqzN188UjeVDhC35V55i5gMmD9i7G8NE8u"
+            },
+            {
+              "fact": {
+                "predicate": "hasLocation",
+                "value": "Crook, County Durham, United Kingdom",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE5FP6DMjCUymFEib-DPzrvejoiZls0QH_B2chtgnKL__XNseQfWyG33ZCA2PdnrAJPTATCLr6Ds9YSykw1pWAvnWihs3qS52mTgG0GyPibOmkafzsJ3tp9AbM7pMB3VwYdRSG2bwxJ9w9X2ro1Vki3huF0JI-9xm7B6xFCaeWPf7SzCRU8_pazElPJVW06gQVz6NtulhZdZFlwkDwlf_shEPWIHg=="
+                ],
+                "evidenceText": "The pub in Crook, County Durham, was a fixture in Hope Street for decades before being renamed Bar 56... It has now reopened again as Crook Hotel."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE5FP6DMjCUymFEib-DPzrvejoiZls0QH_B2chtgnKL__XNseQfWyG33ZCA2PdnrAJPTATCLr6Ds9YSykw1pWAvnWihs3qS52mTgG0GyPibOmkafzsJ3tp9AbM7pMB3VwYdRSG2bwxJ9w9X2ro1Vki3huF0JI-9xm7B6xFCaeWPf7SzCRU8_pazElPJVW06gQVz6NtulhZdZFlwkDwlf_shEPWIHg=="
+            },
+            {
+              "fact": {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGk8yeHpNDCJxzMo7rUJw6UGM0St-xmBBAKEyy1JJosiTPAEMMinZ3haMdjF5muB5bApib-E8dxK-EmRSgAwBlW3_f09WB5-IxUUrAGB3d-GHSxbEAIl22KLMP2OJNbtbroXryOrjm8VA=="
+                ],
+                "evidenceText": "Searches for official web presence returned directory listings and community groups, but no active official website or official social media pages owned directly by the establishment."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGk8yeHpNDCJxzMo7rUJw6UGM0St-xmBBAKEyy1JJosiTPAEMMinZ3haMdjF5muB5bApib-E8dxK-EmRSgAwBlW3_f09WB5-IxUUrAGB3d-GHSxbEAIl22KLMP2OJNbtbroXryOrjm8VA=="
+            }
+          ]
         }
       },
       "review": {
@@ -814,7 +2648,7 @@
       "caseId": "grounded-17-venue",
       "sourceId": "gigs-news-daily-import",
       "sourceCandidateKey": "venue_the-whitehouse-stalybridge",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "venue",
         "entityId": "gigs-news-daily-import:venue_the-whitehouse-stalybridge",
@@ -838,12 +2672,88 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "2a4503b3-e5bf-4724-a4c3-0cf8f79a324a",
-        "retrievedAt": "2026-08-28T16:41:16.844Z",
-        "identityConfidence": 0,
+        "providerRunId": "651162f4-dcbb-4778-ba03-6414c79b4091",
+        "retrievedAt": "2026-08-28T19:12:14.894Z",
+        "identityConfidence": 0.99,
         "facts": [],
+        "usage": {
+          "searches": 4,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 1045,
+          "outputTokens": 284,
+          "estimatedCost": 0.057848750000000004,
+          "durationMs": 14635
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://www.hydesbrewery.com/our-pubs/whitehouse/"
+          "model": "gemini-3.6-flash",
+          "identityReason": "Confirmed exact identity as The Whitehouse (also known as The White House), a traditional pub and live music venue in Stalybridge located at 1 Water Street, Stalybridge, Greater Manchester.",
+          "response": {
+            "identityConfidence": 0.99,
+            "identityReason": "Confirmed exact identity as The Whitehouse (also known as The White House), a traditional pub and live music venue in Stalybridge located at 1 Water Street, Stalybridge, Greater Manchester.",
+            "facts": [
+              {
+                "predicate": "hasAddress",
+                "value": "1 Water Street, Stalybridge, SK15 2AG, UK",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.hydesbrewery.com/"
+                ]
+              },
+              {
+                "predicate": "hasLocation",
+                "value": "Stalybridge, Greater Manchester, UK",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.hydesbrewery.com/"
+                ]
+              },
+              {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/TheWhitehouseStalybridge",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheWhitehouseStalybridge"
+                ]
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasAddress",
+                "value": "1 Water Street, Stalybridge, SK15 2AG, UK",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.hydesbrewery.com/"
+                ]
+              },
+              "reason": "uncaptured citation: https://www.hydesbrewery.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasLocation",
+                "value": "Stalybridge, Greater Manchester, UK",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://www.hydesbrewery.com/"
+                ]
+              },
+              "reason": "uncaptured citation: https://www.hydesbrewery.com/"
+            },
+            {
+              "fact": {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/TheWhitehouseStalybridge",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://www.facebook.com/TheWhitehouseStalybridge"
+                ]
+              },
+              "reason": "uncaptured citation: https://www.facebook.com/TheWhitehouseStalybridge"
+            }
+          ]
         }
       },
       "review": {
@@ -859,7 +2769,7 @@
       "caseId": "grounded-18-venue",
       "sourceId": "gigs-news-daily-import",
       "sourceCandidateKey": "venue_white-hart-woodley",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "venue",
         "entityId": "gigs-news-daily-import:venue_white-hart-woodley",
@@ -883,12 +2793,98 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "3e97a424-812f-4494-a5d7-99c0a1b71ff0",
-        "retrievedAt": "2026-08-28T16:41:42.294Z",
-        "identityConfidence": 0,
+        "providerRunId": "ad6e2b8e-8b83-4176-b535-999431bd0227",
+        "retrievedAt": "2026-08-28T19:12:38.327Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 6,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 1177,
+          "outputTokens": 1017,
+          "estimatedCost": 0.08869650000000001,
+          "durationMs": 23433
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG-JYhsWv2UqcbNWY8o49qRaEqrXEykAkHpVPmTeUaPGyf_UJaiewK34L8Uw2-A5S0J4cyxL22xENNcVUSfUUIwIBD_GGkKD24aEmpRpFb-wNAXHuTfwGon9eB_uYibYJmS80MqSlhjqcc="
+          "model": "gemini-3.6-flash",
+          "identityReason": "Public local records, business directories, and social media listings consistently identify The White Hart as a pub located at 170 Hyde Road, Woodley, Stockport.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "Public local records, business directories, and social media listings consistently identify The White Hart as a pub located at 170 Hyde Road, Woodley, Stockport.",
+            "facts": [
+              {
+                "predicate": "hasAddress",
+                "value": "170 Hyde Road, Woodley, Stockport SK6 1NP, UK",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFZcjkbII_Cji-WnqBkpeby1LcO5Up4um1VL6pjxEAsT4stdxJrfUTbiwJEpn8N2IfRBLBQ-DV-8ckq3kUGoY4I7v_KFK5M1cY02wk2q023TB_mM2OqUaPaiNuK0PyS9mMtrFPRhe9y6VxHZG6r4wOQo3Do6sJ71mWLOmvrwaeShvAB4X8=",
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH1EqGGJT9bwbbwOmy9WbdbQybsCjQYHxw3hGqCF67d2GcOA61vH24KYUZTzGy3wLcd3y-XxgK3Jf5wuSXkeZC9_atLCODP9qvySdI_mT3SKaiQ8VEkpZofIBn8JtgvEAjaS1xJguIoogg="
+                ],
+                "evidenceText": "White Hart Hotel, 170 Hyde Road, Woodley, Stockport SK6 1NP."
+              },
+              {
+                "predicate": "hasLocation",
+                "value": "Woodley, Stockport, Greater Manchester, England, UK",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH1EqGGJT9bwbbwOmy9WbdbQybsCjQYHxw3hGqCF67d2GcOA61vH24KYUZTzGy3wLcd3y-XxgK3Jf5wuSXkeZC9_atLCODP9qvySdI_mT3SKaiQ8VEkpZofIBn8JtgvEAjaS1xJguIoogg=",
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFZcjkbII_Cji-WnqBkpeby1LcO5Up4um1VL6pjxEAsT4stdxJrfUTbiwJEpn8N2IfRBLBQ-DV-8ckq3kUGoY4I7v_KFK5M1cY02wk2q023TB_mM2OqUaPaiNuK0PyS9mMtrFPRhe9y6VxHZG6r4wOQo3Do6sJ71mWLOmvrwaeShvAB4X8="
+                ],
+                "evidenceText": "White Hart, Woodley, Stockport District."
+              },
+              {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/thewhitehartwoodley",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH_wX1NLhDr0HTFirE5kOb2cNtc6GityDjc9fSCDlGI9JKax2P1sIzOHWHKwc2EU_FTUXrOCyR-AOac20atuNrHZprzl7-Df2LYsooY-cCeG3zykgLsfbDU8mM3e3qePfoLd19NBaDjBv-6E81Piu6n-B-aGLbtKaz-OKUq0INAPLwafp2eDixmzAY="
+                ],
+                "evidenceText": "The White Hart - Woodley (@thewhitehartwoodley) - Facebook."
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasAddress",
+                "value": "170 Hyde Road, Woodley, Stockport SK6 1NP, UK",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFZcjkbII_Cji-WnqBkpeby1LcO5Up4um1VL6pjxEAsT4stdxJrfUTbiwJEpn8N2IfRBLBQ-DV-8ckq3kUGoY4I7v_KFK5M1cY02wk2q023TB_mM2OqUaPaiNuK0PyS9mMtrFPRhe9y6VxHZG6r4wOQo3Do6sJ71mWLOmvrwaeShvAB4X8=",
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH1EqGGJT9bwbbwOmy9WbdbQybsCjQYHxw3hGqCF67d2GcOA61vH24KYUZTzGy3wLcd3y-XxgK3Jf5wuSXkeZC9_atLCODP9qvySdI_mT3SKaiQ8VEkpZofIBn8JtgvEAjaS1xJguIoogg="
+                ],
+                "evidenceText": "White Hart Hotel, 170 Hyde Road, Woodley, Stockport SK6 1NP."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFZcjkbII_Cji-WnqBkpeby1LcO5Up4um1VL6pjxEAsT4stdxJrfUTbiwJEpn8N2IfRBLBQ-DV-8ckq3kUGoY4I7v_KFK5M1cY02wk2q023TB_mM2OqUaPaiNuK0PyS9mMtrFPRhe9y6VxHZG6r4wOQo3Do6sJ71mWLOmvrwaeShvAB4X8=, https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH1EqGGJT9bwbbwOmy9WbdbQybsCjQYHxw3hGqCF67d2GcOA61vH24KYUZTzGy3wLcd3y-XxgK3Jf5wuSXkeZC9_atLCODP9qvySdI_mT3SKaiQ8VEkpZofIBn8JtgvEAjaS1xJguIoogg="
+            },
+            {
+              "fact": {
+                "predicate": "hasLocation",
+                "value": "Woodley, Stockport, Greater Manchester, England, UK",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH1EqGGJT9bwbbwOmy9WbdbQybsCjQYHxw3hGqCF67d2GcOA61vH24KYUZTzGy3wLcd3y-XxgK3Jf5wuSXkeZC9_atLCODP9qvySdI_mT3SKaiQ8VEkpZofIBn8JtgvEAjaS1xJguIoogg=",
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFZcjkbII_Cji-WnqBkpeby1LcO5Up4um1VL6pjxEAsT4stdxJrfUTbiwJEpn8N2IfRBLBQ-DV-8ckq3kUGoY4I7v_KFK5M1cY02wk2q023TB_mM2OqUaPaiNuK0PyS9mMtrFPRhe9y6VxHZG6r4wOQo3Do6sJ71mWLOmvrwaeShvAB4X8="
+                ],
+                "evidenceText": "White Hart, Woodley, Stockport District."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH1EqGGJT9bwbbwOmy9WbdbQybsCjQYHxw3hGqCF67d2GcOA61vH24KYUZTzGy3wLcd3y-XxgK3Jf5wuSXkeZC9_atLCODP9qvySdI_mT3SKaiQ8VEkpZofIBn8JtgvEAjaS1xJguIoogg=, https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFZcjkbII_Cji-WnqBkpeby1LcO5Up4um1VL6pjxEAsT4stdxJrfUTbiwJEpn8N2IfRBLBQ-DV-8ckq3kUGoY4I7v_KFK5M1cY02wk2q023TB_mM2OqUaPaiNuK0PyS9mMtrFPRhe9y6VxHZG6r4wOQo3Do6sJ71mWLOmvrwaeShvAB4X8="
+            },
+            {
+              "fact": {
+                "predicate": "hasFacebookUrl",
+                "value": "https://www.facebook.com/thewhitehartwoodley",
+                "confidence": 0.98,
+                "evidenceUrls": [
+                  "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH_wX1NLhDr0HTFirE5kOb2cNtc6GityDjc9fSCDlGI9JKax2P1sIzOHWHKwc2EU_FTUXrOCyR-AOac20atuNrHZprzl7-Df2LYsooY-cCeG3zykgLsfbDU8mM3e3qePfoLd19NBaDjBv-6E81Piu6n-B-aGLbtKaz-OKUq0INAPLwafp2eDixmzAY="
+                ],
+                "evidenceText": "The White Hart - Woodley (@thewhitehartwoodley) - Facebook."
+              },
+              "reason": "uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH_wX1NLhDr0HTFirE5kOb2cNtc6GityDjc9fSCDlGI9JKax2P1sIzOHWHKwc2EU_FTUXrOCyR-AOac20atuNrHZprzl7-Df2LYsooY-cCeG3zykgLsfbDU8mM3e3qePfoLd19NBaDjBv-6E81Piu6n-B-aGLbtKaz-OKUq0INAPLwafp2eDixmzAY="
+            }
+          ]
         }
       },
       "review": {
@@ -928,12 +2924,12 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "bf9a1691-5b13-4c91-ba17-81e3492f340f",
-        "retrievedAt": "2026-08-28T16:41:58.905Z",
+        "providerRunId": "c0597755-1a37-46c7-8aff-3dce92a0890c",
+        "retrievedAt": "2026-08-28T19:12:38.635Z",
         "identityConfidence": 0,
         "facts": [],
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF5Ayn7zIARWMANzDRiTskn0Nxo_7ZsF3R9zvD00ub2dvZhl-Djrm3qFK07Aq1_k9mVyytrYa-QVgc_vRfYv_NIUhsf_DdojfKTDAabNFuK4rmwH-vQLenICiIp2_SiKfAotplzwT9yLdB7cEI-5CgQeLJpZgmK"
+          "captureError": "Gemini 503: {\"error\":{\"message\":\"The service is currently unavailable.\",\"code\":\"service_unavailable\"}}"
         }
       },
       "review": {
@@ -949,7 +2945,7 @@
       "caseId": "grounded-20-venue",
       "sourceId": "klma-stoke-gig-list",
       "sourceCandidateKey": "klma-venue-f88c79f4c673",
-      "captureStatus": "error",
+      "captureStatus": "captured",
       "entity": {
         "entityType": "venue",
         "entityId": "klma-stoke-gig-list:klma-venue-f88c79f4c673",
@@ -973,12 +2969,98 @@
       ],
       "bundle": {
         "providerId": "gemini-grounded-v1",
-        "providerRunId": "2ba2daa4-7bd2-40b0-a88f-ef3288737c59",
-        "retrievedAt": "2026-08-28T16:42:16.157Z",
-        "identityConfidence": 0,
+        "providerRunId": "8b280e2f-5b91-463e-9d15-a8d97cb649fe",
+        "retrievedAt": "2026-08-28T19:12:56.336Z",
+        "identityConfidence": 0.98,
         "facts": [],
+        "usage": {
+          "searches": 4,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 1006,
+          "outputTokens": 428,
+          "estimatedCost": 0.0583595,
+          "durationMs": 17701
+        },
         "raw": {
-          "captureError": "Grounded enrichment returned uncaptured citation: https://caldmoretaverns.co.uk/pubs/roebuck-chesterton/"
+          "model": "gemini-3.6-flash",
+          "identityReason": "Strong identity match confirmed for The Roebuck in Chesterton (Newcastle-under-Lyme / Stoke-on-Trent area), located at Dragon Square, Chesterton, ST5 7HL.",
+          "response": {
+            "identityConfidence": 0.98,
+            "identityReason": "Strong identity match confirmed for The Roebuck in Chesterton (Newcastle-under-Lyme / Stoke-on-Trent area), located at Dragon Square, Chesterton, ST5 7HL.",
+            "facts": [
+              {
+                "predicate": "hasAddress",
+                "value": "Dragon Square, Chesterton, Newcastle-under-Lyme ST5 7HL, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://caldmoretaverns.co.uk/",
+                  "https://whatpub.com/pubs/POT/3321/roebuck-chesterton"
+                ],
+                "evidenceText": "The Roebuck is located on Dragon Square, Chesterton, Newcastle-under-Lyme, ST5 7HL."
+              },
+              {
+                "predicate": "hasLocation",
+                "value": "Chesterton, Newcastle-under-Lyme, Staffordshire, England",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://caldmoretaverns.co.uk/",
+                  "https://www.stokesentinel.co.uk/"
+                ],
+                "evidenceText": "The Roebuck is located in Chesterton on the outskirts of Newcastle-under-Lyme, Staffordshire."
+              },
+              {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://whatpub.com/pubs/POT/3321/roebuck-chesterton"
+                ],
+                "evidenceText": "No dedicated standalone official website or verified standalone social media URL was identified for the venue."
+              }
+            ]
+          },
+          "evidence": [],
+          "rejectedFacts": [
+            {
+              "fact": {
+                "predicate": "hasAddress",
+                "value": "Dragon Square, Chesterton, Newcastle-under-Lyme ST5 7HL, United Kingdom",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://caldmoretaverns.co.uk/",
+                  "https://whatpub.com/pubs/POT/3321/roebuck-chesterton"
+                ],
+                "evidenceText": "The Roebuck is located on Dragon Square, Chesterton, Newcastle-under-Lyme, ST5 7HL."
+              },
+              "reason": "uncaptured citation: https://caldmoretaverns.co.uk/, https://whatpub.com/pubs/POT/3321/roebuck-chesterton"
+            },
+            {
+              "fact": {
+                "predicate": "hasLocation",
+                "value": "Chesterton, Newcastle-under-Lyme, Staffordshire, England",
+                "confidence": 0.95,
+                "evidenceUrls": [
+                  "https://caldmoretaverns.co.uk/",
+                  "https://www.stokesentinel.co.uk/"
+                ],
+                "evidenceText": "The Roebuck is located in Chesterton on the outskirts of Newcastle-under-Lyme, Staffordshire."
+              },
+              "reason": "uncaptured citation: https://caldmoretaverns.co.uk/, https://www.stokesentinel.co.uk/"
+            },
+            {
+              "fact": {
+                "predicate": "officialPresenceAttempted",
+                "value": "no-official-presence-found",
+                "confidence": 0.9,
+                "evidenceUrls": [
+                  "https://whatpub.com/pubs/POT/3321/roebuck-chesterton"
+                ],
+                "evidenceText": "No dedicated standalone official website or verified standalone social media URL was identified for the venue."
+              },
+              "reason": "uncaptured citation: https://whatpub.com/pubs/POT/3321/roebuck-chesterton"
+            }
+          ]
         }
       },
       "review": {
