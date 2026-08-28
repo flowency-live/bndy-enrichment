@@ -1,0 +1,47 @@
+name: Publish Backline enrichment qualification status
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: startsWith(github.event.head_commit.message, 'Publish Backline enrichment qualification status')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Resolve the deployed StateTable
+        id: resources
+        run: |
+          set -euo pipefail
+          STATE_TABLE=$(aws cloudformation describe-stacks \
+            --stack-name BndyEnrichmentStack \
+            --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" \
+            --output text)
+          test -n "$STATE_TABLE"
+          test "$STATE_TABLE" != "None"
+          echo "state_table=$STATE_TABLE" >> "$GITHUB_OUTPUT"
+      - name: Publish the read-only qualification summary
+        env:
+          STATE_TABLE: ${{ steps.resources.outputs.state_table }}
+          QUALIFICATION_RUN_URL: https://github.com/flowency-live/bndy-enrichment/actions/runs/33190620765
+          QUALIFICATION_ARTIFACT_URL: https://github.com/flowency-live/bndy-enrichment/blob/main/ops/enrichment/gemini-grounded-unreviewed.json
+        run: |
+          set -euo pipefail
+          npm run enrichment:qualification:publish | tee qualification-publish.log
+          tail -n 1 qualification-publish.log | jq -e \
+            '.status == "published" and .canonicalWrites == 0 and .cases == 20 and .gateStatus == "capture-failed"' \
+            >/dev/null
