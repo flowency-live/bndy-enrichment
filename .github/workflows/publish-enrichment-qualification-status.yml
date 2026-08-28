@@ -39,6 +39,7 @@ jobs:
           STATE_TABLE: ${{ steps.resources.outputs.state_table }}
           QUALIFICATION_RUN_URL: https://github.com/flowency-live/bndy-enrichment/actions/runs/33202407979
           QUALIFICATION_ARTIFACT_URL: https://github.com/flowency-live/bndy-enrichment/blob/main/ops/enrichment/gemini-grounded-unreviewed.json
+          QUALIFICATION_REVIEW_URL: https://github.com/flowency-live/bndy-enrichment/blob/main/ops/enrichment/gemini-grounded-review.md
         run: |
           set -euo pipefail
           npm run enrichment:qualification:publish | tee qualification-publish.log

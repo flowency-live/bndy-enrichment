@@ -62,7 +62,7 @@ export type QualificationGateStatus = 'capture-failed' | 'awaiting-human-review'
 export function qualificationSummaryFromArtifact(
   input: unknown,
   publishedAt = new Date().toISOString(),
-  links: { sourceRunUrl?: string; artifactUrl?: string } = {},
+  links: { sourceRunUrl?: string; artifactUrl?: string; reviewUrl?: string } = {},
 ) {
   const artifact = QualificationArtifactSchema.parse(input);
   const capturedCases = artifact.items.filter((item) => item.captureStatus === 'captured').length;
@@ -130,6 +130,7 @@ export function qualificationSummaryFromArtifact(
     canonicalWrites: 0 as const,
     sourceRunUrl: links.sourceRunUrl,
     artifactUrl: links.artifactUrl,
+    reviewUrl: links.reviewUrl,
     reviewCases,
   };
 }
