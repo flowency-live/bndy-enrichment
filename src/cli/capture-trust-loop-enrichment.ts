@@ -2,7 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { z } from 'zod';
-import { enrichTrustLoopEntityWithGemini } from '../google/gemini.js';
+import {
+  enrichTrustLoopEntityWithGemini,
+  GroundedEnrichmentCaptureError,
+} from '../google/gemini.js';
 import {
   qualificationEntity,
   qualificationPredicates,
@@ -53,14 +56,16 @@ for (const [index, item] of selected.entries()) {
   } catch (error) {
     captureErrors += 1;
     captureStatus = 'error';
-    bundle = {
-      providerId: 'gemini-grounded-v1',
-      providerRunId: randomUUID(),
-      retrievedAt: new Date().toISOString(),
-      identityConfidence: 0,
-      facts: [],
-      raw: { captureError: error instanceof Error ? error.message : String(error) },
-    };
+    bundle = error instanceof GroundedEnrichmentCaptureError
+      ? error.bundle
+      : {
+          providerId: 'gemini-grounded-v1',
+          providerRunId: randomUUID(),
+          retrievedAt: new Date().toISOString(),
+          identityConfidence: 0,
+          facts: [],
+          raw: { captureError: error instanceof Error ? error.message : String(error) },
+        };
   }
   cases.push({
     caseId: `grounded-${String(index + 1).padStart(2, '0')}-${item.candidateType}`,
@@ -100,6 +105,15 @@ const totalEstimatedCost = cases.reduce((total, item) => {
   const bundle = item.bundle as EnrichmentEvidenceBundle;
   return total + (bundle.usage?.estimatedCost ?? 0);
 }, 0);
+const measuredUsageCases = cases.filter((item) => {
+  const bundle = item.bundle as EnrichmentEvidenceBundle;
+  return bundle.usage !== undefined;
+}).length;
+const costMeasurement = measuredUsageCases === cases.length
+  ? 'complete'
+  : measuredUsageCases === 0
+    ? 'unavailable'
+    : 'partial';
 const artifact = {
   schemaVersion: 1,
   providerId: 'gemini-grounded-v1',
@@ -112,6 +126,8 @@ const artifact = {
   venueCases,
   captureErrors,
   totalEstimatedCost,
+  costMeasurement,
+  measuredUsageCases,
   canonicalWrites: 0,
   items: cases,
 };
@@ -128,6 +144,8 @@ console.log(JSON.stringify({
   venues: venueCases,
   captureErrors,
   totalEstimatedCost,
+  costMeasurement,
+  measuredUsageCases,
   canonicalWrites: 0,
   outputPath,
   reviewPath,

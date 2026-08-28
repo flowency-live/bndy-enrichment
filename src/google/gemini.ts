@@ -274,6 +274,38 @@ interface ApiCallResult {
   outputTokens?: number;
 }
 
+type EnrichmentUsage = NonNullable<EnrichmentEvidenceBundle['usage']>;
+
+export class GroundedEnrichmentCaptureError extends Error {
+  readonly bundle: EnrichmentEvidenceBundle;
+
+  constructor(message: string, bundle: EnrichmentEvidenceBundle, cause?: unknown) {
+    super(message, { cause });
+    this.name = 'GroundedEnrichmentCaptureError';
+    this.bundle = bundle;
+  }
+}
+
+function groundedEnrichmentUsage(result: ApiCallResult, startedAt: number): EnrichmentUsage {
+  const inputTokens = result.inputTokens ?? 0;
+  const outputTokens = result.outputTokens ?? 0;
+  // Conservative post-free-pool estimate: Gemini 3.6 Flash standard tokens plus
+  // Google Search grounding. Qualification records the estimate but performs no billing action.
+  const estimatedCost = (inputTokens * 0.75 / 1_000_000)
+    + (outputTokens * 3.75 / 1_000_000)
+    + (result.queryCount * 0.014);
+
+  return {
+    searches: result.queryCount,
+    fetches: 0,
+    modelCalls: 1,
+    inputTokens,
+    outputTokens,
+    estimatedCost,
+    durationMs: Date.now() - startedAt,
+  };
+}
+
 function extractOutputText(raw: any): string | undefined {
   if (typeof raw?.output_text === 'string') return raw.output_text;
   if (typeof raw?.outputText === 'string') return raw.outputText;
@@ -490,6 +522,7 @@ export async function enrichTrustLoopEntityWithGemini(input: {
 }, options: Pick<GeminiOptions, 'apiKey' | 'model'>): Promise<EnrichmentEvidenceBundle> {
   const startedAt = Date.now();
   const model = options.model ?? 'gemini-3.6-flash';
+  const providerRunId = crypto.randomUUID();
   const requestedPredicates = [...new Set(input.requestedPredicates)];
   if (requestedPredicates.length === 0) throw new Error('Grounded enrichment requires requested predicates');
 
@@ -503,7 +536,34 @@ export async function enrichTrustLoopEntityWithGemini(input: {
     undefined,
     60_000,
   );
-  const parsed = GroundedEnrichmentResponseSchema.parse(parseJsonModelOutput(result.text));
+  const usage = groundedEnrichmentUsage(result, startedAt);
+  let parsed: z.infer<typeof GroundedEnrichmentResponseSchema>;
+  try {
+    parsed = GroundedEnrichmentResponseSchema.parse(parseJsonModelOutput(result.text));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const bundle = EnrichmentEvidenceBundleSchema.parse({
+      providerId: 'gemini-grounded-v1',
+      providerRunId,
+      retrievedAt: new Date().toISOString(),
+      identityConfidence: 0,
+      facts: [],
+      usage,
+      raw: {
+        model,
+        captureError: `Provider response failed the Backline schema: ${message}`,
+        responseText: result.text,
+        evidence: result.evidence,
+        rejectedFacts: [],
+        citationMappings: [],
+      },
+    });
+    throw new GroundedEnrichmentCaptureError(
+      `Gemini grounded response failed the Backline schema: ${message}`,
+      bundle,
+      error,
+    );
+  }
   const capturedUrls = new Set(result.evidence.flatMap((item) => {
     try {
       return [safeHttpsEvidenceUrl(item.sourceUrl)];
@@ -577,29 +637,13 @@ export async function enrichTrustLoopEntityWithGemini(input: {
 
     facts.push({ ...fact, evidenceUrls: normalisedEvidenceUrls });
   }
-  const inputTokens = result.inputTokens ?? 0;
-  const outputTokens = result.outputTokens ?? 0;
-  // Conservative post-free-pool estimate: Gemini 3.6 Flash standard tokens plus
-  // Google Search grounding. Qualification records the estimate but performs no billing action.
-  const estimatedCost = (inputTokens * 0.75 / 1_000_000)
-    + (outputTokens * 3.75 / 1_000_000)
-    + (result.queryCount * 0.014);
-
   return EnrichmentEvidenceBundleSchema.parse({
     providerId: 'gemini-grounded-v1',
-    providerRunId: crypto.randomUUID(),
+    providerRunId,
     retrievedAt: new Date().toISOString(),
     identityConfidence: parsed.identityConfidence,
     facts,
-    usage: {
-      searches: result.queryCount,
-      fetches: citationResolutionFetches,
-      modelCalls: 1,
-      inputTokens,
-      outputTokens,
-      estimatedCost,
-      durationMs: Date.now() - startedAt,
-    },
+    usage: { ...usage, fetches: citationResolutionFetches },
     raw: {
       model,
       identityReason: parsed.identityReason,

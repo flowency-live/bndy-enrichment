@@ -24,6 +24,8 @@ const ReviewArtifactSchema = z.object({
   venueCases: z.number().int().nonnegative(),
   captureErrors: z.number().int().nonnegative(),
   totalEstimatedCost: z.number().nonnegative(),
+  costMeasurement: z.enum(['complete', 'partial', 'unavailable']).optional(),
+  measuredUsageCases: z.number().int().nonnegative().optional(),
   canonicalWrites: z.literal(0),
   items: z.array(z.object({
     caseId: z.string().min(1),
@@ -76,7 +78,7 @@ export function renderQualificationReview(input: unknown): string {
     '',
     'This is a bounded 20-case provider qualification cohort, not the full Backline corpus. It contains 10 artists and 10 venues selected from the live Trust Loop review set. No canonical writes occurred.',
     '',
-    `Captured cases: ${capturedCases}/${artifact.cases}. Capture errors: ${artifact.captureErrors}. Accepted facts: ${acceptedFacts}. Quarantined facts: ${quarantinedFacts}. Estimated cost: $${artifact.totalEstimatedCost.toFixed(4)}.`,
+    `Captured cases: ${capturedCases}/${artifact.cases}. Capture errors: ${artifact.captureErrors}. Accepted facts: ${acceptedFacts}. Quarantined facts: ${quarantinedFacts}. ${artifact.costMeasurement === 'unavailable' ? 'Estimated cost: unavailable because no failed call retained usage.' : `Measured estimated cost: $${artifact.totalEstimatedCost.toFixed(4)}${artifact.costMeasurement === 'partial' ? ' (partial)' : ''}.`}`,
     '',
     'A quarantined fact is visible for review but is not accepted evidence and cannot project to canonical BNDY. Human adjudication does not repair missing provider citations; those cases remain parked.',
     '',

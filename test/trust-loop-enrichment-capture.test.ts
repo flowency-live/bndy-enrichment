@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { enrichTrustLoopEntityWithGemini } from '../src/google/gemini.js';
+import {
+  enrichTrustLoopEntityWithGemini,
+  GroundedEnrichmentCaptureError,
+} from '../src/google/gemini.js';
 import {
   qualificationEntity,
   qualificationPredicates,
@@ -141,6 +144,56 @@ describe('Trust Loop enrichment qualification capture', () => {
       })],
       rejectedFacts: [],
     });
+  });
+
+  it('retains provider evidence, usage and measured cost when grounded output fails the schema', async () => {
+    const evidenceUrl = 'https://the-test-band.example/about';
+    const responseText = JSON.stringify({
+      identityConfidence: 0.999,
+      facts: { hasGenre: 'Rock' },
+    });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      output_text: responseText,
+      steps: [
+        { type: 'google_search_call', arguments: { queries: ['The Test Band official'] } },
+        {
+          type: 'model_output',
+          content: [{
+            type: 'text',
+            text: responseText,
+            annotations: [{ type: 'url_citation', url: evidenceUrl, title: 'Official page' }],
+          }],
+        },
+      ],
+      usage: { total_input_tokens: 700, total_output_tokens: 150 },
+    }), { status: 200, headers: { 'content-type': 'application/json' } })));
+
+    const item = reviewCase('artist', 'fixture-source', 'artist-1', 'The Test Band');
+    const failure = await enrichTrustLoopEntityWithGemini({
+      entity: qualificationEntity(item),
+      sourceId: item.sourceId,
+      sourceCandidateKey: item.candidateKey,
+      requestedPredicates: qualificationPredicates('artist'),
+    }, { apiKey: 'fixture-key' }).catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(GroundedEnrichmentCaptureError);
+    expect((failure as GroundedEnrichmentCaptureError).bundle).toMatchObject({
+      providerId: 'gemini-grounded-v1',
+      identityConfidence: 0,
+      facts: [],
+      usage: {
+        searches: 1,
+        modelCalls: 1,
+        inputTokens: 700,
+        outputTokens: 150,
+      },
+      raw: {
+        responseText,
+        evidence: [expect.objectContaining({ sourceUrl: evidenceUrl })],
+        captureError: expect.stringMatching(/failed the Backline schema/i),
+      },
+    });
+    expect((failure as GroundedEnrichmentCaptureError).bundle.usage!.estimatedCost).toBeGreaterThan(0.014);
   });
 
   it('quarantines model citations that were not captured by the grounded search', async () => {
