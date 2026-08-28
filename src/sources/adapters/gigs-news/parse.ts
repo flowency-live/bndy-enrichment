@@ -28,7 +28,7 @@ const PLACEHOLDER_VENUE_SUFFIX = /-\s*(branded|reserved)\b/i;
 const DJ_PATTERNS = [/^dj\s+\w+$/i];
 const FOOTER_PATTERNS = [
   /recording my songs/i, /my bands/i, /contact/i, /chris statham/i,
-  /^\d{5}\s+\d{6}$/, /email:/i,
+  /^gigs\s+\d{4}$/i, /^\d{5}\s+\d{6}$/, /email:/i,
 ];
 
 export interface GigsNewsRawGig {
@@ -229,7 +229,10 @@ export function parseGigsNewsPage(input: string, year: number): GigsNewsParseRes
       continue;
     }
     if (!currentDate) continue;
-    if (FOOTER_PATTERNS.some((pattern) => pattern.test(line))) continue;
+    // The source appends advertising/contact copy and future booking slots
+    // after the weekly listings. Once that boundary is reached, later lines
+    // are not gig evidence for the displayed edition.
+    if (FOOTER_PATTERNS.some((pattern) => pattern.test(line))) break;
 
     const parsed = parseGigRow(line);
     if (!parsed.venue && !parsed.artist) continue;
