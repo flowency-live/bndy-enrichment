@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "retainedAt": "2026-08-28T14:01:22Z",
+  "sourceId": "gigs-news-daily-import",
+  "supersededRuntime": "browser",
+  "deliveryCopiesMoved": 1,
+  "retainedOutsideActiveDlq": true,
+  "canonicalWrites": 0
+}

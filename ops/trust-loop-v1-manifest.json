@@ -1,0 +1,1421 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-28T14:04:44.667Z",
+  "status": "needs-review",
+  "id": "trust-loop-2790b00b-0a62-4c49-9164-4f2a4e48cbfe",
+  "sourceIds": [
+    "lemonrock-new-gigs",
+    "lemonrock-artist-hydration",
+    "lemonrock-venue-hydration",
+    "onthecase-gig-index",
+    "onthecase-band-hydration",
+    "onthecase-venue-hydration",
+    "klma-stoke-gig-list",
+    "gigs-news-daily-import"
+  ],
+  "candidateLimit": 40,
+  "candidatesSeen": 15,
+  "candidatesClassified": 15,
+  "classifications": {
+    "resolved": 0,
+    "unresolved": 15,
+    "conflicted": 0
+  },
+  "entityTypes": {
+    "artist": 1,
+    "venue": 12,
+    "event": 2,
+    "festival": 0
+  },
+  "noSilentDrops": true,
+  "canonicalWrites": 0,
+  "enrichment": {
+    "eligibleArtists": 1,
+    "assessedArtists": 1,
+    "classificationCoverage": 0,
+    "genreCoverage": 0,
+    "officialLinkCoverage": 0,
+    "attemptedNoOfficialPresence": 0,
+    "parkedOrConflicted": 0,
+    "wrongLinkIncidents": 0
+  },
+  "acceptance": {
+    "completeClassification": true,
+    "zeroWrongLinks": true,
+    "traceableDecisions": true,
+    "reviewedKnownAnswerSetPassed": false
+  },
+  "decisions": [
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:940",
+      "sourceId": "onthecase-gig-index",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-5cff9cacf3bdef331156ec78fd890fe5",
+        "claim-4b0505a0c83e3cc9ed0f4fa63fa9c9be",
+        "claim-96cb3addf3033c03bb99dc71004c0bdd",
+        "claim-2523d31e6a418b6d46af132547e219c6",
+        "claim-3053a2ee78d577379fc421a9d9f85b54",
+        "claim-71a65f2d9fe35d4abbfe1fd25aae0b41",
+        "claim-931c0a844b9ca4f66e34a3b38bfdf83c",
+        "claim-c2b003d506a6764a9a7bb6d346a16965",
+        "claim-dde660e9e7110370f12075dc8ce2bd1e",
+        "claim-fe15c52e3ccf970f67e82b1f9d4e9ac6",
+        "claim-12bed2a37ccf33d1ecf8aa225cdd736f",
+        "claim-29c4e314bb0b036acf6320db8bf1887c",
+        "claim-6cccddf14f5bca49cef88156221707bb",
+        "claim-77695582f03a433e0964db18df96d849",
+        "claim-ce19de0134de408ff89e14f7c6c92fad",
+        "claim-f5be416e95b803d10276a0579801a97e",
+        "claim-f9cea1195e568ec0042d1ed02833347b",
+        "claim-0a2f3f42aef594321bf983b8a02caca1",
+        "claim-2069e854bf27ad4ea09e8c0406bb03e7",
+        "claim-2ab5caf77b7cf7cda540425d9c806dd4",
+        "claim-2abe6fa4babc81e4dcd983240790aea5",
+        "claim-7131f647c70208becef5c2eb186113b7",
+        "claim-8bf3d8ec49836abf8f6f14c980be754d",
+        "claim-fced70d644f5a9aaffefdb359b1f2495",
+        "claim-02aa6da90b1f87b0d278bd17b1627643",
+        "claim-9116326bc674e72f9dae501a9b6f47ee",
+        "claim-40bb5c690b5baedd53234f94183471c1",
+        "claim-8aa2b2f9393fe58272543e166208c70b",
+        "claim-0b567f05970830c96c4b40de79016de3",
+        "claim-d963c371d601d0ebb2b9808836d70b4f"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.314Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:915",
+      "sourceId": "onthecase-gig-index",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-4c3ac55950f2dcee06e1cc72ebcb5a79",
+        "claim-e862e04bd675088347a3cefe35372ca3",
+        "claim-47ca4bb8af993b3755284905120b4963",
+        "claim-5a9883f3d0c2bc91de57c24dc286af47",
+        "claim-83c63c15065448c02bf1161ed3bd163b",
+        "claim-af3c38a20bd0c41a2c1a3651a9e1fcab",
+        "claim-c6500d3f8cde870ed5395a9aa6f55de4",
+        "claim-ca2a635230c55ad85d5d0c79366331b1",
+        "claim-dd797feb50c266cab1a154798ac556e3",
+        "claim-61ecc558684afc175e4727c7562cee66",
+        "claim-7752219c831388d5e9e2a7b56cdb6ec1",
+        "claim-87999d58170ce20aad3d29f036fd6cd3",
+        "claim-8a520e8dad9e12c3c8539aab70afdb07",
+        "claim-c1691fb153898459e939ed2c2eb9b726",
+        "claim-ef430684613de6efa784e6faffeb1394",
+        "claim-4341b3876202654f381b3ade3c330852",
+        "claim-6c2f4f7472643cbb21e8195121e78cf1",
+        "claim-8e69b5f523fac52bad6c282c7c7c1c60",
+        "claim-96f3d61d6daa6b282b0b13bae6a3932d",
+        "claim-9c8d2b2ff8d104d65071a9772daea8fb",
+        "claim-bf95c99ea71b0cddd5827a6ff0d60ad9",
+        "claim-cbc7323bdc79930847761bd34141fa28",
+        "claim-3d4332317179b5b4c68c36eddb028c95",
+        "claim-e386c9278a2c6582d50c12d904e601a4",
+        "claim-851c6739fbffe459c54f6bd836325903",
+        "claim-f4e2a2502e9d8e687e48cbdf47f91772",
+        "claim-4d561832630eed6770c95f07d1cd7f51",
+        "claim-e8ce2213e6a955174564a7665743fdb1"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.352Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:90",
+      "sourceId": "onthecase-gig-index",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-e56d9c38c803f02c8d49e37f3c20c4c3",
+        "claim-e47170f981385fd39601a89f19fa0fe6",
+        "claim-21ccc2043d64f531a8ab9b1368a23f22",
+        "claim-16161d4a09f9a50c70203aded6247ddf",
+        "claim-24dbf037f995d9057875e4a8700f8320",
+        "claim-2c3f6fc6d7f05469dd8bf63d727c94ff",
+        "claim-78d15cd21f7e98bd0bfa1f86fe5456f3",
+        "claim-81598583952227528c588bb3646658a0",
+        "claim-8b8d3ff517bb3026a83f85364f508b87",
+        "claim-a4980dde55f6233230a416c833dddf69",
+        "claim-c322acda1ba952f1a28fe419d5586fee",
+        "claim-d4415470635ccfdc1dfea2220d808958",
+        "claim-df8330a0a2e3fb72517784943f13e829",
+        "claim-f6315202547387432705e627e2595e9e",
+        "claim-fb4ed174dfe3316f123fe8856ee45928",
+        "claim-2ed88af4fda563ae0cae4b1df29ca32c",
+        "claim-30592575be29de6fb383e50f93fdfec5",
+        "claim-711b82e0221077d0082c142ebc927dbf",
+        "claim-7140b6af718499525848ce0a1cd4c15d",
+        "claim-a9a88962d04057d0a15444108ed0ecbd",
+        "claim-b2d8a912a9fb0859ca1da4f7d9c74c9f",
+        "claim-b697a9147d4c51d3159c53d48371e419",
+        "claim-c2d466e3dbf5aef3374c788afe95f072",
+        "claim-cd6557fbc25a9dc16a9c34f7469f3241",
+        "claim-d95fb2fd2b33cab41e2f27044018966c",
+        "claim-db7af720c01dad05009ef2c410ee8e49",
+        "claim-e47485039794e1e716429956f534553e",
+        "claim-1b11477425af7d3c9d8cbd71dcfbd89c",
+        "claim-56baea89af52820902113d31bc1b4994",
+        "claim-6212c7fd5b9af24fdf7a43d6505c0370",
+        "claim-64428c8dcecf719d21ba17bca48b7b75",
+        "claim-7d0cfa93ed54bb93927458fcc18c91bf",
+        "claim-90478d83e4106432bf30f657644357d5",
+        "claim-92225d248c689d9b08f73aae0e6c9d86",
+        "claim-9fd3dc138c6bc3c3c17b20e82290d959",
+        "claim-b6173c7ed2a171a1e4d0586fff4e100f",
+        "claim-b9c7911fe1bc0a7b3356a899b8d01673",
+        "claim-e4d22b629bc506102856fdf7760fefbd",
+        "claim-f1c07b269b302c6aa71ad4fc8c71da78",
+        "claim-704cb9262520888138e689bbf6f9fd0c"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.389Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:892",
+      "sourceId": "onthecase-gig-index",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-a4fdd8e801fb41b1fcbd39f955c2da70",
+        "claim-fce744fd881d41e09fee82f9e885acdc",
+        "claim-fa64afa6b06fb851670eed11d41d8b8a",
+        "claim-029e30c5034c9e94741eaacd80cfdf37",
+        "claim-1ca19e2423a7139b01efde396a658a0a",
+        "claim-20ffe844638a26e61bdf7873c6ebe51e",
+        "claim-5771c4dd2ce90b98eb8f870fa495909d",
+        "claim-ddcd1d215407a3831845191871ec70a4",
+        "claim-df955647e6a40c8e95b4c013398958dc",
+        "claim-fc3683b88f819b5c452d4135b6a80f98",
+        "claim-356abed8add72f3f1d6d024c6f5af571",
+        "claim-3934b876dec76af470a300a8d3754570",
+        "claim-98fc391e18171bccef3a39466d8bd85d",
+        "claim-ac0a284cf24fafc61c3930a02c3b3062",
+        "claim-b0a88a8465351ad10548501e3a366ab2",
+        "claim-ce0c026917ff39daf93dfab939a3b1ea",
+        "claim-d14d592405103b3d06731cc85a243869",
+        "claim-019160febad268c85659a01de03482b1",
+        "claim-1c8f6bf08dd7714c3d94ce1a69e7a196",
+        "claim-2e0a5294f5de3c772856e7c75db8357e",
+        "claim-2f11ac2fbeeb36f0c71d985d5d6eb908",
+        "claim-75516ecae97c8e9e1a2ce6a6576acef9",
+        "claim-be5d8ac4463242e12dbb85f57a3cc25e",
+        "claim-cf68f1ffdc8cbb4f9a178b13718cc693",
+        "claim-386b05a144e97d4868ef2aa92ab7b669",
+        "claim-3a80f0d939005102f01c01eb0855f7d4",
+        "claim-01bf0f54d8a24f07bee42f87ee3c4b72",
+        "claim-6de4b12bf2d59087c43060df4774c9d4",
+        "claim-6e70aed632e382a995b3fb0b8e673579",
+        "claim-7197435a04bce3517d3bc517931895fd"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.427Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:753",
+      "sourceId": "onthecase-gig-index",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-e46ea940499ecfdfda1fecee6d55086d",
+        "claim-57558c020f8b63f1743e7449f42a9255",
+        "claim-8275e531611078d7252ee56d7511846f",
+        "claim-01095f4759614bbea60f75c9b1f54ab0",
+        "claim-0f9f2855718c15aa9ea747e05aaea7ee",
+        "claim-368ceabe5428424e0720feaa914bf4ee",
+        "claim-68dbfd88ec3e08d4efc2e5f33620379d",
+        "claim-7aac673e0b4f9a330d1fdfeaa936b290",
+        "claim-87a8d9fbec1df1fe1dfb3e4f4c4d8076",
+        "claim-d8faec0a3010ce340339443594afb140",
+        "claim-f7c6c5eabba2f4423986d2daef67bbdd",
+        "claim-fe04da03bd3a9503ce1594bd4302d82c",
+        "claim-197d175c738f5eef5aecc68fad259ec0",
+        "claim-1e00af98e4782bdf6f2b24b7cc005a83",
+        "claim-5c150c593baf1f216bbedc629671cf14",
+        "claim-793fe4f21eb272a802de1b04aa3cfd18",
+        "claim-8b8b1a197cca3d6cb628f7f8afed8d88",
+        "claim-9406ce29ab85c6ec7f64dd3866585fad",
+        "claim-bd07228a48e76974ce0a1e5630dbfe9f",
+        "claim-c06af3acc3857de216de621fd24cef1e",
+        "claim-cd1df7cd59e5c1a547c3e01bebcc5b7b",
+        "claim-15a21d9ad53af3fb1e2073c9fa5052ea",
+        "claim-1cf3578595b9d3f5e659e739c30a82d4",
+        "claim-599672c9d0c0be775970d7ff29bc3bfd",
+        "claim-7a14ee05d343e3f590cefe81129eeb81",
+        "claim-8848df041fd3e7e5e092972fed59d2d4",
+        "claim-88f633e3bed4663c66ead5c624b3f0e1",
+        "claim-b7a053cde777362e5be280ce55de3be5",
+        "claim-e4db6b28cf89915d6f7d4646f4a12a21",
+        "claim-efdd347307dde00330746cbbc6e63f23",
+        "claim-10d0ea5eddd95a5783db9913ef373ee8",
+        "claim-746caac6368b17444601833fdfde7492",
+        "claim-54268cf968edc8b692299c86a99d9aed",
+        "claim-8ed5804f227c30950c9d58669d559d2d",
+        "claim-ba5fe6052278a094ec78a168b8711aad",
+        "claim-db53e0816f548f701fc949622dd8e795"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.465Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-fef3609d34f8",
+      "sourceId": "klma-stoke-gig-list",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-9c996ff0a18a5a892b492a5986d88734",
+        "claim-f95e084ca81f247f5fa9ccb491230581",
+        "claim-5be41f337efd4aaba8533937c26b6387",
+        "claim-7a7a7a1247d7186bdce3d1730103f500",
+        "claim-cb0cdd13af6821fc682f3d99c38ab9ac",
+        "claim-c02920d0b5e061ac87a6c018d6225275",
+        "claim-f338da9cfad2da50c970ca5280a436db",
+        "claim-feea343bbd6d582702f4076bd26d8499"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.488Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-fb082b4b73aa",
+      "sourceId": "klma-stoke-gig-list",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-d1727d993bc21396120b4c96a5a06ed8",
+        "claim-f8780607ec45daba07ee05deb96dc7bb",
+        "claim-49319da919728bbc4a9c78e68f21eb5e",
+        "claim-76426d031ed249997e38970cde265fa7",
+        "claim-f220ddff1502bd1747c3f95b6bdefe35",
+        "claim-1efc81059afe8e6dad31a35492fa2525",
+        "claim-c811a3c0d476c12b32efa5764aeca0a9",
+        "claim-e0f4de324cb47ed3602eda9ff9440285"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.502Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-f88c79f4c673",
+      "sourceId": "klma-stoke-gig-list",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0.45,
+      "supportingClaimIds": [
+        "claim-86f9dcf5e329696ef69768331f05a5bb",
+        "claim-bf68c59e2f4c69f37cdfb3fb194314a4",
+        "claim-027504c6e29e788f9491711a62a80f29",
+        "claim-e683f89dbc78fc7c233cf104958aba02",
+        "claim-f49001858666652b145994eb83d0c2dd",
+        "claim-8aa82881233740206270d73a0ecf1e5f",
+        "claim-97b9f5ee42a53ea65276f0b1f44d9d9d",
+        "claim-9c6d7a1572f5516fab0af9abfd424528",
+        "claim_0ba4bba6a4bd47deed7605b34f65130e2cfab8a7",
+        "claim_0c64dc419b52cafb05c126ba22c748d85a8ffd64",
+        "claim_1491e8a834e86b0b9a2a26ba5fe8badcb7df8132",
+        "claim_166a56bd9d9a11e274f2677315d775564355a49f"
+      ],
+      "hypotheses": [
+        {
+          "canonicalEntityId": "90a24418-12f5-4f7c-97d0-3ddf9cc833f4",
+          "confidence": 0.45,
+          "matchedDimensions": [
+            "name"
+          ],
+          "conflictingDimensions": [],
+          "supportingClaimIds": [
+            "claim-86f9dcf5e329696ef69768331f05a5bb",
+            "claim-bf68c59e2f4c69f37cdfb3fb194314a4",
+            "claim-027504c6e29e788f9491711a62a80f29",
+            "claim-e683f89dbc78fc7c233cf104958aba02",
+            "claim-f49001858666652b145994eb83d0c2dd",
+            "claim-8aa82881233740206270d73a0ecf1e5f",
+            "claim-97b9f5ee42a53ea65276f0b1f44d9d9d",
+            "claim-9c6d7a1572f5516fab0af9abfd424528",
+            "claim_0ba4bba6a4bd47deed7605b34f65130e2cfab8a7",
+            "claim_0c64dc419b52cafb05c126ba22c748d85a8ffd64",
+            "claim_1491e8a834e86b0b9a2a26ba5fe8badcb7df8132",
+            "claim_166a56bd9d9a11e274f2677315d775564355a49f"
+          ],
+          "corroboratingSourceIds": [],
+          "reasons": [
+            "Normalised name agrees",
+            "Name similarity or footprint alone is not sufficient"
+          ]
+        }
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.550Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-f84e844c02e3",
+      "sourceId": "klma-stoke-gig-list",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-b3fb8461d2b2f39a5dc7ef4da45ff2aa",
+        "claim-eafb2368874023a56547e62e6c0e06ec",
+        "claim-2031b08744bff0220fa4be7ef9e0b4ec",
+        "claim-7bb59181732dec8815c3ab8262dee7e1",
+        "claim-a6a6ec0d7c08a4614d0cb31309a28140",
+        "claim-17c58b8cdb4770e8ca109915bfe90a7f",
+        "claim-2ee4317d5a0816179bccc2d59f3328a1",
+        "claim-dee332754029b4e57c5567c8314cd742"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.572Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-f7bf76c952a1",
+      "sourceId": "klma-stoke-gig-list",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-7c37468ee5e5288bcd8e1983b9bf1ce8",
+        "claim-8e9b252b908cb08086d1193b9dde5bd9",
+        "claim-0e7432b762496e6636cdc8d6e70824a7",
+        "claim-622ecf1f551b847fca057904ef912f3f",
+        "claim-a4c2f6f654a9b47cb20051f843cb7cde",
+        "claim-593e86d1b7ddf20d27e93ac34d755dc6",
+        "claim-6cdf9adab49337892b1b365f4e45cb0d",
+        "claim-96785ab0dc445319ea6292cb9c58f616"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.586Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "venue_united-match",
+      "sourceId": "gigs-news-daily-import",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0.45,
+      "supportingClaimIds": [
+        "claim-04c422e10dbb09c8c8606fe4ca38db1f",
+        "claim-221a64770823c069a49f29641e5bdd86",
+        "claim_029847393b10e5e3737a62e27ea16ed2f0b27b86",
+        "claim_03af7d3750408b07974523fe0a67f263adface0a",
+        "claim_057894bcdc914e651a0f7a7f326523be2087bb6a",
+        "claim_06910b11d013ef4800c4a08de0810fb08e54a7e3",
+        "claim_07b844aa83bcfedbd1603411c6b14162d4e520ff",
+        "claim_0b875e563f2d977a502324b82e28fb30367aeb0d",
+        "claim_16e3bf7aea5751c6167ce91737b53c987509b192",
+        "claim_2a7c33ecaa45efc33e4462f5356cdab6d6870c3a",
+        "claim_2ad0e53002e2ddc26610eaaeac708040be36aaf3",
+        "claim_2b0a29cbc5eca7e7477f4afda0254eeca15f519a"
+      ],
+      "hypotheses": [
+        {
+          "canonicalEntityId": "9be0502f-2a7f-42ac-8751-b51852b2320a",
+          "confidence": 0.45,
+          "matchedDimensions": [
+            "name"
+          ],
+          "conflictingDimensions": [],
+          "supportingClaimIds": [
+            "claim-04c422e10dbb09c8c8606fe4ca38db1f",
+            "claim-221a64770823c069a49f29641e5bdd86",
+            "claim_029847393b10e5e3737a62e27ea16ed2f0b27b86",
+            "claim_03af7d3750408b07974523fe0a67f263adface0a",
+            "claim_057894bcdc914e651a0f7a7f326523be2087bb6a",
+            "claim_06910b11d013ef4800c4a08de0810fb08e54a7e3",
+            "claim_07b844aa83bcfedbd1603411c6b14162d4e520ff",
+            "claim_0b875e563f2d977a502324b82e28fb30367aeb0d",
+            "claim_16e3bf7aea5751c6167ce91737b53c987509b192",
+            "claim_2a7c33ecaa45efc33e4462f5356cdab6d6870c3a",
+            "claim_2ad0e53002e2ddc26610eaaeac708040be36aaf3",
+            "claim_2b0a29cbc5eca7e7477f4afda0254eeca15f519a"
+          ],
+          "corroboratingSourceIds": [],
+          "reasons": [
+            "Normalised name agrees",
+            "Name similarity or footprint alone is not sufficient"
+          ]
+        }
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.605Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "venue_07811-44-7388",
+      "sourceId": "gigs-news-daily-import",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-08973a25283548b117db6fd62d1f2ee8",
+        "claim-39cc9ca46b104fd24f1e8e9b2a5eecfd"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.623Z"
+    },
+    {
+      "candidateType": "event",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_chris_07811-44-7388",
+      "sourceId": "gigs-news-daily-import",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-2dd3f8e66728e6e2fc14fdbcde5be314",
+        "claim-62d3eecfdbcbc5dbf4e5314dc12ae5d9",
+        "claim-75c751dcb9f6f66f5d30047c8de4f850",
+        "claim-c80bca4571187d8e357b4d3417272251",
+        "claim-ccb4b1c1386912584cfc24f1b171a556",
+        "claim-fb1fe123e71d0ac3cfcd062bb90ad5ee",
+        "claim-fd219edb42ab3459ca08e5bd6abd5487"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.638Z"
+    },
+    {
+      "candidateType": "event",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_cancelled_united-match",
+      "sourceId": "gigs-news-daily-import",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-070028dd8fa27811b0cde1f0c39cbe48",
+        "claim-27e4ab8b80e4334d307acc7c204b6c3e",
+        "claim-2cda922b5d255853ab7bb9624fd6e8aa",
+        "claim-535eb74fcecf5f37ec76ce804cd70efb",
+        "claim-7fcce227538ffc0ff3b1784960d12fb3",
+        "claim-8a31830483e2c407790b080f8292b1cb",
+        "claim-fa645a3404ae1785515ffa8a2b6e7b65"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.651Z"
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "artist_chris",
+      "sourceId": "gigs-news-daily-import",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-34b2b2a37961e82456e6de3b75ebc3fe",
+        "claim-73a0341d7fe4e91b634b91055cb9bf68"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:04:44.662Z"
+    }
+  ],
+  "reviewCases": [
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:940",
+      "sourceId": "onthecase-gig-index",
+      "displayName": "Crook Hotel Crook",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-5cff9cacf3bdef331156ec78fd890fe5",
+        "claim-4b0505a0c83e3cc9ed0f4fa63fa9c9be",
+        "claim-96cb3addf3033c03bb99dc71004c0bdd",
+        "claim-2523d31e6a418b6d46af132547e219c6",
+        "claim-3053a2ee78d577379fc421a9d9f85b54",
+        "claim-71a65f2d9fe35d4abbfe1fd25aae0b41",
+        "claim-931c0a844b9ca4f66e34a3b38bfdf83c",
+        "claim-c2b003d506a6764a9a7bb6d346a16965",
+        "claim-dde660e9e7110370f12075dc8ce2bd1e",
+        "claim-fe15c52e3ccf970f67e82b1f9d4e9ac6",
+        "claim-12bed2a37ccf33d1ecf8aa225cdd736f",
+        "claim-29c4e314bb0b036acf6320db8bf1887c",
+        "claim-6cccddf14f5bca49cef88156221707bb",
+        "claim-77695582f03a433e0964db18df96d849",
+        "claim-ce19de0134de408ff89e14f7c6c92fad",
+        "claim-f5be416e95b803d10276a0579801a97e",
+        "claim-f9cea1195e568ec0042d1ed02833347b",
+        "claim-0a2f3f42aef594321bf983b8a02caca1",
+        "claim-2069e854bf27ad4ea09e8c0406bb03e7",
+        "claim-2ab5caf77b7cf7cda540425d9c806dd4",
+        "claim-2abe6fa4babc81e4dcd983240790aea5",
+        "claim-7131f647c70208becef5c2eb186113b7",
+        "claim-8bf3d8ec49836abf8f6f14c980be754d",
+        "claim-fced70d644f5a9aaffefdb359b1f2495",
+        "claim-02aa6da90b1f87b0d278bd17b1627643",
+        "claim-9116326bc674e72f9dae501a9b6f47ee",
+        "claim-40bb5c690b5baedd53234f94183471c1",
+        "claim-8aa2b2f9393fe58272543e166208c70b",
+        "claim-0b567f05970830c96c4b40de79016de3",
+        "claim-d963c371d601d0ebb2b9808836d70b4f"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:915",
+      "sourceId": "onthecase-gig-index",
+      "displayName": "Murton Officials Club Seaham",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-4c3ac55950f2dcee06e1cc72ebcb5a79",
+        "claim-e862e04bd675088347a3cefe35372ca3",
+        "claim-47ca4bb8af993b3755284905120b4963",
+        "claim-5a9883f3d0c2bc91de57c24dc286af47",
+        "claim-83c63c15065448c02bf1161ed3bd163b",
+        "claim-af3c38a20bd0c41a2c1a3651a9e1fcab",
+        "claim-c6500d3f8cde870ed5395a9aa6f55de4",
+        "claim-ca2a635230c55ad85d5d0c79366331b1",
+        "claim-dd797feb50c266cab1a154798ac556e3",
+        "claim-61ecc558684afc175e4727c7562cee66",
+        "claim-7752219c831388d5e9e2a7b56cdb6ec1",
+        "claim-87999d58170ce20aad3d29f036fd6cd3",
+        "claim-8a520e8dad9e12c3c8539aab70afdb07",
+        "claim-c1691fb153898459e939ed2c2eb9b726",
+        "claim-ef430684613de6efa784e6faffeb1394",
+        "claim-4341b3876202654f381b3ade3c330852",
+        "claim-6c2f4f7472643cbb21e8195121e78cf1",
+        "claim-8e69b5f523fac52bad6c282c7c7c1c60",
+        "claim-96f3d61d6daa6b282b0b13bae6a3932d",
+        "claim-9c8d2b2ff8d104d65071a9772daea8fb",
+        "claim-bf95c99ea71b0cddd5827a6ff0d60ad9",
+        "claim-cbc7323bdc79930847761bd34141fa28",
+        "claim-3d4332317179b5b4c68c36eddb028c95",
+        "claim-e386c9278a2c6582d50c12d904e601a4",
+        "claim-851c6739fbffe459c54f6bd836325903",
+        "claim-f4e2a2502e9d8e687e48cbdf47f91772",
+        "claim-4d561832630eed6770c95f07d1cd7f51",
+        "claim-e8ce2213e6a955174564a7665743fdb1"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:90",
+      "sourceId": "onthecase-gig-index",
+      "displayName": "Bebside Inn Blyth",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-e56d9c38c803f02c8d49e37f3c20c4c3",
+        "claim-e47170f981385fd39601a89f19fa0fe6",
+        "claim-21ccc2043d64f531a8ab9b1368a23f22",
+        "claim-16161d4a09f9a50c70203aded6247ddf",
+        "claim-24dbf037f995d9057875e4a8700f8320",
+        "claim-2c3f6fc6d7f05469dd8bf63d727c94ff",
+        "claim-78d15cd21f7e98bd0bfa1f86fe5456f3",
+        "claim-81598583952227528c588bb3646658a0",
+        "claim-8b8d3ff517bb3026a83f85364f508b87",
+        "claim-a4980dde55f6233230a416c833dddf69",
+        "claim-c322acda1ba952f1a28fe419d5586fee",
+        "claim-d4415470635ccfdc1dfea2220d808958",
+        "claim-df8330a0a2e3fb72517784943f13e829",
+        "claim-f6315202547387432705e627e2595e9e",
+        "claim-fb4ed174dfe3316f123fe8856ee45928",
+        "claim-2ed88af4fda563ae0cae4b1df29ca32c",
+        "claim-30592575be29de6fb383e50f93fdfec5",
+        "claim-711b82e0221077d0082c142ebc927dbf",
+        "claim-7140b6af718499525848ce0a1cd4c15d",
+        "claim-a9a88962d04057d0a15444108ed0ecbd",
+        "claim-b2d8a912a9fb0859ca1da4f7d9c74c9f",
+        "claim-b697a9147d4c51d3159c53d48371e419",
+        "claim-c2d466e3dbf5aef3374c788afe95f072",
+        "claim-cd6557fbc25a9dc16a9c34f7469f3241",
+        "claim-d95fb2fd2b33cab41e2f27044018966c",
+        "claim-db7af720c01dad05009ef2c410ee8e49",
+        "claim-e47485039794e1e716429956f534553e",
+        "claim-1b11477425af7d3c9d8cbd71dcfbd89c",
+        "claim-56baea89af52820902113d31bc1b4994",
+        "claim-6212c7fd5b9af24fdf7a43d6505c0370",
+        "claim-64428c8dcecf719d21ba17bca48b7b75",
+        "claim-7d0cfa93ed54bb93927458fcc18c91bf",
+        "claim-90478d83e4106432bf30f657644357d5",
+        "claim-92225d248c689d9b08f73aae0e6c9d86",
+        "claim-9fd3dc138c6bc3c3c17b20e82290d959",
+        "claim-b6173c7ed2a171a1e4d0586fff4e100f",
+        "claim-b9c7911fe1bc0a7b3356a899b8d01673",
+        "claim-e4d22b629bc506102856fdf7760fefbd",
+        "claim-f1c07b269b302c6aa71ad4fc8c71da78",
+        "claim-704cb9262520888138e689bbf6f9fd0c"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:892",
+      "sourceId": "onthecase-gig-index",
+      "displayName": "Melton Constable Seaton Sluice",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-a4fdd8e801fb41b1fcbd39f955c2da70",
+        "claim-fce744fd881d41e09fee82f9e885acdc",
+        "claim-fa64afa6b06fb851670eed11d41d8b8a",
+        "claim-029e30c5034c9e94741eaacd80cfdf37",
+        "claim-1ca19e2423a7139b01efde396a658a0a",
+        "claim-20ffe844638a26e61bdf7873c6ebe51e",
+        "claim-5771c4dd2ce90b98eb8f870fa495909d",
+        "claim-ddcd1d215407a3831845191871ec70a4",
+        "claim-df955647e6a40c8e95b4c013398958dc",
+        "claim-fc3683b88f819b5c452d4135b6a80f98",
+        "claim-356abed8add72f3f1d6d024c6f5af571",
+        "claim-3934b876dec76af470a300a8d3754570",
+        "claim-98fc391e18171bccef3a39466d8bd85d",
+        "claim-ac0a284cf24fafc61c3930a02c3b3062",
+        "claim-b0a88a8465351ad10548501e3a366ab2",
+        "claim-ce0c026917ff39daf93dfab939a3b1ea",
+        "claim-d14d592405103b3d06731cc85a243869",
+        "claim-019160febad268c85659a01de03482b1",
+        "claim-1c8f6bf08dd7714c3d94ce1a69e7a196",
+        "claim-2e0a5294f5de3c772856e7c75db8357e",
+        "claim-2f11ac2fbeeb36f0c71d985d5d6eb908",
+        "claim-75516ecae97c8e9e1a2ce6a6576acef9",
+        "claim-be5d8ac4463242e12dbb85f57a3cc25e",
+        "claim-cf68f1ffdc8cbb4f9a178b13718cc693",
+        "claim-386b05a144e97d4868ef2aa92ab7b669",
+        "claim-3a80f0d939005102f01c01eb0855f7d4",
+        "claim-01bf0f54d8a24f07bee42f87ee3c4b72",
+        "claim-6de4b12bf2d59087c43060df4774c9d4",
+        "claim-6e70aed632e382a995b3fb0b8e673579",
+        "claim-7197435a04bce3517d3bc517931895fd"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "onthecase:venue:753",
+      "sourceId": "onthecase-gig-index",
+      "displayName": "Bridlepath Whickham",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-e46ea940499ecfdfda1fecee6d55086d",
+        "claim-57558c020f8b63f1743e7449f42a9255",
+        "claim-8275e531611078d7252ee56d7511846f",
+        "claim-01095f4759614bbea60f75c9b1f54ab0",
+        "claim-0f9f2855718c15aa9ea747e05aaea7ee",
+        "claim-368ceabe5428424e0720feaa914bf4ee",
+        "claim-68dbfd88ec3e08d4efc2e5f33620379d",
+        "claim-7aac673e0b4f9a330d1fdfeaa936b290",
+        "claim-87a8d9fbec1df1fe1dfb3e4f4c4d8076",
+        "claim-d8faec0a3010ce340339443594afb140",
+        "claim-f7c6c5eabba2f4423986d2daef67bbdd",
+        "claim-fe04da03bd3a9503ce1594bd4302d82c",
+        "claim-197d175c738f5eef5aecc68fad259ec0",
+        "claim-1e00af98e4782bdf6f2b24b7cc005a83",
+        "claim-5c150c593baf1f216bbedc629671cf14",
+        "claim-793fe4f21eb272a802de1b04aa3cfd18",
+        "claim-8b8b1a197cca3d6cb628f7f8afed8d88",
+        "claim-9406ce29ab85c6ec7f64dd3866585fad",
+        "claim-bd07228a48e76974ce0a1e5630dbfe9f",
+        "claim-c06af3acc3857de216de621fd24cef1e",
+        "claim-cd1df7cd59e5c1a547c3e01bebcc5b7b",
+        "claim-15a21d9ad53af3fb1e2073c9fa5052ea",
+        "claim-1cf3578595b9d3f5e659e739c30a82d4",
+        "claim-599672c9d0c0be775970d7ff29bc3bfd",
+        "claim-7a14ee05d343e3f590cefe81129eeb81",
+        "claim-8848df041fd3e7e5e092972fed59d2d4",
+        "claim-88f633e3bed4663c66ead5c624b3f0e1",
+        "claim-b7a053cde777362e5be280ce55de3be5",
+        "claim-e4db6b28cf89915d6f7d4646f4a12a21",
+        "claim-efdd347307dde00330746cbbc6e63f23",
+        "claim-10d0ea5eddd95a5783db9913ef373ee8",
+        "claim-746caac6368b17444601833fdfde7492",
+        "claim-54268cf968edc8b692299c86a99d9aed",
+        "claim-8ed5804f227c30950c9d58669d559d2d",
+        "claim-ba5fe6052278a094ec78a168b8711aad",
+        "claim-db53e0816f548f701fc949622dd8e795"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-fef3609d34f8",
+      "sourceId": "klma-stoke-gig-list",
+      "displayName": "Shoulder, Fulford",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-9c996ff0a18a5a892b492a5986d88734",
+        "claim-f95e084ca81f247f5fa9ccb491230581",
+        "claim-5be41f337efd4aaba8533937c26b6387",
+        "claim-7a7a7a1247d7186bdce3d1730103f500",
+        "claim-cb0cdd13af6821fc682f3d99c38ab9ac",
+        "claim-c02920d0b5e061ac87a6c018d6225275",
+        "claim-f338da9cfad2da50c970ca5280a436db",
+        "claim-feea343bbd6d582702f4076bd26d8499"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-fb082b4b73aa",
+      "sourceId": "klma-stoke-gig-list",
+      "displayName": "The Lamb, Stone",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-d1727d993bc21396120b4c96a5a06ed8",
+        "claim-f8780607ec45daba07ee05deb96dc7bb",
+        "claim-49319da919728bbc4a9c78e68f21eb5e",
+        "claim-76426d031ed249997e38970cde265fa7",
+        "claim-f220ddff1502bd1747c3f95b6bdefe35",
+        "claim-1efc81059afe8e6dad31a35492fa2525",
+        "claim-c811a3c0d476c12b32efa5764aeca0a9",
+        "claim-e0f4de324cb47ed3602eda9ff9440285"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-f88c79f4c673",
+      "sourceId": "klma-stoke-gig-list",
+      "displayName": "The Roebuck, Chesterton",
+      "status": "unresolved",
+      "canonicalHypotheses": [
+        {
+          "canonicalEntityId": "90a24418-12f5-4f7c-97d0-3ddf9cc833f4",
+          "displayName": "The Roebuck, Chesterton"
+        }
+      ],
+      "supportingClaimIds": [
+        "claim-86f9dcf5e329696ef69768331f05a5bb",
+        "claim-bf68c59e2f4c69f37cdfb3fb194314a4",
+        "claim-027504c6e29e788f9491711a62a80f29",
+        "claim-e683f89dbc78fc7c233cf104958aba02",
+        "claim-f49001858666652b145994eb83d0c2dd",
+        "claim-8aa82881233740206270d73a0ecf1e5f",
+        "claim-97b9f5ee42a53ea65276f0b1f44d9d9d",
+        "claim-9c6d7a1572f5516fab0af9abfd424528",
+        "claim_0ba4bba6a4bd47deed7605b34f65130e2cfab8a7",
+        "claim_0c64dc419b52cafb05c126ba22c748d85a8ffd64",
+        "claim_1491e8a834e86b0b9a2a26ba5fe8badcb7df8132",
+        "claim_166a56bd9d9a11e274f2677315d775564355a49f"
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-f84e844c02e3",
+      "sourceId": "klma-stoke-gig-list",
+      "displayName": "The Globe, Nantwich",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-b3fb8461d2b2f39a5dc7ef4da45ff2aa",
+        "claim-eafb2368874023a56547e62e6c0e06ec",
+        "claim-2031b08744bff0220fa4be7ef9e0b4ec",
+        "claim-7bb59181732dec8815c3ab8262dee7e1",
+        "claim-a6a6ec0d7c08a4614d0cb31309a28140",
+        "claim-17c58b8cdb4770e8ca109915bfe90a7f",
+        "claim-2ee4317d5a0816179bccc2d59f3328a1",
+        "claim-dee332754029b4e57c5567c8314cd742"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "klma-venue-f7bf76c952a1",
+      "sourceId": "klma-stoke-gig-list",
+      "displayName": "The Raven Crewe",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-7c37468ee5e5288bcd8e1983b9bf1ce8",
+        "claim-8e9b252b908cb08086d1193b9dde5bd9",
+        "claim-0e7432b762496e6636cdc8d6e70824a7",
+        "claim-622ecf1f551b847fca057904ef912f3f",
+        "claim-a4c2f6f654a9b47cb20051f843cb7cde",
+        "claim-593e86d1b7ddf20d27e93ac34d755dc6",
+        "claim-6cdf9adab49337892b1b365f4e45cb0d",
+        "claim-96785ab0dc445319ea6292cb9c58f616"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "venue_united-match",
+      "sourceId": "gigs-news-daily-import",
+      "displayName": "United match)",
+      "status": "unresolved",
+      "canonicalHypotheses": [
+        {
+          "canonicalEntityId": "9be0502f-2a7f-42ac-8751-b51852b2320a",
+          "displayName": "United match)"
+        }
+      ],
+      "supportingClaimIds": [
+        "claim-04c422e10dbb09c8c8606fe4ca38db1f",
+        "claim-221a64770823c069a49f29641e5bdd86",
+        "claim_029847393b10e5e3737a62e27ea16ed2f0b27b86",
+        "claim_03af7d3750408b07974523fe0a67f263adface0a",
+        "claim_057894bcdc914e651a0f7a7f326523be2087bb6a",
+        "claim_06910b11d013ef4800c4a08de0810fb08e54a7e3",
+        "claim_07b844aa83bcfedbd1603411c6b14162d4e520ff",
+        "claim_0b875e563f2d977a502324b82e28fb30367aeb0d",
+        "claim_16e3bf7aea5751c6167ce91737b53c987509b192",
+        "claim_2a7c33ecaa45efc33e4462f5356cdab6d6870c3a",
+        "claim_2ad0e53002e2ddc26610eaaeac708040be36aaf3",
+        "claim_2b0a29cbc5eca7e7477f4afda0254eeca15f519a"
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "venue_07811-44-7388",
+      "sourceId": "gigs-news-daily-import",
+      "displayName": "07811 44 7388",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-08973a25283548b117db6fd62d1f2ee8",
+        "claim-39cc9ca46b104fd24f1e8e9b2a5eecfd"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "event",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_chris_07811-44-7388",
+      "sourceId": "gigs-news-daily-import",
+      "artistName": "Chris",
+      "venueName": "07811 44 7388",
+      "date": "2026-08-30",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-2dd3f8e66728e6e2fc14fdbcde5be314",
+        "claim-62d3eecfdbcbc5dbf4e5314dc12ae5d9",
+        "claim-75c751dcb9f6f66f5d30047c8de4f850",
+        "claim-c80bca4571187d8e357b4d3417272251",
+        "claim-ccb4b1c1386912584cfc24f1b171a556",
+        "claim-fb1fe123e71d0ac3cfcd062bb90ad5ee",
+        "claim-fd219edb42ab3459ca08e5bd6abd5487"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "event",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_cancelled_united-match",
+      "sourceId": "gigs-news-daily-import",
+      "artistName": "(cancelled",
+      "venueName": "United match)",
+      "date": "2026-08-30",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-070028dd8fa27811b0cde1f0c39cbe48",
+        "claim-27e4ab8b80e4334d307acc7c204b6c3e",
+        "claim-2cda922b5d255853ab7bb9624fd6e8aa",
+        "claim-535eb74fcecf5f37ec76ce804cd70efb",
+        "claim-7fcce227538ffc0ff3b1784960d12fb3",
+        "claim-8a31830483e2c407790b080f8292b1cb",
+        "claim-fa645a3404ae1785515ffa8a2b6e7b65"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "artist_chris",
+      "sourceId": "gigs-news-daily-import",
+      "displayName": "Chris",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-34b2b2a37961e82456e6de3b75ebc3fe",
+        "claim-73a0341d7fe4e91b634b91055cb9bf68"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    }
+  ],
+  "enrichmentAssessments": [
+    {
+      "candidateKey": "onthecase:venue:940",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-5cff9cacf3bdef331156ec78fd890fe5",
+        "claim-4b0505a0c83e3cc9ed0f4fa63fa9c9be",
+        "claim-96cb3addf3033c03bb99dc71004c0bdd",
+        "claim-2523d31e6a418b6d46af132547e219c6",
+        "claim-3053a2ee78d577379fc421a9d9f85b54",
+        "claim-71a65f2d9fe35d4abbfe1fd25aae0b41",
+        "claim-931c0a844b9ca4f66e34a3b38bfdf83c",
+        "claim-c2b003d506a6764a9a7bb6d346a16965",
+        "claim-dde660e9e7110370f12075dc8ce2bd1e",
+        "claim-fe15c52e3ccf970f67e82b1f9d4e9ac6",
+        "claim-12bed2a37ccf33d1ecf8aa225cdd736f",
+        "claim-29c4e314bb0b036acf6320db8bf1887c",
+        "claim-6cccddf14f5bca49cef88156221707bb",
+        "claim-77695582f03a433e0964db18df96d849",
+        "claim-ce19de0134de408ff89e14f7c6c92fad",
+        "claim-f5be416e95b803d10276a0579801a97e",
+        "claim-f9cea1195e568ec0042d1ed02833347b",
+        "claim-0a2f3f42aef594321bf983b8a02caca1",
+        "claim-2069e854bf27ad4ea09e8c0406bb03e7",
+        "claim-2ab5caf77b7cf7cda540425d9c806dd4",
+        "claim-2abe6fa4babc81e4dcd983240790aea5",
+        "claim-7131f647c70208becef5c2eb186113b7",
+        "claim-8bf3d8ec49836abf8f6f14c980be754d",
+        "claim-fced70d644f5a9aaffefdb359b1f2495",
+        "claim-02aa6da90b1f87b0d278bd17b1627643",
+        "claim-9116326bc674e72f9dae501a9b6f47ee",
+        "claim-40bb5c690b5baedd53234f94183471c1",
+        "claim-8aa2b2f9393fe58272543e166208c70b",
+        "claim-0b567f05970830c96c4b40de79016de3",
+        "claim-d963c371d601d0ebb2b9808836d70b4f"
+      ]
+    },
+    {
+      "candidateKey": "onthecase:venue:915",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-4c3ac55950f2dcee06e1cc72ebcb5a79",
+        "claim-e862e04bd675088347a3cefe35372ca3",
+        "claim-47ca4bb8af993b3755284905120b4963",
+        "claim-5a9883f3d0c2bc91de57c24dc286af47",
+        "claim-83c63c15065448c02bf1161ed3bd163b",
+        "claim-af3c38a20bd0c41a2c1a3651a9e1fcab",
+        "claim-c6500d3f8cde870ed5395a9aa6f55de4",
+        "claim-ca2a635230c55ad85d5d0c79366331b1",
+        "claim-dd797feb50c266cab1a154798ac556e3",
+        "claim-61ecc558684afc175e4727c7562cee66",
+        "claim-7752219c831388d5e9e2a7b56cdb6ec1",
+        "claim-87999d58170ce20aad3d29f036fd6cd3",
+        "claim-8a520e8dad9e12c3c8539aab70afdb07",
+        "claim-c1691fb153898459e939ed2c2eb9b726",
+        "claim-ef430684613de6efa784e6faffeb1394",
+        "claim-4341b3876202654f381b3ade3c330852",
+        "claim-6c2f4f7472643cbb21e8195121e78cf1",
+        "claim-8e69b5f523fac52bad6c282c7c7c1c60",
+        "claim-96f3d61d6daa6b282b0b13bae6a3932d",
+        "claim-9c8d2b2ff8d104d65071a9772daea8fb",
+        "claim-bf95c99ea71b0cddd5827a6ff0d60ad9",
+        "claim-cbc7323bdc79930847761bd34141fa28",
+        "claim-3d4332317179b5b4c68c36eddb028c95",
+        "claim-e386c9278a2c6582d50c12d904e601a4",
+        "claim-851c6739fbffe459c54f6bd836325903",
+        "claim-f4e2a2502e9d8e687e48cbdf47f91772",
+        "claim-4d561832630eed6770c95f07d1cd7f51",
+        "claim-e8ce2213e6a955174564a7665743fdb1"
+      ]
+    },
+    {
+      "candidateKey": "onthecase:venue:90",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-e56d9c38c803f02c8d49e37f3c20c4c3",
+        "claim-e47170f981385fd39601a89f19fa0fe6",
+        "claim-21ccc2043d64f531a8ab9b1368a23f22",
+        "claim-16161d4a09f9a50c70203aded6247ddf",
+        "claim-24dbf037f995d9057875e4a8700f8320",
+        "claim-2c3f6fc6d7f05469dd8bf63d727c94ff",
+        "claim-78d15cd21f7e98bd0bfa1f86fe5456f3",
+        "claim-81598583952227528c588bb3646658a0",
+        "claim-8b8d3ff517bb3026a83f85364f508b87",
+        "claim-a4980dde55f6233230a416c833dddf69",
+        "claim-c322acda1ba952f1a28fe419d5586fee",
+        "claim-d4415470635ccfdc1dfea2220d808958",
+        "claim-df8330a0a2e3fb72517784943f13e829",
+        "claim-f6315202547387432705e627e2595e9e",
+        "claim-fb4ed174dfe3316f123fe8856ee45928",
+        "claim-2ed88af4fda563ae0cae4b1df29ca32c",
+        "claim-30592575be29de6fb383e50f93fdfec5",
+        "claim-711b82e0221077d0082c142ebc927dbf",
+        "claim-7140b6af718499525848ce0a1cd4c15d",
+        "claim-a9a88962d04057d0a15444108ed0ecbd",
+        "claim-b2d8a912a9fb0859ca1da4f7d9c74c9f",
+        "claim-b697a9147d4c51d3159c53d48371e419",
+        "claim-c2d466e3dbf5aef3374c788afe95f072",
+        "claim-cd6557fbc25a9dc16a9c34f7469f3241",
+        "claim-d95fb2fd2b33cab41e2f27044018966c",
+        "claim-db7af720c01dad05009ef2c410ee8e49",
+        "claim-e47485039794e1e716429956f534553e",
+        "claim-1b11477425af7d3c9d8cbd71dcfbd89c",
+        "claim-56baea89af52820902113d31bc1b4994",
+        "claim-6212c7fd5b9af24fdf7a43d6505c0370",
+        "claim-64428c8dcecf719d21ba17bca48b7b75",
+        "claim-7d0cfa93ed54bb93927458fcc18c91bf",
+        "claim-90478d83e4106432bf30f657644357d5",
+        "claim-92225d248c689d9b08f73aae0e6c9d86",
+        "claim-9fd3dc138c6bc3c3c17b20e82290d959",
+        "claim-b6173c7ed2a171a1e4d0586fff4e100f",
+        "claim-b9c7911fe1bc0a7b3356a899b8d01673",
+        "claim-e4d22b629bc506102856fdf7760fefbd",
+        "claim-f1c07b269b302c6aa71ad4fc8c71da78",
+        "claim-704cb9262520888138e689bbf6f9fd0c"
+      ]
+    },
+    {
+      "candidateKey": "onthecase:venue:892",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-a4fdd8e801fb41b1fcbd39f955c2da70",
+        "claim-fce744fd881d41e09fee82f9e885acdc",
+        "claim-fa64afa6b06fb851670eed11d41d8b8a",
+        "claim-029e30c5034c9e94741eaacd80cfdf37",
+        "claim-1ca19e2423a7139b01efde396a658a0a",
+        "claim-20ffe844638a26e61bdf7873c6ebe51e",
+        "claim-5771c4dd2ce90b98eb8f870fa495909d",
+        "claim-ddcd1d215407a3831845191871ec70a4",
+        "claim-df955647e6a40c8e95b4c013398958dc",
+        "claim-fc3683b88f819b5c452d4135b6a80f98",
+        "claim-356abed8add72f3f1d6d024c6f5af571",
+        "claim-3934b876dec76af470a300a8d3754570",
+        "claim-98fc391e18171bccef3a39466d8bd85d",
+        "claim-ac0a284cf24fafc61c3930a02c3b3062",
+        "claim-b0a88a8465351ad10548501e3a366ab2",
+        "claim-ce0c026917ff39daf93dfab939a3b1ea",
+        "claim-d14d592405103b3d06731cc85a243869",
+        "claim-019160febad268c85659a01de03482b1",
+        "claim-1c8f6bf08dd7714c3d94ce1a69e7a196",
+        "claim-2e0a5294f5de3c772856e7c75db8357e",
+        "claim-2f11ac2fbeeb36f0c71d985d5d6eb908",
+        "claim-75516ecae97c8e9e1a2ce6a6576acef9",
+        "claim-be5d8ac4463242e12dbb85f57a3cc25e",
+        "claim-cf68f1ffdc8cbb4f9a178b13718cc693",
+        "claim-386b05a144e97d4868ef2aa92ab7b669",
+        "claim-3a80f0d939005102f01c01eb0855f7d4",
+        "claim-01bf0f54d8a24f07bee42f87ee3c4b72",
+        "claim-6de4b12bf2d59087c43060df4774c9d4",
+        "claim-6e70aed632e382a995b3fb0b8e673579",
+        "claim-7197435a04bce3517d3bc517931895fd"
+      ]
+    },
+    {
+      "candidateKey": "onthecase:venue:753",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-e46ea940499ecfdfda1fecee6d55086d",
+        "claim-57558c020f8b63f1743e7449f42a9255",
+        "claim-8275e531611078d7252ee56d7511846f",
+        "claim-01095f4759614bbea60f75c9b1f54ab0",
+        "claim-0f9f2855718c15aa9ea747e05aaea7ee",
+        "claim-368ceabe5428424e0720feaa914bf4ee",
+        "claim-68dbfd88ec3e08d4efc2e5f33620379d",
+        "claim-7aac673e0b4f9a330d1fdfeaa936b290",
+        "claim-87a8d9fbec1df1fe1dfb3e4f4c4d8076",
+        "claim-d8faec0a3010ce340339443594afb140",
+        "claim-f7c6c5eabba2f4423986d2daef67bbdd",
+        "claim-fe04da03bd3a9503ce1594bd4302d82c",
+        "claim-197d175c738f5eef5aecc68fad259ec0",
+        "claim-1e00af98e4782bdf6f2b24b7cc005a83",
+        "claim-5c150c593baf1f216bbedc629671cf14",
+        "claim-793fe4f21eb272a802de1b04aa3cfd18",
+        "claim-8b8b1a197cca3d6cb628f7f8afed8d88",
+        "claim-9406ce29ab85c6ec7f64dd3866585fad",
+        "claim-bd07228a48e76974ce0a1e5630dbfe9f",
+        "claim-c06af3acc3857de216de621fd24cef1e",
+        "claim-cd1df7cd59e5c1a547c3e01bebcc5b7b",
+        "claim-15a21d9ad53af3fb1e2073c9fa5052ea",
+        "claim-1cf3578595b9d3f5e659e739c30a82d4",
+        "claim-599672c9d0c0be775970d7ff29bc3bfd",
+        "claim-7a14ee05d343e3f590cefe81129eeb81",
+        "claim-8848df041fd3e7e5e092972fed59d2d4",
+        "claim-88f633e3bed4663c66ead5c624b3f0e1",
+        "claim-b7a053cde777362e5be280ce55de3be5",
+        "claim-e4db6b28cf89915d6f7d4646f4a12a21",
+        "claim-efdd347307dde00330746cbbc6e63f23",
+        "claim-10d0ea5eddd95a5783db9913ef373ee8",
+        "claim-746caac6368b17444601833fdfde7492",
+        "claim-54268cf968edc8b692299c86a99d9aed",
+        "claim-8ed5804f227c30950c9d58669d559d2d",
+        "claim-ba5fe6052278a094ec78a168b8711aad",
+        "claim-db53e0816f548f701fc949622dd8e795"
+      ]
+    },
+    {
+      "candidateKey": "klma-venue-fef3609d34f8",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-9c996ff0a18a5a892b492a5986d88734",
+        "claim-f95e084ca81f247f5fa9ccb491230581",
+        "claim-5be41f337efd4aaba8533937c26b6387",
+        "claim-7a7a7a1247d7186bdce3d1730103f500",
+        "claim-cb0cdd13af6821fc682f3d99c38ab9ac",
+        "claim-c02920d0b5e061ac87a6c018d6225275",
+        "claim-f338da9cfad2da50c970ca5280a436db",
+        "claim-feea343bbd6d582702f4076bd26d8499"
+      ]
+    },
+    {
+      "candidateKey": "klma-venue-fb082b4b73aa",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-d1727d993bc21396120b4c96a5a06ed8",
+        "claim-f8780607ec45daba07ee05deb96dc7bb",
+        "claim-49319da919728bbc4a9c78e68f21eb5e",
+        "claim-76426d031ed249997e38970cde265fa7",
+        "claim-f220ddff1502bd1747c3f95b6bdefe35",
+        "claim-1efc81059afe8e6dad31a35492fa2525",
+        "claim-c811a3c0d476c12b32efa5764aeca0a9",
+        "claim-e0f4de324cb47ed3602eda9ff9440285"
+      ]
+    },
+    {
+      "candidateKey": "klma-venue-f88c79f4c673",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-86f9dcf5e329696ef69768331f05a5bb",
+        "claim-bf68c59e2f4c69f37cdfb3fb194314a4",
+        "claim-027504c6e29e788f9491711a62a80f29",
+        "claim-e683f89dbc78fc7c233cf104958aba02",
+        "claim-f49001858666652b145994eb83d0c2dd",
+        "claim-8aa82881233740206270d73a0ecf1e5f",
+        "claim-97b9f5ee42a53ea65276f0b1f44d9d9d",
+        "claim-9c6d7a1572f5516fab0af9abfd424528"
+      ]
+    },
+    {
+      "candidateKey": "klma-venue-f84e844c02e3",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-b3fb8461d2b2f39a5dc7ef4da45ff2aa",
+        "claim-eafb2368874023a56547e62e6c0e06ec",
+        "claim-2031b08744bff0220fa4be7ef9e0b4ec",
+        "claim-7bb59181732dec8815c3ab8262dee7e1",
+        "claim-a6a6ec0d7c08a4614d0cb31309a28140",
+        "claim-17c58b8cdb4770e8ca109915bfe90a7f",
+        "claim-2ee4317d5a0816179bccc2d59f3328a1",
+        "claim-dee332754029b4e57c5567c8314cd742"
+      ]
+    },
+    {
+      "candidateKey": "klma-venue-f7bf76c952a1",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-7c37468ee5e5288bcd8e1983b9bf1ce8",
+        "claim-8e9b252b908cb08086d1193b9dde5bd9",
+        "claim-0e7432b762496e6636cdc8d6e70824a7",
+        "claim-622ecf1f551b847fca057904ef912f3f",
+        "claim-a4c2f6f654a9b47cb20051f843cb7cde",
+        "claim-593e86d1b7ddf20d27e93ac34d755dc6",
+        "claim-6cdf9adab49337892b1b365f4e45cb0d",
+        "claim-96785ab0dc445319ea6292cb9c58f616"
+      ]
+    },
+    {
+      "candidateKey": "venue_united-match",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-04c422e10dbb09c8c8606fe4ca38db1f",
+        "claim-221a64770823c069a49f29641e5bdd86"
+      ]
+    },
+    {
+      "candidateKey": "venue_07811-44-7388",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-08973a25283548b117db6fd62d1f2ee8",
+        "claim-39cc9ca46b104fd24f1e8e9b2a5eecfd"
+      ]
+    },
+    {
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_chris_07811-44-7388",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-2dd3f8e66728e6e2fc14fdbcde5be314",
+        "claim-62d3eecfdbcbc5dbf4e5314dc12ae5d9",
+        "claim-75c751dcb9f6f66f5d30047c8de4f850",
+        "claim-c80bca4571187d8e357b4d3417272251",
+        "claim-ccb4b1c1386912584cfc24f1b171a556",
+        "claim-fb1fe123e71d0ac3cfcd062bb90ad5ee",
+        "claim-fd219edb42ab3459ca08e5bd6abd5487"
+      ]
+    },
+    {
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_cancelled_united-match",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-070028dd8fa27811b0cde1f0c39cbe48",
+        "claim-27e4ab8b80e4334d307acc7c204b6c3e",
+        "claim-2cda922b5d255853ab7bb9624fd6e8aa",
+        "claim-535eb74fcecf5f37ec76ce804cd70efb",
+        "claim-7fcce227538ffc0ff3b1784960d12fb3",
+        "claim-8a31830483e2c407790b080f8292b1cb",
+        "claim-fa645a3404ae1785515ffa8a2b6e7b65"
+      ]
+    },
+    {
+      "candidateKey": "artist_chris",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "missing",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "missing",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-34b2b2a37961e82456e6de3b75ebc3fe",
+        "claim-73a0341d7fe4e91b634b91055cb9bf68"
+      ]
+    }
+  ]
+}
