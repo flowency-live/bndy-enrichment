@@ -1,0 +1,8 @@
+Release request for the merged Backstage qualification wording.
+
+Backstage source commit: e4412434fa4a6782ab8e559e42beb70a97ecf6e9
+Backstage release marker commit: 5f8397d6d319f0069357c0a67d41dd9a04c001f6
+Scope: read-only visibility only
+Canonical writes: 0
+Provider calls: 0
+Approved release attempts: one actual Amplify start; the Backstage-local attempt did not authenticate and started no Amplify job.
