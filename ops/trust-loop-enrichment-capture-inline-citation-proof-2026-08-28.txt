@@ -1,0 +1,9 @@
+Backline Trust Loop inline-citation qualification proof
+
+Authorised scope: one further bounded capture of the existing 20-case public Artist and Venue cohort.
+Provider: Google Gemini with Google Search grounding.
+Adapter: merged inline url_citation capture from PR 88.
+Budget: one model call per case and at most two requested Search queries per case.
+Safety: one-shot, shadow-only, provider unscheduled, and zero canonical writes.
+Cohort: the same 10 Artist and 10 Venue cases used by the existing qualification fixture.
+Date: 2026-08-28.
