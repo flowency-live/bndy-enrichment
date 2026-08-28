@@ -431,16 +431,44 @@ export async function enrichTrustLoopEntityWithGemini(input: {
     60_000,
   );
   const parsed = GroundedEnrichmentResponseSchema.parse(JSON.parse(result.text));
-  const capturedUrls = new Set(result.evidence.map((item) => safeHttpsEvidenceUrl(item.sourceUrl)));
-  const facts = parsed.facts.map((fact) => {
+  const capturedUrls = new Set(result.evidence.flatMap((item) => {
+    try {
+      return [safeHttpsEvidenceUrl(item.sourceUrl)];
+    } catch {
+      return [];
+    }
+  }));
+  const rejectedFacts: Array<Record<string, unknown>> = [];
+  const facts = parsed.facts.flatMap((fact) => {
     if (!requestedPredicates.includes(fact.predicate)) {
-      throw new Error(`Grounded enrichment returned unrequested predicate: ${fact.predicate}`);
+      rejectedFacts.push({
+        fact,
+        reason: `unrequested predicate: ${fact.predicate}`,
+      });
+      return [];
     }
-    const evidenceUrls = fact.evidenceUrls.map(safeHttpsEvidenceUrl);
-    for (const url of evidenceUrls) {
-      if (!capturedUrls.has(url)) throw new Error(`Grounded enrichment returned uncaptured citation: ${url}`);
+
+    let evidenceUrls: string[];
+    try {
+      evidenceUrls = fact.evidenceUrls.map(safeHttpsEvidenceUrl);
+    } catch (error) {
+      rejectedFacts.push({
+        fact,
+        reason: error instanceof Error ? error.message : 'unsafe evidence URL',
+      });
+      return [];
     }
-    return { ...fact, evidenceUrls };
+
+    const uncapturedUrls = evidenceUrls.filter((url) => !capturedUrls.has(url));
+    if (uncapturedUrls.length > 0) {
+      rejectedFacts.push({
+        fact: { ...fact, evidenceUrls },
+        reason: `uncaptured citation: ${uncapturedUrls.join(', ')}`,
+      });
+      return [];
+    }
+
+    return [{ ...fact, evidenceUrls }];
   });
   const inputTokens = result.inputTokens ?? 0;
   const outputTokens = result.outputTokens ?? 0;
@@ -470,6 +498,7 @@ export async function enrichTrustLoopEntityWithGemini(input: {
       identityReason: parsed.identityReason,
       response: parsed,
       evidence: result.evidence,
+      rejectedFacts,
     },
   });
 }
