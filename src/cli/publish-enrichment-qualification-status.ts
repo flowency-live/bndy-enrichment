@@ -11,6 +11,7 @@ const artifact = JSON.parse(await readFile(artifactPath, 'utf8'));
 const summary = qualificationSummaryFromArtifact(artifact, new Date().toISOString(), {
   sourceRunUrl: process.env.QUALIFICATION_RUN_URL,
   artifactUrl: process.env.QUALIFICATION_ARTIFACT_URL,
+  reviewUrl: process.env.QUALIFICATION_REVIEW_URL,
 });
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));

@@ -43,7 +43,11 @@ describe('enrichment qualification status', () => {
           canonicalWrites: 0,
         },
       ],
-    }, '2026-08-28T17:05:00.000Z');
+    }, '2026-08-28T17:05:00.000Z', {
+      sourceRunUrl: 'https://github.com/flowency-live/bndy-enrichment/actions/runs/1',
+      artifactUrl: 'https://github.com/flowency-live/bndy-enrichment/blob/main/evidence.json',
+      reviewUrl: 'https://github.com/flowency-live/bndy-enrichment/blob/main/review.md',
+    });
 
     expect(summary).toMatchObject({
       gateStatus: 'capture-failed',
@@ -57,6 +61,7 @@ describe('enrichment qualification status', () => {
       quarantinedFacts: 1,
       costMeasurement: 'partial-error-path',
       canonicalWrites: 0,
+      reviewUrl: 'https://github.com/flowency-live/bndy-enrichment/blob/main/review.md',
     });
     expect(summary.reviewCases).toEqual([
       expect.objectContaining({
