@@ -26,7 +26,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p ops
-          STATE_TABLE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query 'Stacks[0].Outputs[?OutputKey==`StateTableName`].OutputValue | [0]' --output text)
+          aws cloudformation describe-stacks --stack-name BndyEnrichmentStack > readiness-stack.json
+          STATE_TABLE=$(jq -r '.Stacks[0].Outputs[] | select(.OutputKey=="StateTableName") | .OutputValue' readiness-stack.json)
+          BROWSER_QUEUE=$(jq -r '.Stacks[0].Outputs[] | select(.OutputKey=="BrowserScanQueueUrl") | .OutputValue' readiness-stack.json)
+          BROWSER_FUNCTION=$(jq -r '.Stacks[0].Outputs[] | select(.OutputKey=="BrowserSourceWorkerFunctionName") | .OutputValue' readiness-stack.json)
           mkdir -p readiness-items
           jq -n '[]' > readiness-items/sources.json
           for SOURCE_ID in lemonrock-new-gigs onthecase-gig-index klma-stoke-gig-list gigs-news-daily-import; do
@@ -76,10 +79,65 @@ jobs:
                 }]' readiness-items/sources.json > readiness-items/sources.next.json
             mv readiness-items/sources.next.json readiness-items/sources.json
           done
+          aws lambda get-function-configuration --function-name "$BROWSER_FUNCTION" > readiness-items/function.json || echo '{}' > readiness-items/function.json
+          aws lambda list-event-source-mappings --function-name "$BROWSER_FUNCTION" > readiness-items/mappings.json || echo '{"EventSourceMappings":[]}' > readiness-items/mappings.json
+          aws sqs get-queue-attributes --queue-url "$BROWSER_QUEUE" --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed RedrivePolicy > readiness-items/queue.json || echo '{"Attributes":{}}' > readiness-items/queue.json
+          DLQ_ARN=$(jq -r '.Attributes.RedrivePolicy // "{}" | fromjson? | .deadLetterTargetArn // ""' readiness-items/queue.json)
+          if [ -n "$DLQ_ARN" ]; then
+            DLQ_NAME=${DLQ_ARN##*:}
+            DLQ_URL=$(aws sqs get-queue-url --queue-name "$DLQ_NAME" --query QueueUrl --output text)
+            aws sqs get-queue-attributes --queue-url "$DLQ_URL" --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible > readiness-items/dlq.json || echo '{"Attributes":{}}' > readiness-items/dlq.json
+          else
+            echo '{"Attributes":{}}' > readiness-items/dlq.json
+          fi
+          START_MS="$(($(date -u -d '2 hours ago' +%s) * 1000))"
+          aws logs filter-log-events \
+            --log-group-name "/aws/lambda/$BROWSER_FUNCTION" \
+            --start-time "$START_MS" \
+            --limit 100 > readiness-items/logs.json || echo '{"events":[]}' > readiness-items/logs.json
           jq -n \
             --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --slurpfile sources readiness-items/sources.json \
-            '{schemaVersion:1, generatedAt:$generatedAt, readOnly:true, canonicalWrites:0, sources:$sources[0]}' \
+            --slurpfile function readiness-items/function.json \
+            --slurpfile mappings readiness-items/mappings.json \
+            --slurpfile queue readiness-items/queue.json \
+            --slurpfile dlq readiness-items/dlq.json \
+            --slurpfile logs readiness-items/logs.json '
+              def error_class:
+                . as $message |
+                if ($message | test("Runtime.ImportModuleError|Cannot find module"; "i")) then "IMPORT"
+                elif ($message | test("chromium|puppeteer|browser"; "i")) then "BROWSER_RUNTIME"
+                elif ($message | test("timed out|timeout"; "i")) then "TIMEOUT"
+                elif ($message | test("HTTP 403"; "i")) then "HTTP_403"
+                elif ($message | test("HTTP 429"; "i")) then "HTTP_429"
+                elif ($message | test("HTTP 5[0-9][0-9]"; "i")) then "HTTP_5XX"
+                else "OTHER" end;
+              {
+                schemaVersion: 1,
+                generatedAt: $generatedAt,
+                readOnly: true,
+                canonicalWrites: 0,
+                sources: $sources[0],
+                browserRuntime: {
+                  functionState: ($function[0].State // null),
+                  lastUpdateStatus: ($function[0].LastUpdateStatus // null),
+                  stateReasonCode: ($function[0].StateReasonCode // null),
+                  mappingState: ($mappings[0].EventSourceMappings[0].State // null),
+                  lastProcessingResult: ($mappings[0].EventSourceMappings[0].LastProcessingResult // null),
+                  queue: {
+                    visible: ($queue[0].Attributes.ApproximateNumberOfMessages // "0" | tonumber),
+                    inFlight: ($queue[0].Attributes.ApproximateNumberOfMessagesNotVisible // "0" | tonumber),
+                    delayed: ($queue[0].Attributes.ApproximateNumberOfMessagesDelayed // "0" | tonumber)
+                  },
+                  deadLetter: {
+                    visible: ($dlq[0].Attributes.ApproximateNumberOfMessages // "0" | tonumber),
+                    inFlight: ($dlq[0].Attributes.ApproximateNumberOfMessagesNotVisible // "0" | tonumber)
+                  },
+                  recentErrorClasses: ([$logs[0].events[]?.message
+                    | select(test("ERROR|Exception|ImportModuleError|timed out|HTTP 4|HTTP 5|chromium|puppeteer|browser"; "i"))
+                    | error_class] | group_by(.) | map({key:.[0],value:length}) | from_entries)
+                }
+              }' \
             > ops/trust-loop-v1-readiness.json
           jq empty ops/trust-loop-v1-readiness.json
       - name: Record probe failure safely
