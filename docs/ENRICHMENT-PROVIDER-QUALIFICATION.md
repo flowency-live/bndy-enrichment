@@ -2,6 +2,8 @@
 
 No external entity-enrichment provider may be wired to a Lambda or schedule until a reviewed fixture passes the default qualification gate.
 
+Human adjudication is a commissioning and exception-control mechanism. It is not a daily dependency and it is not model fine-tuning. The reviewed cohort calibrates identity thresholds, citation rules, abstention behaviour, coverage and cost against known answers.
+
 ## Cohort
 
 The minimum cohort is 20 real Backline entities and must include:
@@ -24,11 +26,62 @@ The command emits a machine-readable report and exits non-zero if the cohort is 
 
 Do not commit secrets, provider credentials or unredacted private data in a fixture. Search results and citations must be public evidence suitable for an immutable Backline Observation.
 
-## After fixture qualification
+## Human review operating model
 
-1. Run a small live shadow sample with the same hard budgets.
-2. Review every parked item, conflict, owner-managed fact and a sample of otherwise clean results.
-3. Compare measured usage and cost with the fixture report.
-4. Only then add disabled Lambda wiring. Scheduling remains a separate production decision.
+### 1. Qualification and calibration
 
-Qualification never authorises canonical projection. The worker remains evidence-and-Claims only.
+Before activation, reviewers inspect every case in the bounded known-answer cohort. This proves that the provider, model, prompt, adapter, thresholds and evidence rules fail closed. It may also create labelled operational examples, but it does not train or fine-tune the external model.
+
+Any confident false identity, wrong official URL, unsupported classification or invented fact fails qualification. Missing evidence is parked and never repaired by human assertion alone.
+
+### 2. Shadow activation
+
+After qualification, run a small live shadow sample with the same hard budgets. Review every parked item, conflict and owner-managed fact, plus a sample of otherwise clean results. Compare measured usage and cost with the fixture report.
+
+Only then add disabled Lambda wiring. Scheduling is a separate production decision. Qualification never authorises canonical projection.
+
+### 3. Business as usual
+
+Once the provider and policy are qualified, routine processing is automatic:
+
+- accept evidence into Backline only when identity, predicate, confidence and exact citation rules pass;
+- abstain or park automatically when any required proof is missing;
+- preserve owner-managed BNDY facts as the highest authority;
+- keep provider scheduling, budgets and stop thresholds machine-enforced;
+- make no canonical write unless a separately approved projection policy permits that exact action.
+
+The product owner approves provider activation and canonical projection policy. They are not the routine daily reviewer.
+
+### 4. Exception queue
+
+Human review is required only for cases that cannot safely resolve automatically, including:
+
+- conflicting or same-name identities;
+- a suspected wrong official profile or URL;
+- disagreement with owner-managed data;
+- mutually contradictory high-quality evidence;
+- a proposed destructive or policy-sensitive canonical change;
+- evidence of provider drift, citation loss or budget breach.
+
+Exceptions remain parked while awaiting review. A queue may accumulate without blocking safe automatic work elsewhere.
+
+### 5. Quality sampling
+
+BAU includes a small periodic sample of automatically accepted and automatically parked cases. The sample is for drift detection and quality assurance, not daily approval. Operators or designated reviewers can handle it; the product owner is needed only for policy or activation decisions.
+
+### 6. Requalification
+
+Return to the bounded qualification gate when any of the following changes materially:
+
+- provider or model;
+- prompt, tool configuration or grounding mode;
+- adapter, citation mapping or evidence schema;
+- identity, confidence or acceptance policy;
+- source family or predicate mix;
+- a wrong-link incident or measured quality drift.
+
+A material safety failure pauses automatic acceptance for the affected provider, source or predicate until requalification passes. Unaffected fail-closed ingestion may continue.
+
+## Canonical projection
+
+The enrichment worker remains evidence-and-Claims only until canonical projection is separately approved. Projection requires a complete shadow would-write report, owner protection, additive-only or otherwise explicit action rules, hard stop thresholds and an auditable rollback path.
