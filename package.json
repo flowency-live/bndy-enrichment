@@ -23,7 +23,8 @@
     "onthecase:bootstrap": "tsx src/cli/onthecase-bootstrap.ts",
     "bndy:baseline": "tsx src/cli/bndy-corpus-bootstrap.ts",
     "trust-loop:index": "tsx src/cli/backfill-trust-loop-index.ts",
-    "trust-loop:refresh-profiles": "tsx src/cli/refresh-trust-loop-profiles.ts"
+    "trust-loop:refresh-profiles": "tsx src/cli/refresh-trust-loop-profiles.ts",
+    "trust-loop:capture-enrichment": "tsx src/cli/capture-trust-loop-enrichment.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
