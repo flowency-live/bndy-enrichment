@@ -265,29 +265,6 @@ const GroundedEnrichmentResponseSchema = z.object({
   })).max(50),
 });
 
-const groundedEnrichmentResponseSchema = {
-  type: 'object',
-  properties: {
-    identityConfidence: { type: 'number', minimum: 0, maximum: 1 },
-    identityReason: { type: 'string' },
-    facts: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          predicate: { type: 'string', enum: ClaimPredicateSchema.options },
-          value: { type: ['string', 'boolean'] },
-          confidence: { type: 'number', minimum: 0, maximum: 1 },
-          evidenceUrls: { type: 'array', items: { type: 'string' } },
-          evidenceText: { type: 'string' },
-        },
-        required: ['predicate', 'value', 'confidence', 'evidenceUrls'],
-      },
-    },
-  },
-  required: ['identityConfidence', 'identityReason', 'facts'],
-};
-
 interface ApiCallResult {
   raw: any;
   text: string;
@@ -310,31 +287,70 @@ function extractOutputText(raw: any): string | undefined {
   return texts.length ? texts[texts.length - 1] : undefined;
 }
 
+function parseJsonModelOutput(text: string): unknown {
+  const trimmed = text.trim();
+  const unfenced = trimmed
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+  try {
+    return JSON.parse(unfenced);
+  } catch (initialError) {
+    const start = unfenced.indexOf('{');
+    const end = unfenced.lastIndexOf('}');
+    if (start >= 0 && end > start) return JSON.parse(unfenced.slice(start, end + 1));
+    throw initialError;
+  }
+}
+
 function extractEvidence(raw: any): { evidence: Evidence[]; queryCount: number } {
   const evidence: Evidence[] = [];
   let queryCount = 0;
   const seen = new Set<string>();
 
+  const addEvidence = (node: any, snippet?: string) => {
+    const url = node?.url ?? node?.uri ?? node?.source?.url;
+    if (typeof url !== 'string' || !/^https?:\/\//.test(url) || seen.has(url)) return;
+    seen.add(url);
+    evidence.push({
+      id: `ev_${crypto.createHash('sha1').update(url).digest('hex').slice(0, 12)}`,
+      sourceUrl: url,
+      sourceDomain: new URL(url).hostname,
+      title: node.title,
+      snippet: snippet ?? node.snippet,
+      searchQuery: node.query,
+      supports: [],
+    });
+  };
+
+  // Interactions search grounding puts authoritative citations on model-output
+  // text blocks. Preserve the exact cited segment before the generic walk.
+  for (const step of raw?.steps ?? []) {
+    if (step?.type !== 'model_output') continue;
+    for (const item of step?.content ?? []) {
+      if (item?.type !== 'text' || typeof item.text !== 'string') continue;
+      for (const annotation of item.annotations ?? []) {
+        if (annotation?.type !== 'url_citation') continue;
+        const start = annotation.start_index ?? annotation.startIndex;
+        const end = annotation.end_index ?? annotation.endIndex;
+        const snippet = Number.isInteger(start) && Number.isInteger(end)
+          ? item.text.slice(start, end)
+          : undefined;
+        addEvidence(annotation, snippet);
+      }
+    }
+  }
+
   const walk = (node: any) => {
     if (!node || typeof node !== 'object') return;
     if (node.type === 'google_search_call') {
       const queries = node?.arguments?.queries;
-      queryCount += Array.isArray(queries) ? queries.length : 1;
+      queryCount += Array.isArray(queries)
+        ? queries.filter((query) => typeof query === 'string' && query.trim().length > 0).length
+        : 1;
     }
 
-    const url = node.url ?? node.uri ?? node?.source?.url;
-    if (typeof url === 'string' && /^https?:\/\//.test(url) && !seen.has(url)) {
-      seen.add(url);
-      evidence.push({
-        id: `ev_${crypto.createHash('sha1').update(url).digest('hex').slice(0, 12)}`,
-        sourceUrl: url,
-        sourceDomain: new URL(url).hostname,
-        title: node.title,
-        snippet: node.snippet,
-        searchQuery: node.query,
-        supports: [],
-      });
-    }
+    addEvidence(node);
 
     for (const value of Object.values(node)) {
       if (Array.isArray(value)) value.forEach(walk);
@@ -350,7 +366,7 @@ async function callGemini(
   apiKey: string,
   model: string,
   prompt: string,
-  schema: object,
+  schema?: object,
   timeoutMs?: number,
 ): Promise<ApiCallResult> {
   const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
@@ -364,7 +380,9 @@ async function callGemini(
       model,
       input: prompt,
       tools: [{ type: 'google_search' }],
-      response_format: { type: 'text', mime_type: 'application/json', schema },
+      ...(schema ? {
+        response_format: { type: 'text', mime_type: 'application/json', schema },
+      } : {}),
     }),
   });
 
@@ -479,10 +497,13 @@ export async function enrichTrustLoopEntityWithGemini(input: {
     options.apiKey,
     model,
     buildTrustLoopEnrichmentPrompt({ ...input, requestedPredicates }),
-    groundedEnrichmentResponseSchema,
+    // Gemini search grounding emits url_citation annotations on normal text
+    // output. Its structured-output mode may omit those annotations, so this
+    // qualification path relies on prompt-shaped JSON plus strict Zod parsing.
+    undefined,
     60_000,
   );
-  const parsed = GroundedEnrichmentResponseSchema.parse(JSON.parse(result.text));
+  const parsed = GroundedEnrichmentResponseSchema.parse(parseJsonModelOutput(result.text));
   const capturedUrls = new Set(result.evidence.flatMap((item) => {
     try {
       return [safeHttpsEvidenceUrl(item.sourceUrl)];
