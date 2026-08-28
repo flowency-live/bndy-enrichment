@@ -1,0 +1,7 @@
+Purpose: publish the latest read-only Trust Loop provider-qualification status to Godmode.
+Source run: https://github.com/flowency-live/bndy-enrichment/actions/runs/33214350278
+Expected gate: capture-failed
+Expected cases: 20 attempted, 20 errors, 0 accepted facts
+Cost measurement: unavailable because the legacy parse-error path discarded provider usage after returned calls
+Canonical writes: 0
+Provider schedule: disabled
