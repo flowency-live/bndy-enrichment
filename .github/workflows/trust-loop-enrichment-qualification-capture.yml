@@ -1,0 +1,48 @@
+name: Capture Trust Loop enrichment qualification cohort
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trust-loop-enrichment-qualification-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    if: contains(github.event.head_commit.message, 'Capture Backline enrichment qualification cohort')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Capture bounded grounded-enrichment cases
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.6-flash
+        run: |
+          set -euo pipefail
+          test -n "$GEMINI_API_KEY"
+          npm run trust-loop:capture-enrichment | tee trust-loop-enrichment-capture.log
+          jq -e '.cases == 20 and .artistCases == 10 and .venueCases == 10 and .canonicalWrites == 0 and .reviewStatus == "unreviewed"' \
+            ops/enrichment/gemini-grounded-unreviewed.json >/dev/null
+      - name: Record the unreviewed evidence cohort
+        run: |
+          set -euo pipefail
+          git config user.name bndy-backline-bot
+          git config user.email actions@users.noreply.github.com
+          git pull --rebase --autostash origin main
+          git add ops/enrichment/gemini-grounded-unreviewed.json ops/enrichment/gemini-grounded-review.md
+          git commit -m "Record unreviewed Backline enrichment evidence cohort" || true
+          git push origin HEAD:main
+      - name: Require a complete provider capture
+        run: |
+          set -euo pipefail
+          jq -e '.captureErrors == 0' ops/enrichment/gemini-grounded-unreviewed.json >/dev/null
