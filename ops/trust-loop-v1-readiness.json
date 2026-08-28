@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-28T13:43:45Z",
+  "generatedAt": "2026-08-28T13:48:54Z",
   "readOnly": true,
   "canonicalWrites": 0,
   "sources": [
@@ -76,5 +76,25 @@
         "lastErrorClass": null
       }
     }
-  ]
+  ],
+  "browserRuntime": {
+    "functionState": "Active",
+    "lastUpdateStatus": "Successful",
+    "stateReasonCode": null,
+    "mappingState": "Enabled",
+    "lastProcessingResult": null,
+    "queue": {
+      "visible": 0,
+      "inFlight": 1,
+      "delayed": 0
+    },
+    "deadLetter": {
+      "visible": 0,
+      "inFlight": 0
+    },
+    "recentErrorClasses": {
+      "BROWSER_RUNTIME": 6,
+      "OTHER": 9
+    }
+  }
 }
