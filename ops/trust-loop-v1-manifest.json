@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-28T14:14:17.019Z",
+  "generatedAt": "2026-08-28T14:31:49.401Z",
   "status": "needs-review",
-  "id": "trust-loop-df11c694-ec12-4e2e-9b06-d0cd9a04928c",
+  "id": "trust-loop-d36847c1-a329-4b81-8395-808ee729d506",
   "sourceIds": [
     "lemonrock-new-gigs",
     "lemonrock-artist-hydration",
@@ -14,29 +14,29 @@
     "gigs-news-daily-import"
   ],
   "candidateLimit": 40,
-  "candidatesSeen": 36,
-  "candidatesClassified": 36,
+  "candidatesSeen": 40,
+  "candidatesClassified": 40,
   "classifications": {
     "resolved": 0,
-    "unresolved": 36,
+    "unresolved": 40,
     "conflicted": 0
   },
   "entityTypes": {
-    "artist": 8,
-    "venue": 14,
-    "event": 14,
+    "artist": 16,
+    "venue": 12,
+    "event": 12,
     "festival": 0
   },
   "noSilentDrops": true,
   "canonicalWrites": 0,
   "enrichment": {
-    "eligibleArtists": 8,
-    "assessedArtists": 8,
+    "eligibleArtists": 16,
+    "assessedArtists": 16,
     "classificationCoverage": 0,
     "genreCoverage": 0,
     "officialLinkCoverage": 0,
     "attemptedNoOfficialPresence": 0,
-    "parkedOrConflicted": 1,
+    "parkedOrConflicted": 8,
     "wrongLinkIncidents": 0
   },
   "acceptance": {
@@ -46,6 +46,41 @@
     "reviewedKnownAnswerSetPassed": false
   },
   "decisions": [
+    {
+      "candidateType": "artist",
+      "candidateKey": "lemonrock:artist:thehumbuckers",
+      "sourceId": "lemonrock-artist-hydration",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-00dde4f3c4a05a1cced563b768926f3e",
+        "claim-9431a8461a27d4aa45c8c2788432778f",
+        "claim-df04169f629fa4b9900978bd4172a446",
+        "claim-e63bc3aefb97662767fc30499e6c4d5d",
+        "claim-f1ae59bd1bd62c38030a3b0d0daf85cd",
+        "claim-025c9c2b50a93ec03fbeecf9f79b5dad",
+        "claim-347c95895ea0af17e1dacbb2470cdf4a",
+        "claim-55bdf3fc46e18c7770161f785b7365bd",
+        "claim-8c0c66256351bd2eaa9132fda99a5897",
+        "claim-e1f5d23b9453d32b03430d1a6f768f08",
+        "claim-738111e08b659f867cb3c17a5058b60a",
+        "claim-9b582389cd100d17caf94a36bc750660",
+        "claim-9502a055a4cedd099ebc1eb39a19ed95",
+        "claim-acf6a2674d20a2ba2e63192def53982d",
+        "claim-47ac10cdbf0bf6c847580c2c59102e3a",
+        "claim-a7deb305471d24b356cc904c96a651db",
+        "claim-b0a7a5718bdcd1f34d191aa657d6d41e",
+        "claim-ca214ad9f2c30883615c2b21066e8f24",
+        "claim-cbdd5577cfa17283269a51dd7059b1ae"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:48.100Z"
+    },
     {
       "candidateType": "venue",
       "candidateKey": "onthecase:venue:940",
@@ -84,7 +119,9 @@
         "claim-0b567f05970830c96c4b40de79016de3",
         "claim-d963c371d601d0ebb2b9808836d70b4f",
         "claim-d0eb2db876d8c4750aeea2988235c501",
-        "claim-e430f867335d59e2af6f3392e6ecd94c"
+        "claim-e430f867335d59e2af6f3392e6ecd94c",
+        "claim-3ca25b1deeecf24828f21a8a87f9e51a",
+        "claim-545910bd94b951665e6528b3c81baedc"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -92,7 +129,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.477Z"
+      "classifiedAt": "2026-08-28T14:31:48.138Z"
     },
     {
       "candidateType": "event",
@@ -148,7 +185,67 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.662Z"
+      "classifiedAt": "2026-08-28T14:31:48.281Z"
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "onthecase:band:27822",
+      "sourceId": "onthecase-band-hydration",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0.45,
+      "supportingClaimIds": [
+        "claim-014944678a7c3b41b91265fef188e568",
+        "claim-1b86a3144ca2946f49a648c23e4fb4f1",
+        "claim-32cf03442bc20f45e0182c6cb93e5a49",
+        "claim-3f2ae1c8e69199873a6c743b7dc502ac",
+        "claim-81e1e91c41f151a43e9bebeaba220e07",
+        "claim-53245fd6a7c8d9c84ffd06c33cadff12",
+        "claim-67fc8631e2e24a5ec83aacd9be10b24c",
+        "claim-e810da7b2260185242cf16fed65ddf6f",
+        "claim-eb4a98f77ea2b8c2c0bb697b9f1a8d69",
+        "claim-fb689ca3d53cd837650ace1c887d4aa1",
+        "claim-03336e0a2be4e68927eff90aac3b7517",
+        "claim-8fddf16cffd4cabdc218d883bf5e4463"
+      ],
+      "hypotheses": [
+        {
+          "canonicalEntityId": "ece2a565-a6c9-4215-ac5a-837b537a82c6",
+          "confidence": 0.45,
+          "matchedDimensions": [
+            "name"
+          ],
+          "conflictingDimensions": [
+            "genre"
+          ],
+          "supportingClaimIds": [
+            "claim-014944678a7c3b41b91265fef188e568",
+            "claim-1b86a3144ca2946f49a648c23e4fb4f1",
+            "claim-32cf03442bc20f45e0182c6cb93e5a49",
+            "claim-3f2ae1c8e69199873a6c743b7dc502ac",
+            "claim-81e1e91c41f151a43e9bebeaba220e07",
+            "claim-53245fd6a7c8d9c84ffd06c33cadff12",
+            "claim-67fc8631e2e24a5ec83aacd9be10b24c",
+            "claim-e810da7b2260185242cf16fed65ddf6f",
+            "claim-eb4a98f77ea2b8c2c0bb697b9f1a8d69",
+            "claim-fb689ca3d53cd837650ace1c887d4aa1",
+            "claim-03336e0a2be4e68927eff90aac3b7517",
+            "claim-8fddf16cffd4cabdc218d883bf5e4463"
+          ],
+          "corroboratingSourceIds": [],
+          "reasons": [
+            "Normalised name agrees",
+            "hasGenre conflicts",
+            "Name similarity or footprint alone is not sufficient"
+          ]
+        }
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "hasGenre conflicts",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:48.325Z"
     },
     {
       "candidateType": "artist",
@@ -168,7 +265,7 @@
         "claim-1a6fa19f5b564e85353a8b98937d4dee",
         "claim-2fd5779232f2e8df9584eb1de073deb7",
         "claim-c3707eabd9a49a4bff0779be168dea64",
-        "claim_02729813b6085c8d48131668bf37166491466dab"
+        "claim-5f88145e6f6a028199273305102f2184"
       ],
       "hypotheses": [
         {
@@ -192,7 +289,7 @@
             "claim-1a6fa19f5b564e85353a8b98937d4dee",
             "claim-2fd5779232f2e8df9584eb1de073deb7",
             "claim-c3707eabd9a49a4bff0779be168dea64",
-            "claim_02729813b6085c8d48131668bf37166491466dab"
+            "claim-5f88145e6f6a028199273305102f2184"
           ],
           "corroboratingSourceIds": [],
           "reasons": [
@@ -208,7 +305,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.711Z"
+      "classifiedAt": "2026-08-28T14:31:48.357Z"
     },
     {
       "candidateType": "venue",
@@ -227,7 +324,10 @@
         "claim-feea343bbd6d582702f4076bd26d8499",
         "claim-2e0c1ee729269070cce7b96e5c34de18",
         "claim-5de6f1d4b65b13b9ba54c082c0228d70",
-        "claim-f460358339175945e570d4c62939a067"
+        "claim-f460358339175945e570d4c62939a067",
+        "claim-1055c72bc224491789f16bb11e124225",
+        "claim-b94dfe72fc16be0aa9453d4d0281e548",
+        "claim-bbc7aab0ea148b758d22c29df52f75e5"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -235,7 +335,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.737Z"
+      "classifiedAt": "2026-08-28T14:31:48.384Z"
     },
     {
       "candidateType": "event",
@@ -271,7 +371,14 @@
         "claim-4b74fde67a36c93539780232564a18d3",
         "claim-66326be04b4ea04f952e5d287a8c3dcd",
         "claim-9c7f79e2e65caa7bafb5100e1abe8244",
-        "claim-a8f58c33e53e58a1c5f1067bd85a600c"
+        "claim-a8f58c33e53e58a1c5f1067bd85a600c",
+        "claim-34ec398e85d7779b0048034552306bbb",
+        "claim-4daf13039b79f9283b3f51a31b0e4fdf",
+        "claim-4f69e51ce5c7d6bb4346955de8351059",
+        "claim-7aa7989e5cd4031ed42af5a8ffe3e57c",
+        "claim-8a6fd072812f23eb52c183b9039559f6",
+        "claim-cd2968a5d797b9524574d059d32f12ac",
+        "claim-e1ca2f39af99b400ddede84f36584819"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -279,17 +386,17 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.763Z"
+      "classifiedAt": "2026-08-28T14:31:48.415Z"
     },
     {
       "candidateType": "artist",
-      "candidateKey": "artist_chris",
+      "candidateKey": "artist_tom-meighan-raw26",
       "sourceId": "gigs-news-daily-import",
       "method": "backline-trust-loop-v1",
       "confidence": 0,
       "supportingClaimIds": [
-        "claim-34b2b2a37961e82456e6de3b75ebc3fe",
-        "claim-73a0341d7fe4e91b634b91055cb9bf68"
+        "claim-4e7222013340cbc57a01419d75015266",
+        "claim-990cc522516e5fa7cd2150cc16ad897f"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -297,78 +404,17 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.782Z"
+      "classifiedAt": "2026-08-28T14:31:48.439Z"
     },
     {
       "candidateType": "venue",
-      "candidateKey": "venue_united-match",
-      "sourceId": "gigs-news-daily-import",
-      "method": "backline-trust-loop-v1",
-      "confidence": 0.45,
-      "supportingClaimIds": [
-        "claim-04c422e10dbb09c8c8606fe4ca38db1f",
-        "claim-221a64770823c069a49f29641e5bdd86",
-        "claim_029847393b10e5e3737a62e27ea16ed2f0b27b86",
-        "claim_03af7d3750408b07974523fe0a67f263adface0a",
-        "claim_057894bcdc914e651a0f7a7f326523be2087bb6a",
-        "claim_06910b11d013ef4800c4a08de0810fb08e54a7e3",
-        "claim_07b844aa83bcfedbd1603411c6b14162d4e520ff",
-        "claim_0b875e563f2d977a502324b82e28fb30367aeb0d",
-        "claim_16e3bf7aea5751c6167ce91737b53c987509b192",
-        "claim_2a7c33ecaa45efc33e4462f5356cdab6d6870c3a",
-        "claim_2ad0e53002e2ddc26610eaaeac708040be36aaf3",
-        "claim_2b0a29cbc5eca7e7477f4afda0254eeca15f519a"
-      ],
-      "hypotheses": [
-        {
-          "canonicalEntityId": "9be0502f-2a7f-42ac-8751-b51852b2320a",
-          "confidence": 0.45,
-          "matchedDimensions": [
-            "name"
-          ],
-          "conflictingDimensions": [],
-          "supportingClaimIds": [
-            "claim-04c422e10dbb09c8c8606fe4ca38db1f",
-            "claim-221a64770823c069a49f29641e5bdd86",
-            "claim_029847393b10e5e3737a62e27ea16ed2f0b27b86",
-            "claim_03af7d3750408b07974523fe0a67f263adface0a",
-            "claim_057894bcdc914e651a0f7a7f326523be2087bb6a",
-            "claim_06910b11d013ef4800c4a08de0810fb08e54a7e3",
-            "claim_07b844aa83bcfedbd1603411c6b14162d4e520ff",
-            "claim_0b875e563f2d977a502324b82e28fb30367aeb0d",
-            "claim_16e3bf7aea5751c6167ce91737b53c987509b192",
-            "claim_2a7c33ecaa45efc33e4462f5356cdab6d6870c3a",
-            "claim_2ad0e53002e2ddc26610eaaeac708040be36aaf3",
-            "claim_2b0a29cbc5eca7e7477f4afda0254eeca15f519a"
-          ],
-          "corroboratingSourceIds": [],
-          "reasons": [
-            "Normalised name agrees",
-            "Name similarity or footprint alone is not sufficient"
-          ]
-        }
-      ],
-      "decisionReasoning": [
-        "Normalised name agrees",
-        "Name similarity or footprint alone is not sufficient"
-      ],
-      "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.816Z"
-    },
-    {
-      "candidateType": "event",
-      "candidateKey": "event:gigs-news-daily-import:2026-08-30_chris_07811-44-7388",
+      "candidateKey": "venue_whittles-oldham",
       "sourceId": "gigs-news-daily-import",
       "method": "backline-trust-loop-v1",
       "confidence": 0,
       "supportingClaimIds": [
-        "claim-2dd3f8e66728e6e2fc14fdbcde5be314",
-        "claim-62d3eecfdbcbc5dbf4e5314dc12ae5d9",
-        "claim-75c751dcb9f6f66f5d30047c8de4f850",
-        "claim-c80bca4571187d8e357b4d3417272251",
-        "claim-ccb4b1c1386912584cfc24f1b171a556",
-        "claim-fb1fe123e71d0ac3cfcd062bb90ad5ee",
-        "claim-fd219edb42ab3459ca08e5bd6abd5487"
+        "claim-c45c4482b1ebb921d735ad63fd5ef639",
+        "claim-fe1baac3fa95f71ae33b5a5c348644bc"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -376,7 +422,65 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.848Z"
+      "classifiedAt": "2026-08-28T14:31:48.451Z"
+    },
+    {
+      "candidateType": "event",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_preston-weltz_coach-horses-oldham",
+      "sourceId": "gigs-news-daily-import",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-0b63cbef94cc237b2562840e643fb02c",
+        "claim-1078be2a718174b142ba9860253cfa58",
+        "claim-32dfcaa4c6e2928e4522381611dbf94b",
+        "claim-463075a57b6b849716ff9a12af9804ad",
+        "claim-473bb5b381ab3e989025a603fcd41834",
+        "claim-584123a5fc46273bf523b577cdb3a786",
+        "claim-bea8aa508f68be77534683b610fb10fd"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:48.464Z"
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "lemonrock:artist:joekanebeatlesnight",
+      "sourceId": "lemonrock-artist-hydration",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-176e4a3ac81fc3f83464b136f3f5013f",
+        "claim-255ac880bcee98e559c92d028ca9b7f5",
+        "claim-358c6e64778a4267e54ff87bf2c472d4",
+        "claim-5ce025d90d6fc0fb1c29fe8dad96214a",
+        "claim-60f618b5565c011045b37afc0844b0c8",
+        "claim-2b5c9b3fc392ccad9c1bf089fdb32635",
+        "claim-4a90f8a20c557aee41f3c8471717f7eb",
+        "claim-70bed70ef7eb3972e0fd60fe4b156e18",
+        "claim-78b8d0b407037783d362691f57a8a489",
+        "claim-d11581b98a496445fbe2753b71fef31f",
+        "claim-27b7f13f0d734f571a5b259d1031c8cb",
+        "claim-bb66db3a87dda4bcbf88c6f24f2139f2",
+        "claim-88a22df2d5c19eaa57f1a282bc1399cc",
+        "claim-cac04420be1a8d246b6a32601d923a50",
+        "claim-116d5fd92d699d487df681e06c2b72bb",
+        "claim-38dc90b19fed3692c16e635e98226539",
+        "claim-6ec9e61f67ea45f9aefdeca4772c2fa4",
+        "claim-a1a75f52f7c6c83ec1a4b4b6f7be0a60",
+        "claim-f30948339431f600e65ec1d766c585f8"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:48.477Z"
     },
     {
       "candidateType": "venue",
@@ -414,7 +518,9 @@
         "claim-4d561832630eed6770c95f07d1cd7f51",
         "claim-e8ce2213e6a955174564a7665743fdb1",
         "claim-5e384eef5c566dcbef5232955ce80d99",
-        "claim-6d9a4d3ec965e0a65f346d9fc3d9cadf"
+        "claim-6d9a4d3ec965e0a65f346d9fc3d9cadf",
+        "claim-2eda8935bc0e1e61285c5c0581b1d676",
+        "claim-92b1d3d179611c3b2d433797e9830d1b"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -422,7 +528,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.876Z"
+      "classifiedAt": "2026-08-28T14:31:48.492Z"
     },
     {
       "candidateType": "event",
@@ -478,7 +584,63 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:15.958Z"
+      "classifiedAt": "2026-08-28T14:31:48.618Z"
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "onthecase:band:1211",
+      "sourceId": "onthecase-band-hydration",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0.45,
+      "supportingClaimIds": [
+        "claim-292291ccb8bb6a601642ec31c35da30f",
+        "claim-2c4b4790cbcc7122ce070c4283758325",
+        "claim-bb47aaa72b770cc8d7d9c83863150ad7",
+        "claim-bfefb3ac0ad746f870e1a8dfab56bb58",
+        "claim-c2f605d4f7f6ac27f927820a645662bc",
+        "claim-f2bcd09340486d6165639c03ff9e7411",
+        "claim-1cb2e16e71806e532cb7d18213b622f8",
+        "claim-443f144685e1930d0f85a7ed90766951",
+        "claim-4f272004f64d7787154dc635a3981bf0",
+        "claim-6f0a0574363ceb6d3c854a3c43abe437",
+        "claim-92856351a30692e2d553dcf2f51eb0c4",
+        "claim-dd9d70731c54136cfc2d6ace92ee0f94"
+      ],
+      "hypotheses": [
+        {
+          "canonicalEntityId": "d3d665d5-a031-45ff-b4e9-b8e94fc032ef",
+          "confidence": 0.45,
+          "matchedDimensions": [
+            "name"
+          ],
+          "conflictingDimensions": [],
+          "supportingClaimIds": [
+            "claim-292291ccb8bb6a601642ec31c35da30f",
+            "claim-2c4b4790cbcc7122ce070c4283758325",
+            "claim-bb47aaa72b770cc8d7d9c83863150ad7",
+            "claim-bfefb3ac0ad746f870e1a8dfab56bb58",
+            "claim-c2f605d4f7f6ac27f927820a645662bc",
+            "claim-f2bcd09340486d6165639c03ff9e7411",
+            "claim-1cb2e16e71806e532cb7d18213b622f8",
+            "claim-443f144685e1930d0f85a7ed90766951",
+            "claim-4f272004f64d7787154dc635a3981bf0",
+            "claim-6f0a0574363ceb6d3c854a3c43abe437",
+            "claim-92856351a30692e2d553dcf2f51eb0c4",
+            "claim-dd9d70731c54136cfc2d6ace92ee0f94"
+          ],
+          "corroboratingSourceIds": [],
+          "reasons": [
+            "Normalised name agrees",
+            "Name similarity or footprint alone is not sufficient"
+          ]
+        }
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:48.654Z"
     },
     {
       "candidateType": "artist",
@@ -537,7 +699,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.038Z"
+      "classifiedAt": "2026-08-28T14:31:48.685Z"
     },
     {
       "candidateType": "venue",
@@ -556,7 +718,10 @@
         "claim-e0f4de324cb47ed3602eda9ff9440285",
         "claim-26535745bfda8adaaacaed94bd52b7ca",
         "claim-4f5396f2e09d359c2f965b23076f2d17",
-        "claim-ca9d10fb4b151a63cc9470298cb31d60"
+        "claim-ca9d10fb4b151a63cc9470298cb31d60",
+        "claim-0f786ceeb3624cf1a1b3b83ccb85d5b7",
+        "claim-6179681effc4ef6c38e480b5d705f01f",
+        "claim-f00edcfc04371a57f0dd1fe9688551bd"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -564,7 +729,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.056Z"
+      "classifiedAt": "2026-08-28T14:31:48.702Z"
     },
     {
       "candidateType": "event",
@@ -600,7 +765,14 @@
         "claim-9c59a7916055f08d65db31bb73031787",
         "claim-c080ac4464e8463cf8431b1258d5c686",
         "claim-d8282796f3130300dcec3db70af00b21",
-        "claim-f1367d6efba1cb724ea5d00de84c0596"
+        "claim-f1367d6efba1cb724ea5d00de84c0596",
+        "claim-2144af9b92223c14a1ddaf1c57bd395f",
+        "claim-35d2eb72fd60bda54f337275245b658a",
+        "claim-7da0a3953e51ddd77d58dd422708c78a",
+        "claim-8f69f0bef7cbe0f3113b2b7afc355ede",
+        "claim-940ff8132e5bc1432cfbfc9952e43e4e",
+        "claim-cbc9c541571dddb050017c7841a129ae",
+        "claim-f55f418bd05e5d65ac0dcf935d8349cb"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -608,35 +780,73 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.079Z"
+      "classifiedAt": "2026-08-28T14:31:48.718Z"
     },
     {
       "candidateType": "artist",
-      "candidateKey": "artist_cancelled",
+      "candidateKey": "artist_the-tall-faces",
       "sourceId": "gigs-news-daily-import",
       "method": "backline-trust-loop-v1",
-      "confidence": 0,
+      "confidence": 0.45,
       "supportingClaimIds": [
-        "claim-6f3cbf959bfd2d0ffd7c672b9e9d6b12",
-        "claim-753b7f9f1d1696ce414ea0ac59b6c9c6"
+        "claim-5af91d303259e789eee36729807ad7df",
+        "claim-e567a10bde15cdc6fafd27696a6c39c1",
+        "claim_0250d599503c535261618ef3149bdffd24e7c430",
+        "claim_0419b30d2a7dbdf02fc883097d1ba78c16767ba4",
+        "claim_0704c71ee554e4c31afe727f2d9b0397ebe6bd76",
+        "claim_0d8992ed80137ca6abd68a80492868962ca84853",
+        "claim_1139c96ea033865190c4459c44876a6c32b1a1a4",
+        "claim_23fd567ad2c055630642f838e5618b97070fd1e9",
+        "claim_2682b0c07f697890e2ddd4b46c0a4f1234d09129",
+        "claim_27f5fde30b45f0e6e44be470e1d0dca34801829f",
+        "claim_2ccf0b75890e2c643f9b96e703a72b6e3db2b07a",
+        "claim_373717933580942494b0705eec0df5051ffee111"
       ],
-      "hypotheses": [],
+      "hypotheses": [
+        {
+          "canonicalEntityId": "34fd68aa-8bc4-493a-b49e-11128198fe65",
+          "confidence": 0.45,
+          "matchedDimensions": [
+            "name"
+          ],
+          "conflictingDimensions": [],
+          "supportingClaimIds": [
+            "claim-5af91d303259e789eee36729807ad7df",
+            "claim-e567a10bde15cdc6fafd27696a6c39c1",
+            "claim_0250d599503c535261618ef3149bdffd24e7c430",
+            "claim_0419b30d2a7dbdf02fc883097d1ba78c16767ba4",
+            "claim_0704c71ee554e4c31afe727f2d9b0397ebe6bd76",
+            "claim_0d8992ed80137ca6abd68a80492868962ca84853",
+            "claim_1139c96ea033865190c4459c44876a6c32b1a1a4",
+            "claim_23fd567ad2c055630642f838e5618b97070fd1e9",
+            "claim_2682b0c07f697890e2ddd4b46c0a4f1234d09129",
+            "claim_27f5fde30b45f0e6e44be470e1d0dca34801829f",
+            "claim_2ccf0b75890e2c643f9b96e703a72b6e3db2b07a",
+            "claim_373717933580942494b0705eec0df5051ffee111"
+          ],
+          "corroboratingSourceIds": [],
+          "reasons": [
+            "Normalised name agrees",
+            "Name similarity or footprint alone is not sufficient"
+          ]
+        }
+      ],
       "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
+        "Normalised name agrees",
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.096Z"
+      "classifiedAt": "2026-08-28T14:31:48.738Z"
     },
     {
       "candidateType": "venue",
-      "candidateKey": "venue_07811-44-7388",
+      "candidateKey": "venue_white-hart-woodley",
       "sourceId": "gigs-news-daily-import",
       "method": "backline-trust-loop-v1",
       "confidence": 0,
       "supportingClaimIds": [
-        "claim-08973a25283548b117db6fd62d1f2ee8",
-        "claim-39cc9ca46b104fd24f1e8e9b2a5eecfd"
+        "claim-48fb337cc566b5a56009266b2629afdf",
+        "claim-900d7d70f4ab54b9ceaf5d545006cf12"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -644,22 +854,22 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.115Z"
+      "classifiedAt": "2026-08-28T14:31:48.755Z"
     },
     {
       "candidateType": "event",
-      "candidateKey": "event:gigs-news-daily-import:2026-08-30_cancelled_united-match",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_off-the-record_the-stock-dove-romiley",
       "sourceId": "gigs-news-daily-import",
       "method": "backline-trust-loop-v1",
       "confidence": 0,
       "supportingClaimIds": [
-        "claim-070028dd8fa27811b0cde1f0c39cbe48",
-        "claim-27e4ab8b80e4334d307acc7c204b6c3e",
-        "claim-2cda922b5d255853ab7bb9624fd6e8aa",
-        "claim-535eb74fcecf5f37ec76ce804cd70efb",
-        "claim-7fcce227538ffc0ff3b1784960d12fb3",
-        "claim-8a31830483e2c407790b080f8292b1cb",
-        "claim-fa645a3404ae1785515ffa8a2b6e7b65"
+        "claim-14430e4908f6d765871e575148640068",
+        "claim-41ebba730727cf3f1c055daac290a08e",
+        "claim-708ce6cbc08bfdbf20736873ee1f4caf",
+        "claim-c4d0557a4efb475328de869e224e6422",
+        "claim-cdb64e77f5b41ceb3e233263fd50fc6b",
+        "claim-d1c3ef5e9cf70a49e2e78d0dc787cfb0",
+        "claim-e7f080b0152d425ee4839015e94576a8"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -667,7 +877,42 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.134Z"
+      "classifiedAt": "2026-08-28T14:31:48.772Z"
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "lemonrock:artist:neovenator",
+      "sourceId": "lemonrock-artist-hydration",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-6e11e7f591897f8552fcbbf6bcd80a2d",
+        "claim-a6f3152b3cf3df5a5499457a6b2faf9c",
+        "claim-d1e51c32ad37242f4abb2233d258735b",
+        "claim-e6d6ab096846580397e07401d33aafbe",
+        "claim-f68094aae695147effaf233ae9fc29ca",
+        "claim-0e3dad76bb30b1d4592adeae1de14431",
+        "claim-19a6a72e2a172563e19929d057ae0405",
+        "claim-cbc38d938ad545388650e1139f15dd34",
+        "claim-d37d23a97a85ee25e9355ce4057d55b5",
+        "claim-d53de9c1fa90d6c0872eab59d6a3c3fe",
+        "claim-b2d6425c275d76aad5e6d77fefb1e8f0",
+        "claim-c27bdb32edb9734818f6f2746cabe1a6",
+        "claim-1a9cc14a8e4d213944a592f28edc86fb",
+        "claim-5a5c5ed025bf04a904aaf54711bbfbf9",
+        "claim-2987a296160d55f098c12ae0af936ce3",
+        "claim-4e9af6133fff56143acff1051a060410",
+        "claim-8037681f723acd9709a705debc656497",
+        "claim-a1ce39e3c58f738d9d40abbf8c572a57",
+        "claim-bc73b4a67a183dce6b2eacb799afc5d4"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:48.786Z"
     },
     {
       "candidateType": "venue",
@@ -723,7 +968,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.157Z"
+      "classifiedAt": "2026-08-28T14:31:48.804Z"
     },
     {
       "candidateType": "event",
@@ -779,7 +1024,63 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.237Z"
+      "classifiedAt": "2026-08-28T14:31:48.857Z"
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "onthecase:band:26683",
+      "sourceId": "onthecase-band-hydration",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0.45,
+      "supportingClaimIds": [
+        "claim-075f4446376ee9e37d294ed9f4e04563",
+        "claim-1fb63d00ce7510b8d6e8eb3f5564cec7",
+        "claim-4172e05c8ab738a9f422f701d9c5aee7",
+        "claim-576e372d7fa5193e009d8cf4d28da72f",
+        "claim-73d2cd485c070dade2c1a7d68b9249eb",
+        "claim-aea7b30232b6233f3f7e3346b4734a8a",
+        "claim-360e428687d888e142f926408bd4a97f",
+        "claim-68c8dc437f0dc896fa21cce16e867c1c",
+        "claim-7978c9c35ff3a2cfb00742c92351b0e7",
+        "claim-aec58af464e8a68ec3786171215d5e3f",
+        "claim-b67d19cad7556dcedffe4648930237bd",
+        "claim-d050c968242b0596365ab3c91f3bc03d"
+      ],
+      "hypotheses": [
+        {
+          "canonicalEntityId": "ba1a508a-7558-405c-ae67-84270a6bf8cd",
+          "confidence": 0.45,
+          "matchedDimensions": [
+            "name"
+          ],
+          "conflictingDimensions": [],
+          "supportingClaimIds": [
+            "claim-075f4446376ee9e37d294ed9f4e04563",
+            "claim-1fb63d00ce7510b8d6e8eb3f5564cec7",
+            "claim-4172e05c8ab738a9f422f701d9c5aee7",
+            "claim-576e372d7fa5193e009d8cf4d28da72f",
+            "claim-73d2cd485c070dade2c1a7d68b9249eb",
+            "claim-aea7b30232b6233f3f7e3346b4734a8a",
+            "claim-360e428687d888e142f926408bd4a97f",
+            "claim-68c8dc437f0dc896fa21cce16e867c1c",
+            "claim-7978c9c35ff3a2cfb00742c92351b0e7",
+            "claim-aec58af464e8a68ec3786171215d5e3f",
+            "claim-b67d19cad7556dcedffe4648930237bd",
+            "claim-d050c968242b0596365ab3c91f3bc03d"
+          ],
+          "corroboratingSourceIds": [],
+          "reasons": [
+            "Normalised name agrees",
+            "Name similarity or footprint alone is not sufficient"
+          ]
+        }
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:48.956Z"
     },
     {
       "candidateType": "artist",
@@ -838,7 +1139,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.319Z"
+      "classifiedAt": "2026-08-28T14:31:48.997Z"
     },
     {
       "candidateType": "venue",
@@ -858,7 +1159,7 @@
         "claim-022a5144d7fd959418f60686a90519b9",
         "claim-301dc8bd87b4a1f0e9be45ee935b3dd5",
         "claim-4088d5cda5166be21e9d6543d7842f03",
-        "claim_0ba4bba6a4bd47deed7605b34f65130e2cfab8a7"
+        "claim-0697fa80d70b8c4a5026fe89ab13d6f9"
       ],
       "hypotheses": [
         {
@@ -880,7 +1181,7 @@
             "claim-022a5144d7fd959418f60686a90519b9",
             "claim-301dc8bd87b4a1f0e9be45ee935b3dd5",
             "claim-4088d5cda5166be21e9d6543d7842f03",
-            "claim_0ba4bba6a4bd47deed7605b34f65130e2cfab8a7"
+            "claim-0697fa80d70b8c4a5026fe89ab13d6f9"
           ],
           "corroboratingSourceIds": [],
           "reasons": [
@@ -894,7 +1195,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.349Z"
+      "classifiedAt": "2026-08-28T14:31:49.035Z"
     },
     {
       "candidateType": "event",
@@ -930,7 +1231,14 @@
         "claim-b1f2fa0e53c9237ca4f5a9abad143da3",
         "claim-b88d64dfc007c12a193fa247579ba443",
         "claim-bc6e2c9c62b1f9b8da7ce9902b6657aa",
-        "claim-d4091ab6d99abf4b550eda8b990d1cb1"
+        "claim-d4091ab6d99abf4b550eda8b990d1cb1",
+        "claim-259ec49a444f157cfdbedbdc829d94cb",
+        "claim-6026da5d3f32f04b21cf4cc338dccfb0",
+        "claim-9f03ebf61c8cca3790654941ff1e805b",
+        "claim-af07283493f37f1da7ab528c497dea30",
+        "claim-d8868bb0dadd7194bcbe7a0dfe679c88",
+        "claim-e95709affa76fd88a4f4a3f061aa0de0",
+        "claim-ecee5b346c548394b6f2b99573c42258"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -938,7 +1246,139 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.370Z"
+      "classifiedAt": "2026-08-28T14:31:49.055Z"
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "artist_the-select-committee",
+      "sourceId": "gigs-news-daily-import",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0.45,
+      "supportingClaimIds": [
+        "claim-51d52f6fafa544cafaeded70606ddef3",
+        "claim-bef4b38af165310963c01df648bdea0e",
+        "claim_06c4f861ea8540e2218786793026c4e3f96563f3",
+        "claim_12ccc65483428c9e1a15691f5e889f7f3265e0d0",
+        "claim_1e03af12c85974cd5739e030ce5f04a6bc309ede",
+        "claim_24dbe16e70bb683a7edd6d38944d5d96ad3a13c2",
+        "claim_274ef66e48c525ed20f639c892bb7c8df8d0076b",
+        "claim_32cf816d4f10963949bc2b8166676b73eb5532cc",
+        "claim_336fd8d1472c9ef6002478b1d38f49842e31dd1d",
+        "claim_3d0642947683ab9d366394379b7d0d94e4558405",
+        "claim_433b8e1a067e8982954b930f081025d86883bc18",
+        "claim_4c9f9ea1bb4bb591b86652c9956b66eba4838998"
+      ],
+      "hypotheses": [
+        {
+          "canonicalEntityId": "PNJ6TclgY1pH26h2orEa",
+          "confidence": 0.45,
+          "matchedDimensions": [
+            "name"
+          ],
+          "conflictingDimensions": [],
+          "supportingClaimIds": [
+            "claim-51d52f6fafa544cafaeded70606ddef3",
+            "claim-bef4b38af165310963c01df648bdea0e",
+            "claim_06c4f861ea8540e2218786793026c4e3f96563f3",
+            "claim_12ccc65483428c9e1a15691f5e889f7f3265e0d0",
+            "claim_1e03af12c85974cd5739e030ce5f04a6bc309ede",
+            "claim_24dbe16e70bb683a7edd6d38944d5d96ad3a13c2",
+            "claim_274ef66e48c525ed20f639c892bb7c8df8d0076b",
+            "claim_32cf816d4f10963949bc2b8166676b73eb5532cc",
+            "claim_336fd8d1472c9ef6002478b1d38f49842e31dd1d",
+            "claim_3d0642947683ab9d366394379b7d0d94e4558405",
+            "claim_433b8e1a067e8982954b930f081025d86883bc18",
+            "claim_4c9f9ea1bb4bb591b86652c9956b66eba4838998"
+          ],
+          "corroboratingSourceIds": [],
+          "reasons": [
+            "Normalised name agrees",
+            "Name similarity or footprint alone is not sufficient"
+          ]
+        }
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:49.085Z"
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "venue_town-house-festival-oswestry",
+      "sourceId": "gigs-news-daily-import",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-4668ce6f2ccf3eb54a0c5b0b6b64a452",
+        "claim-4d9176b25ed211b36c10e0dc04dc0061"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:49.097Z"
+    },
+    {
+      "candidateType": "event",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_nick-milner_acoustic-lounge-poynton",
+      "sourceId": "gigs-news-daily-import",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-2526cbe020d242e6e6622cf9086051d7",
+        "claim-3db8afab83e1ec870d109d219dca2d35",
+        "claim-40c1b97417fbee931848f716ca48d07e",
+        "claim-9be57c4e02786ab7dfd89069ae1a6d87",
+        "claim-c028426a85e43980a166bb74c3360770",
+        "claim-d4cad9341c417cdd0cdd2e6314bb54a2",
+        "claim-ee1b256cd36d2b0c2d699a88d8fe4534"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:49.112Z"
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "lemonrock:artist:flamingpieband",
+      "sourceId": "lemonrock-artist-hydration",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-3f36c758d6d09fb6158111956c043e36",
+        "claim-714869f1682f7992075d1ecf736deef4",
+        "claim-876983db3a7313aca0fb68ccb1367257",
+        "claim-a78d0b2d125b2e1e2094e5ebb7cefaa5",
+        "claim-d614b6ee4f1f823296d7441f4bdd5efb",
+        "claim-6f3bf21cf758343e0ad7bb6ec06c8d03",
+        "claim-9ea6c8d405c6f3d29a2beb2f4db1acb0",
+        "claim-d07353886387a7d9e82bfc68919e637c",
+        "claim-d4065dfaaea3007926932d4852119f56",
+        "claim-da27684646cb4ee2cdd3b3660afd8469",
+        "claim-dccdf954b6743b001cfb1de91b308dbd",
+        "claim-e59cc16b2162560d96c900a90930337c",
+        "claim-4b154c5e318884a0b2dab6d3028b8491",
+        "claim-d68b245a795f02305efb990270b59a07",
+        "claim-0ae5aa64f647115d0efc2f7c349620ce",
+        "claim-0b5935ebc785d02155602f7ffd2c1162",
+        "claim-91f3e2e47adfbb80fce79293a6c744dc",
+        "claim-b6eec476c20677cf7a980186db50c84b",
+        "claim-dc5638fd8993f085b0cf81ad433b80b2"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:49.128Z"
     },
     {
       "candidateType": "venue",
@@ -978,7 +1418,9 @@
         "claim-6e70aed632e382a995b3fb0b8e673579",
         "claim-7197435a04bce3517d3bc517931895fd",
         "claim-e403a25fc5de38361e4e902f83325e4e",
-        "claim-e8cafc8d0f4743be01d5b75e0706048c"
+        "claim-e8cafc8d0f4743be01d5b75e0706048c",
+        "claim-7e27def378121fdd76320ab4dda8effe",
+        "claim-c7d54d2528549aa0c91265ccde27f3f9"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -986,7 +1428,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.398Z"
+      "classifiedAt": "2026-08-28T14:31:49.175Z"
     },
     {
       "candidateType": "event",
@@ -1042,7 +1484,38 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.457Z"
+      "classifiedAt": "2026-08-28T14:31:49.284Z"
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "onthecase:band:1411",
+      "sourceId": "onthecase-band-hydration",
+      "method": "backline-trust-loop-v1",
+      "confidence": 0,
+      "supportingClaimIds": [
+        "claim-25d3a2b161d67ab45a39c01ffe0dcc29",
+        "claim-31c0708b8cb59a0fad361d26fd0f50f7",
+        "claim-ceaf91e961f45e15d50bddc02266c7b5",
+        "claim-dfc363414fa73586c1ed9dcfe3848861",
+        "claim-e853490e9f4de364a148573decc7f656",
+        "claim-09fdff3fd9605b153507a501c4c16f4b",
+        "claim-7e166c63e2c67a7a69ef4a083afc2ab8",
+        "claim-8b41bcfaae691c8e4426ccfa7d89fcc5",
+        "claim-b86c421c355c577303ccd45d7507aa17",
+        "claim-fd85f47dbfd13d32487ada1e9829c426",
+        "claim-1ce563f87db8024cf39f894fb6b67009",
+        "claim-2e109f8530272f00a89aabf7e2c30c69",
+        "claim-8d8aa595401f539fbea7ed4b24038086",
+        "claim-a0052dd51f11cbd43c18d2c430359795",
+        "claim-f6ac19895b99feea4d601d6338c46038"
+      ],
+      "hypotheses": [],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ],
+      "status": "unresolved",
+      "classifiedAt": "2026-08-28T14:31:49.300Z"
     },
     {
       "candidateType": "artist",
@@ -1061,7 +1534,10 @@
         "claim-9cbebbae28fbce667acf5770bfd9045a",
         "claim-0c76e397e5d31b101b89d74b957333d8",
         "claim-404a573edc13fe6e1b9c78f5e2eba548",
-        "claim-c76b22cc64cb4b092ece59163cabde9a"
+        "claim-c76b22cc64cb4b092ece59163cabde9a",
+        "claim-4bf68fb44ba8b6bf7f77c1cc72319d05",
+        "claim-a7bd2bd91fe296fa1c32c5b93fc5dccd",
+        "claim-fe8b7bb9b45691460f492ad72dc26473"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -1069,7 +1545,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.475Z"
+      "classifiedAt": "2026-08-28T14:31:49.317Z"
     },
     {
       "candidateType": "venue",
@@ -1088,7 +1564,10 @@
         "claim-dee332754029b4e57c5567c8314cd742",
         "claim-090b100231c759f3336cc0465abd2ef4",
         "claim-858b73dec56a1dd1de450bd688185b55",
-        "claim-e4ceeb091d1489619529def8969f2a00"
+        "claim-e4ceeb091d1489619529def8969f2a00",
+        "claim-02d25bb4f32419150eaf8b32deb0959d",
+        "claim-18215df74ca1f58cfcfdcdb39f6a34ea",
+        "claim-a2e96394af7ba95293e5c6bcc794641f"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -1096,7 +1575,7 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.492Z"
+      "classifiedAt": "2026-08-28T14:31:49.331Z"
     },
     {
       "candidateType": "event",
@@ -1132,7 +1611,14 @@
         "claim-cb03df5bd5231d6b2eafdd3af26abb19",
         "claim-cf779f0efc8ffc8e3c03de953ea60256",
         "claim-d58974d12b9434b97a4217404434cd83",
-        "claim-de4265dde8e5b547d0ec5f7a7a95d9b5"
+        "claim-de4265dde8e5b547d0ec5f7a7a95d9b5",
+        "claim-115f2eacee69b6819b471c9706094ff1",
+        "claim-3974033acd9f8cadc95472abf4b6679d",
+        "claim-5f51fe962e3041bbe3989b1a0dcb9665",
+        "claim-bef1027f6188271609664fb8a6b368ef",
+        "claim-c8bdaaca05c04da0c491b01b65331851",
+        "claim-cf204b3049f1a72d0ac525e334322d36",
+        "claim-dd3cbc2d29c5250f24bba58f8004cfbf"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -1140,199 +1626,53 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.511Z"
-    },
-    {
-      "candidateType": "venue",
-      "candidateKey": "onthecase:venue:753",
-      "sourceId": "onthecase-gig-index",
-      "method": "backline-trust-loop-v1",
-      "confidence": 0,
-      "supportingClaimIds": [
-        "claim-e46ea940499ecfdfda1fecee6d55086d",
-        "claim-57558c020f8b63f1743e7449f42a9255",
-        "claim-8275e531611078d7252ee56d7511846f",
-        "claim-01095f4759614bbea60f75c9b1f54ab0",
-        "claim-0f9f2855718c15aa9ea747e05aaea7ee",
-        "claim-368ceabe5428424e0720feaa914bf4ee",
-        "claim-68dbfd88ec3e08d4efc2e5f33620379d",
-        "claim-7aac673e0b4f9a330d1fdfeaa936b290",
-        "claim-87a8d9fbec1df1fe1dfb3e4f4c4d8076",
-        "claim-d8faec0a3010ce340339443594afb140",
-        "claim-f7c6c5eabba2f4423986d2daef67bbdd",
-        "claim-fe04da03bd3a9503ce1594bd4302d82c",
-        "claim-197d175c738f5eef5aecc68fad259ec0",
-        "claim-1e00af98e4782bdf6f2b24b7cc005a83",
-        "claim-5c150c593baf1f216bbedc629671cf14",
-        "claim-793fe4f21eb272a802de1b04aa3cfd18",
-        "claim-8b8b1a197cca3d6cb628f7f8afed8d88",
-        "claim-9406ce29ab85c6ec7f64dd3866585fad",
-        "claim-bd07228a48e76974ce0a1e5630dbfe9f",
-        "claim-c06af3acc3857de216de621fd24cef1e",
-        "claim-cd1df7cd59e5c1a547c3e01bebcc5b7b",
-        "claim-15a21d9ad53af3fb1e2073c9fa5052ea",
-        "claim-1cf3578595b9d3f5e659e739c30a82d4",
-        "claim-599672c9d0c0be775970d7ff29bc3bfd",
-        "claim-7a14ee05d343e3f590cefe81129eeb81",
-        "claim-8848df041fd3e7e5e092972fed59d2d4",
-        "claim-88f633e3bed4663c66ead5c624b3f0e1",
-        "claim-b7a053cde777362e5be280ce55de3be5",
-        "claim-e4db6b28cf89915d6f7d4646f4a12a21",
-        "claim-efdd347307dde00330746cbbc6e63f23",
-        "claim-10d0ea5eddd95a5783db9913ef373ee8",
-        "claim-746caac6368b17444601833fdfde7492",
-        "claim-54268cf968edc8b692299c86a99d9aed",
-        "claim-8ed5804f227c30950c9d58669d559d2d",
-        "claim-ba5fe6052278a094ec78a168b8711aad",
-        "claim-db53e0816f548f701fc949622dd8e795",
-        "claim-45c788b5dae3c6ac8391fbf3cb2fba63",
-        "claim-67a6ff43236d6467cda608d4aa54e7d8"
-      ],
-      "hypotheses": [],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ],
-      "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.542Z"
-    },
-    {
-      "candidateType": "event",
-      "candidateKey": "event:onthecase-gig-index:onthecase:gig:131486",
-      "sourceId": "onthecase-gig-index",
-      "method": "backline-trust-loop-v1",
-      "confidence": 0,
-      "supportingClaimIds": [
-        "claim-01acd17ddd2ec5975d8cf5062f5b875d",
-        "claim-071baac92ee8a92683bccec31811aee6",
-        "claim-2d8a70f380ea3b1d4f8e35c17c250801",
-        "claim-4e6319048602d6f575fa16093f6736c7",
-        "claim-60fe6bb66e7d6c626d2cf9b355c33955",
-        "claim-642b4e5734fe4ddb73fa6dbe1f5079f8",
-        "claim-66ced9b9b9850a1af303007d473f1019",
-        "claim-a5c15c82adafd8c770fc50313e7cca21",
-        "claim-d04c0228b7784ffd6004d346ccb1dfc6",
-        "claim-d8f460784fc11620a1e05077cc41b6d1",
-        "claim-2e3f34986117cf559332c3af12480c42",
-        "claim-3b1c3030f32107b579c5fff5faa32c49",
-        "claim-3e8757bbae995d9925e09e3891c98fce",
-        "claim-4bbebe65f10b942d71ddb41c1746f0b5",
-        "claim-5d280a1d9d8d1cfbd36938adac1e1798",
-        "claim-9c9019130cf2b0ec2abc2a633085e1ec",
-        "claim-a5ab9344502b285f6488eb3b972bcf8a",
-        "claim-b6fd32f3f66fb200f4a35f2eab61d392",
-        "claim-c6d39ebbd9730c0b6508ed1fc40f1603",
-        "claim-feb29ffb790945de3738c40ffd56da08",
-        "claim-0fe9ec0b8549f95f7a4e7bf7061cfb41",
-        "claim-11ad66ab84addd60d1b35eac6738928b",
-        "claim-1fa6055a07f74613e390d0c02c5f7dec",
-        "claim-3d1f0e5036917949771cd8a870f5fc5d",
-        "claim-4e315d1e03198f0e04e6cd7d0e77053e",
-        "claim-697945506a49dbc64f9acce346ff7e37",
-        "claim-71e407823df150fbd88d38db3969c6bc",
-        "claim-9b0277f3e99bad53428d364d115235a6",
-        "claim-e4901f1c3c8c8b04379f6aea541b2a6b",
-        "claim-f45fed36c52422a3e5815071ec93e84a",
-        "claim-0ab56f7dcbc4e129bde948582eca5111",
-        "claim-0b435f635fccbfe840cdd20333961675",
-        "claim-1a9013ed7308e40fd8e6525920975a07",
-        "claim-43c0335d3a249d322777ac665690fe41",
-        "claim-6b16817f70872fb02687faccdd9cd49b",
-        "claim-8d9da1d99794a6ce66a09f0f0458cfa9",
-        "claim-9e1fe0b576f49d7a31a37eea30427227",
-        "claim-ba7c81530f76f1f70d7afad26e65a498",
-        "claim-d508dcdf5dbe26a8cc0ed759f2dbfaf9",
-        "claim-d8b96a2b9d41c2cf2e2bfdefb0130e39"
-      ],
-      "hypotheses": [],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ],
-      "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.637Z"
+      "classifiedAt": "2026-08-28T14:31:49.348Z"
     },
     {
       "candidateType": "artist",
-      "candidateKey": "klma-artist-f7d7f2a92f79",
-      "sourceId": "klma-stoke-gig-list",
+      "candidateKey": "artist_the-reform",
+      "sourceId": "gigs-news-daily-import",
       "method": "backline-trust-loop-v1",
       "confidence": 0.45,
       "supportingClaimIds": [
-        "claim-130d0c15f2e6beac4082f27ffe590ccd",
-        "claim-f5d6499971d6df1fd6a4546155d490c1",
-        "claim-f7d3698707ced33f10707c3f2306d4b3",
-        "claim-01a123e2948ddb303f9c465287fe4668",
-        "claim-0a79c20c3051f152d39d0b876ba7c8db",
-        "claim-0de33e0f5710f5ba04a3f04bffb34db8",
-        "claim-10227b9de4677c91a996bfaeb62c67bb",
-        "claim-1287daaf0e207eafd10253d1e2d15a84",
-        "claim-14b77c115d0ff9142ff317d72e9543de",
-        "claim-1a8580b56fe3a22d8fcbbe1951582df1",
-        "claim-206314379c6fcf8e58c17d326e6d5c1d",
-        "claim-25eef95fb910f6994b5bc6f2858f69a7"
+        "claim-1369b6f95bbbf79f1ad15adf66f2ef3f",
+        "claim-a59f4d2097ce05485199ae9652fdaa1a"
       ],
       "hypotheses": [
         {
-          "canonicalEntityId": "FIT600aoQ5lpNSejGctN",
+          "canonicalEntityId": "2eaead2c-6892-48b0-bd85-2f6e4b11161e",
           "confidence": 0.45,
           "matchedDimensions": [
             "name"
           ],
-          "conflictingDimensions": [
-            "location",
-            "genre"
-          ],
+          "conflictingDimensions": [],
           "supportingClaimIds": [
-            "claim-130d0c15f2e6beac4082f27ffe590ccd",
-            "claim-f5d6499971d6df1fd6a4546155d490c1",
-            "claim-f7d3698707ced33f10707c3f2306d4b3",
-            "claim-01a123e2948ddb303f9c465287fe4668",
-            "claim-0a79c20c3051f152d39d0b876ba7c8db",
-            "claim-0de33e0f5710f5ba04a3f04bffb34db8",
-            "claim-10227b9de4677c91a996bfaeb62c67bb",
-            "claim-1287daaf0e207eafd10253d1e2d15a84",
-            "claim-14b77c115d0ff9142ff317d72e9543de",
-            "claim-1a8580b56fe3a22d8fcbbe1951582df1",
-            "claim-206314379c6fcf8e58c17d326e6d5c1d",
-            "claim-25eef95fb910f6994b5bc6f2858f69a7"
+            "claim-1369b6f95bbbf79f1ad15adf66f2ef3f",
+            "claim-a59f4d2097ce05485199ae9652fdaa1a"
           ],
           "corroboratingSourceIds": [],
           "reasons": [
             "Normalised name agrees",
-            "hasLocation conflicts",
-            "hasGenre conflicts",
             "Name similarity or footprint alone is not sufficient"
           ]
         }
       ],
       "decisionReasoning": [
         "Normalised name agrees",
-        "hasLocation conflicts",
-        "hasGenre conflicts",
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.716Z"
+      "classifiedAt": "2026-08-28T14:31:49.366Z"
     },
     {
       "candidateType": "venue",
-      "candidateKey": "klma-venue-f7bf76c952a1",
-      "sourceId": "klma-stoke-gig-list",
+      "candidateKey": "venue_the-whitehouse-stalybridge",
+      "sourceId": "gigs-news-daily-import",
       "method": "backline-trust-loop-v1",
       "confidence": 0,
       "supportingClaimIds": [
-        "claim-7c37468ee5e5288bcd8e1983b9bf1ce8",
-        "claim-8e9b252b908cb08086d1193b9dde5bd9",
-        "claim-0e7432b762496e6636cdc8d6e70824a7",
-        "claim-622ecf1f551b847fca057904ef912f3f",
-        "claim-a4c2f6f654a9b47cb20051f843cb7cde",
-        "claim-593e86d1b7ddf20d27e93ac34d755dc6",
-        "claim-6cdf9adab49337892b1b365f4e45cb0d",
-        "claim-96785ab0dc445319ea6292cb9c58f616",
-        "claim-9a38268a11586bc4c75342323d42deea",
-        "claim-9f182b93b724b95bc39f73385dce52bb",
-        "claim-cb6f38efac924c8b8ebe72e3b2a08a32"
+        "claim-6fcd443f8b12b51f3bbbe61fecc96be1",
+        "claim-7e98f1aeba54957cbda0cf5bd9920343"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -1340,43 +1680,22 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.763Z"
+      "classifiedAt": "2026-08-28T14:31:49.377Z"
     },
     {
       "candidateType": "event",
-      "candidateKey": "event:klma-stoke-gig-list:klma-fe8341a59e17",
-      "sourceId": "klma-stoke-gig-list",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_manic_cheshire-cheese-newton",
+      "sourceId": "gigs-news-daily-import",
       "method": "backline-trust-loop-v1",
       "confidence": 0,
       "supportingClaimIds": [
-        "claim-4a35ce6ae95118b9875d8b1263e19f12",
-        "claim-6f047be952db118c1ab522166719b6fc",
-        "claim-cfc3838986562b24d71e30543d98fe22",
-        "claim-d37faf1e743602c7589943fff06b0262",
-        "claim-e1375c309af0cac6634da7c0daa9635e",
-        "claim-e7fcd21a2eee502c503f01669c3d976c",
-        "claim-e83383fbe4e1b9b4810591258321804a",
-        "claim-2a73e81c2c9133e2f2252c57734e3c3e",
-        "claim-5537e016c72477979a2f37b75f6a6fdd",
-        "claim-967e3520d3cb9e5b70e428cf36743145",
-        "claim-aef5be08a28a31a372772ebebcaa7ae6",
-        "claim-c601f5791030a4df5a543a69ea41f313",
-        "claim-e31ef4ee1551ebab17230f7dcf4c1e27",
-        "claim-e7cb8407cd4aab9ac3a3a170d1ad6e4a",
-        "claim-05a1f931b91a664e86315c62629a794c",
-        "claim-14c7e358cabefc2b4a43b26e028b90be",
-        "claim-5fee733f39cc60be9c8ce04f6f8159ad",
-        "claim-74e46e0508e38dc4d20787f54f6cc907",
-        "claim-a4ce065009c14bf02c1121e255899afd",
-        "claim-d5bc4ba826a82a99b0b2022922005c14",
-        "claim-ed8388368c290a83eb38c4918589f476",
-        "claim-25ee49332ddfff8a715f2d95f98504a5",
-        "claim-2cf1f79d17e73e3c6eba1f638c7bfb89",
-        "claim-94c8c8f5395122d57383a1a3280c7556",
-        "claim-bf286c13e7d53fe12f0c1e15b80d0fcf",
-        "claim-c8a0e73fd8fd774b92ddc2b09b9ea91c",
-        "claim-cffd04f88598e53cd80cc68c310d72f2",
-        "claim-fe9af0aabadb30a5bf5b1fc2013e7b43"
+        "claim-4810f34caa14688530a7b72207c7d483",
+        "claim-613f40770b555a03bf41ef3aba9bcca9",
+        "claim-6591d1e97a80d4880a1578e1dbb68165",
+        "claim-78f196e9edd6eadd44e6eb399e080469",
+        "claim-85ee847bd3d5902e93a66b1dddf110b7",
+        "claim-bfb84730af6f676a7367441144eef947",
+        "claim-c02f858802725fc951609e0edf6cc9b6"
       ],
       "hypotheses": [],
       "decisionReasoning": [
@@ -1384,245 +1703,43 @@
         "Name similarity or footprint alone is not sufficient"
       ],
       "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.795Z"
-    },
-    {
-      "candidateType": "venue",
-      "candidateKey": "onthecase:venue:638",
-      "sourceId": "onthecase-gig-index",
-      "method": "backline-trust-loop-v1",
-      "confidence": 0,
-      "supportingClaimIds": [
-        "claim-1e6064de28f115f0b35e66605ae21ade",
-        "claim-f28a66892207d27c3052a96aff6f7d11",
-        "claim-e4b4525c8956d19945a76a1e69bb6c05",
-        "claim-0bf6e846c5f4119164c2ca5648022158",
-        "claim-4626ce6e90987da71563263663872a8b",
-        "claim-7762e18102df05385b1d983f94e89b6c",
-        "claim-935a16a8394b304b72b1a80c96d7a710",
-        "claim-b8f75e5c2e0076e338317182b794c7d7",
-        "claim-d1b35c6f3eaa2ad07599efc66f5166f3",
-        "claim-e882940af4356a5f8481142e20c92b9e",
-        "claim-20b0053d7239b4265c65aa2dd5cff585",
-        "claim-4a28dda74b7be02a14cf245d1bd9ebb9",
-        "claim-6768ccb6d6fa4b3314987995b3007604",
-        "claim-7ea0cee7728b576aea574e82c6e2e68d",
-        "claim-c7d322aea292c45d5aa09c51ed824c3d",
-        "claim-db5274d2a0e6636fd22b2f3e42b8321b",
-        "claim-eebc8fffc7d0ba5444d71aa3223f9557",
-        "claim-1753570d82b5b1cce615b15b8e9b940a",
-        "claim-215443f1efd2063fe86783bf4d61f057",
-        "claim-6cb8e77a188bdea234cb9aa3659caf85",
-        "claim-75a1163e27c33275e90b131fe5ca437b",
-        "claim-9aed2c3823a8e3333095eb7da8f58659",
-        "claim-adeb38c2cc56d58dc7e10fa4cf89e579",
-        "claim-b8860ad4b743909e82fc87c02825da9a",
-        "claim-9a2887e5ae1d1ab11859091bf82211b8",
-        "claim-9d5bbea0aeb20154c99320a09a08169e",
-        "claim-2434c7e866c6a9afea6a42a4b2bf3f31",
-        "claim-2826012a3a550922c76263279055a1ce",
-        "claim-126880eee76b3b318bae571fa681959a",
-        "claim-d70bdb815505652cb84de079cd25db2b",
-        "claim-2feacd4e55ef21da67058d08d2b53534",
-        "claim-cc8aad677b91ee6c55e00966b8b15ec9"
-      ],
-      "hypotheses": [],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ],
-      "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.815Z"
-    },
-    {
-      "candidateType": "event",
-      "candidateKey": "event:onthecase-gig-index:onthecase:gig:131485",
-      "sourceId": "onthecase-gig-index",
-      "method": "backline-trust-loop-v1",
-      "confidence": 0,
-      "supportingClaimIds": [
-        "claim-05c4f4ba45a2668345e852a5ef842949",
-        "claim-18ae6cfa60a3fcec224e56ed601659aa",
-        "claim-1d3614f9b92a117609b8f928ddd15e6e",
-        "claim-2ee650a5a10de26e2690a161c3d05453",
-        "claim-381dcd3295aa1ea6b7e30cdfef03c296",
-        "claim-67b71ca173a6260156580553624fa126",
-        "claim-7a33ec7a2f7bf2d69d831971da03bc09",
-        "claim-926fbe9fbc08273820092da8f51d8d31",
-        "claim-c3241fa2eec6e7537599a78e8eccc521",
-        "claim-ca1efeb57b35cf44d425222ce90eed39",
-        "claim-302dfb1eb3139b02710d59707d7415cb",
-        "claim-3a5cdc8a346c3d0d3029d868e2a61a4e",
-        "claim-5a80d4bad719bcf8a14fa65bc9512098",
-        "claim-60b96406a1cd0fac428d2f4cbd163892",
-        "claim-67d579944edccbd82acdadc13e3a2a72",
-        "claim-6d3f72628c0401c8f670e3467109abe6",
-        "claim-a8e41e4d102246e3f6c2951db969f3c1",
-        "claim-aeea53fe0ce5564178cb06db3dbea9eb",
-        "claim-cbff5f2d4d477b1a3334625ee2f1d5d4",
-        "claim-de4829b4b2be4b10e97eb688bfa0084d",
-        "claim-39807df609d9a0c30316d2996d67ee04",
-        "claim-441c63060266a246c7d8420a6f989486",
-        "claim-7ad2aed10ffb6df4c1301fc43f67b456",
-        "claim-7b0766247c761c2be743711be8b0ec37",
-        "claim-a3f2d3e3186a8cefb8cac7161f968c4a",
-        "claim-a6db11a3c30f819f275db8c2dde3147b",
-        "claim-b802d89fa6656359ae83b74093d10c80",
-        "claim-cd03646ba0dc85b577c40a8fc7effd49",
-        "claim-d21f458ec96033dee85951e1c4753603",
-        "claim-e1c37343354c80d6f6951c1b03d97a80",
-        "claim-155554814b7a9cf1ca54f6f64f865c27",
-        "claim-26141bc4da22f7bc960b1cb006dc0f14",
-        "claim-4e07ffd911b53aa0d830126669c3c04c",
-        "claim-ba66b74b8135e3dd0f155415c38b2c9e",
-        "claim-c7bcba7ef945fd7a92665293dbbe1c77",
-        "claim-cb3570d9aa011714b7ca0a45fd0b432e",
-        "claim-dc6378cea6243ec529e6649a13909f1d",
-        "claim-e601a3353b107c1e1013537f8eb1c3f5",
-        "claim-ea9bc25ce7c1e61bf5a6f2041b82b8a3",
-        "claim-eb127c57ac9a1df90c2a1efe96b5ce80"
-      ],
-      "hypotheses": [],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ],
-      "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.937Z"
-    },
-    {
-      "candidateType": "artist",
-      "candidateKey": "klma-artist-f621eab91ee4",
-      "sourceId": "klma-stoke-gig-list",
-      "method": "backline-trust-loop-v1",
-      "confidence": 0.45,
-      "supportingClaimIds": [
-        "claim-6b30d8f8c44d786d700a4e2e4a4833b7",
-        "claim-b8c6366fb55d0ecabfdc39e2e6b5dd53",
-        "claim-0d177bc8f7b5a19f556d3d511ce32a4c",
-        "claim-27948abbcc309b4ee1a15b81da29c15b",
-        "claim-3f98fd022c4b9554e33a11c1970e2701",
-        "claim-7c664e35eff0b054ef0ab0eb6df19bed",
-        "claim-b05dbf64e7b30277fb02a8b5d5e1de9f",
-        "claim-e0ee096f08bd1c41ae4fb5e7e286a1e9",
-        "claim-1dc6975d6cde31f89563da4610b6d624",
-        "claim-6419cbc783953b5fb80691ab74c1b763",
-        "claim-7d77e27eaba1f66892f7663c0f719160",
-        "claim-a304acafdbbbd6eda267e34cda20812c"
-      ],
-      "hypotheses": [
-        {
-          "canonicalEntityId": "4Pr02LZWtAuxhaZWibyT",
-          "confidence": 0.45,
-          "matchedDimensions": [
-            "name"
-          ],
-          "conflictingDimensions": [
-            "location"
-          ],
-          "supportingClaimIds": [
-            "claim-6b30d8f8c44d786d700a4e2e4a4833b7",
-            "claim-b8c6366fb55d0ecabfdc39e2e6b5dd53",
-            "claim-0d177bc8f7b5a19f556d3d511ce32a4c",
-            "claim-27948abbcc309b4ee1a15b81da29c15b",
-            "claim-3f98fd022c4b9554e33a11c1970e2701",
-            "claim-7c664e35eff0b054ef0ab0eb6df19bed",
-            "claim-b05dbf64e7b30277fb02a8b5d5e1de9f",
-            "claim-e0ee096f08bd1c41ae4fb5e7e286a1e9",
-            "claim-1dc6975d6cde31f89563da4610b6d624",
-            "claim-6419cbc783953b5fb80691ab74c1b763",
-            "claim-7d77e27eaba1f66892f7663c0f719160",
-            "claim-a304acafdbbbd6eda267e34cda20812c"
-          ],
-          "corroboratingSourceIds": [],
-          "reasons": [
-            "Normalised name agrees",
-            "hasLocation conflicts",
-            "Name similarity or footprint alone is not sufficient"
-          ]
-        }
-      ],
-      "decisionReasoning": [
-        "Normalised name agrees",
-        "hasLocation conflicts",
-        "Name similarity or footprint alone is not sufficient"
-      ],
-      "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.973Z"
-    },
-    {
-      "candidateType": "venue",
-      "candidateKey": "klma-venue-f5b1f7da58fc",
-      "sourceId": "klma-stoke-gig-list",
-      "method": "backline-trust-loop-v1",
-      "confidence": 0,
-      "supportingClaimIds": [
-        "claim-1d6404343574e0cd54fe14ab3af2840c",
-        "claim-9d9e94d2cc35f2c327ab73907394031c",
-        "claim-1f31d8540b1040d485c0b23af29ab68b",
-        "claim-4e452a34904ccb311c0e06d42812407b",
-        "claim-8238c5228ae6b687b1e6e58eb37f7d29",
-        "claim-3da377884d4cb2736cc486cffa1140d5",
-        "claim-777e6a8664103cbdd44167f8ea6c523c",
-        "claim-ae6ecf7cb2c78f3d3ed42676ecee6243",
-        "claim-2e5a393c824f00a9507819ba36f64149",
-        "claim-4b2c1b1ce35e7c3f0eb174b50409c8d2",
-        "claim-b16b2e36f024da7ddd92dec60fc84d79"
-      ],
-      "hypotheses": [],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ],
-      "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:16.991Z"
-    },
-    {
-      "candidateType": "event",
-      "candidateKey": "event:klma-stoke-gig-list:klma-fe19116d42df",
-      "sourceId": "klma-stoke-gig-list",
-      "method": "backline-trust-loop-v1",
-      "confidence": 0,
-      "supportingClaimIds": [
-        "claim-0097b177bfaa6faf1dabde22c4396f42",
-        "claim-041d2e2d3ee7f2cbcce545c26d6f8c84",
-        "claim-7f06c64eb4615e633362c423fe1ff9d1",
-        "claim-91818ff5334f2cd29ad512df7e52c869",
-        "claim-cbcd862a91fcc88ff179c050960b9969",
-        "claim-cf31879f3ccb859c6f762018b7f2c086",
-        "claim-dc674454d284258be3c57dd16679320e",
-        "claim-012f6929bda98882d4f15616a8671d7e",
-        "claim-0960a6ec07cb5076fb0253fc2dd83677",
-        "claim-14a65abfc3b2d90363257e5c46a782c9",
-        "claim-161beeae7434d8349dac48744a61378e",
-        "claim-505c1430fd94733a34a3babde9056fd1",
-        "claim-50c6060f37d5f0b8262ec484717f382f",
-        "claim-515bf0d1e3f79d9b86dd072acde554f8",
-        "claim-0755c4f6314c383140c4218e8f481231",
-        "claim-201cbd5a30ad97d8a68eab411cc04671",
-        "claim-3e7dfc816f6539abe88afb9711255a45",
-        "claim-5405a92b9401a7b26b504f0b31c2bae6",
-        "claim-79a171e371bc78548a7c2f81d65fe542",
-        "claim-91ab797e866d1d3039596c7d4484eb59",
-        "claim-b34ed1da359c19eb3193fd584c2281f1",
-        "claim-061af91944faf097050bd18059e370cd",
-        "claim-18a9e6c04638b5a48dcb9d2105b0d61a",
-        "claim-280ed19595d34b08c4e89af9292e603c",
-        "claim-622e7de5109c054e01d772329dab2218",
-        "claim-6cfb4d0fbc986db7b13ec0a60c61b5b6",
-        "claim-6ec113902786bc1ad0c1618928757607",
-        "claim-7c949bea5290e2cdc2448c5cd5e433cb"
-      ],
-      "hypotheses": [],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ],
-      "status": "unresolved",
-      "classifiedAt": "2026-08-28T14:14:17.012Z"
+      "classifiedAt": "2026-08-28T14:31:49.395Z"
     }
   ],
   "reviewCases": [
+    {
+      "candidateType": "artist",
+      "candidateKey": "lemonrock:artist:thehumbuckers",
+      "sourceId": "lemonrock-artist-hydration",
+      "displayName": "The Humbuckers",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-00dde4f3c4a05a1cced563b768926f3e",
+        "claim-9431a8461a27d4aa45c8c2788432778f",
+        "claim-df04169f629fa4b9900978bd4172a446",
+        "claim-e63bc3aefb97662767fc30499e6c4d5d",
+        "claim-f1ae59bd1bd62c38030a3b0d0daf85cd",
+        "claim-025c9c2b50a93ec03fbeecf9f79b5dad",
+        "claim-347c95895ea0af17e1dacbb2470cdf4a",
+        "claim-55bdf3fc46e18c7770161f785b7365bd",
+        "claim-8c0c66256351bd2eaa9132fda99a5897",
+        "claim-e1f5d23b9453d32b03430d1a6f768f08",
+        "claim-738111e08b659f867cb3c17a5058b60a",
+        "claim-9b582389cd100d17caf94a36bc750660",
+        "claim-9502a055a4cedd099ebc1eb39a19ed95",
+        "claim-acf6a2674d20a2ba2e63192def53982d",
+        "claim-47ac10cdbf0bf6c847580c2c59102e3a",
+        "claim-a7deb305471d24b356cc904c96a651db",
+        "claim-b0a7a5718bdcd1f34d191aa657d6d41e",
+        "claim-ca214ad9f2c30883615c2b21066e8f24",
+        "claim-cbdd5577cfa17283269a51dd7059b1ae"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
     {
       "candidateType": "venue",
       "candidateKey": "onthecase:venue:940",
@@ -1662,7 +1779,9 @@
         "claim-0b567f05970830c96c4b40de79016de3",
         "claim-d963c371d601d0ebb2b9808836d70b4f",
         "claim-d0eb2db876d8c4750aeea2988235c501",
-        "claim-e430f867335d59e2af6f3392e6ecd94c"
+        "claim-e430f867335d59e2af6f3392e6ecd94c",
+        "claim-3ca25b1deeecf24828f21a8a87f9e51a",
+        "claim-545910bd94b951665e6528b3c81baedc"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -1728,6 +1847,38 @@
     },
     {
       "candidateType": "artist",
+      "candidateKey": "onthecase:band:27822",
+      "sourceId": "onthecase-band-hydration",
+      "displayName": "Anna Reay",
+      "status": "unresolved",
+      "canonicalHypotheses": [
+        {
+          "canonicalEntityId": "ece2a565-a6c9-4215-ac5a-837b537a82c6",
+          "displayName": "Anna Reay"
+        }
+      ],
+      "supportingClaimIds": [
+        "claim-014944678a7c3b41b91265fef188e568",
+        "claim-1b86a3144ca2946f49a648c23e4fb4f1",
+        "claim-32cf03442bc20f45e0182c6cb93e5a49",
+        "claim-3f2ae1c8e69199873a6c743b7dc502ac",
+        "claim-81e1e91c41f151a43e9bebeaba220e07",
+        "claim-53245fd6a7c8d9c84ffd06c33cadff12",
+        "claim-67fc8631e2e24a5ec83aacd9be10b24c",
+        "claim-e810da7b2260185242cf16fed65ddf6f",
+        "claim-eb4a98f77ea2b8c2c0bb697b9f1a8d69",
+        "claim-fb689ca3d53cd837650ace1c887d4aa1",
+        "claim-03336e0a2be4e68927eff90aac3b7517",
+        "claim-8fddf16cffd4cabdc218d883bf5e4463"
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "hasGenre conflicts",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "artist",
       "candidateKey": "klma-artist-ffdcd73f77da",
       "sourceId": "klma-stoke-gig-list",
       "displayName": "Bad Soul Buskers",
@@ -1750,7 +1901,7 @@
         "claim-1a6fa19f5b564e85353a8b98937d4dee",
         "claim-2fd5779232f2e8df9584eb1de073deb7",
         "claim-c3707eabd9a49a4bff0779be168dea64",
-        "claim_02729813b6085c8d48131668bf37166491466dab"
+        "claim-5f88145e6f6a028199273305102f2184"
       ],
       "decisionReasoning": [
         "Normalised name agrees",
@@ -1776,7 +1927,10 @@
         "claim-feea343bbd6d582702f4076bd26d8499",
         "claim-2e0c1ee729269070cce7b96e5c34de18",
         "claim-5de6f1d4b65b13b9ba54c082c0228d70",
-        "claim-f460358339175945e570d4c62939a067"
+        "claim-f460358339175945e570d4c62939a067",
+        "claim-1055c72bc224491789f16bb11e124225",
+        "claim-b94dfe72fc16be0aa9453d4d0281e548",
+        "claim-bbc7aab0ea148b758d22c29df52f75e5"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -1820,7 +1974,14 @@
         "claim-4b74fde67a36c93539780232564a18d3",
         "claim-66326be04b4ea04f952e5d287a8c3dcd",
         "claim-9c7f79e2e65caa7bafb5100e1abe8244",
-        "claim-a8f58c33e53e58a1c5f1067bd85a600c"
+        "claim-a8f58c33e53e58a1c5f1067bd85a600c",
+        "claim-34ec398e85d7779b0048034552306bbb",
+        "claim-4daf13039b79f9283b3f51a31b0e4fdf",
+        "claim-4f69e51ce5c7d6bb4346955de8351059",
+        "claim-7aa7989e5cd4031ed42af5a8ffe3e57c",
+        "claim-8a6fd072812f23eb52c183b9039559f6",
+        "claim-cd2968a5d797b9524574d059d32f12ac",
+        "claim-e1ca2f39af99b400ddede84f36584819"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -1829,14 +1990,14 @@
     },
     {
       "candidateType": "artist",
-      "candidateKey": "artist_chris",
+      "candidateKey": "artist_tom-meighan-raw26",
       "sourceId": "gigs-news-daily-import",
-      "displayName": "Chris",
+      "displayName": "Tom Meighan Raw26",
       "status": "unresolved",
       "canonicalHypotheses": [],
       "supportingClaimIds": [
-        "claim-34b2b2a37961e82456e6de3b75ebc3fe",
-        "claim-73a0341d7fe4e91b634b91055cb9bf68"
+        "claim-4e7222013340cbc57a01419d75015266",
+        "claim-990cc522516e5fa7cd2150cc16ad897f"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -1845,52 +2006,70 @@
     },
     {
       "candidateType": "venue",
-      "candidateKey": "venue_united-match",
+      "candidateKey": "venue_whittles-oldham",
       "sourceId": "gigs-news-daily-import",
-      "displayName": "United match)",
+      "displayName": "Whittles Oldham",
       "status": "unresolved",
-      "canonicalHypotheses": [
-        {
-          "canonicalEntityId": "9be0502f-2a7f-42ac-8751-b51852b2320a",
-          "displayName": "United match)"
-        }
-      ],
+      "canonicalHypotheses": [],
       "supportingClaimIds": [
-        "claim-04c422e10dbb09c8c8606fe4ca38db1f",
-        "claim-221a64770823c069a49f29641e5bdd86",
-        "claim_029847393b10e5e3737a62e27ea16ed2f0b27b86",
-        "claim_03af7d3750408b07974523fe0a67f263adface0a",
-        "claim_057894bcdc914e651a0f7a7f326523be2087bb6a",
-        "claim_06910b11d013ef4800c4a08de0810fb08e54a7e3",
-        "claim_07b844aa83bcfedbd1603411c6b14162d4e520ff",
-        "claim_0b875e563f2d977a502324b82e28fb30367aeb0d",
-        "claim_16e3bf7aea5751c6167ce91737b53c987509b192",
-        "claim_2a7c33ecaa45efc33e4462f5356cdab6d6870c3a",
-        "claim_2ad0e53002e2ddc26610eaaeac708040be36aaf3",
-        "claim_2b0a29cbc5eca7e7477f4afda0254eeca15f519a"
+        "claim-c45c4482b1ebb921d735ad63fd5ef639",
+        "claim-fe1baac3fa95f71ae33b5a5c348644bc"
       ],
       "decisionReasoning": [
-        "Normalised name agrees",
+        "No canonical hypothesis had enough evidence for a safe match",
         "Name similarity or footprint alone is not sufficient"
       ]
     },
     {
       "candidateType": "event",
-      "candidateKey": "event:gigs-news-daily-import:2026-08-30_chris_07811-44-7388",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_preston-weltz_coach-horses-oldham",
       "sourceId": "gigs-news-daily-import",
-      "artistName": "Chris",
-      "venueName": "07811 44 7388",
+      "artistName": "Preston & Weltz",
+      "venueName": "Coach & Horses Oldham",
       "date": "2026-08-30",
       "status": "unresolved",
       "canonicalHypotheses": [],
       "supportingClaimIds": [
-        "claim-2dd3f8e66728e6e2fc14fdbcde5be314",
-        "claim-62d3eecfdbcbc5dbf4e5314dc12ae5d9",
-        "claim-75c751dcb9f6f66f5d30047c8de4f850",
-        "claim-c80bca4571187d8e357b4d3417272251",
-        "claim-ccb4b1c1386912584cfc24f1b171a556",
-        "claim-fb1fe123e71d0ac3cfcd062bb90ad5ee",
-        "claim-fd219edb42ab3459ca08e5bd6abd5487"
+        "claim-0b63cbef94cc237b2562840e643fb02c",
+        "claim-1078be2a718174b142ba9860253cfa58",
+        "claim-32dfcaa4c6e2928e4522381611dbf94b",
+        "claim-463075a57b6b849716ff9a12af9804ad",
+        "claim-473bb5b381ab3e989025a603fcd41834",
+        "claim-584123a5fc46273bf523b577cdb3a786",
+        "claim-bea8aa508f68be77534683b610fb10fd"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "lemonrock:artist:joekanebeatlesnight",
+      "sourceId": "lemonrock-artist-hydration",
+      "displayName": "Joe Kane - Beatles Night",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-176e4a3ac81fc3f83464b136f3f5013f",
+        "claim-255ac880bcee98e559c92d028ca9b7f5",
+        "claim-358c6e64778a4267e54ff87bf2c472d4",
+        "claim-5ce025d90d6fc0fb1c29fe8dad96214a",
+        "claim-60f618b5565c011045b37afc0844b0c8",
+        "claim-2b5c9b3fc392ccad9c1bf089fdb32635",
+        "claim-4a90f8a20c557aee41f3c8471717f7eb",
+        "claim-70bed70ef7eb3972e0fd60fe4b156e18",
+        "claim-78b8d0b407037783d362691f57a8a489",
+        "claim-d11581b98a496445fbe2753b71fef31f",
+        "claim-27b7f13f0d734f571a5b259d1031c8cb",
+        "claim-bb66db3a87dda4bcbf88c6f24f2139f2",
+        "claim-88a22df2d5c19eaa57f1a282bc1399cc",
+        "claim-cac04420be1a8d246b6a32601d923a50",
+        "claim-116d5fd92d699d487df681e06c2b72bb",
+        "claim-38dc90b19fed3692c16e635e98226539",
+        "claim-6ec9e61f67ea45f9aefdeca4772c2fa4",
+        "claim-a1a75f52f7c6c83ec1a4b4b6f7be0a60",
+        "claim-f30948339431f600e65ec1d766c585f8"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -1934,7 +2113,9 @@
         "claim-4d561832630eed6770c95f07d1cd7f51",
         "claim-e8ce2213e6a955174564a7665743fdb1",
         "claim-5e384eef5c566dcbef5232955ce80d99",
-        "claim-6d9a4d3ec965e0a65f346d9fc3d9cadf"
+        "claim-6d9a4d3ec965e0a65f346d9fc3d9cadf",
+        "claim-2eda8935bc0e1e61285c5c0581b1d676",
+        "claim-92b1d3d179611c3b2d433797e9830d1b"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2000,6 +2181,37 @@
     },
     {
       "candidateType": "artist",
+      "candidateKey": "onthecase:band:1211",
+      "sourceId": "onthecase-band-hydration",
+      "displayName": "Jonny Trax",
+      "status": "unresolved",
+      "canonicalHypotheses": [
+        {
+          "canonicalEntityId": "d3d665d5-a031-45ff-b4e9-b8e94fc032ef",
+          "displayName": "Jonny Trax"
+        }
+      ],
+      "supportingClaimIds": [
+        "claim-292291ccb8bb6a601642ec31c35da30f",
+        "claim-2c4b4790cbcc7122ce070c4283758325",
+        "claim-bb47aaa72b770cc8d7d9c83863150ad7",
+        "claim-bfefb3ac0ad746f870e1a8dfab56bb58",
+        "claim-c2f605d4f7f6ac27f927820a645662bc",
+        "claim-f2bcd09340486d6165639c03ff9e7411",
+        "claim-1cb2e16e71806e532cb7d18213b622f8",
+        "claim-443f144685e1930d0f85a7ed90766951",
+        "claim-4f272004f64d7787154dc635a3981bf0",
+        "claim-6f0a0574363ceb6d3c854a3c43abe437",
+        "claim-92856351a30692e2d553dcf2f51eb0c4",
+        "claim-dd9d70731c54136cfc2d6ace92ee0f94"
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "artist",
       "candidateKey": "klma-artist-ff14ed763cec",
       "sourceId": "klma-stoke-gig-list",
       "displayName": "Catalyst",
@@ -2048,7 +2260,10 @@
         "claim-e0f4de324cb47ed3602eda9ff9440285",
         "claim-26535745bfda8adaaacaed94bd52b7ca",
         "claim-4f5396f2e09d359c2f965b23076f2d17",
-        "claim-ca9d10fb4b151a63cc9470298cb31d60"
+        "claim-ca9d10fb4b151a63cc9470298cb31d60",
+        "claim-0f786ceeb3624cf1a1b3b83ccb85d5b7",
+        "claim-6179681effc4ef6c38e480b5d705f01f",
+        "claim-f00edcfc04371a57f0dd1fe9688551bd"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2092,7 +2307,14 @@
         "claim-9c59a7916055f08d65db31bb73031787",
         "claim-c080ac4464e8463cf8431b1258d5c686",
         "claim-d8282796f3130300dcec3db70af00b21",
-        "claim-f1367d6efba1cb724ea5d00de84c0596"
+        "claim-f1367d6efba1cb724ea5d00de84c0596",
+        "claim-2144af9b92223c14a1ddaf1c57bd395f",
+        "claim-35d2eb72fd60bda54f337275245b658a",
+        "claim-7da0a3953e51ddd77d58dd422708c78a",
+        "claim-8f69f0bef7cbe0f3113b2b7afc355ede",
+        "claim-940ff8132e5bc1432cfbfc9952e43e4e",
+        "claim-cbc9c541571dddb050017c7841a129ae",
+        "claim-f55f418bd05e5d65ac0dcf935d8349cb"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2101,30 +2323,45 @@
     },
     {
       "candidateType": "artist",
-      "candidateKey": "artist_cancelled",
+      "candidateKey": "artist_the-tall-faces",
       "sourceId": "gigs-news-daily-import",
-      "displayName": "(cancelled",
+      "displayName": "the Tall Faces",
       "status": "unresolved",
-      "canonicalHypotheses": [],
+      "canonicalHypotheses": [
+        {
+          "canonicalEntityId": "34fd68aa-8bc4-493a-b49e-11128198fe65",
+          "displayName": "the Tall Faces"
+        }
+      ],
       "supportingClaimIds": [
-        "claim-6f3cbf959bfd2d0ffd7c672b9e9d6b12",
-        "claim-753b7f9f1d1696ce414ea0ac59b6c9c6"
+        "claim-5af91d303259e789eee36729807ad7df",
+        "claim-e567a10bde15cdc6fafd27696a6c39c1",
+        "claim_0250d599503c535261618ef3149bdffd24e7c430",
+        "claim_0419b30d2a7dbdf02fc883097d1ba78c16767ba4",
+        "claim_0704c71ee554e4c31afe727f2d9b0397ebe6bd76",
+        "claim_0d8992ed80137ca6abd68a80492868962ca84853",
+        "claim_1139c96ea033865190c4459c44876a6c32b1a1a4",
+        "claim_23fd567ad2c055630642f838e5618b97070fd1e9",
+        "claim_2682b0c07f697890e2ddd4b46c0a4f1234d09129",
+        "claim_27f5fde30b45f0e6e44be470e1d0dca34801829f",
+        "claim_2ccf0b75890e2c643f9b96e703a72b6e3db2b07a",
+        "claim_373717933580942494b0705eec0df5051ffee111"
       ],
       "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
+        "Normalised name agrees",
         "Name similarity or footprint alone is not sufficient"
       ]
     },
     {
       "candidateType": "venue",
-      "candidateKey": "venue_07811-44-7388",
+      "candidateKey": "venue_white-hart-woodley",
       "sourceId": "gigs-news-daily-import",
-      "displayName": "07811 44 7388",
+      "displayName": "White Hart Woodley",
       "status": "unresolved",
       "canonicalHypotheses": [],
       "supportingClaimIds": [
-        "claim-08973a25283548b117db6fd62d1f2ee8",
-        "claim-39cc9ca46b104fd24f1e8e9b2a5eecfd"
+        "claim-48fb337cc566b5a56009266b2629afdf",
+        "claim-900d7d70f4ab54b9ceaf5d545006cf12"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2133,21 +2370,54 @@
     },
     {
       "candidateType": "event",
-      "candidateKey": "event:gigs-news-daily-import:2026-08-30_cancelled_united-match",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_off-the-record_the-stock-dove-romiley",
       "sourceId": "gigs-news-daily-import",
-      "artistName": "(cancelled",
-      "venueName": "United match)",
+      "artistName": "Off the Record",
+      "venueName": "the Stock Dove Romiley",
       "date": "2026-08-30",
       "status": "unresolved",
       "canonicalHypotheses": [],
       "supportingClaimIds": [
-        "claim-070028dd8fa27811b0cde1f0c39cbe48",
-        "claim-27e4ab8b80e4334d307acc7c204b6c3e",
-        "claim-2cda922b5d255853ab7bb9624fd6e8aa",
-        "claim-535eb74fcecf5f37ec76ce804cd70efb",
-        "claim-7fcce227538ffc0ff3b1784960d12fb3",
-        "claim-8a31830483e2c407790b080f8292b1cb",
-        "claim-fa645a3404ae1785515ffa8a2b6e7b65"
+        "claim-14430e4908f6d765871e575148640068",
+        "claim-41ebba730727cf3f1c055daac290a08e",
+        "claim-708ce6cbc08bfdbf20736873ee1f4caf",
+        "claim-c4d0557a4efb475328de869e224e6422",
+        "claim-cdb64e77f5b41ceb3e233263fd50fc6b",
+        "claim-d1c3ef5e9cf70a49e2e78d0dc787cfb0",
+        "claim-e7f080b0152d425ee4839015e94576a8"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "lemonrock:artist:neovenator",
+      "sourceId": "lemonrock-artist-hydration",
+      "displayName": "Neovenator",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-6e11e7f591897f8552fcbbf6bcd80a2d",
+        "claim-a6f3152b3cf3df5a5499457a6b2faf9c",
+        "claim-d1e51c32ad37242f4abb2233d258735b",
+        "claim-e6d6ab096846580397e07401d33aafbe",
+        "claim-f68094aae695147effaf233ae9fc29ca",
+        "claim-0e3dad76bb30b1d4592adeae1de14431",
+        "claim-19a6a72e2a172563e19929d057ae0405",
+        "claim-cbc38d938ad545388650e1139f15dd34",
+        "claim-d37d23a97a85ee25e9355ce4057d55b5",
+        "claim-d53de9c1fa90d6c0872eab59d6a3c3fe",
+        "claim-b2d6425c275d76aad5e6d77fefb1e8f0",
+        "claim-c27bdb32edb9734818f6f2746cabe1a6",
+        "claim-1a9cc14a8e4d213944a592f28edc86fb",
+        "claim-5a5c5ed025bf04a904aaf54711bbfbf9",
+        "claim-2987a296160d55f098c12ae0af936ce3",
+        "claim-4e9af6133fff56143acff1051a060410",
+        "claim-8037681f723acd9709a705debc656497",
+        "claim-a1ce39e3c58f738d9d40abbf8c572a57",
+        "claim-bc73b4a67a183dce6b2eacb799afc5d4"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2267,6 +2537,37 @@
     },
     {
       "candidateType": "artist",
+      "candidateKey": "onthecase:band:26683",
+      "sourceId": "onthecase-band-hydration",
+      "displayName": "Charlotte Forman",
+      "status": "unresolved",
+      "canonicalHypotheses": [
+        {
+          "canonicalEntityId": "ba1a508a-7558-405c-ae67-84270a6bf8cd",
+          "displayName": "Charlotte Forman"
+        }
+      ],
+      "supportingClaimIds": [
+        "claim-075f4446376ee9e37d294ed9f4e04563",
+        "claim-1fb63d00ce7510b8d6e8eb3f5564cec7",
+        "claim-4172e05c8ab738a9f422f701d9c5aee7",
+        "claim-576e372d7fa5193e009d8cf4d28da72f",
+        "claim-73d2cd485c070dade2c1a7d68b9249eb",
+        "claim-aea7b30232b6233f3f7e3346b4734a8a",
+        "claim-360e428687d888e142f926408bd4a97f",
+        "claim-68c8dc437f0dc896fa21cce16e867c1c",
+        "claim-7978c9c35ff3a2cfb00742c92351b0e7",
+        "claim-aec58af464e8a68ec3786171215d5e3f",
+        "claim-b67d19cad7556dcedffe4648930237bd",
+        "claim-d050c968242b0596365ab3c91f3bc03d"
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "artist",
       "candidateKey": "klma-artist-fe38b8f4dfe4",
       "sourceId": "klma-stoke-gig-list",
       "displayName": "Danny & Friends",
@@ -2321,7 +2622,7 @@
         "claim-022a5144d7fd959418f60686a90519b9",
         "claim-301dc8bd87b4a1f0e9be45ee935b3dd5",
         "claim-4088d5cda5166be21e9d6543d7842f03",
-        "claim_0ba4bba6a4bd47deed7605b34f65130e2cfab8a7"
+        "claim-0697fa80d70b8c4a5026fe89ab13d6f9"
       ],
       "decisionReasoning": [
         "Normalised name agrees",
@@ -2365,7 +2666,117 @@
         "claim-b1f2fa0e53c9237ca4f5a9abad143da3",
         "claim-b88d64dfc007c12a193fa247579ba443",
         "claim-bc6e2c9c62b1f9b8da7ce9902b6657aa",
-        "claim-d4091ab6d99abf4b550eda8b990d1cb1"
+        "claim-d4091ab6d99abf4b550eda8b990d1cb1",
+        "claim-259ec49a444f157cfdbedbdc829d94cb",
+        "claim-6026da5d3f32f04b21cf4cc338dccfb0",
+        "claim-9f03ebf61c8cca3790654941ff1e805b",
+        "claim-af07283493f37f1da7ab528c497dea30",
+        "claim-d8868bb0dadd7194bcbe7a0dfe679c88",
+        "claim-e95709affa76fd88a4f4a3f061aa0de0",
+        "claim-ecee5b346c548394b6f2b99573c42258"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "artist_the-select-committee",
+      "sourceId": "gigs-news-daily-import",
+      "displayName": "the Select Committee",
+      "status": "unresolved",
+      "canonicalHypotheses": [
+        {
+          "canonicalEntityId": "PNJ6TclgY1pH26h2orEa",
+          "displayName": "The Select Committee"
+        }
+      ],
+      "supportingClaimIds": [
+        "claim-51d52f6fafa544cafaeded70606ddef3",
+        "claim-bef4b38af165310963c01df648bdea0e",
+        "claim_06c4f861ea8540e2218786793026c4e3f96563f3",
+        "claim_12ccc65483428c9e1a15691f5e889f7f3265e0d0",
+        "claim_1e03af12c85974cd5739e030ce5f04a6bc309ede",
+        "claim_24dbe16e70bb683a7edd6d38944d5d96ad3a13c2",
+        "claim_274ef66e48c525ed20f639c892bb7c8df8d0076b",
+        "claim_32cf816d4f10963949bc2b8166676b73eb5532cc",
+        "claim_336fd8d1472c9ef6002478b1d38f49842e31dd1d",
+        "claim_3d0642947683ab9d366394379b7d0d94e4558405",
+        "claim_433b8e1a067e8982954b930f081025d86883bc18",
+        "claim_4c9f9ea1bb4bb591b86652c9956b66eba4838998"
+      ],
+      "decisionReasoning": [
+        "Normalised name agrees",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "venue",
+      "candidateKey": "venue_town-house-festival-oswestry",
+      "sourceId": "gigs-news-daily-import",
+      "displayName": "Town House Festival Oswestry",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-4668ce6f2ccf3eb54a0c5b0b6b64a452",
+        "claim-4d9176b25ed211b36c10e0dc04dc0061"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "event",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_nick-milner_acoustic-lounge-poynton",
+      "sourceId": "gigs-news-daily-import",
+      "artistName": "Nick Milner band",
+      "venueName": "Acoustic Lounge Poynton",
+      "date": "2026-08-30",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-2526cbe020d242e6e6622cf9086051d7",
+        "claim-3db8afab83e1ec870d109d219dca2d35",
+        "claim-40c1b97417fbee931848f716ca48d07e",
+        "claim-9be57c4e02786ab7dfd89069ae1a6d87",
+        "claim-c028426a85e43980a166bb74c3360770",
+        "claim-d4cad9341c417cdd0cdd2e6314bb54a2",
+        "claim-ee1b256cd36d2b0c2d699a88d8fe4534"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "artist",
+      "candidateKey": "lemonrock:artist:flamingpieband",
+      "sourceId": "lemonrock-artist-hydration",
+      "displayName": "Flaming Pie Band",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-3f36c758d6d09fb6158111956c043e36",
+        "claim-714869f1682f7992075d1ecf736deef4",
+        "claim-876983db3a7313aca0fb68ccb1367257",
+        "claim-a78d0b2d125b2e1e2094e5ebb7cefaa5",
+        "claim-d614b6ee4f1f823296d7441f4bdd5efb",
+        "claim-6f3bf21cf758343e0ad7bb6ec06c8d03",
+        "claim-9ea6c8d405c6f3d29a2beb2f4db1acb0",
+        "claim-d07353886387a7d9e82bfc68919e637c",
+        "claim-d4065dfaaea3007926932d4852119f56",
+        "claim-da27684646cb4ee2cdd3b3660afd8469",
+        "claim-dccdf954b6743b001cfb1de91b308dbd",
+        "claim-e59cc16b2162560d96c900a90930337c",
+        "claim-4b154c5e318884a0b2dab6d3028b8491",
+        "claim-d68b245a795f02305efb990270b59a07",
+        "claim-0ae5aa64f647115d0efc2f7c349620ce",
+        "claim-0b5935ebc785d02155602f7ffd2c1162",
+        "claim-91f3e2e47adfbb80fce79293a6c744dc",
+        "claim-b6eec476c20677cf7a980186db50c84b",
+        "claim-dc5638fd8993f085b0cf81ad433b80b2"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2411,7 +2822,9 @@
         "claim-6e70aed632e382a995b3fb0b8e673579",
         "claim-7197435a04bce3517d3bc517931895fd",
         "claim-e403a25fc5de38361e4e902f83325e4e",
-        "claim-e8cafc8d0f4743be01d5b75e0706048c"
+        "claim-e8cafc8d0f4743be01d5b75e0706048c",
+        "claim-7e27def378121fdd76320ab4dda8effe",
+        "claim-c7d54d2528549aa0c91265ccde27f3f9"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2477,6 +2890,35 @@
     },
     {
       "candidateType": "artist",
+      "candidateKey": "onthecase:band:1411",
+      "sourceId": "onthecase-band-hydration",
+      "displayName": "Mad Manners - One Man Madness Show",
+      "status": "unresolved",
+      "canonicalHypotheses": [],
+      "supportingClaimIds": [
+        "claim-25d3a2b161d67ab45a39c01ffe0dcc29",
+        "claim-31c0708b8cb59a0fad361d26fd0f50f7",
+        "claim-ceaf91e961f45e15d50bddc02266c7b5",
+        "claim-dfc363414fa73586c1ed9dcfe3848861",
+        "claim-e853490e9f4de364a148573decc7f656",
+        "claim-09fdff3fd9605b153507a501c4c16f4b",
+        "claim-7e166c63e2c67a7a69ef4a083afc2ab8",
+        "claim-8b41bcfaae691c8e4426ccfa7d89fcc5",
+        "claim-b86c421c355c577303ccd45d7507aa17",
+        "claim-fd85f47dbfd13d32487ada1e9829c426",
+        "claim-1ce563f87db8024cf39f894fb6b67009",
+        "claim-2e109f8530272f00a89aabf7e2c30c69",
+        "claim-8d8aa595401f539fbea7ed4b24038086",
+        "claim-a0052dd51f11cbd43c18d2c430359795",
+        "claim-f6ac19895b99feea4d601d6338c46038"
+      ],
+      "decisionReasoning": [
+        "No canonical hypothesis had enough evidence for a safe match",
+        "Name similarity or footprint alone is not sufficient"
+      ]
+    },
+    {
+      "candidateType": "artist",
       "candidateKey": "klma-artist-fc1939c1fa4d",
       "sourceId": "klma-stoke-gig-list",
       "displayName": "Angel Of Harlem - Female Fronted Local U2 Tribute",
@@ -2493,7 +2935,10 @@
         "claim-9cbebbae28fbce667acf5770bfd9045a",
         "claim-0c76e397e5d31b101b89d74b957333d8",
         "claim-404a573edc13fe6e1b9c78f5e2eba548",
-        "claim-c76b22cc64cb4b092ece59163cabde9a"
+        "claim-c76b22cc64cb4b092ece59163cabde9a",
+        "claim-4bf68fb44ba8b6bf7f77c1cc72319d05",
+        "claim-a7bd2bd91fe296fa1c32c5b93fc5dccd",
+        "claim-fe8b7bb9b45691460f492ad72dc26473"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2518,7 +2963,10 @@
         "claim-dee332754029b4e57c5567c8314cd742",
         "claim-090b100231c759f3336cc0465abd2ef4",
         "claim-858b73dec56a1dd1de450bd688185b55",
-        "claim-e4ceeb091d1489619529def8969f2a00"
+        "claim-e4ceeb091d1489619529def8969f2a00",
+        "claim-02d25bb4f32419150eaf8b32deb0959d",
+        "claim-18215df74ca1f58cfcfdcdb39f6a34ea",
+        "claim-a2e96394af7ba95293e5c6bcc794641f"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2562,116 +3010,14 @@
         "claim-cb03df5bd5231d6b2eafdd3af26abb19",
         "claim-cf779f0efc8ffc8e3c03de953ea60256",
         "claim-d58974d12b9434b97a4217404434cd83",
-        "claim-de4265dde8e5b547d0ec5f7a7a95d9b5"
-      ],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ]
-    },
-    {
-      "candidateType": "venue",
-      "candidateKey": "onthecase:venue:753",
-      "sourceId": "onthecase-gig-index",
-      "displayName": "Bridlepath Whickham",
-      "status": "unresolved",
-      "canonicalHypotheses": [],
-      "supportingClaimIds": [
-        "claim-e46ea940499ecfdfda1fecee6d55086d",
-        "claim-57558c020f8b63f1743e7449f42a9255",
-        "claim-8275e531611078d7252ee56d7511846f",
-        "claim-01095f4759614bbea60f75c9b1f54ab0",
-        "claim-0f9f2855718c15aa9ea747e05aaea7ee",
-        "claim-368ceabe5428424e0720feaa914bf4ee",
-        "claim-68dbfd88ec3e08d4efc2e5f33620379d",
-        "claim-7aac673e0b4f9a330d1fdfeaa936b290",
-        "claim-87a8d9fbec1df1fe1dfb3e4f4c4d8076",
-        "claim-d8faec0a3010ce340339443594afb140",
-        "claim-f7c6c5eabba2f4423986d2daef67bbdd",
-        "claim-fe04da03bd3a9503ce1594bd4302d82c",
-        "claim-197d175c738f5eef5aecc68fad259ec0",
-        "claim-1e00af98e4782bdf6f2b24b7cc005a83",
-        "claim-5c150c593baf1f216bbedc629671cf14",
-        "claim-793fe4f21eb272a802de1b04aa3cfd18",
-        "claim-8b8b1a197cca3d6cb628f7f8afed8d88",
-        "claim-9406ce29ab85c6ec7f64dd3866585fad",
-        "claim-bd07228a48e76974ce0a1e5630dbfe9f",
-        "claim-c06af3acc3857de216de621fd24cef1e",
-        "claim-cd1df7cd59e5c1a547c3e01bebcc5b7b",
-        "claim-15a21d9ad53af3fb1e2073c9fa5052ea",
-        "claim-1cf3578595b9d3f5e659e739c30a82d4",
-        "claim-599672c9d0c0be775970d7ff29bc3bfd",
-        "claim-7a14ee05d343e3f590cefe81129eeb81",
-        "claim-8848df041fd3e7e5e092972fed59d2d4",
-        "claim-88f633e3bed4663c66ead5c624b3f0e1",
-        "claim-b7a053cde777362e5be280ce55de3be5",
-        "claim-e4db6b28cf89915d6f7d4646f4a12a21",
-        "claim-efdd347307dde00330746cbbc6e63f23",
-        "claim-10d0ea5eddd95a5783db9913ef373ee8",
-        "claim-746caac6368b17444601833fdfde7492",
-        "claim-54268cf968edc8b692299c86a99d9aed",
-        "claim-8ed5804f227c30950c9d58669d559d2d",
-        "claim-ba5fe6052278a094ec78a168b8711aad",
-        "claim-db53e0816f548f701fc949622dd8e795",
-        "claim-45c788b5dae3c6ac8391fbf3cb2fba63",
-        "claim-67a6ff43236d6467cda608d4aa54e7d8"
-      ],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ]
-    },
-    {
-      "candidateType": "event",
-      "candidateKey": "event:onthecase-gig-index:onthecase:gig:131486",
-      "sourceId": "onthecase-gig-index",
-      "displayName": "Fontains at Lochside",
-      "artistName": "Fontains",
-      "venueName": "Lochside",
-      "date": "2026-08-28",
-      "status": "unresolved",
-      "canonicalHypotheses": [],
-      "supportingClaimIds": [
-        "claim-01acd17ddd2ec5975d8cf5062f5b875d",
-        "claim-071baac92ee8a92683bccec31811aee6",
-        "claim-2d8a70f380ea3b1d4f8e35c17c250801",
-        "claim-4e6319048602d6f575fa16093f6736c7",
-        "claim-60fe6bb66e7d6c626d2cf9b355c33955",
-        "claim-642b4e5734fe4ddb73fa6dbe1f5079f8",
-        "claim-66ced9b9b9850a1af303007d473f1019",
-        "claim-a5c15c82adafd8c770fc50313e7cca21",
-        "claim-d04c0228b7784ffd6004d346ccb1dfc6",
-        "claim-d8f460784fc11620a1e05077cc41b6d1",
-        "claim-2e3f34986117cf559332c3af12480c42",
-        "claim-3b1c3030f32107b579c5fff5faa32c49",
-        "claim-3e8757bbae995d9925e09e3891c98fce",
-        "claim-4bbebe65f10b942d71ddb41c1746f0b5",
-        "claim-5d280a1d9d8d1cfbd36938adac1e1798",
-        "claim-9c9019130cf2b0ec2abc2a633085e1ec",
-        "claim-a5ab9344502b285f6488eb3b972bcf8a",
-        "claim-b6fd32f3f66fb200f4a35f2eab61d392",
-        "claim-c6d39ebbd9730c0b6508ed1fc40f1603",
-        "claim-feb29ffb790945de3738c40ffd56da08",
-        "claim-0fe9ec0b8549f95f7a4e7bf7061cfb41",
-        "claim-11ad66ab84addd60d1b35eac6738928b",
-        "claim-1fa6055a07f74613e390d0c02c5f7dec",
-        "claim-3d1f0e5036917949771cd8a870f5fc5d",
-        "claim-4e315d1e03198f0e04e6cd7d0e77053e",
-        "claim-697945506a49dbc64f9acce346ff7e37",
-        "claim-71e407823df150fbd88d38db3969c6bc",
-        "claim-9b0277f3e99bad53428d364d115235a6",
-        "claim-e4901f1c3c8c8b04379f6aea541b2a6b",
-        "claim-f45fed36c52422a3e5815071ec93e84a",
-        "claim-0ab56f7dcbc4e129bde948582eca5111",
-        "claim-0b435f635fccbfe840cdd20333961675",
-        "claim-1a9013ed7308e40fd8e6525920975a07",
-        "claim-43c0335d3a249d322777ac665690fe41",
-        "claim-6b16817f70872fb02687faccdd9cd49b",
-        "claim-8d9da1d99794a6ce66a09f0f0458cfa9",
-        "claim-9e1fe0b576f49d7a31a37eea30427227",
-        "claim-ba7c81530f76f1f70d7afad26e65a498",
-        "claim-d508dcdf5dbe26a8cc0ed759f2dbfaf9",
-        "claim-d8b96a2b9d41c2cf2e2bfdefb0130e39"
+        "claim-de4265dde8e5b547d0ec5f7a7a95d9b5",
+        "claim-115f2eacee69b6819b471c9706094ff1",
+        "claim-3974033acd9f8cadc95472abf4b6679d",
+        "claim-5f51fe962e3041bbe3989b1a0dcb9665",
+        "claim-bef1027f6188271609664fb8a6b368ef",
+        "claim-c8bdaaca05c04da0c491b01b65331851",
+        "claim-cf204b3049f1a72d0ac525e334322d36",
+        "claim-dd3cbc2d29c5250f24bba58f8004cfbf"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2680,56 +3026,35 @@
     },
     {
       "candidateType": "artist",
-      "candidateKey": "klma-artist-f7d7f2a92f79",
-      "sourceId": "klma-stoke-gig-list",
-      "displayName": "Danny Brab",
+      "candidateKey": "artist_the-reform",
+      "sourceId": "gigs-news-daily-import",
+      "displayName": "the Reform",
       "status": "unresolved",
       "canonicalHypotheses": [
         {
-          "canonicalEntityId": "FIT600aoQ5lpNSejGctN",
-          "displayName": "Danny Brab"
+          "canonicalEntityId": "2eaead2c-6892-48b0-bd85-2f6e4b11161e",
+          "displayName": "the Reform"
         }
       ],
       "supportingClaimIds": [
-        "claim-130d0c15f2e6beac4082f27ffe590ccd",
-        "claim-f5d6499971d6df1fd6a4546155d490c1",
-        "claim-f7d3698707ced33f10707c3f2306d4b3",
-        "claim-01a123e2948ddb303f9c465287fe4668",
-        "claim-0a79c20c3051f152d39d0b876ba7c8db",
-        "claim-0de33e0f5710f5ba04a3f04bffb34db8",
-        "claim-10227b9de4677c91a996bfaeb62c67bb",
-        "claim-1287daaf0e207eafd10253d1e2d15a84",
-        "claim-14b77c115d0ff9142ff317d72e9543de",
-        "claim-1a8580b56fe3a22d8fcbbe1951582df1",
-        "claim-206314379c6fcf8e58c17d326e6d5c1d",
-        "claim-25eef95fb910f6994b5bc6f2858f69a7"
+        "claim-1369b6f95bbbf79f1ad15adf66f2ef3f",
+        "claim-a59f4d2097ce05485199ae9652fdaa1a"
       ],
       "decisionReasoning": [
         "Normalised name agrees",
-        "hasLocation conflicts",
-        "hasGenre conflicts",
         "Name similarity or footprint alone is not sufficient"
       ]
     },
     {
       "candidateType": "venue",
-      "candidateKey": "klma-venue-f7bf76c952a1",
-      "sourceId": "klma-stoke-gig-list",
-      "displayName": "The Raven Crewe",
+      "candidateKey": "venue_the-whitehouse-stalybridge",
+      "sourceId": "gigs-news-daily-import",
+      "displayName": "the Whitehouse Stalybridge",
       "status": "unresolved",
       "canonicalHypotheses": [],
       "supportingClaimIds": [
-        "claim-7c37468ee5e5288bcd8e1983b9bf1ce8",
-        "claim-8e9b252b908cb08086d1193b9dde5bd9",
-        "claim-0e7432b762496e6636cdc8d6e70824a7",
-        "claim-622ecf1f551b847fca057904ef912f3f",
-        "claim-a4c2f6f654a9b47cb20051f843cb7cde",
-        "claim-593e86d1b7ddf20d27e93ac34d755dc6",
-        "claim-6cdf9adab49337892b1b365f4e45cb0d",
-        "claim-96785ab0dc445319ea6292cb9c58f616",
-        "claim-9a38268a11586bc4c75342323d42deea",
-        "claim-9f182b93b724b95bc39f73385dce52bb",
-        "claim-cb6f38efac924c8b8ebe72e3b2a08a32"
+        "claim-6fcd443f8b12b51f3bbbe61fecc96be1",
+        "claim-7e98f1aeba54957cbda0cf5bd9920343"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2738,246 +3063,21 @@
     },
     {
       "candidateType": "event",
-      "candidateKey": "event:klma-stoke-gig-list:klma-fe8341a59e17",
-      "sourceId": "klma-stoke-gig-list",
-      "artistName": "Trilogy Rock Band",
-      "venueName": "The Potters Bar",
-      "date": "2026-11-21",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_manic_cheshire-cheese-newton",
+      "sourceId": "gigs-news-daily-import",
+      "artistName": "Manic duo",
+      "venueName": "Cheshire Cheese Newton",
+      "date": "2026-08-30",
       "status": "unresolved",
       "canonicalHypotheses": [],
       "supportingClaimIds": [
-        "claim-4a35ce6ae95118b9875d8b1263e19f12",
-        "claim-6f047be952db118c1ab522166719b6fc",
-        "claim-cfc3838986562b24d71e30543d98fe22",
-        "claim-d37faf1e743602c7589943fff06b0262",
-        "claim-e1375c309af0cac6634da7c0daa9635e",
-        "claim-e7fcd21a2eee502c503f01669c3d976c",
-        "claim-e83383fbe4e1b9b4810591258321804a",
-        "claim-2a73e81c2c9133e2f2252c57734e3c3e",
-        "claim-5537e016c72477979a2f37b75f6a6fdd",
-        "claim-967e3520d3cb9e5b70e428cf36743145",
-        "claim-aef5be08a28a31a372772ebebcaa7ae6",
-        "claim-c601f5791030a4df5a543a69ea41f313",
-        "claim-e31ef4ee1551ebab17230f7dcf4c1e27",
-        "claim-e7cb8407cd4aab9ac3a3a170d1ad6e4a",
-        "claim-05a1f931b91a664e86315c62629a794c",
-        "claim-14c7e358cabefc2b4a43b26e028b90be",
-        "claim-5fee733f39cc60be9c8ce04f6f8159ad",
-        "claim-74e46e0508e38dc4d20787f54f6cc907",
-        "claim-a4ce065009c14bf02c1121e255899afd",
-        "claim-d5bc4ba826a82a99b0b2022922005c14",
-        "claim-ed8388368c290a83eb38c4918589f476",
-        "claim-25ee49332ddfff8a715f2d95f98504a5",
-        "claim-2cf1f79d17e73e3c6eba1f638c7bfb89",
-        "claim-94c8c8f5395122d57383a1a3280c7556",
-        "claim-bf286c13e7d53fe12f0c1e15b80d0fcf",
-        "claim-c8a0e73fd8fd774b92ddc2b09b9ea91c",
-        "claim-cffd04f88598e53cd80cc68c310d72f2",
-        "claim-fe9af0aabadb30a5bf5b1fc2013e7b43"
-      ],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ]
-    },
-    {
-      "candidateType": "venue",
-      "candidateKey": "onthecase:venue:638",
-      "sourceId": "onthecase-gig-index",
-      "displayName": "Runhead Bar & Grill Ryton",
-      "status": "unresolved",
-      "canonicalHypotheses": [],
-      "supportingClaimIds": [
-        "claim-1e6064de28f115f0b35e66605ae21ade",
-        "claim-f28a66892207d27c3052a96aff6f7d11",
-        "claim-e4b4525c8956d19945a76a1e69bb6c05",
-        "claim-0bf6e846c5f4119164c2ca5648022158",
-        "claim-4626ce6e90987da71563263663872a8b",
-        "claim-7762e18102df05385b1d983f94e89b6c",
-        "claim-935a16a8394b304b72b1a80c96d7a710",
-        "claim-b8f75e5c2e0076e338317182b794c7d7",
-        "claim-d1b35c6f3eaa2ad07599efc66f5166f3",
-        "claim-e882940af4356a5f8481142e20c92b9e",
-        "claim-20b0053d7239b4265c65aa2dd5cff585",
-        "claim-4a28dda74b7be02a14cf245d1bd9ebb9",
-        "claim-6768ccb6d6fa4b3314987995b3007604",
-        "claim-7ea0cee7728b576aea574e82c6e2e68d",
-        "claim-c7d322aea292c45d5aa09c51ed824c3d",
-        "claim-db5274d2a0e6636fd22b2f3e42b8321b",
-        "claim-eebc8fffc7d0ba5444d71aa3223f9557",
-        "claim-1753570d82b5b1cce615b15b8e9b940a",
-        "claim-215443f1efd2063fe86783bf4d61f057",
-        "claim-6cb8e77a188bdea234cb9aa3659caf85",
-        "claim-75a1163e27c33275e90b131fe5ca437b",
-        "claim-9aed2c3823a8e3333095eb7da8f58659",
-        "claim-adeb38c2cc56d58dc7e10fa4cf89e579",
-        "claim-b8860ad4b743909e82fc87c02825da9a",
-        "claim-9a2887e5ae1d1ab11859091bf82211b8",
-        "claim-9d5bbea0aeb20154c99320a09a08169e",
-        "claim-2434c7e866c6a9afea6a42a4b2bf3f31",
-        "claim-2826012a3a550922c76263279055a1ce",
-        "claim-126880eee76b3b318bae571fa681959a",
-        "claim-d70bdb815505652cb84de079cd25db2b",
-        "claim-2feacd4e55ef21da67058d08d2b53534",
-        "claim-cc8aad677b91ee6c55e00966b8b15ec9"
-      ],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ]
-    },
-    {
-      "candidateType": "event",
-      "candidateKey": "event:onthecase-gig-index:onthecase:gig:131485",
-      "sourceId": "onthecase-gig-index",
-      "displayName": "Alex Fawcett Band at Old Fox Felling Gateshead",
-      "artistName": "Alex Fawcett Band",
-      "venueName": "Old Fox Felling Gateshead",
-      "date": "2026-08-28",
-      "status": "unresolved",
-      "canonicalHypotheses": [],
-      "supportingClaimIds": [
-        "claim-05c4f4ba45a2668345e852a5ef842949",
-        "claim-18ae6cfa60a3fcec224e56ed601659aa",
-        "claim-1d3614f9b92a117609b8f928ddd15e6e",
-        "claim-2ee650a5a10de26e2690a161c3d05453",
-        "claim-381dcd3295aa1ea6b7e30cdfef03c296",
-        "claim-67b71ca173a6260156580553624fa126",
-        "claim-7a33ec7a2f7bf2d69d831971da03bc09",
-        "claim-926fbe9fbc08273820092da8f51d8d31",
-        "claim-c3241fa2eec6e7537599a78e8eccc521",
-        "claim-ca1efeb57b35cf44d425222ce90eed39",
-        "claim-302dfb1eb3139b02710d59707d7415cb",
-        "claim-3a5cdc8a346c3d0d3029d868e2a61a4e",
-        "claim-5a80d4bad719bcf8a14fa65bc9512098",
-        "claim-60b96406a1cd0fac428d2f4cbd163892",
-        "claim-67d579944edccbd82acdadc13e3a2a72",
-        "claim-6d3f72628c0401c8f670e3467109abe6",
-        "claim-a8e41e4d102246e3f6c2951db969f3c1",
-        "claim-aeea53fe0ce5564178cb06db3dbea9eb",
-        "claim-cbff5f2d4d477b1a3334625ee2f1d5d4",
-        "claim-de4829b4b2be4b10e97eb688bfa0084d",
-        "claim-39807df609d9a0c30316d2996d67ee04",
-        "claim-441c63060266a246c7d8420a6f989486",
-        "claim-7ad2aed10ffb6df4c1301fc43f67b456",
-        "claim-7b0766247c761c2be743711be8b0ec37",
-        "claim-a3f2d3e3186a8cefb8cac7161f968c4a",
-        "claim-a6db11a3c30f819f275db8c2dde3147b",
-        "claim-b802d89fa6656359ae83b74093d10c80",
-        "claim-cd03646ba0dc85b577c40a8fc7effd49",
-        "claim-d21f458ec96033dee85951e1c4753603",
-        "claim-e1c37343354c80d6f6951c1b03d97a80",
-        "claim-155554814b7a9cf1ca54f6f64f865c27",
-        "claim-26141bc4da22f7bc960b1cb006dc0f14",
-        "claim-4e07ffd911b53aa0d830126669c3c04c",
-        "claim-ba66b74b8135e3dd0f155415c38b2c9e",
-        "claim-c7bcba7ef945fd7a92665293dbbe1c77",
-        "claim-cb3570d9aa011714b7ca0a45fd0b432e",
-        "claim-dc6378cea6243ec529e6649a13909f1d",
-        "claim-e601a3353b107c1e1013537f8eb1c3f5",
-        "claim-ea9bc25ce7c1e61bf5a6f2041b82b8a3",
-        "claim-eb127c57ac9a1df90c2a1efe96b5ce80"
-      ],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ]
-    },
-    {
-      "candidateType": "artist",
-      "candidateKey": "klma-artist-f621eab91ee4",
-      "sourceId": "klma-stoke-gig-list",
-      "displayName": "Rocket Science",
-      "status": "unresolved",
-      "canonicalHypotheses": [
-        {
-          "canonicalEntityId": "4Pr02LZWtAuxhaZWibyT",
-          "displayName": "Rocket Science"
-        }
-      ],
-      "supportingClaimIds": [
-        "claim-6b30d8f8c44d786d700a4e2e4a4833b7",
-        "claim-b8c6366fb55d0ecabfdc39e2e6b5dd53",
-        "claim-0d177bc8f7b5a19f556d3d511ce32a4c",
-        "claim-27948abbcc309b4ee1a15b81da29c15b",
-        "claim-3f98fd022c4b9554e33a11c1970e2701",
-        "claim-7c664e35eff0b054ef0ab0eb6df19bed",
-        "claim-b05dbf64e7b30277fb02a8b5d5e1de9f",
-        "claim-e0ee096f08bd1c41ae4fb5e7e286a1e9",
-        "claim-1dc6975d6cde31f89563da4610b6d624",
-        "claim-6419cbc783953b5fb80691ab74c1b763",
-        "claim-7d77e27eaba1f66892f7663c0f719160",
-        "claim-a304acafdbbbd6eda267e34cda20812c"
-      ],
-      "decisionReasoning": [
-        "Normalised name agrees",
-        "hasLocation conflicts",
-        "Name similarity or footprint alone is not sufficient"
-      ]
-    },
-    {
-      "candidateType": "venue",
-      "candidateKey": "klma-venue-f5b1f7da58fc",
-      "sourceId": "klma-stoke-gig-list",
-      "displayName": "The Green Star, Smallthorne",
-      "status": "unresolved",
-      "canonicalHypotheses": [],
-      "supportingClaimIds": [
-        "claim-1d6404343574e0cd54fe14ab3af2840c",
-        "claim-9d9e94d2cc35f2c327ab73907394031c",
-        "claim-1f31d8540b1040d485c0b23af29ab68b",
-        "claim-4e452a34904ccb311c0e06d42812407b",
-        "claim-8238c5228ae6b687b1e6e58eb37f7d29",
-        "claim-3da377884d4cb2736cc486cffa1140d5",
-        "claim-777e6a8664103cbdd44167f8ea6c523c",
-        "claim-ae6ecf7cb2c78f3d3ed42676ecee6243",
-        "claim-2e5a393c824f00a9507819ba36f64149",
-        "claim-4b2c1b1ce35e7c3f0eb174b50409c8d2",
-        "claim-b16b2e36f024da7ddd92dec60fc84d79"
-      ],
-      "decisionReasoning": [
-        "No canonical hypothesis had enough evidence for a safe match",
-        "Name similarity or footprint alone is not sufficient"
-      ]
-    },
-    {
-      "candidateType": "event",
-      "candidateKey": "event:klma-stoke-gig-list:klma-fe19116d42df",
-      "sourceId": "klma-stoke-gig-list",
-      "artistName": "Circa 81",
-      "venueName": "Holditch Social Club, Chesterton",
-      "date": "2026-09-20",
-      "status": "unresolved",
-      "canonicalHypotheses": [],
-      "supportingClaimIds": [
-        "claim-0097b177bfaa6faf1dabde22c4396f42",
-        "claim-041d2e2d3ee7f2cbcce545c26d6f8c84",
-        "claim-7f06c64eb4615e633362c423fe1ff9d1",
-        "claim-91818ff5334f2cd29ad512df7e52c869",
-        "claim-cbcd862a91fcc88ff179c050960b9969",
-        "claim-cf31879f3ccb859c6f762018b7f2c086",
-        "claim-dc674454d284258be3c57dd16679320e",
-        "claim-012f6929bda98882d4f15616a8671d7e",
-        "claim-0960a6ec07cb5076fb0253fc2dd83677",
-        "claim-14a65abfc3b2d90363257e5c46a782c9",
-        "claim-161beeae7434d8349dac48744a61378e",
-        "claim-505c1430fd94733a34a3babde9056fd1",
-        "claim-50c6060f37d5f0b8262ec484717f382f",
-        "claim-515bf0d1e3f79d9b86dd072acde554f8",
-        "claim-0755c4f6314c383140c4218e8f481231",
-        "claim-201cbd5a30ad97d8a68eab411cc04671",
-        "claim-3e7dfc816f6539abe88afb9711255a45",
-        "claim-5405a92b9401a7b26b504f0b31c2bae6",
-        "claim-79a171e371bc78548a7c2f81d65fe542",
-        "claim-91ab797e866d1d3039596c7d4484eb59",
-        "claim-b34ed1da359c19eb3193fd584c2281f1",
-        "claim-061af91944faf097050bd18059e370cd",
-        "claim-18a9e6c04638b5a48dcb9d2105b0d61a",
-        "claim-280ed19595d34b08c4e89af9292e603c",
-        "claim-622e7de5109c054e01d772329dab2218",
-        "claim-6cfb4d0fbc986db7b13ec0a60c61b5b6",
-        "claim-6ec113902786bc1ad0c1618928757607",
-        "claim-7c949bea5290e2cdc2448c5cd5e433cb"
+        "claim-4810f34caa14688530a7b72207c7d483",
+        "claim-613f40770b555a03bf41ef3aba9bcca9",
+        "claim-6591d1e97a80d4880a1578e1dbb68165",
+        "claim-78f196e9edd6eadd44e6eb399e080469",
+        "claim-85ee847bd3d5902e93a66b1dddf110b7",
+        "claim-bfb84730af6f676a7367441144eef947",
+        "claim-c02f858802725fc951609e0edf6cc9b6"
       ],
       "decisionReasoning": [
         "No canonical hypothesis had enough evidence for a safe match",
@@ -2986,6 +3086,46 @@
     }
   ],
   "enrichmentAssessments": [
+    {
+      "candidateKey": "lemonrock:artist:thehumbuckers",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "candidate-only",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "missing",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-00dde4f3c4a05a1cced563b768926f3e",
+        "claim-9431a8461a27d4aa45c8c2788432778f",
+        "claim-df04169f629fa4b9900978bd4172a446",
+        "claim-e63bc3aefb97662767fc30499e6c4d5d",
+        "claim-f1ae59bd1bd62c38030a3b0d0daf85cd",
+        "claim-025c9c2b50a93ec03fbeecf9f79b5dad",
+        "claim-347c95895ea0af17e1dacbb2470cdf4a",
+        "claim-55bdf3fc46e18c7770161f785b7365bd",
+        "claim-8c0c66256351bd2eaa9132fda99a5897",
+        "claim-e1f5d23b9453d32b03430d1a6f768f08",
+        "claim-738111e08b659f867cb3c17a5058b60a",
+        "claim-9b582389cd100d17caf94a36bc750660",
+        "claim-9502a055a4cedd099ebc1eb39a19ed95",
+        "claim-acf6a2674d20a2ba2e63192def53982d",
+        "claim-47ac10cdbf0bf6c847580c2c59102e3a",
+        "claim-a7deb305471d24b356cc904c96a651db",
+        "claim-b0a7a5718bdcd1f34d191aa657d6d41e",
+        "claim-ca214ad9f2c30883615c2b21066e8f24",
+        "claim-cbdd5577cfa17283269a51dd7059b1ae"
+      ]
+    },
     {
       "candidateKey": "onthecase:venue:940",
       "eligible": false,
@@ -3024,7 +3164,9 @@
         "claim-0b567f05970830c96c4b40de79016de3",
         "claim-d963c371d601d0ebb2b9808836d70b4f",
         "claim-d0eb2db876d8c4750aeea2988235c501",
-        "claim-e430f867335d59e2af6f3392e6ecd94c"
+        "claim-e430f867335d59e2af6f3392e6ecd94c",
+        "claim-3ca25b1deeecf24828f21a8a87f9e51a",
+        "claim-545910bd94b951665e6528b3c81baedc"
       ]
     },
     {
@@ -3077,6 +3219,42 @@
       ]
     },
     {
+      "candidateKey": "onthecase:band:27822",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "missing",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "candidate-only",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-014944678a7c3b41b91265fef188e568",
+        "claim-1b86a3144ca2946f49a648c23e4fb4f1",
+        "claim-32cf03442bc20f45e0182c6cb93e5a49",
+        "claim-3f2ae1c8e69199873a6c743b7dc502ac",
+        "claim-81e1e91c41f151a43e9bebeaba220e07",
+        "claim-53245fd6a7c8d9c84ffd06c33cadff12",
+        "claim-67fc8631e2e24a5ec83aacd9be10b24c",
+        "claim-e810da7b2260185242cf16fed65ddf6f",
+        "claim-eb4a98f77ea2b8c2c0bb697b9f1a8d69",
+        "claim-fb689ca3d53cd837650ace1c887d4aa1",
+        "claim-03336e0a2be4e68927eff90aac3b7517",
+        "claim-8fddf16cffd4cabdc218d883bf5e4463",
+        "claim-deac55c1bc6e3cfee9d07541f17534cf",
+        "claim-e9664837eb8d2bc69987b2a7cd300bfe",
+        "claim-fbfe13b0e61a8b702706e189876ef171"
+      ]
+    },
+    {
       "candidateKey": "klma-artist-ffdcd73f77da",
       "eligible": true,
       "fields": {
@@ -3105,7 +3283,10 @@
         "claim-ad5c0f93cbfa505628bf5242ccce937e",
         "claim-1a6fa19f5b564e85353a8b98937d4dee",
         "claim-2fd5779232f2e8df9584eb1de073deb7",
-        "claim-c3707eabd9a49a4bff0779be168dea64"
+        "claim-c3707eabd9a49a4bff0779be168dea64",
+        "claim-5f88145e6f6a028199273305102f2184",
+        "claim-9d262e375983107c37fbab6bb7ad69d9",
+        "claim-fcaa2be57a68556ebd1c98ae7947b96d"
       ]
     },
     {
@@ -3125,7 +3306,10 @@
         "claim-feea343bbd6d582702f4076bd26d8499",
         "claim-2e0c1ee729269070cce7b96e5c34de18",
         "claim-5de6f1d4b65b13b9ba54c082c0228d70",
-        "claim-f460358339175945e570d4c62939a067"
+        "claim-f460358339175945e570d4c62939a067",
+        "claim-1055c72bc224491789f16bb11e124225",
+        "claim-b94dfe72fc16be0aa9453d4d0281e548",
+        "claim-bbc7aab0ea148b758d22c29df52f75e5"
       ]
     },
     {
@@ -3162,11 +3346,18 @@
         "claim-4b74fde67a36c93539780232564a18d3",
         "claim-66326be04b4ea04f952e5d287a8c3dcd",
         "claim-9c7f79e2e65caa7bafb5100e1abe8244",
-        "claim-a8f58c33e53e58a1c5f1067bd85a600c"
+        "claim-a8f58c33e53e58a1c5f1067bd85a600c",
+        "claim-34ec398e85d7779b0048034552306bbb",
+        "claim-4daf13039b79f9283b3f51a31b0e4fdf",
+        "claim-4f69e51ce5c7d6bb4346955de8351059",
+        "claim-7aa7989e5cd4031ed42af5a8ffe3e57c",
+        "claim-8a6fd072812f23eb52c183b9039559f6",
+        "claim-cd2968a5d797b9524574d059d32f12ac",
+        "claim-e1ca2f39af99b400ddede84f36584819"
       ]
     },
     {
-      "candidateKey": "artist_chris",
+      "candidateKey": "artist_tom-meighan-raw26",
       "eligible": true,
       "fields": {
         "hasArtistType": "missing",
@@ -3184,35 +3375,75 @@
       "confirmedOfficialLinks": [],
       "wrongLinkIncidents": 0,
       "evidenceClaimIds": [
-        "claim-34b2b2a37961e82456e6de3b75ebc3fe",
-        "claim-73a0341d7fe4e91b634b91055cb9bf68"
+        "claim-4e7222013340cbc57a01419d75015266",
+        "claim-990cc522516e5fa7cd2150cc16ad897f"
       ]
     },
     {
-      "candidateKey": "venue_united-match",
+      "candidateKey": "venue_whittles-oldham",
       "eligible": false,
       "fields": {},
       "confirmedOfficialLinks": [],
       "wrongLinkIncidents": 0,
       "evidenceClaimIds": [
-        "claim-04c422e10dbb09c8c8606fe4ca38db1f",
-        "claim-221a64770823c069a49f29641e5bdd86"
+        "claim-c45c4482b1ebb921d735ad63fd5ef639",
+        "claim-fe1baac3fa95f71ae33b5a5c348644bc"
       ]
     },
     {
-      "candidateKey": "event:gigs-news-daily-import:2026-08-30_chris_07811-44-7388",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_preston-weltz_coach-horses-oldham",
       "eligible": false,
       "fields": {},
       "confirmedOfficialLinks": [],
       "wrongLinkIncidents": 0,
       "evidenceClaimIds": [
-        "claim-2dd3f8e66728e6e2fc14fdbcde5be314",
-        "claim-62d3eecfdbcbc5dbf4e5314dc12ae5d9",
-        "claim-75c751dcb9f6f66f5d30047c8de4f850",
-        "claim-c80bca4571187d8e357b4d3417272251",
-        "claim-ccb4b1c1386912584cfc24f1b171a556",
-        "claim-fb1fe123e71d0ac3cfcd062bb90ad5ee",
-        "claim-fd219edb42ab3459ca08e5bd6abd5487"
+        "claim-0b63cbef94cc237b2562840e643fb02c",
+        "claim-1078be2a718174b142ba9860253cfa58",
+        "claim-32dfcaa4c6e2928e4522381611dbf94b",
+        "claim-463075a57b6b849716ff9a12af9804ad",
+        "claim-473bb5b381ab3e989025a603fcd41834",
+        "claim-584123a5fc46273bf523b577cdb3a786",
+        "claim-bea8aa508f68be77534683b610fb10fd"
+      ]
+    },
+    {
+      "candidateKey": "lemonrock:artist:joekanebeatlesnight",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "candidate-only",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "missing",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-176e4a3ac81fc3f83464b136f3f5013f",
+        "claim-255ac880bcee98e559c92d028ca9b7f5",
+        "claim-358c6e64778a4267e54ff87bf2c472d4",
+        "claim-5ce025d90d6fc0fb1c29fe8dad96214a",
+        "claim-60f618b5565c011045b37afc0844b0c8",
+        "claim-2b5c9b3fc392ccad9c1bf089fdb32635",
+        "claim-4a90f8a20c557aee41f3c8471717f7eb",
+        "claim-70bed70ef7eb3972e0fd60fe4b156e18",
+        "claim-78b8d0b407037783d362691f57a8a489",
+        "claim-d11581b98a496445fbe2753b71fef31f",
+        "claim-27b7f13f0d734f571a5b259d1031c8cb",
+        "claim-bb66db3a87dda4bcbf88c6f24f2139f2",
+        "claim-88a22df2d5c19eaa57f1a282bc1399cc",
+        "claim-cac04420be1a8d246b6a32601d923a50",
+        "claim-116d5fd92d699d487df681e06c2b72bb",
+        "claim-38dc90b19fed3692c16e635e98226539",
+        "claim-6ec9e61f67ea45f9aefdeca4772c2fa4",
+        "claim-a1a75f52f7c6c83ec1a4b4b6f7be0a60",
+        "claim-f30948339431f600e65ec1d766c585f8"
       ]
     },
     {
@@ -3251,7 +3482,9 @@
         "claim-4d561832630eed6770c95f07d1cd7f51",
         "claim-e8ce2213e6a955174564a7665743fdb1",
         "claim-5e384eef5c566dcbef5232955ce80d99",
-        "claim-6d9a4d3ec965e0a65f346d9fc3d9cadf"
+        "claim-6d9a4d3ec965e0a65f346d9fc3d9cadf",
+        "claim-2eda8935bc0e1e61285c5c0581b1d676",
+        "claim-92b1d3d179611c3b2d433797e9830d1b"
       ]
     },
     {
@@ -3304,6 +3537,45 @@
       ]
     },
     {
+      "candidateKey": "onthecase:band:1211",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "missing",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "candidate-only",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-292291ccb8bb6a601642ec31c35da30f",
+        "claim-2c4b4790cbcc7122ce070c4283758325",
+        "claim-bb47aaa72b770cc8d7d9c83863150ad7",
+        "claim-bfefb3ac0ad746f870e1a8dfab56bb58",
+        "claim-c2f605d4f7f6ac27f927820a645662bc",
+        "claim-f2bcd09340486d6165639c03ff9e7411",
+        "claim-1cb2e16e71806e532cb7d18213b622f8",
+        "claim-443f144685e1930d0f85a7ed90766951",
+        "claim-4f272004f64d7787154dc635a3981bf0",
+        "claim-6f0a0574363ceb6d3c854a3c43abe437",
+        "claim-92856351a30692e2d553dcf2f51eb0c4",
+        "claim-dd9d70731c54136cfc2d6ace92ee0f94",
+        "claim-13f22764d9fde48e14c900af0ee2b7cb",
+        "claim-1b80daec638fd0a6f2bfd1380fd04d63",
+        "claim-1b9fef2302b70edd8e6335ad84f27515",
+        "claim-4cd5109f87bf13bbd78afcc8ca1bff41",
+        "claim-91b507559faf2ce2b514a5d02080a3f8",
+        "claim-97466a91028740e8cd7eb4d2460c1f2c"
+      ]
+    },
+    {
       "candidateKey": "klma-artist-ff14ed763cec",
       "eligible": true,
       "fields": {
@@ -3335,7 +3607,11 @@
         "claim-0dce94fdc32e017e1f3d625f238153e7",
         "claim-7b4d8be997cc921613511f5120b9ccea",
         "claim-ca92637289f30bf75b66b095e5c1aac3",
-        "claim-d28ccb8fd024626f7a967912361ba618"
+        "claim-d28ccb8fd024626f7a967912361ba618",
+        "claim-19daebafe7923f8438dde33f75cef352",
+        "claim-38db11d1defaf9176d4c64ef9a6b0513",
+        "claim-9ec70a2eff33d3548d34fb5bdad10fec",
+        "claim-c7dc30f418b69939cc8afc0cad57544d"
       ]
     },
     {
@@ -3355,7 +3631,10 @@
         "claim-e0f4de324cb47ed3602eda9ff9440285",
         "claim-26535745bfda8adaaacaed94bd52b7ca",
         "claim-4f5396f2e09d359c2f965b23076f2d17",
-        "claim-ca9d10fb4b151a63cc9470298cb31d60"
+        "claim-ca9d10fb4b151a63cc9470298cb31d60",
+        "claim-0f786ceeb3624cf1a1b3b83ccb85d5b7",
+        "claim-6179681effc4ef6c38e480b5d705f01f",
+        "claim-f00edcfc04371a57f0dd1fe9688551bd"
       ]
     },
     {
@@ -3392,11 +3671,18 @@
         "claim-9c59a7916055f08d65db31bb73031787",
         "claim-c080ac4464e8463cf8431b1258d5c686",
         "claim-d8282796f3130300dcec3db70af00b21",
-        "claim-f1367d6efba1cb724ea5d00de84c0596"
+        "claim-f1367d6efba1cb724ea5d00de84c0596",
+        "claim-2144af9b92223c14a1ddaf1c57bd395f",
+        "claim-35d2eb72fd60bda54f337275245b658a",
+        "claim-7da0a3953e51ddd77d58dd422708c78a",
+        "claim-8f69f0bef7cbe0f3113b2b7afc355ede",
+        "claim-940ff8132e5bc1432cfbfc9952e43e4e",
+        "claim-cbc9c541571dddb050017c7841a129ae",
+        "claim-f55f418bd05e5d65ac0dcf935d8349cb"
       ]
     },
     {
-      "candidateKey": "artist_cancelled",
+      "candidateKey": "artist_the-tall-faces",
       "eligible": true,
       "fields": {
         "hasArtistType": "missing",
@@ -3414,35 +3700,75 @@
       "confirmedOfficialLinks": [],
       "wrongLinkIncidents": 0,
       "evidenceClaimIds": [
-        "claim-6f3cbf959bfd2d0ffd7c672b9e9d6b12",
-        "claim-753b7f9f1d1696ce414ea0ac59b6c9c6"
+        "claim-5af91d303259e789eee36729807ad7df",
+        "claim-e567a10bde15cdc6fafd27696a6c39c1"
       ]
     },
     {
-      "candidateKey": "venue_07811-44-7388",
+      "candidateKey": "venue_white-hart-woodley",
       "eligible": false,
       "fields": {},
       "confirmedOfficialLinks": [],
       "wrongLinkIncidents": 0,
       "evidenceClaimIds": [
-        "claim-08973a25283548b117db6fd62d1f2ee8",
-        "claim-39cc9ca46b104fd24f1e8e9b2a5eecfd"
+        "claim-48fb337cc566b5a56009266b2629afdf",
+        "claim-900d7d70f4ab54b9ceaf5d545006cf12"
       ]
     },
     {
-      "candidateKey": "event:gigs-news-daily-import:2026-08-30_cancelled_united-match",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_off-the-record_the-stock-dove-romiley",
       "eligible": false,
       "fields": {},
       "confirmedOfficialLinks": [],
       "wrongLinkIncidents": 0,
       "evidenceClaimIds": [
-        "claim-070028dd8fa27811b0cde1f0c39cbe48",
-        "claim-27e4ab8b80e4334d307acc7c204b6c3e",
-        "claim-2cda922b5d255853ab7bb9624fd6e8aa",
-        "claim-535eb74fcecf5f37ec76ce804cd70efb",
-        "claim-7fcce227538ffc0ff3b1784960d12fb3",
-        "claim-8a31830483e2c407790b080f8292b1cb",
-        "claim-fa645a3404ae1785515ffa8a2b6e7b65"
+        "claim-14430e4908f6d765871e575148640068",
+        "claim-41ebba730727cf3f1c055daac290a08e",
+        "claim-708ce6cbc08bfdbf20736873ee1f4caf",
+        "claim-c4d0557a4efb475328de869e224e6422",
+        "claim-cdb64e77f5b41ceb3e233263fd50fc6b",
+        "claim-d1c3ef5e9cf70a49e2e78d0dc787cfb0",
+        "claim-e7f080b0152d425ee4839015e94576a8"
+      ]
+    },
+    {
+      "candidateKey": "lemonrock:artist:neovenator",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "candidate-only",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "missing",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-6e11e7f591897f8552fcbbf6bcd80a2d",
+        "claim-a6f3152b3cf3df5a5499457a6b2faf9c",
+        "claim-d1e51c32ad37242f4abb2233d258735b",
+        "claim-e6d6ab096846580397e07401d33aafbe",
+        "claim-f68094aae695147effaf233ae9fc29ca",
+        "claim-0e3dad76bb30b1d4592adeae1de14431",
+        "claim-19a6a72e2a172563e19929d057ae0405",
+        "claim-cbc38d938ad545388650e1139f15dd34",
+        "claim-d37d23a97a85ee25e9355ce4057d55b5",
+        "claim-d53de9c1fa90d6c0872eab59d6a3c3fe",
+        "claim-b2d6425c275d76aad5e6d77fefb1e8f0",
+        "claim-c27bdb32edb9734818f6f2746cabe1a6",
+        "claim-1a9cc14a8e4d213944a592f28edc86fb",
+        "claim-5a5c5ed025bf04a904aaf54711bbfbf9",
+        "claim-2987a296160d55f098c12ae0af936ce3",
+        "claim-4e9af6133fff56143acff1051a060410",
+        "claim-8037681f723acd9709a705debc656497",
+        "claim-a1ce39e3c58f738d9d40abbf8c572a57",
+        "claim-bc73b4a67a183dce6b2eacb799afc5d4"
       ]
     },
     {
@@ -3544,6 +3870,45 @@
       ]
     },
     {
+      "candidateKey": "onthecase:band:26683",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "missing",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "candidate-only",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-075f4446376ee9e37d294ed9f4e04563",
+        "claim-1fb63d00ce7510b8d6e8eb3f5564cec7",
+        "claim-4172e05c8ab738a9f422f701d9c5aee7",
+        "claim-576e372d7fa5193e009d8cf4d28da72f",
+        "claim-73d2cd485c070dade2c1a7d68b9249eb",
+        "claim-aea7b30232b6233f3f7e3346b4734a8a",
+        "claim-360e428687d888e142f926408bd4a97f",
+        "claim-68c8dc437f0dc896fa21cce16e867c1c",
+        "claim-7978c9c35ff3a2cfb00742c92351b0e7",
+        "claim-aec58af464e8a68ec3786171215d5e3f",
+        "claim-b67d19cad7556dcedffe4648930237bd",
+        "claim-d050c968242b0596365ab3c91f3bc03d",
+        "claim-1a54ecb0816c6b08b08814d0e0088223",
+        "claim-3e61b96e731e82ed70ad2b2bd453f70b",
+        "claim-665f4e02622fd83eda42bbd460e10a26",
+        "claim-ace51fcc8327a975b4049b15f426b9e2",
+        "claim-b73d06764909f0f8a7c92471a4d3d8dd",
+        "claim-e89a805f55efff46ab7231d8dfb4f08c"
+      ]
+    },
+    {
       "candidateKey": "klma-artist-fe38b8f4dfe4",
       "eligible": true,
       "fields": {
@@ -3581,7 +3946,13 @@
         "claim-a5ad6e42d27d46aa831b0b4e1b1bfe35",
         "claim-bbacf09ecbc8860d0b896984942c54f9",
         "claim-d31d7a9355ea61273a9292c949e9335b",
-        "claim-f36bc9ffc758029af20a0c4e7965fb5c"
+        "claim-f36bc9ffc758029af20a0c4e7965fb5c",
+        "claim-421cf8c5a4280632f79e0191bc24e7d3",
+        "claim-528268377fddd534f20e2892cd732ae4",
+        "claim-74af3e9dc58052280ac8845c7b0476e0",
+        "claim-7a17ef99f6486db8211e6cfacc178946",
+        "claim-80d3e5de14cb0671a3b603dac58c6c82",
+        "claim-cde87e0a53049652eb5b73341be1ce50"
       ]
     },
     {
@@ -3601,7 +3972,10 @@
         "claim-9c6d7a1572f5516fab0af9abfd424528",
         "claim-022a5144d7fd959418f60686a90519b9",
         "claim-301dc8bd87b4a1f0e9be45ee935b3dd5",
-        "claim-4088d5cda5166be21e9d6543d7842f03"
+        "claim-4088d5cda5166be21e9d6543d7842f03",
+        "claim-0697fa80d70b8c4a5026fe89ab13d6f9",
+        "claim-79aaf8ac34b07d23e28320d2dacaff1a",
+        "claim-927fcb1885feca5519f3c6bdae7a213d"
       ]
     },
     {
@@ -3638,7 +4012,104 @@
         "claim-b1f2fa0e53c9237ca4f5a9abad143da3",
         "claim-b88d64dfc007c12a193fa247579ba443",
         "claim-bc6e2c9c62b1f9b8da7ce9902b6657aa",
-        "claim-d4091ab6d99abf4b550eda8b990d1cb1"
+        "claim-d4091ab6d99abf4b550eda8b990d1cb1",
+        "claim-259ec49a444f157cfdbedbdc829d94cb",
+        "claim-6026da5d3f32f04b21cf4cc338dccfb0",
+        "claim-9f03ebf61c8cca3790654941ff1e805b",
+        "claim-af07283493f37f1da7ab528c497dea30",
+        "claim-d8868bb0dadd7194bcbe7a0dfe679c88",
+        "claim-e95709affa76fd88a4f4a3f061aa0de0",
+        "claim-ecee5b346c548394b6f2b99573c42258"
+      ]
+    },
+    {
+      "candidateKey": "artist_the-select-committee",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "missing",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "missing",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-51d52f6fafa544cafaeded70606ddef3",
+        "claim-bef4b38af165310963c01df648bdea0e"
+      ]
+    },
+    {
+      "candidateKey": "venue_town-house-festival-oswestry",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-4668ce6f2ccf3eb54a0c5b0b6b64a452",
+        "claim-4d9176b25ed211b36c10e0dc04dc0061"
+      ]
+    },
+    {
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_nick-milner_acoustic-lounge-poynton",
+      "eligible": false,
+      "fields": {},
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-2526cbe020d242e6e6622cf9086051d7",
+        "claim-3db8afab83e1ec870d109d219dca2d35",
+        "claim-40c1b97417fbee931848f716ca48d07e",
+        "claim-9be57c4e02786ab7dfd89069ae1a6d87",
+        "claim-c028426a85e43980a166bb74c3360770",
+        "claim-d4cad9341c417cdd0cdd2e6314bb54a2",
+        "claim-ee1b256cd36d2b0c2d699a88d8fe4534"
+      ]
+    },
+    {
+      "candidateKey": "lemonrock:artist:flamingpieband",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "candidate-only",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "missing",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-3f36c758d6d09fb6158111956c043e36",
+        "claim-714869f1682f7992075d1ecf736deef4",
+        "claim-876983db3a7313aca0fb68ccb1367257",
+        "claim-a78d0b2d125b2e1e2094e5ebb7cefaa5",
+        "claim-d614b6ee4f1f823296d7441f4bdd5efb",
+        "claim-6f3bf21cf758343e0ad7bb6ec06c8d03",
+        "claim-9ea6c8d405c6f3d29a2beb2f4db1acb0",
+        "claim-d07353886387a7d9e82bfc68919e637c",
+        "claim-d4065dfaaea3007926932d4852119f56",
+        "claim-da27684646cb4ee2cdd3b3660afd8469",
+        "claim-dccdf954b6743b001cfb1de91b308dbd",
+        "claim-e59cc16b2162560d96c900a90930337c",
+        "claim-4b154c5e318884a0b2dab6d3028b8491",
+        "claim-d68b245a795f02305efb990270b59a07",
+        "claim-0ae5aa64f647115d0efc2f7c349620ce",
+        "claim-0b5935ebc785d02155602f7ffd2c1162",
+        "claim-91f3e2e47adfbb80fce79293a6c744dc",
+        "claim-b6eec476c20677cf7a980186db50c84b",
+        "claim-dc5638fd8993f085b0cf81ad433b80b2"
       ]
     },
     {
@@ -3679,7 +4150,9 @@
         "claim-6e70aed632e382a995b3fb0b8e673579",
         "claim-7197435a04bce3517d3bc517931895fd",
         "claim-e403a25fc5de38361e4e902f83325e4e",
-        "claim-e8cafc8d0f4743be01d5b75e0706048c"
+        "claim-e8cafc8d0f4743be01d5b75e0706048c",
+        "claim-7e27def378121fdd76320ab4dda8effe",
+        "claim-c7d54d2528549aa0c91265ccde27f3f9"
       ]
     },
     {
@@ -3732,6 +4205,42 @@
       ]
     },
     {
+      "candidateKey": "onthecase:band:1411",
+      "eligible": true,
+      "fields": {
+        "hasArtistType": "missing",
+        "hasActType": "missing",
+        "isAcoustic": "missing",
+        "hasGenre": "candidate-only",
+        "officialPresenceAttempted": "missing",
+        "hasFacebookUrl": "missing",
+        "hasWebsiteUrl": "missing",
+        "hasInstagramUrl": "missing",
+        "hasBandcampUrl": "missing",
+        "hasSpotifyUrl": "missing",
+        "hasOfficialUrl": "missing"
+      },
+      "confirmedOfficialLinks": [],
+      "wrongLinkIncidents": 0,
+      "evidenceClaimIds": [
+        "claim-25d3a2b161d67ab45a39c01ffe0dcc29",
+        "claim-31c0708b8cb59a0fad361d26fd0f50f7",
+        "claim-ceaf91e961f45e15d50bddc02266c7b5",
+        "claim-dfc363414fa73586c1ed9dcfe3848861",
+        "claim-e853490e9f4de364a148573decc7f656",
+        "claim-09fdff3fd9605b153507a501c4c16f4b",
+        "claim-7e166c63e2c67a7a69ef4a083afc2ab8",
+        "claim-8b41bcfaae691c8e4426ccfa7d89fcc5",
+        "claim-b86c421c355c577303ccd45d7507aa17",
+        "claim-fd85f47dbfd13d32487ada1e9829c426",
+        "claim-1ce563f87db8024cf39f894fb6b67009",
+        "claim-2e109f8530272f00a89aabf7e2c30c69",
+        "claim-8d8aa595401f539fbea7ed4b24038086",
+        "claim-a0052dd51f11cbd43c18d2c430359795",
+        "claim-f6ac19895b99feea4d601d6338c46038"
+      ]
+    },
+    {
       "candidateKey": "klma-artist-fc1939c1fa4d",
       "eligible": true,
       "fields": {
@@ -3760,7 +4269,10 @@
         "claim-9cbebbae28fbce667acf5770bfd9045a",
         "claim-0c76e397e5d31b101b89d74b957333d8",
         "claim-404a573edc13fe6e1b9c78f5e2eba548",
-        "claim-c76b22cc64cb4b092ece59163cabde9a"
+        "claim-c76b22cc64cb4b092ece59163cabde9a",
+        "claim-4bf68fb44ba8b6bf7f77c1cc72319d05",
+        "claim-a7bd2bd91fe296fa1c32c5b93fc5dccd",
+        "claim-fe8b7bb9b45691460f492ad72dc26473"
       ]
     },
     {
@@ -3780,7 +4292,10 @@
         "claim-dee332754029b4e57c5567c8314cd742",
         "claim-090b100231c759f3336cc0465abd2ef4",
         "claim-858b73dec56a1dd1de450bd688185b55",
-        "claim-e4ceeb091d1489619529def8969f2a00"
+        "claim-e4ceeb091d1489619529def8969f2a00",
+        "claim-02d25bb4f32419150eaf8b32deb0959d",
+        "claim-18215df74ca1f58cfcfdcdb39f6a34ea",
+        "claim-a2e96394af7ba95293e5c6bcc794641f"
       ]
     },
     {
@@ -3817,315 +4332,18 @@
         "claim-cb03df5bd5231d6b2eafdd3af26abb19",
         "claim-cf779f0efc8ffc8e3c03de953ea60256",
         "claim-d58974d12b9434b97a4217404434cd83",
-        "claim-de4265dde8e5b547d0ec5f7a7a95d9b5"
+        "claim-de4265dde8e5b547d0ec5f7a7a95d9b5",
+        "claim-115f2eacee69b6819b471c9706094ff1",
+        "claim-3974033acd9f8cadc95472abf4b6679d",
+        "claim-5f51fe962e3041bbe3989b1a0dcb9665",
+        "claim-bef1027f6188271609664fb8a6b368ef",
+        "claim-c8bdaaca05c04da0c491b01b65331851",
+        "claim-cf204b3049f1a72d0ac525e334322d36",
+        "claim-dd3cbc2d29c5250f24bba58f8004cfbf"
       ]
     },
     {
-      "candidateKey": "onthecase:venue:753",
-      "eligible": false,
-      "fields": {},
-      "confirmedOfficialLinks": [],
-      "wrongLinkIncidents": 0,
-      "evidenceClaimIds": [
-        "claim-e46ea940499ecfdfda1fecee6d55086d",
-        "claim-57558c020f8b63f1743e7449f42a9255",
-        "claim-8275e531611078d7252ee56d7511846f",
-        "claim-01095f4759614bbea60f75c9b1f54ab0",
-        "claim-0f9f2855718c15aa9ea747e05aaea7ee",
-        "claim-368ceabe5428424e0720feaa914bf4ee",
-        "claim-68dbfd88ec3e08d4efc2e5f33620379d",
-        "claim-7aac673e0b4f9a330d1fdfeaa936b290",
-        "claim-87a8d9fbec1df1fe1dfb3e4f4c4d8076",
-        "claim-d8faec0a3010ce340339443594afb140",
-        "claim-f7c6c5eabba2f4423986d2daef67bbdd",
-        "claim-fe04da03bd3a9503ce1594bd4302d82c",
-        "claim-197d175c738f5eef5aecc68fad259ec0",
-        "claim-1e00af98e4782bdf6f2b24b7cc005a83",
-        "claim-5c150c593baf1f216bbedc629671cf14",
-        "claim-793fe4f21eb272a802de1b04aa3cfd18",
-        "claim-8b8b1a197cca3d6cb628f7f8afed8d88",
-        "claim-9406ce29ab85c6ec7f64dd3866585fad",
-        "claim-bd07228a48e76974ce0a1e5630dbfe9f",
-        "claim-c06af3acc3857de216de621fd24cef1e",
-        "claim-cd1df7cd59e5c1a547c3e01bebcc5b7b",
-        "claim-15a21d9ad53af3fb1e2073c9fa5052ea",
-        "claim-1cf3578595b9d3f5e659e739c30a82d4",
-        "claim-599672c9d0c0be775970d7ff29bc3bfd",
-        "claim-7a14ee05d343e3f590cefe81129eeb81",
-        "claim-8848df041fd3e7e5e092972fed59d2d4",
-        "claim-88f633e3bed4663c66ead5c624b3f0e1",
-        "claim-b7a053cde777362e5be280ce55de3be5",
-        "claim-e4db6b28cf89915d6f7d4646f4a12a21",
-        "claim-efdd347307dde00330746cbbc6e63f23",
-        "claim-10d0ea5eddd95a5783db9913ef373ee8",
-        "claim-746caac6368b17444601833fdfde7492",
-        "claim-54268cf968edc8b692299c86a99d9aed",
-        "claim-8ed5804f227c30950c9d58669d559d2d",
-        "claim-ba5fe6052278a094ec78a168b8711aad",
-        "claim-db53e0816f548f701fc949622dd8e795",
-        "claim-45c788b5dae3c6ac8391fbf3cb2fba63",
-        "claim-67a6ff43236d6467cda608d4aa54e7d8"
-      ]
-    },
-    {
-      "candidateKey": "event:onthecase-gig-index:onthecase:gig:131486",
-      "eligible": false,
-      "fields": {},
-      "confirmedOfficialLinks": [],
-      "wrongLinkIncidents": 0,
-      "evidenceClaimIds": [
-        "claim-01acd17ddd2ec5975d8cf5062f5b875d",
-        "claim-071baac92ee8a92683bccec31811aee6",
-        "claim-2d8a70f380ea3b1d4f8e35c17c250801",
-        "claim-4e6319048602d6f575fa16093f6736c7",
-        "claim-60fe6bb66e7d6c626d2cf9b355c33955",
-        "claim-642b4e5734fe4ddb73fa6dbe1f5079f8",
-        "claim-66ced9b9b9850a1af303007d473f1019",
-        "claim-a5c15c82adafd8c770fc50313e7cca21",
-        "claim-d04c0228b7784ffd6004d346ccb1dfc6",
-        "claim-d8f460784fc11620a1e05077cc41b6d1",
-        "claim-2e3f34986117cf559332c3af12480c42",
-        "claim-3b1c3030f32107b579c5fff5faa32c49",
-        "claim-3e8757bbae995d9925e09e3891c98fce",
-        "claim-4bbebe65f10b942d71ddb41c1746f0b5",
-        "claim-5d280a1d9d8d1cfbd36938adac1e1798",
-        "claim-9c9019130cf2b0ec2abc2a633085e1ec",
-        "claim-a5ab9344502b285f6488eb3b972bcf8a",
-        "claim-b6fd32f3f66fb200f4a35f2eab61d392",
-        "claim-c6d39ebbd9730c0b6508ed1fc40f1603",
-        "claim-feb29ffb790945de3738c40ffd56da08",
-        "claim-0fe9ec0b8549f95f7a4e7bf7061cfb41",
-        "claim-11ad66ab84addd60d1b35eac6738928b",
-        "claim-1fa6055a07f74613e390d0c02c5f7dec",
-        "claim-3d1f0e5036917949771cd8a870f5fc5d",
-        "claim-4e315d1e03198f0e04e6cd7d0e77053e",
-        "claim-697945506a49dbc64f9acce346ff7e37",
-        "claim-71e407823df150fbd88d38db3969c6bc",
-        "claim-9b0277f3e99bad53428d364d115235a6",
-        "claim-e4901f1c3c8c8b04379f6aea541b2a6b",
-        "claim-f45fed36c52422a3e5815071ec93e84a",
-        "claim-0ab56f7dcbc4e129bde948582eca5111",
-        "claim-0b435f635fccbfe840cdd20333961675",
-        "claim-1a9013ed7308e40fd8e6525920975a07",
-        "claim-43c0335d3a249d322777ac665690fe41",
-        "claim-6b16817f70872fb02687faccdd9cd49b",
-        "claim-8d9da1d99794a6ce66a09f0f0458cfa9",
-        "claim-9e1fe0b576f49d7a31a37eea30427227",
-        "claim-ba7c81530f76f1f70d7afad26e65a498",
-        "claim-d508dcdf5dbe26a8cc0ed759f2dbfaf9",
-        "claim-d8b96a2b9d41c2cf2e2bfdefb0130e39"
-      ]
-    },
-    {
-      "candidateKey": "klma-artist-f7d7f2a92f79",
-      "eligible": true,
-      "fields": {
-        "hasArtistType": "missing",
-        "hasActType": "missing",
-        "isAcoustic": "missing",
-        "hasGenre": "candidate-only",
-        "officialPresenceAttempted": "missing",
-        "hasFacebookUrl": "missing",
-        "hasWebsiteUrl": "missing",
-        "hasInstagramUrl": "missing",
-        "hasBandcampUrl": "missing",
-        "hasSpotifyUrl": "missing",
-        "hasOfficialUrl": "missing"
-      },
-      "confirmedOfficialLinks": [],
-      "wrongLinkIncidents": 0,
-      "evidenceClaimIds": [
-        "claim-130d0c15f2e6beac4082f27ffe590ccd",
-        "claim-f5d6499971d6df1fd6a4546155d490c1",
-        "claim-f7d3698707ced33f10707c3f2306d4b3",
-        "claim-01a123e2948ddb303f9c465287fe4668",
-        "claim-0a79c20c3051f152d39d0b876ba7c8db",
-        "claim-0de33e0f5710f5ba04a3f04bffb34db8",
-        "claim-10227b9de4677c91a996bfaeb62c67bb",
-        "claim-1287daaf0e207eafd10253d1e2d15a84",
-        "claim-14b77c115d0ff9142ff317d72e9543de",
-        "claim-1a8580b56fe3a22d8fcbbe1951582df1",
-        "claim-206314379c6fcf8e58c17d326e6d5c1d",
-        "claim-25eef95fb910f6994b5bc6f2858f69a7",
-        "claim-2c38a22b661e499a2a87d36d5b352589",
-        "claim-2cb5559fa0c93dbd3094d611721266d8",
-        "claim-2d716284294a9b277c5ee4d9bbe50065",
-        "claim-33d6fcaf46816b4fe143a9c1dd9aa586",
-        "claim-3fb85c2f44e4978f241e0b8a3023862f",
-        "claim-41de7509d01073077c438cd7b2e1ff43",
-        "claim-45695b29f611d423df35e8c245b12629",
-        "claim-56d0028ac4b9f60243bb57a1bbc120d9",
-        "claim-570ee99c4ad6c31dec2a2ff03906c811",
-        "claim-5b04de5e330f4ce2a6590d04f7f227a4",
-        "claim-60d5dd15d846ed0349cd51083d74e707",
-        "claim-6aa1dfb5a9db12b698db61208d35bf6e",
-        "claim-6f61bcb247104e41ca3a39b9ae6173bc",
-        "claim-74ece7db529a297130ab3d6fbf7e8a84",
-        "claim-75c7de3d81443228d89053f20e5d8d18",
-        "claim-7a14bbe7ff493621640a371181d972b0",
-        "claim-882b23ef47e2d776a31462db4d340ba4",
-        "claim-9376b216b263155026df52714cc173c7",
-        "claim-9b16aa2cb8154c946192319c584d5b91",
-        "claim-a794aafb6f39dfb222cbb5add40364ef",
-        "claim-b2c346c4191038c1d9577d57ea934adf",
-        "claim-b78ac4601a76a56c9df46509961bed19",
-        "claim-ba2e311d1bbbcbb24a307435a8ca0400",
-        "claim-befda1aa243f8bcb480343ef1636c93a",
-        "claim-bfb264b52c8bdf7082a264601a55ba07",
-        "claim-c3b95a957e0493f6ca9ace59f5c7ddea",
-        "claim-c497eeb8e9910bc5a9181a7fe5cf4546",
-        "claim-cf47d4205dc4120675806334db804fbc"
-      ]
-    },
-    {
-      "candidateKey": "klma-venue-f7bf76c952a1",
-      "eligible": false,
-      "fields": {},
-      "confirmedOfficialLinks": [],
-      "wrongLinkIncidents": 0,
-      "evidenceClaimIds": [
-        "claim-7c37468ee5e5288bcd8e1983b9bf1ce8",
-        "claim-8e9b252b908cb08086d1193b9dde5bd9",
-        "claim-0e7432b762496e6636cdc8d6e70824a7",
-        "claim-622ecf1f551b847fca057904ef912f3f",
-        "claim-a4c2f6f654a9b47cb20051f843cb7cde",
-        "claim-593e86d1b7ddf20d27e93ac34d755dc6",
-        "claim-6cdf9adab49337892b1b365f4e45cb0d",
-        "claim-96785ab0dc445319ea6292cb9c58f616",
-        "claim-9a38268a11586bc4c75342323d42deea",
-        "claim-9f182b93b724b95bc39f73385dce52bb",
-        "claim-cb6f38efac924c8b8ebe72e3b2a08a32"
-      ]
-    },
-    {
-      "candidateKey": "event:klma-stoke-gig-list:klma-fe8341a59e17",
-      "eligible": false,
-      "fields": {},
-      "confirmedOfficialLinks": [],
-      "wrongLinkIncidents": 0,
-      "evidenceClaimIds": [
-        "claim-4a35ce6ae95118b9875d8b1263e19f12",
-        "claim-6f047be952db118c1ab522166719b6fc",
-        "claim-cfc3838986562b24d71e30543d98fe22",
-        "claim-d37faf1e743602c7589943fff06b0262",
-        "claim-e1375c309af0cac6634da7c0daa9635e",
-        "claim-e7fcd21a2eee502c503f01669c3d976c",
-        "claim-e83383fbe4e1b9b4810591258321804a",
-        "claim-2a73e81c2c9133e2f2252c57734e3c3e",
-        "claim-5537e016c72477979a2f37b75f6a6fdd",
-        "claim-967e3520d3cb9e5b70e428cf36743145",
-        "claim-aef5be08a28a31a372772ebebcaa7ae6",
-        "claim-c601f5791030a4df5a543a69ea41f313",
-        "claim-e31ef4ee1551ebab17230f7dcf4c1e27",
-        "claim-e7cb8407cd4aab9ac3a3a170d1ad6e4a",
-        "claim-05a1f931b91a664e86315c62629a794c",
-        "claim-14c7e358cabefc2b4a43b26e028b90be",
-        "claim-5fee733f39cc60be9c8ce04f6f8159ad",
-        "claim-74e46e0508e38dc4d20787f54f6cc907",
-        "claim-a4ce065009c14bf02c1121e255899afd",
-        "claim-d5bc4ba826a82a99b0b2022922005c14",
-        "claim-ed8388368c290a83eb38c4918589f476",
-        "claim-25ee49332ddfff8a715f2d95f98504a5",
-        "claim-2cf1f79d17e73e3c6eba1f638c7bfb89",
-        "claim-94c8c8f5395122d57383a1a3280c7556",
-        "claim-bf286c13e7d53fe12f0c1e15b80d0fcf",
-        "claim-c8a0e73fd8fd774b92ddc2b09b9ea91c",
-        "claim-cffd04f88598e53cd80cc68c310d72f2",
-        "claim-fe9af0aabadb30a5bf5b1fc2013e7b43"
-      ]
-    },
-    {
-      "candidateKey": "onthecase:venue:638",
-      "eligible": false,
-      "fields": {},
-      "confirmedOfficialLinks": [],
-      "wrongLinkIncidents": 0,
-      "evidenceClaimIds": [
-        "claim-1e6064de28f115f0b35e66605ae21ade",
-        "claim-f28a66892207d27c3052a96aff6f7d11",
-        "claim-e4b4525c8956d19945a76a1e69bb6c05",
-        "claim-0bf6e846c5f4119164c2ca5648022158",
-        "claim-4626ce6e90987da71563263663872a8b",
-        "claim-7762e18102df05385b1d983f94e89b6c",
-        "claim-935a16a8394b304b72b1a80c96d7a710",
-        "claim-b8f75e5c2e0076e338317182b794c7d7",
-        "claim-d1b35c6f3eaa2ad07599efc66f5166f3",
-        "claim-e882940af4356a5f8481142e20c92b9e",
-        "claim-20b0053d7239b4265c65aa2dd5cff585",
-        "claim-4a28dda74b7be02a14cf245d1bd9ebb9",
-        "claim-6768ccb6d6fa4b3314987995b3007604",
-        "claim-7ea0cee7728b576aea574e82c6e2e68d",
-        "claim-c7d322aea292c45d5aa09c51ed824c3d",
-        "claim-db5274d2a0e6636fd22b2f3e42b8321b",
-        "claim-eebc8fffc7d0ba5444d71aa3223f9557",
-        "claim-1753570d82b5b1cce615b15b8e9b940a",
-        "claim-215443f1efd2063fe86783bf4d61f057",
-        "claim-6cb8e77a188bdea234cb9aa3659caf85",
-        "claim-75a1163e27c33275e90b131fe5ca437b",
-        "claim-9aed2c3823a8e3333095eb7da8f58659",
-        "claim-adeb38c2cc56d58dc7e10fa4cf89e579",
-        "claim-b8860ad4b743909e82fc87c02825da9a",
-        "claim-9a2887e5ae1d1ab11859091bf82211b8",
-        "claim-9d5bbea0aeb20154c99320a09a08169e",
-        "claim-2434c7e866c6a9afea6a42a4b2bf3f31",
-        "claim-2826012a3a550922c76263279055a1ce",
-        "claim-126880eee76b3b318bae571fa681959a",
-        "claim-d70bdb815505652cb84de079cd25db2b",
-        "claim-2feacd4e55ef21da67058d08d2b53534",
-        "claim-cc8aad677b91ee6c55e00966b8b15ec9"
-      ]
-    },
-    {
-      "candidateKey": "event:onthecase-gig-index:onthecase:gig:131485",
-      "eligible": false,
-      "fields": {},
-      "confirmedOfficialLinks": [],
-      "wrongLinkIncidents": 0,
-      "evidenceClaimIds": [
-        "claim-05c4f4ba45a2668345e852a5ef842949",
-        "claim-18ae6cfa60a3fcec224e56ed601659aa",
-        "claim-1d3614f9b92a117609b8f928ddd15e6e",
-        "claim-2ee650a5a10de26e2690a161c3d05453",
-        "claim-381dcd3295aa1ea6b7e30cdfef03c296",
-        "claim-67b71ca173a6260156580553624fa126",
-        "claim-7a33ec7a2f7bf2d69d831971da03bc09",
-        "claim-926fbe9fbc08273820092da8f51d8d31",
-        "claim-c3241fa2eec6e7537599a78e8eccc521",
-        "claim-ca1efeb57b35cf44d425222ce90eed39",
-        "claim-302dfb1eb3139b02710d59707d7415cb",
-        "claim-3a5cdc8a346c3d0d3029d868e2a61a4e",
-        "claim-5a80d4bad719bcf8a14fa65bc9512098",
-        "claim-60b96406a1cd0fac428d2f4cbd163892",
-        "claim-67d579944edccbd82acdadc13e3a2a72",
-        "claim-6d3f72628c0401c8f670e3467109abe6",
-        "claim-a8e41e4d102246e3f6c2951db969f3c1",
-        "claim-aeea53fe0ce5564178cb06db3dbea9eb",
-        "claim-cbff5f2d4d477b1a3334625ee2f1d5d4",
-        "claim-de4829b4b2be4b10e97eb688bfa0084d",
-        "claim-39807df609d9a0c30316d2996d67ee04",
-        "claim-441c63060266a246c7d8420a6f989486",
-        "claim-7ad2aed10ffb6df4c1301fc43f67b456",
-        "claim-7b0766247c761c2be743711be8b0ec37",
-        "claim-a3f2d3e3186a8cefb8cac7161f968c4a",
-        "claim-a6db11a3c30f819f275db8c2dde3147b",
-        "claim-b802d89fa6656359ae83b74093d10c80",
-        "claim-cd03646ba0dc85b577c40a8fc7effd49",
-        "claim-d21f458ec96033dee85951e1c4753603",
-        "claim-e1c37343354c80d6f6951c1b03d97a80",
-        "claim-155554814b7a9cf1ca54f6f64f865c27",
-        "claim-26141bc4da22f7bc960b1cb006dc0f14",
-        "claim-4e07ffd911b53aa0d830126669c3c04c",
-        "claim-ba66b74b8135e3dd0f155415c38b2c9e",
-        "claim-c7bcba7ef945fd7a92665293dbbe1c77",
-        "claim-cb3570d9aa011714b7ca0a45fd0b432e",
-        "claim-dc6378cea6243ec529e6649a13909f1d",
-        "claim-e601a3353b107c1e1013537f8eb1c3f5",
-        "claim-ea9bc25ce7c1e61bf5a6f2041b82b8a3",
-        "claim-eb127c57ac9a1df90c2a1efe96b5ce80"
-      ]
-    },
-    {
-      "candidateKey": "klma-artist-f621eab91ee4",
+      "candidateKey": "artist_the-reform",
       "eligible": true,
       "fields": {
         "hasArtistType": "missing",
@@ -4143,83 +4361,35 @@
       "confirmedOfficialLinks": [],
       "wrongLinkIncidents": 0,
       "evidenceClaimIds": [
-        "claim-6b30d8f8c44d786d700a4e2e4a4833b7",
-        "claim-b8c6366fb55d0ecabfdc39e2e6b5dd53",
-        "claim-0d177bc8f7b5a19f556d3d511ce32a4c",
-        "claim-27948abbcc309b4ee1a15b81da29c15b",
-        "claim-3f98fd022c4b9554e33a11c1970e2701",
-        "claim-7c664e35eff0b054ef0ab0eb6df19bed",
-        "claim-b05dbf64e7b30277fb02a8b5d5e1de9f",
-        "claim-e0ee096f08bd1c41ae4fb5e7e286a1e9",
-        "claim-1dc6975d6cde31f89563da4610b6d624",
-        "claim-6419cbc783953b5fb80691ab74c1b763",
-        "claim-7d77e27eaba1f66892f7663c0f719160",
-        "claim-a304acafdbbbd6eda267e34cda20812c",
-        "claim-a6af1eadc084ffb9f4deb63a88226744",
-        "claim-ea72b9d25319ca2133fc72bdee7c2f14",
-        "claim-14ccb6c194691e1247c59c82bac4fdef",
-        "claim-2d75f25e4bd0e4d31b2722452cfd7f94",
-        "claim-569fbc44ec7b9e36e550aefcc78e404c",
-        "claim-941bbddfdd7a3babdcf23aa9d6082327",
-        "claim-e019a8003f669b065c7c5bb3c2514c9c",
-        "claim-f39e8afadee5d148559c673f95be4496"
+        "claim-1369b6f95bbbf79f1ad15adf66f2ef3f",
+        "claim-a59f4d2097ce05485199ae9652fdaa1a"
       ]
     },
     {
-      "candidateKey": "klma-venue-f5b1f7da58fc",
+      "candidateKey": "venue_the-whitehouse-stalybridge",
       "eligible": false,
       "fields": {},
       "confirmedOfficialLinks": [],
       "wrongLinkIncidents": 0,
       "evidenceClaimIds": [
-        "claim-1d6404343574e0cd54fe14ab3af2840c",
-        "claim-9d9e94d2cc35f2c327ab73907394031c",
-        "claim-1f31d8540b1040d485c0b23af29ab68b",
-        "claim-4e452a34904ccb311c0e06d42812407b",
-        "claim-8238c5228ae6b687b1e6e58eb37f7d29",
-        "claim-3da377884d4cb2736cc486cffa1140d5",
-        "claim-777e6a8664103cbdd44167f8ea6c523c",
-        "claim-ae6ecf7cb2c78f3d3ed42676ecee6243",
-        "claim-2e5a393c824f00a9507819ba36f64149",
-        "claim-4b2c1b1ce35e7c3f0eb174b50409c8d2",
-        "claim-b16b2e36f024da7ddd92dec60fc84d79"
+        "claim-6fcd443f8b12b51f3bbbe61fecc96be1",
+        "claim-7e98f1aeba54957cbda0cf5bd9920343"
       ]
     },
     {
-      "candidateKey": "event:klma-stoke-gig-list:klma-fe19116d42df",
+      "candidateKey": "event:gigs-news-daily-import:2026-08-30_manic_cheshire-cheese-newton",
       "eligible": false,
       "fields": {},
       "confirmedOfficialLinks": [],
       "wrongLinkIncidents": 0,
       "evidenceClaimIds": [
-        "claim-0097b177bfaa6faf1dabde22c4396f42",
-        "claim-041d2e2d3ee7f2cbcce545c26d6f8c84",
-        "claim-7f06c64eb4615e633362c423fe1ff9d1",
-        "claim-91818ff5334f2cd29ad512df7e52c869",
-        "claim-cbcd862a91fcc88ff179c050960b9969",
-        "claim-cf31879f3ccb859c6f762018b7f2c086",
-        "claim-dc674454d284258be3c57dd16679320e",
-        "claim-012f6929bda98882d4f15616a8671d7e",
-        "claim-0960a6ec07cb5076fb0253fc2dd83677",
-        "claim-14a65abfc3b2d90363257e5c46a782c9",
-        "claim-161beeae7434d8349dac48744a61378e",
-        "claim-505c1430fd94733a34a3babde9056fd1",
-        "claim-50c6060f37d5f0b8262ec484717f382f",
-        "claim-515bf0d1e3f79d9b86dd072acde554f8",
-        "claim-0755c4f6314c383140c4218e8f481231",
-        "claim-201cbd5a30ad97d8a68eab411cc04671",
-        "claim-3e7dfc816f6539abe88afb9711255a45",
-        "claim-5405a92b9401a7b26b504f0b31c2bae6",
-        "claim-79a171e371bc78548a7c2f81d65fe542",
-        "claim-91ab797e866d1d3039596c7d4484eb59",
-        "claim-b34ed1da359c19eb3193fd584c2281f1",
-        "claim-061af91944faf097050bd18059e370cd",
-        "claim-18a9e6c04638b5a48dcb9d2105b0d61a",
-        "claim-280ed19595d34b08c4e89af9292e603c",
-        "claim-622e7de5109c054e01d772329dab2218",
-        "claim-6cfb4d0fbc986db7b13ec0a60c61b5b6",
-        "claim-6ec113902786bc1ad0c1618928757607",
-        "claim-7c949bea5290e2cdc2448c5cd5e433cb"
+        "claim-4810f34caa14688530a7b72207c7d483",
+        "claim-613f40770b555a03bf41ef3aba9bcca9",
+        "claim-6591d1e97a80d4880a1578e1dbb68165",
+        "claim-78f196e9edd6eadd44e6eb399e080469",
+        "claim-85ee847bd3d5902e93a66b1dddf110b7",
+        "claim-bfb84730af6f676a7367441144eef947",
+        "claim-c02f858802725fc951609e0edf6cc9b6"
       ]
     }
   ]
