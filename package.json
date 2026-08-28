@@ -21,7 +21,8 @@
     "enrichment:qualify": "tsx src/cli/qualify-enrichment-provider.ts",
     "lemonrock:bootstrap": "tsx src/cli/lemonrock-bootstrap.ts",
     "onthecase:bootstrap": "tsx src/cli/onthecase-bootstrap.ts",
-    "bndy:baseline": "tsx src/cli/bndy-corpus-bootstrap.ts"
+    "bndy:baseline": "tsx src/cli/bndy-corpus-bootstrap.ts",
+    "trust-loop:index": "tsx src/cli/backfill-trust-loop-index.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",

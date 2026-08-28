@@ -98,7 +98,7 @@ describe('GraphReader neighborhoods (keyed reads only, never scans)', () => {
     ddb.put(knowledgeClaimItem(claim()));
     ddb.put(knowledgeClaimItem(claim({ id: 'clm-2', predicate: 'occursOn', value: '2026-08-27' })));
     ddb.put({
-      pk: 'RESOLUTION#event-candidate#event:onthecase-gig-index:onthecase:gig:131412',
+      pk: 'RESOLUTION#event#event:onthecase-gig-index:onthecase:gig:131412',
       sk: 'META',
       candidateType: 'event',
       candidateKey: 'event:onthecase-gig-index:onthecase:gig:131412',

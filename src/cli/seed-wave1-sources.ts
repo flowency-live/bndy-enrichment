@@ -22,13 +22,16 @@ export function waveOneSources(now = new Date()): GigSource[] {
   return [
     withNext({
       ...safeDefaults,
+      enabled: true,
       id: 'gigs-news-daily-import',
       name: 'gigs-news',
       type: 'AGGREGATOR',
       url: 'https://gigs-news.uk',
       region: 'Greater Manchester / East Cheshire',
-      cadence: 'daily',
+      cadence: 'weekly',
       localTime: '09:00',
+      mode: 'append-only',
+      snapshotSemantics: 'incremental',
       authorityClass: 'aggregator',
       adapter: 'gigs-news',
       runtimeClass: 'browser',

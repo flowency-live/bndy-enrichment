@@ -50,10 +50,12 @@ describe('WP-11 source parity', () => {
       complete: true,
     });
     const actual = buildParityArtifact({ sourceId: source.id, runDate: run.runDate, evidence, parsed });
-    const comparison = compareParityArtifacts(donor, actual);
+    const expectedRuleChanges = donor.events.map((event) => `events.${event.sourceEventKey}.artistLocation`);
+    const comparison = compareParityArtifacts(donor, actual, { expectedRuleChanges });
 
-    expect(comparison.differences, JSON.stringify({ donor, actual, differences: comparison.differences }, null, 2)).toEqual([]);
+    expect(comparison.differences, JSON.stringify({ donor, actual, differences: comparison.differences }, null, 2)).toHaveLength(donor.events.length);
     expect(comparison.passed).toBe(true);
+    expect(comparison.differences.every((difference) => difference.classification === 'EXPECTED_RULE_CHANGE')).toBe(true);
   });
 
   it('classifies differing raw evidence as INPUT_DIFFERENCE', () => {

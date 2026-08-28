@@ -59,7 +59,6 @@ export function normaliseGigsNewsGig(gig: GigsNewsRawGig): NormalisedSourceEvent
     sourceNativeId: sourceEventKey,
     artistName: gig.artist,
     artistExternalId: gigsNewsArtistExternalId(gig),
-    artistLocation: 'Greater Manchester UK',
     venueName: gig.venueCanonical,
     venueExternalId: gigsNewsVenueExternalId(gig),
     venueLocation: gigsNewsVenueLocality(gig),

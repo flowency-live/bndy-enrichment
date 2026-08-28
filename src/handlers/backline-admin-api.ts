@@ -141,6 +141,11 @@ export function createHandler(deps?: Partial<HandlerDependencies>) {
         return respond(200, neighborhood);
       }
 
+      if (path === '/trust-loop') {
+        const runs = await reader().listTrustLoopRuns(Math.min(limit, 25));
+        return respond(200, { runs, canonicalWritesEnabled: false });
+      }
+
       return respond(404, { error: `Unknown path ${path}` });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

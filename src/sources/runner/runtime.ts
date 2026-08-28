@@ -1,4 +1,4 @@
-import { ClaimStore, ObservationStore, SourceRegistryStore, SourceStateStore } from '../../knowledge/stores/index.js';
+import { CandidateStore, ClaimStore, ObservationStore, SourceRegistryStore, SourceStateStore } from '../../knowledge/stores/index.js';
 import '../adapters/gigs-news/index.js';
 import '../adapters/klma/index.js';
 import '../adapters/lemonrock/index.js';
@@ -23,6 +23,7 @@ export function createRunnerDependencies(acquisition: AcquisitionRouter): Runner
   return {
     registry: new SourceRegistryStore(tableName), state: new SourceStateStore(tableName),
     observations: new ObservationStore(tableName, evidenceBucket), claims: new ClaimStore(tableName),
+    candidates: new CandidateStore(tableName),
     artifacts: new S3SourceRunArtifactStore(evidenceBucket), projection: new SqsProjectionPublisher(projectionQueueUrl),
     fanout: sourceQueueUrl ? new DynamoSqsSourceFanoutPublisher(tableName, sourceQueueUrl) : undefined,
     metrics: new DynamoSourceRunMetricStore(tableName),

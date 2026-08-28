@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import type { GigSource, KnowledgeClaim, SourceObservation } from '../../knowledge/types.js';
+import type { EntityCandidate, EventCandidate, GigSource, KnowledgeClaim, SourceObservation } from '../../knowledge/types.js';
 import type { ClaimStore, ObservationStore, SourceRegistryStore, SourceRuntimeState, SourceStateStore } from '../../knowledge/stores/index.js';
 import { buildParityArtifact } from '../../parity/source-parity.js';
 import type { AcquisitionRouter } from './acquisition.js';
@@ -45,11 +45,16 @@ export interface RunnerClaimStore {
   put(claim: KnowledgeClaim): Promise<void>;
 }
 
+export interface RunnerCandidateStore {
+  putMany(candidates: Array<EntityCandidate | EventCandidate>): Promise<void>;
+}
+
 export type RunnerDependencies = {
   registry: RunnerSourceRegistry;
   state: RunnerStateStore;
   observations: RunnerObservationStore;
   claims: RunnerClaimStore;
+  candidates?: RunnerCandidateStore;
   artifacts: SourceRunArtifactStore;
   projection: ProjectionPublisher;
   fanout?: SourceFanoutPublisher;
@@ -216,6 +221,7 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
 
     const knowledge = buildKnowledge(storedObservation, parsed.events, entities);
     for (const claim of knowledge.claims) await deps.claims.put(claim);
+    await deps.candidates?.putMany(knowledge.candidates);
     report.claims = knowledge.claims.length;
 
     if ((parsed.nextRequests?.length ?? 0) > 0) {

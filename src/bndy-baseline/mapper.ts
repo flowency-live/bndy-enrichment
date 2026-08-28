@@ -90,9 +90,12 @@ function semanticClaim(entityType: BaselineEntityType, path: string, value: unkn
   if (/^(facebookUrl|facebook_url)$/i.test(cleanPath)) return { predicate: 'hasFacebookUrl', value: stringValue };
   if (/^(websiteUrl|website_url)$/i.test(cleanPath)) return { predicate: 'hasWebsiteUrl', value: stringValue };
   if (/^(instagramUrl|instagram_url)$/i.test(cleanPath)) return { predicate: 'hasInstagramUrl', value: stringValue };
+  if (/^(bandcampUrl|bandcamp_url)$/i.test(cleanPath)) return { predicate: 'hasBandcampUrl', value: stringValue };
+  if (/^(spotifyUrl|spotify_url)$/i.test(cleanPath)) return { predicate: 'hasSpotifyUrl', value: stringValue };
   if (/^(location|basedIn|based_in)$/i.test(cleanPath)) return { predicate: 'hasLocation', value: stringValue };
   if (/^(artistType|artist_type)$/i.test(cleanPath)) return { predicate: 'hasArtistType', value: stringValue };
   if (/^(actType|actTypes)$/i.test(cleanPath)) return { predicate: 'hasActType', value: stringValue };
+  if (/^(isAcoustic|is_acoustic|acoustic)$/i.test(cleanPath)) return { predicate: 'isAcoustic', value: stringValue.toLowerCase() === 'true' ? true : stringValue };
   if (/^(genre|genres)$/i.test(cleanPath)) return { predicate: 'hasGenre', value: stringValue };
   if (/^bio$/i.test(cleanPath)) return { predicate: 'hasBio', value: stringValue };
   if (/^address$/i.test(cleanPath)) return { predicate: 'hasAddress', value: stringValue };
