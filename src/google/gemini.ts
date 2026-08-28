@@ -346,9 +346,16 @@ function extractEvidence(raw: any): { evidence: Evidence[]; queryCount: number }
   return { evidence, queryCount };
 }
 
-async function callGemini(apiKey: string, model: string, prompt: string, schema: object): Promise<ApiCallResult> {
+async function callGemini(
+  apiKey: string,
+  model: string,
+  prompt: string,
+  schema: object,
+  timeoutMs?: number,
+): Promise<ApiCallResult> {
   const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
     method: 'POST',
+    ...(timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
     headers: {
       'content-type': 'application/json',
       'x-goog-api-key': apiKey,
@@ -421,6 +428,7 @@ export async function enrichTrustLoopEntityWithGemini(input: {
     model,
     buildTrustLoopEnrichmentPrompt({ ...input, requestedPredicates }),
     groundedEnrichmentResponseSchema,
+    60_000,
   );
   const parsed = GroundedEnrichmentResponseSchema.parse(JSON.parse(result.text));
   const capturedUrls = new Set(result.evidence.map((item) => safeHttpsEvidenceUrl(item.sourceUrl)));
