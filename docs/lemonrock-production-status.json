@@ -1,8 +1,8 @@
 {
-  "verifiedAt": "2026-08-28T08:04:02Z",
-  "workflowRunId": "33153806544",
+  "verifiedAt": "2026-08-28T08:08:01Z",
+  "workflowRunId": "33154092382",
   "workflowConclusion": "skipped",
-  "deployedSha": "d65c073dd391172467d68c7c6b29ae040aaf71b9",
+  "deployedSha": "f524a958bb40b6a83db70125811d2fd56fb357e1",
   "stateTable": "BndyEnrichmentStack-StateTable9728C7E5-14HR6N3NEWGLM",
   "sourceWorker": "BndyEnrichmentStack-SourceWorker336FEA29-ghZk2mBRjOks",
   "queue": {
