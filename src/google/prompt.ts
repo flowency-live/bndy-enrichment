@@ -53,6 +53,7 @@ IDENTITY SAFETY:
 - If identity is not safe, return low identity confidence and no facts. Abstention is a healthy result.
 
 FACT SAFETY:
+- Use at most two Google Search queries for this case. Abstain rather than widening the search.
 - Return only requested predicates and only facts supported by public HTTPS evidence URLs found in this search.
 - Every official URL must be identity-proven for this exact artist or venue. Do not return a search result merely because its name looks similar.
 - Artist type values: Band, Solo Act, Duo, Trio, Group, DJ, Collective.
@@ -64,7 +65,7 @@ FACT SAFETY:
 - Confidence describes the fact itself, separately from identityConfidence.
 - Do not write to any canonical system. This is evidence capture for human qualification only.
 
-Return JSON only in the requested schema.`;
+Return one JSON object only in the requested schema. Do not use Markdown code fences or prose outside the JSON object.`;
 }
 
 export function buildEntityEnrichmentFollowUpPrompt(entities: EntityEnrichment[]): string {

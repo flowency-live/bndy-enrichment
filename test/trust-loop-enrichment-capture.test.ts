@@ -79,6 +79,68 @@ describe('Trust Loop enrichment qualification capture', () => {
       usage: { searches: 1, fetches: 0, modelCalls: 1, inputTokens: 1_000, outputTokens: 200 },
     });
     expect(bundle.usage!.estimatedCost).toBeLessThan(0.03);
+    const request = JSON.parse((vi.mocked(fetch).mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(request).not.toHaveProperty('response_format');
+    expect(request.input).toMatch(/at most two Google Search queries/i);
+  });
+
+  it('captures inline citation annotations from unstructured grounded JSON', async () => {
+    const evidenceUrl = 'https://the-test-band.example/about';
+    const modelText = `\`\`\`json\n${JSON.stringify({
+      identityConfidence: 0.999,
+      identityReason: 'The official page matches the named act and gig footprint.',
+      facts: [{
+        predicate: 'hasGenre',
+        value: 'Rock',
+        confidence: 0.99,
+        evidenceUrls: [evidenceUrl],
+        evidenceText: 'The official page describes the act as a rock band.',
+      }],
+    })}\n\`\`\``;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      output_text: modelText,
+      steps: [
+        { type: 'google_search_call', arguments: { queries: ['', 'The Test Band official'] } },
+        {
+          type: 'model_output',
+          content: [{
+            type: 'text',
+            text: modelText,
+            annotations: [{
+              type: 'url_citation',
+              url: evidenceUrl,
+              title: 'Official page',
+              startIndex: 0,
+              endIndex: 20,
+            }],
+          }],
+        },
+      ],
+      usage: { total_input_tokens: 500, total_output_tokens: 100 },
+    }), { status: 200, headers: { 'content-type': 'application/json' } })));
+
+    const item = reviewCase('artist', 'fixture-source', 'artist-1', 'The Test Band');
+    const bundle = await enrichTrustLoopEntityWithGemini({
+      entity: qualificationEntity(item),
+      sourceId: item.sourceId,
+      sourceCandidateKey: item.candidateKey,
+      requestedPredicates: qualificationPredicates('artist'),
+    }, { apiKey: 'fixture-key' });
+
+    expect(bundle.facts).toEqual([expect.objectContaining({
+      predicate: 'hasGenre',
+      value: 'Rock',
+      evidenceUrls: [evidenceUrl],
+    })]);
+    expect(bundle.usage).toMatchObject({ searches: 1, modelCalls: 1 });
+    expect(bundle.raw).toMatchObject({
+      evidence: [expect.objectContaining({
+        sourceUrl: evidenceUrl,
+        title: 'Official page',
+        snippet: modelText.slice(0, 20),
+      })],
+      rejectedFacts: [],
+    });
   });
 
   it('quarantines model citations that were not captured by the grounded search', async () => {
