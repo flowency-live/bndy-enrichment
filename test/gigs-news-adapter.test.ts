@@ -108,16 +108,16 @@ describe('GigsNews donor parser parity', () => {
 });
 
 describe('GigsNews target adapter contract', () => {
-  it('requests rendered body.innerText from the browser acquisition router', async () => {
+  it('uses bounded HTTP acquisition for the server-rendered production page', async () => {
     let request: AcquisitionRequest | undefined;
     const acquisition: AcquisitionRouter = {
       async acquire(input): Promise<FetchedSource> {
         request = input;
         return {
-          kind: 'text',
+          kind: 'html',
           body: fixture,
           sourceUrl: input.url,
-          fetchMethod: 'chromium-innerText',
+          fetchMethod: 'http-html',
           fetchedAt: '2026-06-17T08:00:01.000Z',
           complete: true,
           httpStatus: 200,
@@ -126,13 +126,14 @@ describe('GigsNews target adapter contract', () => {
       },
     };
 
-    const raw = await gigsNewsAdapter.fetch(config(), run, acquisition);
+    const raw = await gigsNewsAdapter.fetch(config({ runtimeClass: 'standard' }), run, acquisition);
     expect(raw.complete).toBe(true);
     expect(request).toMatchObject({
       url: 'https://gigs-news.uk',
-      bodyMode: 'innerText',
-      settleMs: 2000,
-      fetchMethod: 'chromium-innerText',
+      kind: 'html',
+      followRedirects: true,
+      maxRedirects: 3,
+      fetchMethod: 'http-html',
     });
   });
 
@@ -151,8 +152,13 @@ describe('GigsNews target adapter contract', () => {
     })).rejects.toThrow(/structural gate failed/i);
   });
 
-  it('refuses to run in the standard worker', async () => {
-    const acquisition: AcquisitionRouter = { async acquire() { throw new Error('should not fetch'); } };
-    await expect(gigsNewsAdapter.fetch(config({ runtimeClass: 'standard' }), run, acquisition)).rejects.toThrow(/browser runtime/i);
+  it('retains the browser acquisition contract for donor parity replay', async () => {
+    let request: AcquisitionRequest | undefined;
+    const acquisition: AcquisitionRouter = { async acquire(input) {
+      request=input;
+      return {kind:'text',body:fixture,sourceUrl:input.url,fetchMethod:'chromium-innerText',fetchedAt:run.startedAt,complete:true};
+    } };
+    await gigsNewsAdapter.fetch(config({ runtimeClass: 'browser' }), run, acquisition);
+    expect(request).toMatchObject({bodyMode:'innerText',settleMs:2000,fetchMethod:'chromium-innerText'});
   });
 });
