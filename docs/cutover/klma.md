@@ -1,4 +1,4 @@
-# KLMA parity and additive-only cutover checklist
+# KLMA shadow BAU and additive-only writer cutover checklist
 
 **Source:** `klma-stoke-gig-list`  
 **Target adapter:** `klma-stoke`  
@@ -7,11 +7,29 @@
 
 ## Current state
 
-- The generic adapter remains `enabled: false`, `shadow: true` and `writerAuthority: cowork`.
-- The code in this change has not been deployed.
+- KLMA is healthy live shadow BAU: `enabled: true`, `shadow: true`, `writerAuthority: cowork`, daily cadence and standard runtime.
+- The production stack and daily schedule are deployed. The accepted live run completed at `2026-08-28T08:09:19Z`.
+- AWS persists raw evidence, an Observation and Claims, but canonical projection remains disabled. Cowork remains the canonical writer.
+- Shadow BAU completion does not mean writer cutover completion. The later gates below still govern any transfer of writer authority or Cowork retirement.
 - The Source Registry bootstrap applies `projectionPolicy.mode: additive-only` with 50 to 500 accepted events and at most 500 canonical actions per run.
 - Additive-only means create or match an Event, verify its Artist, Venue and date, and link supporting Claims. It never updates, cancels, hides, restores or uncancels an Event.
 - A manual `projectionBootstrap: true` run proposes every accepted current row as a bounded create-or-match action. Scheduled runs cannot request bootstrap mode.
+
+## Shadow BAU acceptance, 2026-08-28
+
+Authoritative manifest: `ops/klma-shadow-bau-manifest.json`
+
+| Acceptance condition | Result |
+|---|---|
+| Live Google Sheet fetch | PASS |
+| Observation persisted | PASS: `obs-bfcbd2f7-3944-4f8a-a41b-47c2ac38e43b` |
+| Raw evidence persisted | PASS |
+| Claims persisted | PASS: 2,771 |
+| Daily schedule enabled | PASS |
+| Canonical projection disabled | PASS |
+| Cowork retained as writer | PASS |
+
+This gate establishes safe daily Backline evidence ingestion. It does not authorise canonical writes.
 
 ## Gate A: identical-evidence fixture
 
