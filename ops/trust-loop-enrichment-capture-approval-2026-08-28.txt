@@ -1,0 +1,8 @@
+Backline Trust Loop grounded-enrichment qualification approval
+
+Approved: 2026-08-28
+Scope: bounded 20-case cohort of public artist and venue identities, Backline source identifiers and source context.
+Provider: Google Gemini with Google Search grounding.
+Outputs: public evidence and qualification results may be committed to bndy-enrichment.
+Controls: one-shot, shadow-only, cost-capped, zero canonical writes.
+Exclusions: no BAU schedule, no provider activation, no canonical projection.
