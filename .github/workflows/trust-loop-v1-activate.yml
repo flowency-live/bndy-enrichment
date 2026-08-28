@@ -115,6 +115,15 @@ jobs:
           done
           echo "Not all bounded source refreshes completed inside 15 minutes" >&2
           exit 1
+      - name: Refresh bounded artist-profile evidence cohort
+        env:
+          STATE_TABLE: ${{ steps.outputs.outputs.state_table }}
+          SOURCE_SCAN_QUEUE_URL: ${{ steps.outputs.outputs.standard_queue }}
+          TRUST_LOOP_PROFILE_SAMPLE_PER_SOURCE: 10
+        run: |
+          set -euo pipefail
+          npm run trust-loop:refresh-profiles | tee trust-loop-profile-refresh.log
+          tail -n 1 trust-loop-profile-refresh.log | jq -e '.status == "complete" and .canonicalWrites == 0 and ([.indexed[]] | min) >= 5'
       - name: Run Trust Loop cohort
         env:
           TRUST_LOOP_FUNCTION: ${{ steps.outputs.outputs.trust_loop_function }}

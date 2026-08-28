@@ -118,6 +118,18 @@ describe('GigsNews donor parser parity', () => {
     expect(parsed.gigs[0]).toMatchObject({ artist: 'A Real Band', venue: 'The Real Venue' });
     expect(parsed.gigs.some((gig) => /Chris|cancelled/i.test(`${gig.artist} ${gig.venue}`))).toBe(false);
   });
+
+  it('stops at a footer label split by server-rendered markup', () => {
+    const parsed = parseGigsNewsPage([
+      '<h2>Friday 28th August</h2>',
+      '<p>A Real Band - <a>The Real Venue</a></p>',
+      '<h2>gigs <span>2026</span></h2>',
+      '<p>Sunday 20th September - Cheshire Cheese Newton - Reserved (cancelled - United match)</p>',
+      '<p>Chris - 07811 44 7388</p>',
+    ].join(''), 2026);
+    expect(parsed.gigs).toHaveLength(1);
+    expect(parsed.gigs[0]).toMatchObject({ artist: 'A Real Band', venue: 'The Real Venue' });
+  });
 });
 
 describe('GigsNews target adapter contract', () => {

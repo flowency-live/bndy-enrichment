@@ -28,7 +28,8 @@ const PLACEHOLDER_VENUE_SUFFIX = /-\s*(branded|reserved)\b/i;
 const DJ_PATTERNS = [/^dj\s+\w+$/i];
 const FOOTER_PATTERNS = [
   /recording my songs/i, /my bands/i, /contact/i, /chris statham/i,
-  /^gigs\s+\d{4}$/i, /^\d{5}\s+\d{6}$/, /email:/i,
+  /^gigs(?:\s+\d{4})?$/i, /^20\d{2}$/,
+  /^\d{5}\s+\d{6}$/, /email:/i, /reserved\s*\(\s*cancelled/i,
 ];
 
 export interface GigsNewsRawGig {
@@ -213,10 +214,23 @@ function decodeBasicHtmlEntities(value: string): string {
     .replace(/&gt;/gi, '>');
 }
 
+function listingText(input: string): string {
+  if (!/<[^>]+>/.test(input)) return input;
+  return input
+    .replace(/<\s*br\s*\/?\s*>/gi, '\n')
+    .replace(/<\/?\s*(?:p|div|h[1-6]|li|tr|section|article)\b[^>]*>/gi, '\n')
+    .replace(/<[^>]+>/g, '');
+}
+
 export function parseGigsNewsPage(input: string, year: number): GigsNewsParseResult {
   // Production acquisition returns rendered body.innerText. Keeping tolerant HTML
   // stripping here preserves donor fixtures and makes saved raw HTML usable too.
-  const text = decodeBasicHtmlEntities(input.replace(/<[^>]+>/g, '\n'));
+  // The live server-rendered page may place markup between the footer label and
+  // its year. Cut that section in the raw capture first so a tag boundary cannot
+  // turn "gigs 2026" into two independently parseable lines.
+  const rawFooter = input.search(/\bgigs(?:\s|&nbsp;|<[^>]+>)+20\d{2}\b/i);
+  const listing = rawFooter >= 0 ? input.slice(0, rawFooter) : input;
+  const text = decodeBasicHtmlEntities(listingText(listing));
   const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
   const gigs: GigsNewsRawGig[] = [];
   const parked: GigsNewsParkedGig[] = [];

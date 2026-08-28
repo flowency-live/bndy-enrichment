@@ -22,7 +22,8 @@
     "lemonrock:bootstrap": "tsx src/cli/lemonrock-bootstrap.ts",
     "onthecase:bootstrap": "tsx src/cli/onthecase-bootstrap.ts",
     "bndy:baseline": "tsx src/cli/bndy-corpus-bootstrap.ts",
-    "trust-loop:index": "tsx src/cli/backfill-trust-loop-index.ts"
+    "trust-loop:index": "tsx src/cli/backfill-trust-loop-index.ts",
+    "trust-loop:refresh-profiles": "tsx src/cli/refresh-trust-loop-profiles.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
