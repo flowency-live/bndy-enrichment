@@ -59,7 +59,7 @@ describe('enrichment qualification status', () => {
       abstainedCases: 0,
       acceptedFacts: 1,
       quarantinedFacts: 1,
-      costMeasurement: 'partial-error-path',
+      costMeasurement: 'unavailable',
       canonicalWrites: 0,
       reviewUrl: 'https://github.com/flowency-live/bndy-enrichment/blob/main/review.md',
     });

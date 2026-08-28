@@ -10,6 +10,8 @@
   "venueCases": 10,
   "captureErrors": 20,
   "totalEstimatedCost": 0,
+  "costMeasurement": "unavailable",
+  "measuredUsageCases": 0,
   "canonicalWrites": 0,
   "items": [
     {

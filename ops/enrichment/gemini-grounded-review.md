@@ -4,7 +4,7 @@ Captured: 2026-08-28T21:51:52.686Z
 
 This is a bounded 20-case provider qualification cohort, not the full Backline corpus. It contains 10 artists and 10 venues selected from the live Trust Loop review set. No canonical writes occurred.
 
-Captured cases: 0/20. Capture errors: 20. Accepted facts: 0. Quarantined facts: 0. Estimated cost: $0.0000.
+Captured cases: 0/20. Capture errors: 20. Accepted facts: 0. Quarantined facts: 0. Estimated cost: unavailable because the legacy parse-error path discarded provider usage after all 20 calls returned.
 
 A quarantined fact is visible for review but is not accepted evidence and cannot project to canonical BNDY. Human adjudication does not repair missing provider citations; those cases remain parked.
 
@@ -314,4 +314,3 @@ Confirm `match` only if the captured provider evidence definitely belongs to the
 - Human identity decision: [ ] match  [ ] park
 - Human fact decision: [ ] all supported  [ ] corrections required  [ ] provider evidence missing
 - Human notes:
-

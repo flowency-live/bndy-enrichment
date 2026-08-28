@@ -30,6 +30,8 @@ const QualificationArtifactSchema = z.object({
   venueCases: z.number().int().nonnegative(),
   captureErrors: z.number().int().nonnegative(),
   totalEstimatedCost: z.number().nonnegative(),
+  costMeasurement: z.enum(['complete', 'partial', 'unavailable']).optional(),
+  measuredUsageCases: z.number().int().nonnegative().optional(),
   canonicalWrites: z.literal(0),
   items: z.array(QualificationItemSchema),
 }).superRefine((artifact, context) => {
@@ -108,6 +110,11 @@ export function qualificationSummaryFromArtifact(
     : artifact.reviewStatus === 'unreviewed'
       ? 'awaiting-human-review'
       : 'reviewed';
+  const inferredCostMeasurement = artifact.items.every((item) => item.bundle.usage !== undefined)
+    ? 'complete'
+    : artifact.items.some((item) => item.bundle.usage !== undefined)
+      ? 'partial'
+      : 'unavailable';
 
   return {
     schemaVersion: 1,
@@ -126,7 +133,7 @@ export function qualificationSummaryFromArtifact(
     acceptedFacts,
     quarantinedFacts,
     totalEstimatedCost: artifact.totalEstimatedCost,
-    costMeasurement: artifact.captureErrors > 0 ? 'partial-error-path' : 'complete',
+    costMeasurement: artifact.costMeasurement ?? inferredCostMeasurement,
     canonicalWrites: 0 as const,
     sourceRunUrl: links.sourceRunUrl,
     artifactUrl: links.artifactUrl,
