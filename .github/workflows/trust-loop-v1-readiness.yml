@@ -1,0 +1,106 @@
+name: Read Backline Trust Loop v1 source readiness
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/trust-loop-v1-readiness.yml']
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  read-readiness:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Read sanitised source state
+        run: |
+          set -euo pipefail
+          mkdir -p ops
+          STATE_TABLE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query 'Stacks[0].Outputs[?OutputKey==`StateTableName`].OutputValue | [0]' --output text)
+          STANDARD_QUEUE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query 'Stacks[0].Outputs[?OutputKey==`SourceScanQueueUrl`].OutputValue | [0]' --output text)
+          BROWSER_QUEUE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query 'Stacks[0].Outputs[?OutputKey==`BrowserScanQueueUrl`].OutputValue | [0]' --output text)
+          jq -n '{RequestItems:{}}' > batch.json
+          for SOURCE_ID in lemonrock-new-gigs onthecase-gig-index klma-stoke-gig-list gigs-news-daily-import; do
+            jq --arg table "$STATE_TABLE" --arg source "$SOURCE_ID" '
+              .RequestItems[$table].Keys += [
+                {pk:{S:("SOURCE#" + $source)},sk:{S:"CONFIG"}},
+                {pk:{S:("SOURCE#" + $source)},sk:{S:"STATE"}}
+              ]' batch.json > batch.next.json
+            mv batch.next.json batch.json
+          done
+          aws dynamodb batch-get-item --request-items file://batch.json > state.json
+          aws sqs get-queue-attributes --queue-url "$STANDARD_QUEUE" --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible > standard-queue.json
+          aws sqs get-queue-attributes --queue-url "$BROWSER_QUEUE" --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible > browser-queue.json
+          jq \
+            --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg table "$STATE_TABLE" \
+            --slurpfile standard standard-queue.json \
+            --slurpfile browser browser-queue.json '
+              def ddb:
+                if type != "object" then .
+                elif has("S") then .S
+                elif has("N") then (.N | tonumber)
+                elif has("BOOL") then .BOOL
+                elif has("NULL") then null
+                elif has("M") then (.M | map_values(ddb))
+                elif has("L") then [.L[] | ddb]
+                else . end;
+              [.Responses[$table][] | map_values(ddb)] as $items |
+              {
+                schemaVersion: 1,
+                generatedAt: $generatedAt,
+                readOnly: true,
+                canonicalWrites: 0,
+                sources: [
+                  "lemonrock-new-gigs",
+                  "onthecase-gig-index",
+                  "klma-stoke-gig-list",
+                  "gigs-news-daily-import"
+                ] | map(. as $id | {
+                  sourceId: $id,
+                  config: ($items[] | select(.pk == ("SOURCE#" + $id) and .sk == "CONFIG") | {
+                    enabled, shadow, writerAuthority, cadence, mode, snapshotSemantics
+                  }),
+                  state: (($items[] | select(.pk == ("SOURCE#" + $id) and .sk == "STATE") | {
+                    lastRunAt, lastSuccessfulRunAt, lastFailureAt, consecutiveFailures,
+                    lastErrorClass: (
+                      if (.lastError // "" | test("HTTP 403"; "i")) then "HTTP_403"
+                      elif (.lastError // "" | test("HTTP 429"; "i")) then "HTTP_429"
+                      elif (.lastError // "" | test("HTTP 5[0-9][0-9]"; "i")) then "HTTP_5XX"
+                      elif (.lastError // "" | test("timeout|timed out|abort"; "i")) then "TIMEOUT"
+                      elif (.lastError // "" | test("structural gate|recognisable HTML"; "i")) then "STRUCTURAL_GATE"
+                      elif (.lastError // "" | test("parse|parser"; "i")) then "PARSER"
+                      elif (.lastError // "") != "" then "OTHER"
+                      else null end
+                    )
+                  }) // null)
+                }),
+                queues: {
+                  standard: {
+                    visible: ($standard[0].Attributes.ApproximateNumberOfMessages | tonumber),
+                    inFlight: ($standard[0].Attributes.ApproximateNumberOfMessagesNotVisible | tonumber)
+                  },
+                  browser: {
+                    visible: ($browser[0].Attributes.ApproximateNumberOfMessages | tonumber),
+                    inFlight: ($browser[0].Attributes.ApproximateNumberOfMessagesNotVisible | tonumber)
+                  }
+                }
+              }' state.json > ops/trust-loop-v1-readiness.json
+          jq empty ops/trust-loop-v1-readiness.json
+      - name: Publish readiness evidence
+        run: |
+          set -euo pipefail
+          git config user.name bndy-backline-bot
+          git config user.email actions@users.noreply.github.com
+          git add ops/trust-loop-v1-readiness.json
+          git commit -m "Record Backline Trust Loop v1 source readiness" || exit 0
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
