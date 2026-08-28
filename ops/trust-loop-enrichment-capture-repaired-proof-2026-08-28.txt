@@ -1,0 +1,8 @@
+Backline Trust Loop enrichment qualification recapture
+
+Authorised scope: one repaired recapture of the existing bounded 20-case public Artist and Venue cohort.
+Provider: Google Gemini with Google Search grounding.
+Purpose: verify the strict citation-mapping repair and qualification thresholds.
+Safety: one-shot, shadow-only, cost-capped, and zero canonical writes.
+Cohort: the same 10 Artist and 10 Venue cases used by the existing qualification fixture.
+Date: 2026-08-28.
