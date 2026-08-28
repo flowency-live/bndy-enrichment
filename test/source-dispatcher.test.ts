@@ -84,7 +84,7 @@ describe('wave one registry seeds', () => {
     for (const item of sources) { expect(item.shadow).toBe(true); expect(item.writerAuthority).toBe('cowork'); expect(item.nextScanAt).toBeTruthy(); }
     expect(sources.find((item) => item.id === 'klma-stoke-gig-list')?.enabled).toBe(true);
     expect(sources.find((item) => item.id === 'gigs-news-daily-import')).toMatchObject({
-      enabled: true, cadence: 'weekly', mode: 'append-only', snapshotSemantics: 'incremental', runtimeClass: 'browser',
+      enabled: true, cadence: 'weekly', mode: 'append-only', snapshotSemantics: 'incremental', runtimeClass: 'standard',
     });
     expect(sources.filter((item) => !['klma-stoke-gig-list', 'gigs-news-daily-import'].includes(item.id)).every((item) => item.enabled === false)).toBe(true);
     expect(sources.find((item) => item.id === 'onthecase-daily-import')?.runtimeClass).toBe('browser');

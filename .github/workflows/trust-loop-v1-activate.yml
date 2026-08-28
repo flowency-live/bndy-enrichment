@@ -35,7 +35,42 @@ jobs:
           echo "state_table=$(node -e 'const x=require("./cdk-outputs.json"); console.log(x.BndyEnrichmentStack.StateTableName)')" >> "$GITHUB_OUTPUT"
           echo "standard_queue=$(node -e 'const x=require("./cdk-outputs.json"); console.log(x.BndyEnrichmentStack.SourceScanQueueUrl)')" >> "$GITHUB_OUTPUT"
           echo "browser_queue=$(node -e 'const x=require("./cdk-outputs.json"); console.log(x.BndyEnrichmentStack.BrowserScanQueueUrl)')" >> "$GITHUB_OUTPUT"
+          echo "historical_quarantine=$(node -e 'const x=require("./cdk-outputs.json"); console.log(x.BndyEnrichmentStack.HistoricalSourceFailureQuarantineUrl)')" >> "$GITHUB_OUTPUT"
           echo "trust_loop_function=$(node -e 'const x=require("./cdk-outputs.json"); console.log(x.BndyEnrichmentStack.TrustLoopFunctionName)')" >> "$GITHUB_OUTPUT"
+      - name: Retain the superseded GigsNews browser delivery copy
+        env:
+          BROWSER_QUEUE: ${{ steps.outputs.outputs.browser_queue }}
+          HISTORICAL_QUARANTINE: ${{ steps.outputs.outputs.historical_quarantine }}
+        run: |
+          set -euo pipefail
+          mkdir -p ops
+          DLQ_ARN=$(aws sqs get-queue-attributes --queue-url "$BROWSER_QUEUE" --attribute-names RedrivePolicy | jq -r '.Attributes.RedrivePolicy | fromjson | .deadLetterTargetArn')
+          DLQ_NAME=${DLQ_ARN##*:}
+          DLQ_URL=$(aws sqs get-queue-url --queue-name "$DLQ_NAME" --query QueueUrl --output text)
+          VISIBLE=$(aws sqs get-queue-attributes --queue-url "$DLQ_URL" --attribute-names ApproximateNumberOfMessages | jq -r '.Attributes.ApproximateNumberOfMessages // "0" | tonumber')
+          if [ "$VISIBLE" -gt 1 ]; then
+            echo "Browser DLQ contains more than the one measured GigsNews delivery copy" >&2
+            exit 1
+          fi
+          MOVED=0
+          if [ "$VISIBLE" -eq 1 ]; then
+            aws sqs receive-message --queue-url "$DLQ_URL" --max-number-of-messages 1 --visibility-timeout 60 --wait-time-seconds 0 > browser-dlq-message.json
+            BODY=$(jq -r '.Messages[0].Body // empty' browser-dlq-message.json)
+            RECEIPT=$(jq -r '.Messages[0].ReceiptHandle // empty' browser-dlq-message.json)
+            SOURCE_ID=$(jq -r '.sourceId // empty' <<<"$BODY")
+            if [ "$SOURCE_ID" != "gigs-news-daily-import" ] || [ -z "$RECEIPT" ]; then
+              echo "The measured browser DLQ copy is not the superseded GigsNews request" >&2
+              exit 1
+            fi
+            aws sqs send-message --queue-url "$HISTORICAL_QUARANTINE" --message-body "$BODY" >/dev/null
+            aws sqs delete-message --queue-url "$DLQ_URL" --receipt-handle "$RECEIPT"
+            MOVED=1
+          fi
+          jq -n \
+            --arg retainedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson moved "$MOVED" \
+            '{schemaVersion:1,retainedAt:$retainedAt,sourceId:"gigs-news-daily-import",supersededRuntime:"browser",deliveryCopiesMoved:$moved,retainedOutsideActiveDlq:true,canonicalWrites:0}' \
+            > ops/trust-loop-v1-browser-quarantine.json
       - name: Build canonical identity index
         env:
           STATE_TABLE: ${{ steps.outputs.outputs.state_table }}
@@ -55,14 +90,12 @@ jobs:
         id: trigger
         env:
           STANDARD_QUEUE: ${{ steps.outputs.outputs.standard_queue }}
-          BROWSER_QUEUE: ${{ steps.outputs.outputs.browser_queue }}
         run: |
           set -euo pipefail
           REQUESTED_AT=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
-          for SOURCE_ID in lemonrock-new-gigs onthecase-gig-index klma-stoke-gig-list; do
+          for SOURCE_ID in lemonrock-new-gigs onthecase-gig-index klma-stoke-gig-list gigs-news-daily-import; do
             aws sqs send-message --queue-url "$STANDARD_QUEUE" --message-body "{\"sourceId\":\"$SOURCE_ID\",\"reason\":\"manual\",\"requestedAt\":\"$REQUESTED_AT\"}" >/dev/null
           done
-          aws sqs send-message --queue-url "$BROWSER_QUEUE" --message-body "{\"sourceId\":\"gigs-news-daily-import\",\"reason\":\"manual\",\"requestedAt\":\"$REQUESTED_AT\"}" >/dev/null
           echo "requested_at=$REQUESTED_AT" >> "$GITHUB_OUTPUT"
       - name: Wait for source evidence
         env:
@@ -101,6 +134,6 @@ jobs:
           git config user.name bndy-backline-bot
           git config user.email actions@users.noreply.github.com
           git pull --rebase --autostash origin main
-          git add ops/trust-loop-v1-manifest.json
+          git add ops/trust-loop-v1-manifest.json ops/trust-loop-v1-browser-quarantine.json
           git commit -m "Record Backline Trust Loop v1 live cohort" || exit 0
           git push origin HEAD:main

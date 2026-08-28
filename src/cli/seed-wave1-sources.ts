@@ -34,7 +34,7 @@ export function waveOneSources(now = new Date()): GigSource[] {
       snapshotSemantics: 'incremental',
       authorityClass: 'aggregator',
       adapter: 'gigs-news',
-      runtimeClass: 'browser',
+      runtimeClass: 'standard',
     }, now),
     withNext({
       ...safeDefaults,
