@@ -1,0 +1,9 @@
+Backline Trust Loop grounded-enrichment qualification repaired recapture
+
+Approved: 2026-08-28
+Scope: the same bounded 20 public identity and source-context cases, comprising 10 Artists and 10 Venues.
+Provider: Gemini 3.6 Flash with Google Search grounding.
+Reason: repeat the qualification once after PR 77 fixed the evidence-boundary error path by quarantining individual uncaptured facts while retaining the provider response, citations, usage and cost.
+Controls: one repaired recapture only, shadow-only, cost-capped, 60-second per-case timeout, zero canonical writes, no BAU schedule and no projection.
+Previous paid capture: completed all 20 calls, 17 strict citation-capture errors, three clean abstentions, zero accepted facts and zero canonical writes.
+Authorisation: explicit human approval was provided for this repaired bounded recapture under the same constraints.
