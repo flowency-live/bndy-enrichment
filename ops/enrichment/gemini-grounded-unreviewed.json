@@ -1,0 +1,994 @@
+{
+  "schemaVersion": 1,
+  "providerId": "gemini-grounded-v1",
+  "capturedAt": "2026-08-28T16:34:56.273Z",
+  "sourceManifestGeneratedAt": "2026-08-28T14:31:49.401Z",
+  "reviewStatus": "unreviewed",
+  "qualificationGate": "Human adjudication is required before provider activation",
+  "cases": 20,
+  "artistCases": 10,
+  "venueCases": 10,
+  "captureErrors": 17,
+  "totalEstimatedCost": 0.17139900000000002,
+  "canonicalWrites": 0,
+  "items": [
+    {
+      "caseId": "grounded-01-artist",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "artist_the-reform",
+      "captureStatus": "captured",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "gigs-news-daily-import:artist_the-reform",
+        "displayName": "the Reform",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "artist_the-reform"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "e5b93b4b-6727-4142-b3ce-d5f91d32080f",
+        "retrievedAt": "2026-08-28T16:35:02.649Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "usage": {
+          "searches": 3,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 698,
+          "outputTokens": 103,
+          "estimatedCost": 0.04290975,
+          "durationMs": 6376
+        },
+        "raw": {
+          "model": "gemini-3.6-flash",
+          "identityReason": "The name 'the Reform' is shared by multiple distinct musical acts (such as a 1970s Irish rock band, a Swedish progressive rock group, and 'The Reform Club') as well as non-musical entities. Without a specific gig footprint, venue location, or cross-linked official profile, it is impossible to establish the identity of this artist candidate.",
+          "response": {
+            "identityConfidence": 0,
+            "identityReason": "The name 'the Reform' is shared by multiple distinct musical acts (such as a 1970s Irish rock band, a Swedish progressive rock group, and 'The Reform Club') as well as non-musical entities. Without a specific gig footprint, venue location, or cross-linked official profile, it is impossible to establish the identity of this artist candidate.",
+            "facts": []
+          },
+          "evidence": []
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-02-artist",
+      "sourceId": "klma-stoke-gig-list",
+      "sourceCandidateKey": "klma-artist-ff14ed763cec",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "klma-stoke-gig-list:klma-artist-ff14ed763cec",
+        "displayName": "Catalyst",
+        "currentValues": {
+          "sourceId": "klma-stoke-gig-list",
+          "sourceCandidateKey": "klma-artist-ff14ed763cec"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "0baae1a8-5979-4269-9a94-a81cbf6756a8",
+        "retrievedAt": "2026-08-28T16:35:28.900Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEtqPZCub_8F3CMnsWo4grkHHdblpMmWlxoogo6Kt2GQ7YXVdu1OwbAhBGlONtJY25EJlWrIL7QRfcIdXZvvXi6-S8yHmswXCHvAfC6Z_T8DSFZDylIaL5PRwtpj1WxRknCvS1-06GEDSMMclICgB2Aw8amue7W8XVy6OCalYkhHnl6uy9ihxwL88uQv-1iyI0RO2Ruq_fm1O6FZFGf_Mwviq7S2lZ6_KO7fIohoj5mXvupVkMiZL52qssDAYm5P8gMft7cM6Pc"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-03-artist",
+      "sourceId": "lemonrock-artist-hydration",
+      "sourceCandidateKey": "lemonrock:artist:neovenator",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "lemonrock-artist-hydration:lemonrock:artist:neovenator",
+        "displayName": "Neovenator",
+        "currentValues": {
+          "sourceId": "lemonrock-artist-hydration",
+          "sourceCandidateKey": "lemonrock:artist:neovenator"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "8c5cd21d-1340-444a-b964-9c7786052d52",
+        "retrievedAt": "2026-08-28T16:35:55.456Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHEwPihH4-dUxQh_UgCFlHIZmV2WrVEFBOygzLkYbA6-dU_dM2ljCerwsOYGBwD5ck_qKqc2GGpxP3LeLJCoaQbSLS8WeOsQahlj7UOFGP4py4bO8FD"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-04-artist",
+      "sourceId": "onthecase-band-hydration",
+      "sourceCandidateKey": "onthecase:band:1211",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "onthecase-band-hydration:onthecase:band:1211",
+        "displayName": "Jonny Trax",
+        "currentValues": {
+          "sourceId": "onthecase-band-hydration",
+          "sourceCandidateKey": "onthecase:band:1211"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "737de7ed-434e-4e9c-a2be-c1efef5b6320",
+        "retrievedAt": "2026-08-28T16:36:29.758Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEy5_m9tBlDRRHcV-fqRAiU3A9gzK-SHSmtSZwchidjPr9kJ2MWM0zHYFKNzmmOJAPW-sDNkxGwDB-d8TQSmwwiC92QKJcn2UUvcy31doGKUqodfpZ2lAs5DpqrpMt1FQ=="
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-05-artist",
+      "sourceId": "lemonrock-artist-hydration",
+      "sourceCandidateKey": "lemonrock:artist:thehumbuckers",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "lemonrock-artist-hydration:lemonrock:artist:thehumbuckers",
+        "displayName": "The Humbuckers",
+        "currentValues": {
+          "sourceId": "lemonrock-artist-hydration",
+          "sourceCandidateKey": "lemonrock:artist:thehumbuckers"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "4a6e745b-32d9-4182-b605-05f76e41f9c9",
+        "retrievedAt": "2026-08-28T16:37:06.657Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH9kgbB3DydzvmCVVWsOk2TV2z3qFTz76qMxYJNtfRh8ysJ0q7ICS_VDeRsFezFt0Wh54ootKYGqaK2DKlbsIv4pwYcvaVM89Ye2Wvy5TBuOtnT2i6r0UufUoj8hhBXR05msrxVAC4iyIczHSAPnr3-zTbwooPgh90DyDRq45Rn"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-06-artist",
+      "sourceId": "onthecase-band-hydration",
+      "sourceCandidateKey": "onthecase:band:26683",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "onthecase-band-hydration:onthecase:band:26683",
+        "displayName": "Charlotte Forman",
+        "currentValues": {
+          "sourceId": "onthecase-band-hydration",
+          "sourceCandidateKey": "onthecase:band:26683"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "a175ba69-a62b-421d-b7b7-c187e6510192",
+        "retrievedAt": "2026-08-28T16:37:34.223Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE0rVq_A8ytyNISdLH1Z_tmBtkpnkSzkPGvnC8SBI6D0nh1J9O09sIDNqG-QNu6ctdZYdwelBmud7EsfZMXRP94NkLJd6SPu0X-kMji4i93lEr0r29FeFThrC5APwPK9CLYr2gECphCAIcnSbRDkKw="
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-07-artist",
+      "sourceId": "onthecase-band-hydration",
+      "sourceCandidateKey": "onthecase:band:27822",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "onthecase-band-hydration:onthecase:band:27822",
+        "displayName": "Anna Reay",
+        "currentValues": {
+          "sourceId": "onthecase-band-hydration",
+          "sourceCandidateKey": "onthecase:band:27822"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "b2f82cc0-c24e-4b70-abb0-d85d0f302e36",
+        "retrievedAt": "2026-08-28T16:37:51.122Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://amvlivemusic.com/images/artists/anna-reay-band-yt-tn.jpg"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-08-artist",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "artist_the-select-committee",
+      "captureStatus": "captured",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "gigs-news-daily-import:artist_the-select-committee",
+        "displayName": "the Select Committee",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "artist_the-select-committee"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "0e937c8f-f2a1-4f9a-ac65-05bf881d5972",
+        "retrievedAt": "2026-08-28T16:38:00.664Z",
+        "identityConfidence": 0.2,
+        "facts": [],
+        "usage": {
+          "searches": 2,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 756,
+          "outputTokens": 74,
+          "estimatedCost": 0.028844500000000002,
+          "durationMs": 9542
+        },
+        "raw": {
+          "model": "gemini-3.6-flash",
+          "identityReason": "Search results for 'the Select Committee' predominantly refer to legislative select committees. While sparse pub gig posts mention 'The Select Committee Band', no official profiles, dedicated website, or verified footprint could be established to safely confirm entity identity.",
+          "response": {
+            "identityConfidence": 0.2,
+            "identityReason": "Search results for 'the Select Committee' predominantly refer to legislative select committees. While sparse pub gig posts mention 'The Select Committee Band', no official profiles, dedicated website, or verified footprint could be established to safely confirm entity identity.",
+            "facts": []
+          },
+          "evidence": []
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-09-artist",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "artist_the-tall-faces",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "gigs-news-daily-import:artist_the-tall-faces",
+        "displayName": "the Tall Faces",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "artist_the-tall-faces"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "cbbf948c-cf1f-41e6-b570-205972b9beb3",
+        "retrievedAt": "2026-08-28T16:38:21.102Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://www.facebook.com/TheTallFaces/videos/1320133576663202/"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-10-artist",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "artist_tom-meighan-raw26",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "gigs-news-daily-import:artist_tom-meighan-raw26",
+        "displayName": "Tom Meighan Raw26",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "artist_tom-meighan-raw26"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "bda7b001-540e-4e0c-93f9-70e886438e00",
+        "retrievedAt": "2026-08-28T16:38:55.670Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEfocgAGmR-BjzQFUOIu-DDwgEZtaAWlBV0htBRrLbp5A2xdk_MSUQ6wAqw4ujAZ2Rz6vaFgoZhGJofeG0JOoDbQ72vSHOdNWJh8jvP7oWALL3G"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-11-venue",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "venue_whittles-oldham",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "gigs-news-daily-import:venue_whittles-oldham",
+        "displayName": "Whittles Oldham",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "venue_whittles-oldham"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "4d9b4c6f-4462-41a2-9cfa-2ef0f0ca0f63",
+        "retrievedAt": "2026-08-28T16:39:25.466Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHw0-fm5cUhXKGhWxl0AdIeA7OtVLHQzKmG08tlZLuRjyeksDyqQNiGM-XvRLAFTSXUHauOZVfowW-DahsTFbNqm8UvwXFSfE-6h0Az0yH-1jM="
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-12-venue",
+      "sourceId": "klma-stoke-gig-list",
+      "sourceCandidateKey": "klma-venue-fef3609d34f8",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "klma-stoke-gig-list:klma-venue-fef3609d34f8",
+        "displayName": "Shoulder, Fulford",
+        "currentValues": {
+          "sourceId": "klma-stoke-gig-list",
+          "sourceCandidateKey": "klma-venue-fef3609d34f8"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "66771454-b8f0-41b8-9be1-8a2a583e0530",
+        "retrievedAt": "2026-08-28T16:39:38.883Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://www.theshoulderofmuttonfulford.com/"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-13-venue",
+      "sourceId": "onthecase-gig-index",
+      "sourceCandidateKey": "onthecase:venue:90",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "onthecase-gig-index:onthecase:venue:90",
+        "displayName": "Bebside Inn Blyth",
+        "currentValues": {
+          "sourceId": "onthecase-gig-index",
+          "sourceCandidateKey": "onthecase:venue:90"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "08bb1446-d239-4418-b640-3ed2e51e5a90",
+        "retrievedAt": "2026-08-28T16:39:58.057Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGWtzI2UtuNElNaz6E8mmoc3XEQRmvYT4DS09E21Fh3BmvodDTpT8IfWeBnyONvPhX7SBRjGmJvrMDVItP0RXeGLmnxbZyqfKXm0Vlz4fGjCS6Sw1Cl4CKm850SySJm1zJ8fMRtyuN8-ziw0RPUYg=="
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-14-venue",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "venue_town-house-festival-oswestry",
+      "captureStatus": "captured",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "gigs-news-daily-import:venue_town-house-festival-oswestry",
+        "displayName": "Town House Festival Oswestry",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "venue_town-house-festival-oswestry"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "7d9397ff-f716-4365-bb35-383479ebf1ad",
+        "retrievedAt": "2026-08-28T16:40:13.933Z",
+        "identityConfidence": 0.3,
+        "facts": [],
+        "usage": {
+          "searches": 7,
+          "fetches": 0,
+          "modelCalls": 1,
+          "inputTokens": 1768,
+          "outputTokens": 85,
+          "estimatedCost": 0.09964475,
+          "durationMs": 15876
+        },
+        "raw": {
+          "model": "gemini-3.6-flash",
+          "identityReason": "No venue or official entity by the name 'Town House Festival Oswestry' could be verified. While 'Townhouse Oswestry' (a restaurant and bar on Willow Street) and various Oswestry town festivals exist, this specific entity name cannot be safely tied to an official venue footprint.",
+          "response": {
+            "identityConfidence": 0.3,
+            "identityReason": "No venue or official entity by the name 'Town House Festival Oswestry' could be verified. While 'Townhouse Oswestry' (a restaurant and bar on Willow Street) and various Oswestry town festivals exist, this specific entity name cannot be safely tied to an official venue footprint.",
+            "facts": []
+          },
+          "evidence": []
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-15-venue",
+      "sourceId": "onthecase-gig-index",
+      "sourceCandidateKey": "onthecase:venue:915",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "onthecase-gig-index:onthecase:venue:915",
+        "displayName": "Murton Officials Club Seaham",
+        "currentValues": {
+          "sourceId": "onthecase-gig-index",
+          "sourceCandidateKey": "onthecase:venue:915"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "fff66bdf-bf4b-41b6-9f2d-b8bfcbe93c54",
+        "retrievedAt": "2026-08-28T16:40:32.904Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQENCJXwKe9Re42qcE3NqW7LXkoDlNjewCsNxUjDy_YKRjQIXTSUsQuk-EpS5iN76ctSp1ZKYD2dJYlVJjjPKvL33eKHJAlApovpf4MGS5yxDnOoRE8Hlv9Mr8xGIIrF_DiUmpBKWlnhCCU69R3RJd_FPePJug=="
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-16-venue",
+      "sourceId": "onthecase-gig-index",
+      "sourceCandidateKey": "onthecase:venue:940",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "onthecase-gig-index:onthecase:venue:940",
+        "displayName": "Crook Hotel Crook",
+        "currentValues": {
+          "sourceId": "onthecase-gig-index",
+          "sourceCandidateKey": "onthecase:venue:940"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "3dd81bfc-d80d-4f29-a7cb-1ae0422607e5",
+        "retrievedAt": "2026-08-28T16:41:02.514Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGUy9Hg-FiMdqBBuaoubJwvif3NMp5DMufjzSh1RMdvdHrnQ46KkSkdNaXdW2Vgy7z0kwHeYPHMiy74AnOLPejSpk6qHQQat7NIcMjGYBOn3CMntWy1QzvDXr86pUAQ_6pbREGCqcAmj_GV"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-17-venue",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "venue_the-whitehouse-stalybridge",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "gigs-news-daily-import:venue_the-whitehouse-stalybridge",
+        "displayName": "the Whitehouse Stalybridge",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "venue_the-whitehouse-stalybridge"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "2a4503b3-e5bf-4724-a4c3-0cf8f79a324a",
+        "retrievedAt": "2026-08-28T16:41:16.844Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://www.hydesbrewery.com/our-pubs/whitehouse/"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-18-venue",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "venue_white-hart-woodley",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "gigs-news-daily-import:venue_white-hart-woodley",
+        "displayName": "White Hart Woodley",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "venue_white-hart-woodley"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "3e97a424-812f-4494-a5d7-99c0a1b71ff0",
+        "retrievedAt": "2026-08-28T16:41:42.294Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG-JYhsWv2UqcbNWY8o49qRaEqrXEykAkHpVPmTeUaPGyf_UJaiewK34L8Uw2-A5S0J4cyxL22xENNcVUSfUUIwIBD_GGkKD24aEmpRpFb-wNAXHuTfwGon9eB_uYibYJmS80MqSlhjqcc="
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-19-venue",
+      "sourceId": "klma-stoke-gig-list",
+      "sourceCandidateKey": "klma-venue-f84e844c02e3",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "klma-stoke-gig-list:klma-venue-f84e844c02e3",
+        "displayName": "The Globe, Nantwich",
+        "currentValues": {
+          "sourceId": "klma-stoke-gig-list",
+          "sourceCandidateKey": "klma-venue-f84e844c02e3"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "bf9a1691-5b13-4c91-ba17-81e3492f340f",
+        "retrievedAt": "2026-08-28T16:41:58.905Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF5Ayn7zIARWMANzDRiTskn0Nxo_7ZsF3R9zvD00ub2dvZhl-Djrm3qFK07Aq1_k9mVyytrYa-QVgc_vRfYv_NIUhsf_DdojfKTDAabNFuK4rmwH-vQLenICiIp2_SiKfAotplzwT9yLdB7cEI-5CgQeLJpZgmK"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "grounded-20-venue",
+      "sourceId": "klma-stoke-gig-list",
+      "sourceCandidateKey": "klma-venue-f88c79f4c673",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "klma-stoke-gig-list:klma-venue-f88c79f4c673",
+        "displayName": "The Roebuck, Chesterton",
+        "currentValues": {
+          "sourceId": "klma-stoke-gig-list",
+          "sourceCandidateKey": "klma-venue-f88c79f4c673"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "gemini-grounded-v1",
+        "providerRunId": "2ba2daa4-7bd2-40b0-a88f-ef3288737c59",
+        "retrievedAt": "2026-08-28T16:42:16.157Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Grounded enrichment returned uncaptured citation: https://caldmoretaverns.co.uk/pubs/roebuck-chesterton/"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    }
+  ]
+}
