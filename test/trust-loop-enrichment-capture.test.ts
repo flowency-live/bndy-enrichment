@@ -113,4 +113,94 @@ describe('Trust Loop enrichment qualification capture', () => {
       }],
     });
   });
+
+  it('maps a Google grounding redirect only when its destination was captured as provider evidence', async () => {
+    const redirectUrl = 'https://vertexaisearch.cloud.google.com/grounding-api-redirect/test-token';
+    const evidenceUrl = 'https://the-test-band.example/about';
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        output_text: JSON.stringify({
+          identityConfidence: 0.999,
+          identityReason: 'The official site matches the named act and gig footprint.',
+          facts: [{
+            predicate: 'hasGenre',
+            value: 'Rock',
+            confidence: 0.99,
+            evidenceUrls: [redirectUrl],
+            evidenceText: 'The official site describes the act as a rock band.',
+          }],
+        }),
+        steps: [{
+          type: 'model_output',
+          content: [{
+            type: 'text',
+            text: 'Grounded result',
+            annotations: [{ type: 'url_citation', url: evidenceUrl, title: 'Official site' }],
+          }],
+        }],
+        usage: { total_input_tokens: 500, total_output_tokens: 100 },
+      }), { status: 200, headers: { 'content-type': 'application/json' } }))
+      .mockResolvedValueOnce(new Response(null, {
+        status: 302,
+        headers: { location: evidenceUrl },
+      }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const item = reviewCase('artist', 'fixture-source', 'artist-1', 'The Test Band');
+    const bundle = await enrichTrustLoopEntityWithGemini({
+      entity: qualificationEntity(item),
+      sourceId: item.sourceId,
+      sourceCandidateKey: item.candidateKey,
+      requestedPredicates: qualificationPredicates('artist'),
+    }, { apiKey: 'fixture-key' });
+
+    expect(bundle.facts).toEqual([expect.objectContaining({
+      predicate: 'hasGenre',
+      value: 'Rock',
+      evidenceUrls: [evidenceUrl],
+    })]);
+    expect(bundle.usage).toMatchObject({ fetches: 1 });
+    expect(bundle.raw).toMatchObject({
+      rejectedFacts: [],
+      citationMappings: [{ sourceUrl: redirectUrl, resolvedUrl: evidenceUrl, acceptedAs: evidenceUrl }],
+    });
+  });
+
+  it('keeps a resolved grounding redirect quarantined when the destination was not captured', async () => {
+    const redirectUrl = 'https://vertexaisearch.cloud.google.com/grounding-api-redirect/test-token';
+    const uncapturedUrl = 'https://invented.example/about';
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        output_text: JSON.stringify({
+          identityConfidence: 0.9,
+          identityReason: 'Claimed match.',
+          facts: [{
+            predicate: 'hasWebsiteUrl',
+            value: uncapturedUrl,
+            confidence: 0.9,
+            evidenceUrls: [redirectUrl],
+          }],
+        }),
+        steps: [{ type: 'google_search_call', arguments: { queries: ['test'] } }],
+        usage: { total_input_tokens: 300, total_output_tokens: 80 },
+      }), { status: 200, headers: { 'content-type': 'application/json' } }))
+      .mockResolvedValueOnce(new Response(null, {
+        status: 302,
+        headers: { location: uncapturedUrl },
+      })));
+
+    const item = reviewCase('venue', 'fixture-source', 'venue-1', 'The Test Hall');
+    const bundle = await enrichTrustLoopEntityWithGemini({
+      entity: qualificationEntity(item),
+      sourceId: item.sourceId,
+      sourceCandidateKey: item.candidateKey,
+      requestedPredicates: qualificationPredicates('venue'),
+    }, { apiKey: 'fixture-key' });
+
+    expect(bundle.facts).toEqual([]);
+    expect(bundle.raw).toMatchObject({
+      rejectedFacts: [{ reason: expect.stringMatching(/uncaptured citation/i) }],
+      citationMappings: [{ sourceUrl: redirectUrl, resolvedUrl: uncapturedUrl }],
+    });
+  });
 });
