@@ -21,81 +21,76 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
       - name: Read sanitised source state
+        id: readiness
+        continue-on-error: true
         run: |
           set -euo pipefail
           mkdir -p ops
           STATE_TABLE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query 'Stacks[0].Outputs[?OutputKey==`StateTableName`].OutputValue | [0]' --output text)
-          STANDARD_QUEUE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query 'Stacks[0].Outputs[?OutputKey==`SourceScanQueueUrl`].OutputValue | [0]' --output text)
-          BROWSER_QUEUE=$(aws cloudformation describe-stacks --stack-name BndyEnrichmentStack --query 'Stacks[0].Outputs[?OutputKey==`BrowserScanQueueUrl`].OutputValue | [0]' --output text)
-          jq -n '{RequestItems:{}}' > batch.json
+          mkdir -p readiness-items
+          jq -n '[]' > readiness-items/sources.json
           for SOURCE_ID in lemonrock-new-gigs onthecase-gig-index klma-stoke-gig-list gigs-news-daily-import; do
-            jq --arg table "$STATE_TABLE" --arg source "$SOURCE_ID" '
-              .RequestItems[$table].Keys += [
-                {pk:{S:("SOURCE#" + $source)},sk:{S:"CONFIG"}},
-                {pk:{S:("SOURCE#" + $source)},sk:{S:"STATE"}}
-              ]' batch.json > batch.next.json
-            mv batch.next.json batch.json
-          done
-          aws dynamodb batch-get-item --request-items file://batch.json > state.json
-          aws sqs get-queue-attributes --queue-url "$STANDARD_QUEUE" --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible > standard-queue.json
-          aws sqs get-queue-attributes --queue-url "$BROWSER_QUEUE" --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible > browser-queue.json
-          jq \
-            --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg table "$STATE_TABLE" \
-            --slurpfile standard standard-queue.json \
-            --slurpfile browser browser-queue.json '
-              def ddb:
-                if type != "object" then .
-                elif has("S") then .S
-                elif has("N") then (.N | tonumber)
-                elif has("BOOL") then .BOOL
-                elif has("NULL") then null
-                elif has("M") then (.M | map_values(ddb))
-                elif has("L") then [.L[] | ddb]
-                else . end;
-              [.Responses[$table][] | map_values(ddb)] as $items |
-              {
-                schemaVersion: 1,
-                generatedAt: $generatedAt,
-                readOnly: true,
-                canonicalWrites: 0,
-                sources: [
-                  "lemonrock-new-gigs",
-                  "onthecase-gig-index",
-                  "klma-stoke-gig-list",
-                  "gigs-news-daily-import"
-                ] | map(. as $id | {
-                  sourceId: $id,
-                  config: ($items[] | select(.pk == ("SOURCE#" + $id) and .sk == "CONFIG") | {
-                    enabled, shadow, writerAuthority, cadence, mode, snapshotSemantics
-                  }),
-                  state: (($items[] | select(.pk == ("SOURCE#" + $id) and .sk == "STATE") | {
-                    lastRunAt, lastSuccessfulRunAt, lastFailureAt, consecutiveFailures,
+            aws dynamodb get-item --table-name "$STATE_TABLE" --key "{\"pk\":{\"S\":\"SOURCE#$SOURCE_ID\"},\"sk\":{\"S\":\"CONFIG\"}}" > readiness-items/config.json
+            aws dynamodb get-item --table-name "$STATE_TABLE" --key "{\"pk\":{\"S\":\"SOURCE#$SOURCE_ID\"},\"sk\":{\"S\":\"STATE\"}}" > readiness-items/state.json
+            jq \
+              --arg source "$SOURCE_ID" \
+              --slurpfile config readiness-items/config.json \
+              --slurpfile state readiness-items/state.json '
+                def ddb:
+                  if type != "object" then .
+                  elif has("S") then .S
+                  elif has("N") then (.N | tonumber)
+                  elif has("BOOL") then .BOOL
+                  elif has("NULL") then null
+                  elif has("M") then (.M | map_values(ddb))
+                  elif has("L") then [.L[] | ddb]
+                  else . end;
+                ($config[0].Item // {} | map_values(ddb)) as $cfg |
+                ($state[0].Item // {} | map_values(ddb)) as $run |
+                . + [{
+                  sourceId: $source,
+                  config: {
+                    enabled: ($cfg.enabled // null),
+                    shadow: ($cfg.shadow // null),
+                    writerAuthority: ($cfg.writerAuthority // null),
+                    cadence: ($cfg.cadence // null),
+                    mode: ($cfg.mode // null),
+                    snapshotSemantics: ($cfg.snapshotSemantics // null)
+                  },
+                  state: {
+                    lastRunAt: ($run.lastRunAt // null),
+                    lastSuccessfulRunAt: ($run.lastSuccessfulRunAt // null),
+                    lastFailureAt: ($run.lastFailureAt // null),
+                    consecutiveFailures: ($run.consecutiveFailures // 0),
                     lastErrorClass: (
-                      if (.lastError // "" | test("HTTP 403"; "i")) then "HTTP_403"
-                      elif (.lastError // "" | test("HTTP 429"; "i")) then "HTTP_429"
-                      elif (.lastError // "" | test("HTTP 5[0-9][0-9]"; "i")) then "HTTP_5XX"
-                      elif (.lastError // "" | test("timeout|timed out|abort"; "i")) then "TIMEOUT"
-                      elif (.lastError // "" | test("structural gate|recognisable HTML"; "i")) then "STRUCTURAL_GATE"
-                      elif (.lastError // "" | test("parse|parser"; "i")) then "PARSER"
-                      elif (.lastError // "") != "" then "OTHER"
+                      if ($run.lastError // "" | test("HTTP 403"; "i")) then "HTTP_403"
+                      elif ($run.lastError // "" | test("HTTP 429"; "i")) then "HTTP_429"
+                      elif ($run.lastError // "" | test("HTTP 5[0-9][0-9]"; "i")) then "HTTP_5XX"
+                      elif ($run.lastError // "" | test("timeout|timed out|abort"; "i")) then "TIMEOUT"
+                      elif ($run.lastError // "" | test("structural gate|recognisable HTML"; "i")) then "STRUCTURAL_GATE"
+                      elif ($run.lastError // "" | test("parse|parser"; "i")) then "PARSER"
+                      elif ($run.lastError // "") != "" then "OTHER"
                       else null end
                     )
-                  }) // null)
-                }),
-                queues: {
-                  standard: {
-                    visible: ($standard[0].Attributes.ApproximateNumberOfMessages | tonumber),
-                    inFlight: ($standard[0].Attributes.ApproximateNumberOfMessagesNotVisible | tonumber)
-                  },
-                  browser: {
-                    visible: ($browser[0].Attributes.ApproximateNumberOfMessages | tonumber),
-                    inFlight: ($browser[0].Attributes.ApproximateNumberOfMessagesNotVisible | tonumber)
                   }
-                }
-              }' state.json > ops/trust-loop-v1-readiness.json
+                }]' readiness-items/sources.json > readiness-items/sources.next.json
+            mv readiness-items/sources.next.json readiness-items/sources.json
+          done
+          jq \
+            --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --slurpfile sources readiness-items/sources.json \
+            '{schemaVersion:1, generatedAt:$generatedAt, readOnly:true, canonicalWrites:0, sources:$sources[0]}' \
+            > ops/trust-loop-v1-readiness.json
           jq empty ops/trust-loop-v1-readiness.json
+      - name: Record probe failure safely
+        if: steps.readiness.outcome != 'success'
+        run: |
+          mkdir -p ops
+          jq -n --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{schemaVersion:1, generatedAt:$generatedAt, readOnly:true, canonicalWrites:0, status:"probe-failed", sources:[]}' \
+            > ops/trust-loop-v1-readiness.json
       - name: Publish readiness evidence
+        if: always()
         run: |
           set -euo pipefail
           git config user.name bndy-backline-bot
