@@ -4,13 +4,14 @@ import {
   GigSourceSchema,
   KnowledgeClaimSchema,
   SourceObservationSchema,
-  type EntityResolution,
+  type ParsedEntityResolution,
   type GigSource,
   type KnowledgeClaim,
   type SourceObservation,
 } from './types.js';
 import { createDynamoStoreClient, type DynamoStoreClient } from './stores/clients.js';
 import { CLAIM_BY_OBSERVATION_INDEX, CLAIM_BY_SUBJECT_INDEX } from './stores/claim-store.js';
+import { TrustLoopRunSchema, type TrustLoopRun } from '../trust-loop/types.js';
 
 // Bounded read-only graph traversal for the Backline Evidence Explorer
 // (workboard: "Build the interactive Godmode evidence graph").
@@ -203,9 +204,20 @@ export class GraphReader {
     return (response.Items ?? []).map((item) => KnowledgeClaimSchema.parse(item));
   }
 
-  async getResolution(candidateType: string, candidateKey: string): Promise<EntityResolution | null> {
+  async getResolution(candidateType: string, candidateKey: string): Promise<ParsedEntityResolution | null> {
     const item = await this.getItem(`RESOLUTION#${candidateType}#${candidateKey}`, 'META');
     return item ? EntityResolutionSchema.parse(item) : null;
+  }
+
+  async listTrustLoopRuns(limit = 10): Promise<TrustLoopRun[]> {
+    const response = await this.client.send(new QueryCommand({
+      TableName: this.tableName,
+      KeyConditionExpression: 'pk = :pk AND begins_with(sk, :prefix)',
+      ExpressionAttributeValues: { ':pk': 'TRUST_LOOP', ':prefix': 'RUN#' },
+      ScanIndexForward: false,
+      Limit: limit,
+    }));
+    return (response.Items ?? []).map((item) => TrustLoopRunSchema.parse(item));
   }
 
   async listSupportClaimIds(entityType: string, entityId: string, limit: number): Promise<string[]> {
@@ -314,8 +326,9 @@ export class GraphReader {
           }
         }
       }
-      const resolution = await this.getResolution(ref.subjectType, ref.subjectKey);
-      if (resolution) {
+      const candidateType = ref.subjectType.replace(/-candidate$/, '');
+      const resolution = await this.getResolution(candidateType, ref.subjectKey);
+      if (resolution?.status === 'resolved' && resolution.canonicalEntityId) {
         const entityType = resolution.candidateType;
         const entityRef = `entity:${entityType}:${resolution.canonicalEntityId}`;
         collector.node({

@@ -147,21 +147,71 @@ function entityKnowledge(observation: SourceObservation, entity: NormalisedSourc
   };
 }
 
+function entitiesReferencedByEvent(event: NormalisedSourceEvent): NormalisedSourceEntity[] {
+  const entities: NormalisedSourceEntity[] = [];
+  if (event.artistName && event.artistExternalId) {
+    const claims: NormalisedSourceClaim[] = [];
+    if (event.artistLocation) claims.push({ predicate: 'hasLocation', value: event.artistLocation });
+    if (event.venueName || event.date) {
+      claims.push({
+        predicate: 'performsAt',
+        value: {
+          ...(event.venueExternalId ? { venueSourceNativeId: event.venueExternalId } : {}),
+          ...(event.venueName ? { venueName: event.venueName } : {}),
+          ...(event.date ? { date: event.date } : {}),
+        },
+      });
+    }
+    entities.push({
+      entityType: 'artist',
+      sourceEntityKey: event.artistExternalId,
+      sourceNativeId: event.artistExternalId,
+      displayName: event.artistName,
+      confidence: 1,
+      claims,
+    });
+  }
+  if (event.venueName && event.venueExternalId) {
+    const claims: NormalisedSourceClaim[] = [];
+    if (event.venueLocation) claims.push({ predicate: 'hasLocation', value: event.venueLocation });
+    if (event.venueAddress) claims.push({ predicate: 'hasAddress', value: event.venueAddress });
+    entities.push({
+      entityType: 'venue',
+      sourceEntityKey: event.venueExternalId,
+      sourceNativeId: event.venueExternalId,
+      displayName: event.venueName,
+      confidence: 1,
+      claims,
+    });
+  }
+  return entities;
+}
+
 export function buildKnowledge(
   observation: SourceObservation,
   events: NormalisedSourceEvent[],
   entities: NormalisedSourceEntity[] = [],
 ): KnowledgeOutput {
   const claims: KnowledgeClaim[] = [];
-  const candidates: Array<EventCandidate | EntityCandidate> = [];
+  const candidateMap = new Map<string, EventCandidate | EntityCandidate>();
   const claimsByCandidate = new Map<string, KnowledgeClaim[]>();
+
+  const mergeCandidate = (candidate: EventCandidate | EntityCandidate, candidateClaims: KnowledgeClaim[]): void => {
+    const mapKey = `${'entityType' in candidate ? candidate.entityType : 'event'}#${candidate.candidateKey}`;
+    const priorClaims = claimsByCandidate.get(candidate.candidateKey) ?? [];
+    const mergedClaims = [...new Map([...priorClaims, ...candidateClaims].map((claim) => [claim.id, claim] as const)).values()];
+    claimsByCandidate.set(candidate.candidateKey, mergedClaims);
+    const prior = candidateMap.get(mapKey);
+    candidateMap.set(mapKey, prior
+      ? { ...prior, ...candidate, supportingClaimIds: mergedClaims.map((claim) => claim.id) }
+      : { ...candidate, supportingClaimIds: mergedClaims.map((claim) => claim.id) });
+  };
 
   for (const event of events) {
     const candidateKey = eventCandidateKey(observation.sourceId, event.sourceEventKey);
     const candidateClaims = eventClaims(observation, event);
     claims.push(...candidateClaims);
-    claimsByCandidate.set(candidateKey, candidateClaims);
-    candidates.push({
+    mergeCandidate({
       candidateKey,
       sourceId: observation.sourceId,
       sourceEventKey: event.sourceEventKey,
@@ -175,17 +225,23 @@ export function buildKnowledge(
       supportingClaimIds: candidateClaims.map((claim) => claim.id),
       confidence: 1,
       observedAt: observation.observedAt,
-    });
+    }, candidateClaims);
+
+    for (const entity of entitiesReferencedByEvent(event)) {
+      const output = entityKnowledge(observation, entity);
+      claims.push(...output.claims);
+      mergeCandidate(output.candidate, output.claims);
+    }
   }
 
   for (const entity of entities) {
     const output = entityKnowledge(observation, entity);
     claims.push(...output.claims);
-    claimsByCandidate.set(entity.sourceEntityKey, output.claims);
-    candidates.push(output.candidate);
+    mergeCandidate(output.candidate, output.claims);
   }
 
-  return { observation, claims, candidates, claimsByCandidate };
+  const uniqueClaims = [...new Map(claims.map((claim) => [claim.id, claim] as const)).values()];
+  return { observation, claims: uniqueClaims, candidates: [...candidateMap.values()], claimsByCandidate };
 }
 
 export function buildWithdrawalClaim(

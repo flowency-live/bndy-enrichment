@@ -1,13 +1,21 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, type GetCommand, type PutCommand, type QueryCommand, type UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  type BatchWriteCommand,
+  type GetCommand,
+  type PutCommand,
+  type QueryCommand,
+  type UpdateCommand,
+} from '@aws-sdk/lib-dynamodb';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
-export type DynamoStoreCommand = GetCommand | PutCommand | QueryCommand | UpdateCommand;
+export type DynamoStoreCommand = BatchWriteCommand | GetCommand | PutCommand | QueryCommand | UpdateCommand;
 
 export type DynamoStoreResponse = {
   Item?: Record<string, unknown>;
   Items?: Record<string, unknown>[];
   LastEvaluatedKey?: Record<string, unknown>;
+  UnprocessedItems?: Record<string, Array<{ PutRequest?: { Item?: Record<string, unknown> } }>>;
 };
 
 export interface DynamoStoreClient {

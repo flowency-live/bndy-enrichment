@@ -78,13 +78,15 @@ describe('SourceDispatcher', () => {
   });
 });
 describe('wave one registry seeds', () => {
-  it('activates only KLMA for shadow BAU while keeping every source shadowed and Cowork-owned', () => {
+  it('activates KLMA and weekly GigsNews shadow BAU while keeping every source Cowork-owned', () => {
     const sources = waveOneSources(new Date('2026-08-20T10:00:00.000Z'));
     expect(sources.map((item) => item.id)).toEqual(['gigs-news-daily-import','klma-stoke-gig-list','onthecase-daily-import','sceniceye-daily-import','insangel-daily-import']);
     for (const item of sources) { expect(item.shadow).toBe(true); expect(item.writerAuthority).toBe('cowork'); expect(item.nextScanAt).toBeTruthy(); }
     expect(sources.find((item) => item.id === 'klma-stoke-gig-list')?.enabled).toBe(true);
-    expect(sources.filter((item) => item.id !== 'klma-stoke-gig-list').every((item) => item.enabled === false)).toBe(true);
-    expect(sources.find((item) => item.id === 'gigs-news-daily-import')?.runtimeClass).toBe('browser');
+    expect(sources.find((item) => item.id === 'gigs-news-daily-import')).toMatchObject({
+      enabled: true, cadence: 'weekly', mode: 'append-only', snapshotSemantics: 'incremental', runtimeClass: 'browser',
+    });
+    expect(sources.filter((item) => !['klma-stoke-gig-list', 'gigs-news-daily-import'].includes(item.id)).every((item) => item.enabled === false)).toBe(true);
     expect(sources.find((item) => item.id === 'onthecase-daily-import')?.runtimeClass).toBe('browser');
     expect(sources.find((item) => item.id === 'sceniceye-daily-import')?.runtimeClass).toBe('browser');
     expect(sources.find((item) => item.id === 'klma-stoke-gig-list')?.runtimeClass).toBe('standard');

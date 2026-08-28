@@ -246,6 +246,21 @@ export class BndyEnrichmentStack extends cdk.Stack {
     });
     new cdk.CfnOutput(this, 'BacklineAdminApiUrl', { value: backlineAdminApiUrl.url });
 
+    const trustLoop = new lambdaNode.NodejsFunction(this, 'TrustLoop', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      entry: 'src/handlers/trust-loop.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(10),
+      memorySize: 1024,
+      environment: { STATE_TABLE: table.tableName },
+      bundling: { minify: true, sourceMap: true },
+    });
+    table.grantReadWriteData(trustLoop);
+    new events.Rule(this, 'TrustLoopDailyClassification', {
+      schedule: events.Schedule.cron({ minute: '35', hour: '3' }),
+      targets: [new targets.LambdaFunction(trustLoop)],
+    });
+
     // Lemonrock fast-change surfaces are scheduled directly into the durable source queue.
     // The source family remains registry-backed and shadow/no-write; these rules only create observations/claims.
     new events.Rule(this, 'LemonrockFastGigTick', {
@@ -410,5 +425,6 @@ export class BndyEnrichmentStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'SourceWorkerFunctionName', { value: sourceWorker.functionName });
     new cdk.CfnOutput(this, 'BrowserSourceWorkerFunctionName', { value: browserSourceWorker.functionName });
     new cdk.CfnOutput(this, 'ProjectionWorkerFunctionName', { value: projectionWorker.functionName });
+    new cdk.CfnOutput(this, 'TrustLoopFunctionName', { value: trustLoop.functionName });
   }
 }

@@ -1,5 +1,5 @@
 import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
-import { EntityResolutionSchema, type EntityResolution } from '../types.js';
+import { EntityResolutionSchema, type EntityResolution, type ParsedEntityResolution } from '../types.js';
 import { createDynamoStoreClient, type DynamoStoreClient } from './clients.js';
 
 export type ResolutionMetadata = {
@@ -20,7 +20,10 @@ export function entityResolutionItem(
     ...metadata,
     ...(metadata.snapshotId ? {
       GSI1PK: `BASELINE#${metadata.snapshotId}`,
-      GSI1SK: `RESOLUTION#${parsed.candidateType}#${parsed.canonicalEntityId}`,
+      GSI1SK: `RESOLUTION#${parsed.candidateType}#${parsed.canonicalEntityId ?? parsed.candidateKey}`,
+    } : metadata.sourceId ? {
+      GSI1PK: `TRUST_LOOP_SOURCE#${metadata.sourceId}`,
+      GSI1SK: `RESOLUTION#${parsed.classifiedAt ?? parsed.resolvedAt}#${parsed.candidateType}#${parsed.candidateKey}`,
     } : {}),
   };
 }
@@ -38,7 +41,7 @@ export class EntityResolutionStore {
     }));
   }
 
-  async get(candidateType: EntityResolution['candidateType'], candidateKey: string): Promise<EntityResolution | null> {
+  async get(candidateType: ParsedEntityResolution['candidateType'], candidateKey: string): Promise<ParsedEntityResolution | null> {
     const response = await this.client.send(new GetCommand({
       TableName: this.tableName,
       Key: { pk: `RESOLUTION#${candidateType}#${candidateKey}`, sk: 'META' },

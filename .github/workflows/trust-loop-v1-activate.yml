@@ -1,0 +1,106 @@
+name: Activate Backline Trust Loop v1
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  deploy-index-run-verify:
+    if: contains(github.event.head_commit.message, 'Activate Backline Trust Loop v1')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Deploy shadow-only Trust Loop runtime
+        run: |
+          set -euo pipefail
+          npx cdk bootstrap
+          npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+      - name: Resolve deployed resources
+        id: outputs
+        run: |
+          set -euo pipefail
+          echo "state_table=$(node -e 'const x=require("./cdk-outputs.json"); console.log(x.BndyEnrichmentStack.StateTableName)')" >> "$GITHUB_OUTPUT"
+          echo "standard_queue=$(node -e 'const x=require("./cdk-outputs.json"); console.log(x.BndyEnrichmentStack.SourceScanQueueUrl)')" >> "$GITHUB_OUTPUT"
+          echo "browser_queue=$(node -e 'const x=require("./cdk-outputs.json"); console.log(x.BndyEnrichmentStack.BrowserScanQueueUrl)')" >> "$GITHUB_OUTPUT"
+          echo "trust_loop_function=$(node -e 'const x=require("./cdk-outputs.json"); console.log(x.BndyEnrichmentStack.TrustLoopFunctionName)')" >> "$GITHUB_OUTPUT"
+      - name: Build canonical identity index
+        env:
+          STATE_TABLE: ${{ steps.outputs.outputs.state_table }}
+        run: |
+          set -euo pipefail
+          npm run trust-loop:index | tee trust-loop-index.log
+          tail -n 1 trust-loop-index.log | jq -e '.status == "complete" and .canonicalWrites == 0'
+      - name: Seed KLMA and GigsNews shadow BAU configuration
+        env:
+          STATE_TABLE: ${{ steps.outputs.outputs.state_table }}
+        run: |
+          set -euo pipefail
+          npm run sources:seed-wave1 | tee source-seed.log
+          aws dynamodb get-item --table-name "$STATE_TABLE" --key '{"pk":{"S":"SOURCE#gigs-news-daily-import"},"sk":{"S":"CONFIG"}}' > gigs-news-config.json
+          jq -e '.Item.enabled.BOOL == true and .Item.shadow.BOOL == true and .Item.writerAuthority.S == "cowork" and .Item.cadence.S == "weekly" and .Item.mode.S == "append-only" and .Item.snapshotSemantics.S == "incremental"' gigs-news-config.json >/dev/null
+      - name: Trigger bounded source refreshes
+        id: trigger
+        env:
+          STANDARD_QUEUE: ${{ steps.outputs.outputs.standard_queue }}
+          BROWSER_QUEUE: ${{ steps.outputs.outputs.browser_queue }}
+        run: |
+          set -euo pipefail
+          REQUESTED_AT=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+          for SOURCE_ID in lemonrock-new-gigs onthecase-gig-index klma-stoke-gig-list; do
+            aws sqs send-message --queue-url "$STANDARD_QUEUE" --message-body "{\"sourceId\":\"$SOURCE_ID\",\"reason\":\"manual\",\"requestedAt\":\"$REQUESTED_AT\"}" >/dev/null
+          done
+          aws sqs send-message --queue-url "$BROWSER_QUEUE" --message-body "{\"sourceId\":\"gigs-news-daily-import\",\"reason\":\"manual\",\"requestedAt\":\"$REQUESTED_AT\"}" >/dev/null
+          echo "requested_at=$REQUESTED_AT" >> "$GITHUB_OUTPUT"
+      - name: Wait for source evidence
+        env:
+          STATE_TABLE: ${{ steps.outputs.outputs.state_table }}
+          REQUESTED_AT: ${{ steps.trigger.outputs.requested_at }}
+        run: |
+          set -euo pipefail
+          SOURCES=(lemonrock-new-gigs onthecase-gig-index klma-stoke-gig-list gigs-news-daily-import)
+          for ATTEMPT in $(seq 1 90); do
+            COMPLETE=0
+            for SOURCE_ID in "${SOURCES[@]}"; do
+              SUCCESS=$(aws dynamodb get-item --table-name "$STATE_TABLE" --key "{\"pk\":{\"S\":\"SOURCE#$SOURCE_ID\"},\"sk\":{\"S\":\"STATE\"}}" | jq -r '.Item.lastSuccessfulRunAt.S // ""')
+              if [ -n "$SUCCESS" ] && [[ "$SUCCESS" > "$REQUESTED_AT" || "$SUCCESS" == "$REQUESTED_AT" ]]; then COMPLETE=$((COMPLETE+1)); fi
+            done
+            if [ "$COMPLETE" -eq "${#SOURCES[@]}" ]; then exit 0; fi
+            sleep 10
+          done
+          echo "Not all bounded source refreshes completed inside 15 minutes" >&2
+          exit 1
+      - name: Run Trust Loop cohort
+        env:
+          TRUST_LOOP_FUNCTION: ${{ steps.outputs.outputs.trust_loop_function }}
+        run: |
+          set -euo pipefail
+          aws lambda invoke \
+            --function-name "$TRUST_LOOP_FUNCTION" \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{"candidateLimit":40}' \
+            trust-loop-result.json >/dev/null
+          jq -e '.canonicalWrites == 0 and .noSilentDrops == true and .candidatesClassified == .candidatesSeen and .enrichment.wrongLinkIncidents == 0 and (.status == "needs-review" or .status == "passed")' trust-loop-result.json >/dev/null
+      - name: Record live Trust Loop manifest
+        run: |
+          set -euo pipefail
+          mkdir -p ops
+          jq '{schemaVersion:1, generatedAt:.completedAt, status, id, sourceIds, candidateLimit, candidatesSeen, candidatesClassified, classifications, entityTypes, noSilentDrops, canonicalWrites, enrichment, acceptance, decisions, reviewCases, enrichmentAssessments}' trust-loop-result.json > ops/trust-loop-v1-manifest.json
+          git config user.name bndy-backline-bot
+          git config user.email actions@users.noreply.github.com
+          git pull --rebase --autostash origin main
+          git add ops/trust-loop-v1-manifest.json
+          git commit -m "Record Backline Trust Loop v1 live cohort" || exit 0
+          git push origin HEAD:main

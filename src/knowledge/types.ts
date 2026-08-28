@@ -147,9 +147,14 @@ export const ClaimPredicateSchema = z.enum([
   'hasFacebookUrl',
   'hasWebsiteUrl',
   'hasInstagramUrl',
+  'hasBandcampUrl',
+  'hasSpotifyUrl',
+  'hasOfficialUrl',
+  'officialPresenceAttempted',
   'hasLocation',
   'hasArtistType',
   'hasActType',
+  'isAcoustic',
   'hasGenre',
   'hasBio',
   'hasAddress',
@@ -312,20 +317,72 @@ export const EvidencePackSchema = z.object({
 });
 export type EvidencePack = z.infer<typeof EvidencePackSchema>;
 
-export const EntityResolutionStatusSchema = z.enum(['resolved', 'rejected', 'superseded']);
+export const EntityResolutionStatusSchema = z.enum([
+  'resolved',
+  'unresolved',
+  'conflicted',
+  'rejected',
+  'superseded',
+]);
 export type EntityResolutionStatus = z.infer<typeof EntityResolutionStatusSchema>;
+
+export const ResolutionEvidenceDimensionSchema = z.enum([
+  'name',
+  'facebook',
+  'website',
+  'instagram',
+  'google-place',
+  'location',
+  'gig-footprint',
+  'genre',
+  'artist-type',
+  'act-type',
+  'event-fingerprint',
+]);
+export type ResolutionEvidenceDimension = z.infer<typeof ResolutionEvidenceDimensionSchema>;
+
+export const ResolutionHypothesisSchema = z.object({
+  canonicalEntityId: z.string().min(1),
+  confidence: ConfidenceSchema,
+  matchedDimensions: z.array(ResolutionEvidenceDimensionSchema).default([]),
+  conflictingDimensions: z.array(ResolutionEvidenceDimensionSchema).default([]),
+  supportingClaimIds: z.array(z.string()).default([]),
+  corroboratingSourceIds: z.array(z.string()).default([]),
+  reasons: z.array(z.string()).default([]),
+});
+export type ResolutionHypothesis = z.infer<typeof ResolutionHypothesisSchema>;
 
 export const EntityResolutionSchema = z.object({
   candidateType: EntityCandidateTypeSchema,
   candidateKey: z.string().min(1),
-  canonicalEntityId: z.string().min(1),
+  sourceId: z.string().min(1).optional(),
+  canonicalEntityId: z.string().min(1).optional(),
   method: z.string().min(1),
   confidence: ConfidenceSchema,
   supportingClaimIds: z.array(z.string()).default([]),
+  hypotheses: z.array(ResolutionHypothesisSchema).default([]),
+  decisionReasoning: z.array(z.string()).default([]),
   status: EntityResolutionStatusSchema.default('resolved'),
-  resolvedAt: IsoTimestampSchema,
+  classifiedAt: IsoTimestampSchema.optional(),
+  resolvedAt: IsoTimestampSchema.optional(),
+}).superRefine((resolution, context) => {
+  if (resolution.status === 'resolved' && !resolution.canonicalEntityId) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['canonicalEntityId'],
+      message: 'Resolved candidates require a canonicalEntityId',
+    });
+  }
+  if (!resolution.classifiedAt && !resolution.resolvedAt) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['classifiedAt'],
+      message: 'A classification timestamp is required',
+    });
+  }
 });
-export type EntityResolution = z.infer<typeof EntityResolutionSchema>;
+export type EntityResolution = z.input<typeof EntityResolutionSchema>;
+export type ParsedEntityResolution = z.output<typeof EntityResolutionSchema>;
 
 export const TombstoneStatusSchema = z.enum(['active', 'superseded', 'reinstated']);
 export type TombstoneStatus = z.infer<typeof TombstoneStatusSchema>;
