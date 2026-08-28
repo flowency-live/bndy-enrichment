@@ -10,6 +10,13 @@ import {
   type EventCandidate,
   type SearchEntity,
 } from '../domain/schema.js';
+import { ClaimPredicateSchema, type ClaimPredicate } from '../knowledge/types.js';
+import { assertSafeUrl } from '../sources/runner/acquisition.js';
+import {
+  EnrichmentEvidenceBundleSchema,
+  type CanonicalEntitySnapshot,
+  type EnrichmentEvidenceBundle,
+} from '../enrichment/types.js';
 import {
   classifyEligibility,
   commercialEntitySignals,
@@ -19,6 +26,7 @@ import {
   buildAdmissionFollowUpPrompt,
   buildDiscoveryPrompt,
   buildEntityEnrichmentFollowUpPrompt,
+  buildTrustLoopEnrichmentPrompt,
 } from './prompt.js';
 
 export interface GeminiOptions {
@@ -245,6 +253,41 @@ const enrichmentFollowUpResponseSchema = {
   required: ['results'],
 };
 
+const GroundedEnrichmentResponseSchema = z.object({
+  identityConfidence: z.number().min(0).max(1),
+  identityReason: z.string().min(1).max(2_000),
+  facts: z.array(z.object({
+    predicate: ClaimPredicateSchema,
+    value: z.union([z.string(), z.boolean()]),
+    confidence: z.number().min(0).max(1),
+    evidenceUrls: z.array(z.string().url()).min(1),
+    evidenceText: z.string().max(2_000).optional(),
+  })).max(50),
+});
+
+const groundedEnrichmentResponseSchema = {
+  type: 'object',
+  properties: {
+    identityConfidence: { type: 'number', minimum: 0, maximum: 1 },
+    identityReason: { type: 'string' },
+    facts: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          predicate: { type: 'string', enum: ClaimPredicateSchema.options },
+          value: { type: ['string', 'boolean'] },
+          confidence: { type: 'number', minimum: 0, maximum: 1 },
+          evidenceUrls: { type: 'array', items: { type: 'string' } },
+          evidenceText: { type: 'string' },
+        },
+        required: ['predicate', 'value', 'confidence', 'evidenceUrls'],
+      },
+    },
+  },
+  required: ['identityConfidence', 'identityReason', 'facts'],
+};
+
 interface ApiCallResult {
   raw: any;
   text: string;
@@ -354,6 +397,73 @@ function relevantToFreeEvents(item: EntityEnrichment, events: EventCandidate[]):
   return events.some(event =>
     event.artistName.trim().toLowerCase() === name || event.venueName.trim().toLowerCase() === name
   );
+}
+
+function safeHttpsEvidenceUrl(value: string): string {
+  const parsed = assertSafeUrl(value);
+  if (parsed.protocol !== 'https:') throw new Error(`Grounded enrichment evidence must use HTTPS: ${value}`);
+  return parsed.toString();
+}
+
+export async function enrichTrustLoopEntityWithGemini(input: {
+  entity: CanonicalEntitySnapshot;
+  sourceId: string;
+  sourceCandidateKey: string;
+  requestedPredicates: ClaimPredicate[];
+}, options: Pick<GeminiOptions, 'apiKey' | 'model'>): Promise<EnrichmentEvidenceBundle> {
+  const startedAt = Date.now();
+  const model = options.model ?? 'gemini-3.6-flash';
+  const requestedPredicates = [...new Set(input.requestedPredicates)];
+  if (requestedPredicates.length === 0) throw new Error('Grounded enrichment requires requested predicates');
+
+  const result = await callGemini(
+    options.apiKey,
+    model,
+    buildTrustLoopEnrichmentPrompt({ ...input, requestedPredicates }),
+    groundedEnrichmentResponseSchema,
+  );
+  const parsed = GroundedEnrichmentResponseSchema.parse(JSON.parse(result.text));
+  const capturedUrls = new Set(result.evidence.map((item) => safeHttpsEvidenceUrl(item.sourceUrl)));
+  const facts = parsed.facts.map((fact) => {
+    if (!requestedPredicates.includes(fact.predicate)) {
+      throw new Error(`Grounded enrichment returned unrequested predicate: ${fact.predicate}`);
+    }
+    const evidenceUrls = fact.evidenceUrls.map(safeHttpsEvidenceUrl);
+    for (const url of evidenceUrls) {
+      if (!capturedUrls.has(url)) throw new Error(`Grounded enrichment returned uncaptured citation: ${url}`);
+    }
+    return { ...fact, evidenceUrls };
+  });
+  const inputTokens = result.inputTokens ?? 0;
+  const outputTokens = result.outputTokens ?? 0;
+  // Conservative post-free-pool estimate: Gemini 3.6 Flash standard tokens plus
+  // Google Search grounding. Qualification records the estimate but performs no billing action.
+  const estimatedCost = (inputTokens * 0.75 / 1_000_000)
+    + (outputTokens * 3.75 / 1_000_000)
+    + (result.queryCount * 0.014);
+
+  return EnrichmentEvidenceBundleSchema.parse({
+    providerId: 'gemini-grounded-v1',
+    providerRunId: crypto.randomUUID(),
+    retrievedAt: new Date().toISOString(),
+    identityConfidence: parsed.identityConfidence,
+    facts,
+    usage: {
+      searches: result.queryCount,
+      fetches: 0,
+      modelCalls: 1,
+      inputTokens,
+      outputTokens,
+      estimatedCost,
+      durationMs: Date.now() - startedAt,
+    },
+    raw: {
+      model,
+      identityReason: parsed.identityReason,
+      response: parsed,
+      evidence: result.evidence,
+    },
+  });
 }
 
 export async function discoverWithGemini(entity: SearchEntity, options: GeminiOptions): Promise<DiscoveryResult> {

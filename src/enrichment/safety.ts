@@ -17,8 +17,9 @@ export const SAFE_ENRICHMENT_BUDGET: DiscoveryBudget = {
 
 export const SAFE_ENRICHMENT_PREDICATES = new Set([
   'hasNameVariant', 'hasFacebookUrl', 'hasWebsiteUrl', 'hasInstagramUrl',
+  'hasBandcampUrl', 'hasSpotifyUrl', 'hasOfficialUrl', 'officialPresenceAttempted',
   'hasLocation', 'hasArtistType', 'hasActType', 'hasGenre', 'hasBio',
-  'hasAddress', 'hasGooglePlaceId', 'locatedIn',
+  'isAcoustic', 'hasAddress', 'hasGooglePlaceId', 'locatedIn',
 ]);
 
 function bounded(requested: number, ceiling: number): number {
@@ -67,7 +68,10 @@ function emptyValue(value: unknown): boolean {
 }
 
 function invalidUrlValue(fact: EnrichmentEvidenceFact): boolean {
-  if (!['hasWebsiteUrl', 'hasFacebookUrl', 'hasInstagramUrl'].includes(fact.predicate)) return false;
+  if (![
+    'hasWebsiteUrl', 'hasFacebookUrl', 'hasInstagramUrl',
+    'hasBandcampUrl', 'hasSpotifyUrl', 'hasOfficialUrl',
+  ].includes(fact.predicate)) return false;
   if (typeof fact.value !== 'string') return true;
   try {
     return assertSafeUrl(fact.value).protocol !== 'https:';

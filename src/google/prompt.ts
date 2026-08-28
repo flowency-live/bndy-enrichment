@@ -1,4 +1,6 @@
 import type { EventCandidate, EntityEnrichment, SearchEntity } from '../domain/schema.js';
+import type { ClaimPredicate } from '../knowledge/types.js';
+import type { CanonicalEntitySnapshot } from '../enrichment/types.js';
 
 export function buildDiscoveryPrompt(entity: SearchEntity, horizonDays: number, now = new Date()): string {
   const start = now.toISOString().slice(0, 10);
@@ -22,6 +24,47 @@ export function buildAdmissionFollowUpPrompt(events: EventCandidate[]): string {
   }));
 
   return `Perform ONE focused, low-cost Google Search pass to classify admission for these already-discovered events.\n\n${JSON.stringify(targets, null, 2)}\n\nFor every index return only admission classification:\n- FREE_CONFIRMED only with explicit evidence such as free entry, free admission, no cover or equivalent.\n- PAID_CONFIRMED when an explicit mandatory price/ticket/paid booking is evidenced. Return priceText when visible.\n- UNKNOWN if neither can be established quickly. Do not keep searching exhaustively.\n- Absence of a price is not evidence of FREE.\n- Preserve evidence URLs and a short reason.\n- Never invent a price or admission claim.\nReturn JSON only.`;
+}
+
+export function buildTrustLoopEnrichmentPrompt(input: {
+  entity: CanonicalEntitySnapshot;
+  sourceId: string;
+  sourceCandidateKey: string;
+  requestedPredicates: ClaimPredicate[];
+}): string {
+  return `Perform one bounded Google Search grounding pass for this Backline Trust Loop qualification case.
+
+ENTITY:
+${JSON.stringify({
+    entityType: input.entity.entityType,
+    displayName: input.entity.displayName,
+    sourceId: input.sourceId,
+    sourceCandidateKey: input.sourceCandidateKey,
+    currentValues: input.entity.currentValues,
+  }, null, 2)}
+
+REQUESTED PREDICATES:
+${JSON.stringify(input.requestedPredicates)}
+
+IDENTITY SAFETY:
+- Treat identity as the primary question. Name similarity alone is never sufficient.
+- identityConfidence may be 0.98 or higher only when the result is tied to this exact entity by strong public evidence, such as an exact gig, venue and date footprint, an official self-identification, or mutually cross-linked official profiles.
+- Same-name artists and generic venue names are hard negatives. Abstain when the locality, gig footprint or official ownership cannot be established.
+- If identity is not safe, return low identity confidence and no facts. Abstention is a healthy result.
+
+FACT SAFETY:
+- Return only requested predicates and only facts supported by public HTTPS evidence URLs found in this search.
+- Every official URL must be identity-proven for this exact artist or venue. Do not return a search result merely because its name looks similar.
+- Artist type values: Band, Solo Act, Duo, Trio, Group, DJ, Collective.
+- Act type values: Originals, Covers, Tribute Act. Return one fact per value.
+- Genre values: Rock, Rock n Roll, Grunge, Metal, Punk, Alternative, New Wave, Pop, Indie, Britpop, Mod, Blues, R&B, Country, Americana, Folk, Soul, Funk, Motown, Electronic, Dance, Jazz, Classical, Reggae, Latin, Other. Prefer a few strong classifications.
+- isAcoustic is a separate boolean and requires positive evidence for true or clear contrary evidence for false.
+- Facebook absence is not a defect. Capture verified website, Instagram, Bandcamp, Spotify or other official presence when available.
+- If an identity-safe search finds no official presence, return officialPresenceAttempted with value no-official-presence-found and cite the strongest identity or search evidence inspected.
+- Confidence describes the fact itself, separately from identityConfidence.
+- Do not write to any canonical system. This is evidence capture for human qualification only.
+
+Return JSON only in the requested schema.`;
 }
 
 export function buildEntityEnrichmentFollowUpPrompt(entities: EntityEnrichment[]): string {
