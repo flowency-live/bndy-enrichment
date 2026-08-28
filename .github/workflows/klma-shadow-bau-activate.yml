@@ -1,0 +1,114 @@
+name: KLMA shadow BAU activation
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  deploy-seed-run-verify:
+    if: contains(github.event.head_commit.message, 'Activate KLMA shadow BAU live')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Deploy Backline runtime
+        run: |
+          set -euo pipefail
+          npx cdk bootstrap
+          npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+      - name: Seed only KLMA as shadow BAU
+        id: seed
+        run: |
+          set -euo pipefail
+          export STATE_TABLE=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.StateTableName)")
+          export SOURCE_SCAN_QUEUE_URL=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.SourceScanQueueUrl)")
+          export EVIDENCE_BUCKET=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.EvidenceBucketName)")
+          npx tsx -e "import { waveOneSources } from './src/cli/seed-wave1-sources.ts'; import { SourceRegistryStore } from './src/knowledge/stores/source-registry-store.ts'; (async()=>{ const source=waveOneSources().find(x=>x.id==='klma-stoke-gig-list'); if(!source) throw new Error('KLMA source missing'); if(!source.enabled||!source.shadow||source.writerAuthority!=='cowork'||source.cadence!=='daily') throw new Error('KLMA config is not shadow BAU'); await new SourceRegistryStore(process.env.STATE_TABLE).put(source); console.log(JSON.stringify(source)); })().catch(e=>{console.error(e);process.exit(1)})" | tee klma-source-config.json
+          echo "state_table=$STATE_TABLE" >> "$GITHUB_OUTPUT"
+          echo "queue_url=$SOURCE_SCAN_QUEUE_URL" >> "$GITHUB_OUTPUT"
+          echo "evidence_bucket=$EVIDENCE_BUCKET" >> "$GITHUB_OUTPUT"
+      - name: Trigger live KLMA shadow run
+        id: trigger
+        env:
+          QUEUE_URL: ${{ steps.seed.outputs.queue_url }}
+        run: |
+          set -euo pipefail
+          REQUESTED_AT=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+          aws sqs send-message --queue-url "$QUEUE_URL" --message-body "{\"sourceId\":\"klma-stoke-gig-list\",\"reason\":\"manual\",\"requestedAt\":\"$REQUESTED_AT\"}" >/dev/null
+          echo "requested_at=$REQUESTED_AT" >> "$GITHUB_OUTPUT"
+      - name: Wait for KLMA run to complete
+        id: wait
+        env:
+          STATE_TABLE: ${{ steps.seed.outputs.state_table }}
+          REQUESTED_AT: ${{ steps.trigger.outputs.requested_at }}
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            aws dynamodb get-item --table-name "$STATE_TABLE" --key '{"pk":{"S":"SOURCE#klma-stoke-gig-list"},"sk":{"S":"STATE"}}' > klma-state.json
+            SUCCESS=$(jq -r '.Item.lastSuccessfulRunAt.S // ""' klma-state.json)
+            FAILURES=$(jq -r '.Item.consecutiveFailures.N // "999"' klma-state.json)
+            if [ -n "$SUCCESS" ] && [[ "$SUCCESS" > "$REQUESTED_AT" || "$SUCCESS" == "$REQUESTED_AT" ]] && [ "$FAILURES" = "0" ]; then
+              OBS=$(jq -r '.Item.lastObservationId.S // ""' klma-state.json)
+              if [ -n "$OBS" ]; then
+                echo "observation_id=$OBS" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            fi
+            sleep 10
+          done
+          echo "KLMA did not complete successfully inside 10 minutes" >&2
+          cat klma-state.json >&2 || true
+          exit 1
+      - name: Verify persisted evidence and claims
+        id: verify
+        env:
+          STATE_TABLE: ${{ steps.seed.outputs.state_table }}
+          EVIDENCE_BUCKET: ${{ steps.seed.outputs.evidence_bucket }}
+          OBSERVATION_ID: ${{ steps.wait.outputs.observation_id }}
+        run: |
+          set -euo pipefail
+          aws dynamodb get-item --table-name "$STATE_TABLE" --key "{\"pk\":{\"S\":\"OBS#$OBSERVATION_ID\"},\"sk\":{\"S\":\"META\"}}" > klma-observation.json
+          EVIDENCE_KEY=$(jq -r '.Item.evidenceKey.S // ""' klma-observation.json)
+          [ -n "$EVIDENCE_KEY" ]
+          aws s3api head-object --bucket "$EVIDENCE_BUCKET" --key "$EVIDENCE_KEY" >/dev/null
+          aws dynamodb query --table-name "$STATE_TABLE" --index-name ObservationClaimsIndex --key-condition-expression 'GSI1PK = :pk' --expression-attribute-values "{\":pk\":{\"S\":\"OBS#$OBSERVATION_ID\"}}" > klma-claims.json
+          CLAIMS=$(jq '.Count' klma-claims.json)
+          [ "$CLAIMS" -gt 0 ]
+          aws dynamodb get-item --table-name "$STATE_TABLE" --key '{"pk":{"S":"SOURCE#klma-stoke-gig-list"},"sk":{"S":"CONFIG"}}' > klma-config-live.json
+          jq -e '.Item.enabled.BOOL == true and .Item.shadow.BOOL == true and .Item.writerAuthority.S == "cowork" and .Item.cadence.S == "daily"' klma-config-live.json >/dev/null
+          echo "claims=$CLAIMS" >> "$GITHUB_OUTPUT"
+          echo "evidence_key=$EVIDENCE_KEY" >> "$GITHUB_OUTPUT"
+      - name: Record KLMA shadow BAU manifest
+        env:
+          OBSERVATION_ID: ${{ steps.wait.outputs.observation_id }}
+          CLAIMS: ${{ steps.verify.outputs.claims }}
+          EVIDENCE_KEY: ${{ steps.verify.outputs.evidence_key }}
+          REQUESTED_AT: ${{ steps.trigger.outputs.requested_at }}
+        run: |
+          set -euo pipefail
+          mkdir -p ops
+          jq -n \
+            --arg completedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg requestedAt "$REQUESTED_AT" \
+            --arg observationId "$OBSERVATION_ID" \
+            --arg evidenceKey "$EVIDENCE_KEY" \
+            --argjson claims "$CLAIMS" \
+            '{status:"healthy_live_shadow_bau",sourceId:"klma-stoke-gig-list",region:"Staffordshire / Cheshire",cadence:"daily",runtimeClass:"standard",enabled:true,shadow:true,writerAuthority:"cowork",canonicalWritesEnabled:false,coworkRetained:true,requestedAt:$requestedAt,completedAt:$completedAt,observationId:$observationId,evidenceKey:$evidenceKey,claimsPersisted:$claims,acceptance:{liveFetchCompleted:true,observationPersisted:true,rawEvidencePersisted:true,claimsPersisted:($claims>0),dailyScheduleEnabled:true,canonicalProjectionDisabled:true,coworkUntouched:true}}' > ops/klma-shadow-bau-manifest.json
+          git config user.name "bndy-backline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git pull --rebase origin main
+          git add ops/klma-shadow-bau-manifest.json
+          git commit -m "Record KLMA healthy live shadow BAU" || exit 0
+          git push origin HEAD:main
