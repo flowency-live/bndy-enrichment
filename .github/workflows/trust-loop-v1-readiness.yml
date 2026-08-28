@@ -76,7 +76,7 @@ jobs:
                 }]' readiness-items/sources.json > readiness-items/sources.next.json
             mv readiness-items/sources.next.json readiness-items/sources.json
           done
-          jq \
+          jq -n \
             --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --slurpfile sources readiness-items/sources.json \
             '{schemaVersion:1, generatedAt:$generatedAt, readOnly:true, canonicalWrites:0, sources:$sources[0]}' \
