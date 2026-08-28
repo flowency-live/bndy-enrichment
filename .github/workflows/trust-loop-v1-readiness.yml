@@ -106,11 +106,22 @@ jobs:
               def error_class:
                 . as $message |
                 if ($message | test("Runtime.ImportModuleError|Cannot find module"; "i")) then "IMPORT"
-                elif ($message | test("chromium|puppeteer|browser"; "i")) then "BROWSER_RUNTIME"
-                elif ($message | test("timed out|timeout"; "i")) then "TIMEOUT"
+                elif ($message | test("ERR_DLOPEN_FAILED|shared librar|GLIBC"; "i")) then "NATIVE_DEPENDENCY"
+                elif ($message | test("Could not find expected browser|executablePath"; "i")) then "CHROMIUM_PACKAGE"
+                elif ($message | test("Failed to launch|spawn .*EACCES|spawn .*ENOENT"; "i")) then "CHROMIUM_LAUNCH"
+                elif ($message | test("Invalid SourceScan message"; "i")) then "INVALID_REQUEST"
+                elif ($message | test("Unknown source"; "i")) then "UNKNOWN_SOURCE"
+                elif ($message | test("belongs on .*Queue"; "i")) then "RUNTIME_ROUTING"
+                elif ($message | test("No adapter registered"; "i")) then "ADAPTER_NOT_REGISTERED"
+                elif ($message | test("blocked address|resolves to blocked"; "i")) then "DNS_SAFETY"
+                elif ($message | test("Navigation timeout|TimeoutError|networkidle"; "i")) then "PAGE_TIMEOUT"
+                elif ($message | test("Protocol error|Target closed"; "i")) then "BROWSER_SESSION"
+                elif ($message | test("Task timed out|Runtime.ExitError|Runtime.Unknown"; "i")) then "LAMBDA_RUNTIME"
+                elif ($message | test("out of memory|memory limit"; "i")) then "MEMORY"
                 elif ($message | test("HTTP 403"; "i")) then "HTTP_403"
                 elif ($message | test("HTTP 429"; "i")) then "HTTP_429"
                 elif ($message | test("HTTP 5[0-9][0-9]"; "i")) then "HTTP_5XX"
+                elif ($message | test("BrowserSourceWorker failed"; "i")) then "WORKER_FAILURE_WRAPPER"
                 else "OTHER" end;
               {
                 schemaVersion: 1,
@@ -135,7 +146,10 @@ jobs:
                   },
                   recentErrorClasses: ([$logs[0].events[]?.message
                     | select(test("ERROR|Exception|ImportModuleError|timed out|HTTP 4|HTTP 5|chromium|puppeteer|browser"; "i"))
-                    | error_class] | group_by(.) | map({key:.[0],value:length}) | from_entries)
+                    | error_class] | group_by(.) | map({key:.[0],value:length}) | from_entries),
+                  latestErrorClass: ([$logs[0].events[]?.message
+                    | select(test("ERROR|Exception|ImportModuleError|timed out|HTTP 4|HTTP 5|chromium|puppeteer|browser"; "i"))
+                    | error_class] | last // null)
                 }
               }' \
             > ops/trust-loop-v1-readiness.json
