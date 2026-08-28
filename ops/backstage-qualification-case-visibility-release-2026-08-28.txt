@@ -1,0 +1,7 @@
+Release request for the merged Backstage Godmode provider-qualification case table.
+
+Backstage commit: 4be9b2dbeff19da637d22a35c7721a199d2d579e
+Backstage PR: https://github.com/flowency-live/bndy-backstage/pull/9
+Scope: read-only visibility only
+Canonical writes: 0
+Provider calls: 0
