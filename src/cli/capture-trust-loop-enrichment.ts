@@ -9,6 +9,7 @@ import {
   selectEnrichmentQualificationCases,
 } from '../enrichment/qualification-cohort.js';
 import type { EnrichmentEvidenceBundle } from '../enrichment/types.js';
+import { renderQualificationReview } from '../enrichment/qualification-review.js';
 import { TrustLoopReviewCaseSchema } from '../trust-loop/types.js';
 
 const ManifestSchema = z.object({
@@ -115,61 +116,10 @@ const artifact = {
   items: cases,
 };
 
-function escaped(value: unknown): string {
-  return String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
-}
-
-function markdownFacts(bundle: EnrichmentEvidenceBundle): string {
-  if (bundle.facts.length === 0) return 'No facts returned';
-  return bundle.facts.map((fact) => `${fact.predicate}=${escaped(fact.value)} (${fact.confidence.toFixed(3)})`).join('; ');
-}
-
-const reviewLines = [
-  '# Backline grounded-enrichment qualification review',
-  '',
-  `Captured: ${capturedAt}`,
-  '',
-  'This is a bounded 20-case provider qualification cohort, not the full Backline corpus. It contains 10 artists and 10 venues selected from the live Trust Loop review set. No canonical writes occurred.',
-  '',
-  `Capture errors: ${captureErrors}. Estimated cost: $${totalEstimatedCost.toFixed(4)}.`,
-  '',
-  '| Case | Type | Source | Entity | Identity confidence | Proposed facts | Human identity | Human notes |',
-  '|---|---|---|---|---:|---|---|---|',
-  ...cases.map((item) => {
-    const entity = item.entity as ReturnType<typeof qualificationEntity>;
-    const bundle = item.bundle as EnrichmentEvidenceBundle;
-    return `| ${item.caseId} | ${entity.entityType} | ${escaped(item.sourceId)} | ${escaped(entity.displayName)} | ${bundle.identityConfidence.toFixed(3)} | ${escaped(markdownFacts(bundle))} | match / park | |`;
-  }),
-  '',
-  '## Review instructions',
-  '',
-  'For every case, confirm `match` only if the evidence definitely belongs to the exact artist or venue. Mark `park` for ambiguity, a same-name entity, weak locality or an unproven official link. Any confident false identity, wrong official URL or unsupported classification fails qualification.',
-  '',
-  ...cases.flatMap((item) => {
-    const entity = item.entity as ReturnType<typeof qualificationEntity>;
-    const bundle = item.bundle as EnrichmentEvidenceBundle;
-    const raw = bundle.raw as { identityReason?: string; captureError?: string };
-    const evidenceUrls = [...new Set(bundle.facts.flatMap((fact) => fact.evidenceUrls))];
-    return [
-      `### ${item.caseId}: ${entity.displayName}`,
-      '',
-      `- Source: ${item.sourceId} / ${item.sourceCandidateKey}`,
-      `- Provider identity confidence: ${bundle.identityConfidence.toFixed(3)}`,
-      `- Provider reasoning: ${escaped(raw.identityReason ?? raw.captureError ?? 'None returned')}`,
-      `- Proposed facts: ${markdownFacts(bundle)}`,
-      `- Evidence: ${evidenceUrls.length ? evidenceUrls.map((url) => `[link](${url})`).join(', ') : 'none'}`,
-      '- Human identity decision: [ ] match  [ ] park',
-      '- Human fact decision: [ ] all supported  [ ] corrections required',
-      '- Human notes:',
-      '',
-    ];
-  }),
-].join('\n');
-
 await mkdir(dirname(outputPath), { recursive: true });
 await mkdir(dirname(reviewPath), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(artifact, null, 2)}\n`, 'utf8');
-await writeFile(reviewPath, `${reviewLines}\n`, 'utf8');
+await writeFile(reviewPath, renderQualificationReview(artifact), 'utf8');
 
 console.log(JSON.stringify({
   status: captureErrors === 0 ? 'captured' : 'captured-with-errors',

@@ -412,6 +412,58 @@ function safeHttpsEvidenceUrl(value: string): string {
   return parsed.toString();
 }
 
+const groundingRedirectHost = 'vertexaisearch.cloud.google.com';
+const groundingRedirectPath = '/grounding-api-redirect/';
+const groundingRedirectHopCap = 3;
+
+function isGoogleGroundingRedirect(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:'
+      && url.hostname.toLowerCase() === groundingRedirectHost
+      && url.pathname.startsWith(groundingRedirectPath);
+  } catch {
+    return false;
+  }
+}
+
+async function resolveGoogleGroundingRedirect(
+  sourceUrl: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<{ resolvedUrl?: string; fetches: number; reason?: string }> {
+  if (!isGoogleGroundingRedirect(sourceUrl)) return { fetches: 0, reason: 'not a Google grounding redirect' };
+
+  let currentUrl = safeHttpsEvidenceUrl(sourceUrl);
+  let fetches = 0;
+  try {
+    for (let hop = 0; hop < groundingRedirectHopCap; hop += 1) {
+      const response = await fetchImpl(currentUrl, {
+        method: 'GET',
+        redirect: 'manual',
+        signal: AbortSignal.timeout(5_000),
+        headers: { range: 'bytes=0-0' },
+      });
+      fetches += 1;
+
+      if (response.status < 300 || response.status >= 400) {
+        return { fetches, reason: `grounding redirect returned HTTP ${response.status}` };
+      }
+
+      const location = response.headers.get('location');
+      if (!location) return { fetches, reason: 'grounding redirect omitted Location' };
+      const nextUrl = safeHttpsEvidenceUrl(new URL(location, currentUrl).toString());
+      if (!isGoogleGroundingRedirect(nextUrl)) return { resolvedUrl: nextUrl, fetches };
+      currentUrl = nextUrl;
+    }
+    return { fetches, reason: `grounding redirect exceeded ${groundingRedirectHopCap} hops` };
+  } catch (error) {
+    return {
+      fetches,
+      reason: error instanceof Error ? error.message : 'grounding redirect resolution failed',
+    };
+  }
+}
+
 export async function enrichTrustLoopEntityWithGemini(input: {
   entity: CanonicalEntitySnapshot;
   sourceId: string;
@@ -439,13 +491,17 @@ export async function enrichTrustLoopEntityWithGemini(input: {
     }
   }));
   const rejectedFacts: Array<Record<string, unknown>> = [];
-  const facts = parsed.facts.flatMap((fact) => {
+  const citationMappings: Array<Record<string, unknown>> = [];
+  const redirectCache = new Map<string, Awaited<ReturnType<typeof resolveGoogleGroundingRedirect>>>();
+  let citationResolutionFetches = 0;
+  const facts: typeof parsed.facts = [];
+  for (const fact of parsed.facts) {
     if (!requestedPredicates.includes(fact.predicate)) {
       rejectedFacts.push({
         fact,
         reason: `unrequested predicate: ${fact.predicate}`,
       });
-      return [];
+      continue;
     }
 
     let evidenceUrls: string[];
@@ -456,20 +512,50 @@ export async function enrichTrustLoopEntityWithGemini(input: {
         fact,
         reason: error instanceof Error ? error.message : 'unsafe evidence URL',
       });
-      return [];
+      continue;
     }
 
-    const uncapturedUrls = evidenceUrls.filter((url) => !capturedUrls.has(url));
+    const normalisedEvidenceUrls: string[] = [];
+    for (const evidenceUrl of evidenceUrls) {
+      if (capturedUrls.has(evidenceUrl)) {
+        normalisedEvidenceUrls.push(evidenceUrl);
+        continue;
+      }
+
+      if (!isGoogleGroundingRedirect(evidenceUrl)) {
+        normalisedEvidenceUrls.push(evidenceUrl);
+        continue;
+      }
+
+      let resolution = redirectCache.get(evidenceUrl);
+      if (!resolution) {
+        resolution = await resolveGoogleGroundingRedirect(evidenceUrl);
+        redirectCache.set(evidenceUrl, resolution);
+        citationResolutionFetches += resolution.fetches;
+      }
+      const mappedUrl = resolution.resolvedUrl && capturedUrls.has(resolution.resolvedUrl)
+        ? resolution.resolvedUrl
+        : evidenceUrl;
+      citationMappings.push({
+        sourceUrl: evidenceUrl,
+        resolvedUrl: resolution.resolvedUrl,
+        acceptedAs: mappedUrl === evidenceUrl ? undefined : mappedUrl,
+        reason: resolution.reason,
+      });
+      normalisedEvidenceUrls.push(mappedUrl);
+    }
+
+    const uncapturedUrls = normalisedEvidenceUrls.filter((url) => !capturedUrls.has(url));
     if (uncapturedUrls.length > 0) {
       rejectedFacts.push({
-        fact: { ...fact, evidenceUrls },
+        fact: { ...fact, evidenceUrls: normalisedEvidenceUrls },
         reason: `uncaptured citation: ${uncapturedUrls.join(', ')}`,
       });
-      return [];
+      continue;
     }
 
-    return [{ ...fact, evidenceUrls }];
-  });
+    facts.push({ ...fact, evidenceUrls: normalisedEvidenceUrls });
+  }
   const inputTokens = result.inputTokens ?? 0;
   const outputTokens = result.outputTokens ?? 0;
   // Conservative post-free-pool estimate: Gemini 3.6 Flash standard tokens plus
@@ -486,7 +572,7 @@ export async function enrichTrustLoopEntityWithGemini(input: {
     facts,
     usage: {
       searches: result.queryCount,
-      fetches: 0,
+      fetches: citationResolutionFetches,
       modelCalls: 1,
       inputTokens,
       outputTokens,
@@ -499,6 +585,7 @@ export async function enrichTrustLoopEntityWithGemini(input: {
       response: parsed,
       evidence: result.evidence,
       rejectedFacts,
+      citationMappings,
     },
   });
 }

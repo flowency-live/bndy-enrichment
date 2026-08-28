@@ -16,20 +16,27 @@ describe('enrichment qualification status', () => {
       canonicalWrites: 0,
       items: [
         {
+          caseId: 'grounded-01-artist',
+          sourceId: 'source-a',
           captureStatus: 'captured',
-          entity: { entityType: 'artist' },
+          entity: { entityType: 'artist', displayName: 'Artist A' },
           bundle: {
+            identityConfidence: 0.98,
             facts: [{ predicate: 'hasGenre' }],
             raw: {
+              identityReason: 'Exact identity match.',
               rejectedFacts: [{ reason: 'uncaptured citation' }],
             },
           },
           canonicalWrites: 0,
         },
         {
+          caseId: 'grounded-02-venue',
+          sourceId: 'source-b',
           captureStatus: 'error',
-          entity: { entityType: 'venue' },
+          entity: { entityType: 'venue', displayName: 'Venue B' },
           bundle: {
+            identityConfidence: 0,
             facts: [],
             raw: { captureError: 'provider timeout' },
           },
@@ -44,11 +51,27 @@ describe('enrichment qualification status', () => {
       cases: 2,
       capturedCases: 1,
       captureErrors: 1,
+      highConfidenceCases: 1,
+      abstainedCases: 0,
       acceptedFacts: 1,
       quarantinedFacts: 1,
       costMeasurement: 'partial-error-path',
       canonicalWrites: 0,
     });
+    expect(summary.reviewCases).toEqual([
+      expect.objectContaining({
+        caseId: 'grounded-01-artist',
+        displayName: 'Artist A',
+        decision: 'review-required',
+        acceptedFacts: 1,
+        quarantinedFacts: 1,
+      }),
+      expect.objectContaining({
+        caseId: 'grounded-02-venue',
+        displayName: 'Venue B',
+        decision: 'capture-error',
+      }),
+    ]);
   });
 
   it('rejects inconsistent capture totals', () => {
