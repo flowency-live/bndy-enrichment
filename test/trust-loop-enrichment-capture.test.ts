@@ -81,7 +81,7 @@ describe('Trust Loop enrichment qualification capture', () => {
     expect(bundle.usage!.estimatedCost).toBeLessThan(0.03);
   });
 
-  it('rejects model citations that were not captured by the grounded search', async () => {
+  it('quarantines model citations that were not captured by the grounded search', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
       output_text: JSON.stringify({
         identityConfidence: 0.999,
@@ -94,13 +94,23 @@ describe('Trust Loop enrichment qualification capture', () => {
         }],
       }),
       steps: [{ type: 'google_search_call', arguments: { queries: ['test'] } }],
+      usage: { total_input_tokens: 400, total_output_tokens: 100 },
     }), { status: 200, headers: { 'content-type': 'application/json' } })));
     const item = reviewCase('venue', 'fixture-source', 'venue-1', 'The Test Hall');
-    await expect(enrichTrustLoopEntityWithGemini({
+    const bundle = await enrichTrustLoopEntityWithGemini({
       entity: qualificationEntity(item),
       sourceId: item.sourceId,
       sourceCandidateKey: item.candidateKey,
       requestedPredicates: qualificationPredicates('venue'),
-    }, { apiKey: 'fixture-key' })).rejects.toThrow(/uncaptured citation/i);
+    }, { apiKey: 'fixture-key' });
+
+    expect(bundle.facts).toEqual([]);
+    expect(bundle.usage).toMatchObject({ modelCalls: 1, inputTokens: 400, outputTokens: 100 });
+    expect(bundle.raw).toMatchObject({
+      rejectedFacts: [{
+        fact: { predicate: 'hasWebsiteUrl', value: 'https://invented.example' },
+        reason: expect.stringMatching(/uncaptured citation/i),
+      }],
+    });
   });
 });
