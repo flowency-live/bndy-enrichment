@@ -80,6 +80,36 @@ function uniqueCandidates(candidates: IndexedCandidate[]): IndexedCandidate[] {
   return [...map.values()];
 }
 
+export function selectBalancedCandidates(
+  sourceIds: string[],
+  rows: IndexedCandidate[],
+  limit: number,
+): IndexedCandidate[] {
+  const types: EntityCandidateType[] = ['artist', 'venue', 'event'];
+  const buckets = new Map<string, IndexedCandidate[]>();
+  for (const sourceId of sourceIds) {
+    for (const type of types) {
+      buckets.set(`${sourceId}#${type}`, rows.filter((row) =>
+        row.sourceId === sourceId && row.candidateType === type));
+    }
+  }
+  const selected: IndexedCandidate[] = [];
+  while (selected.length < limit) {
+    let moved = false;
+    for (const sourceId of sourceIds) {
+      for (const type of types) {
+        const next = buckets.get(`${sourceId}#${type}`)?.shift();
+        if (!next) continue;
+        selected.push(next);
+        moved = true;
+        if (selected.length === limit) return selected;
+      }
+    }
+    if (!moved) break;
+  }
+  return selected;
+}
+
 function answerKey(answer: Pick<ReviewedKnownAnswer, 'candidateType' | 'sourceId' | 'candidateKey'>): string {
   return `${answer.candidateType}#${answer.sourceId}#${answer.candidateKey}`;
 }
@@ -120,12 +150,13 @@ export async function runTrustLoop(
   const clock = options.now ?? (() => new Date());
   const startedAt = clock().toISOString();
   const candidateLimit = Math.min(Math.max(options.candidateLimit ?? 40, 1), 200);
-  const perSourceLimit = Math.max(5, Math.ceil(candidateLimit / options.sourceIds.length));
-  const sourceCandidates = uniqueCandidates((await Promise.all(
-    options.sourceIds.map((sourceId) => deps.candidates.listBySource(sourceId, perSourceLimit)),
-  )).flat())
-    .filter((candidate) => ['artist', 'venue', 'event'].includes(candidate.candidateType))
-    .slice(0, candidateLimit);
+  const candidateTypes: EntityCandidateType[] = ['artist', 'venue', 'event'];
+  const perBucketLimit = Math.max(5, Math.ceil(candidateLimit / (options.sourceIds.length * candidateTypes.length)) * 3);
+  const availableCandidates = uniqueCandidates((await Promise.all(
+    options.sourceIds.flatMap((sourceId) => candidateTypes.map((candidateType) =>
+      deps.candidates.listBySourceType(sourceId, candidateType, perBucketLimit))),
+  )).flat());
+  const sourceCandidates = selectBalancedCandidates(options.sourceIds, availableCandidates, candidateLimit);
 
   const decisions: TrustLoopDecision[] = [];
   const assessments: TrustLoopEnrichmentAssessment[] = [];

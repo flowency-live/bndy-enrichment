@@ -199,6 +199,25 @@ export class CandidateStore {
     return (response.Items ?? []).filter((item) => item.entityType === 'IndexedCandidate').map(fromItem);
   }
 
+  async listBySourceType(
+    sourceId: string,
+    candidateType: EntityCandidateType,
+    limit = 100,
+  ): Promise<IndexedCandidate[]> {
+    const response = await this.client.send(new QueryCommand({
+      TableName: this.tableName,
+      IndexName: 'ObservationClaimsIndex',
+      KeyConditionExpression: 'GSI1PK = :pk AND begins_with(GSI1SK, :prefix)',
+      ExpressionAttributeValues: {
+        ':pk': `SOURCE#${sourceId}`,
+        ':prefix': `CANDIDATE#${candidateType}#`,
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    }));
+    return (response.Items ?? []).filter((item) => item.entityType === 'IndexedCandidate').map(fromItem);
+  }
+
   async listByIdentity(identity: string, limit = 25): Promise<IndexedCandidate[]> {
     const response = await this.client.send(new QueryCommand({
       TableName: this.tableName,

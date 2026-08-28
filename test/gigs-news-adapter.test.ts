@@ -105,6 +105,19 @@ describe('GigsNews donor parser parity', () => {
     expect(event.artistExternalId).toBe('artist_jon-casey-blues');
     expect(event.sourceEventKey).toContain('_jon-casey-blues_');
   });
+
+  it('stops before advertising, booking and contact footer rows', () => {
+    const parsed = parseGigsNewsPage([
+      'Friday 28th August',
+      'A Real Band - The Real Venue',
+      'gigs 2026',
+      'Sunday 20th September - Cheshire Cheese Newton - Reserved (cancelled - United match)',
+      'Chris - 07811 44 7388',
+    ].join('\n'), 2026);
+    expect(parsed.gigs).toHaveLength(1);
+    expect(parsed.gigs[0]).toMatchObject({ artist: 'A Real Band', venue: 'The Real Venue' });
+    expect(parsed.gigs.some((gig) => /Chris|cancelled/i.test(`${gig.artist} ${gig.venue}`))).toBe(false);
+  });
 });
 
 describe('GigsNews target adapter contract', () => {

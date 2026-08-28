@@ -11,6 +11,7 @@ import {
 import { assessEnrichment, classifyResolution } from '../src/trust-loop/evaluator.js';
 import type { CandidateEvidence } from '../src/trust-loop/types.js';
 import { trustLoopRunItem } from '../src/trust-loop/run-store.js';
+import { selectBalancedCandidates } from '../src/trust-loop/runner.js';
 
 function indexed(overrides: Partial<IndexedCandidate> = {}): IndexedCandidate {
   return {
@@ -67,6 +68,22 @@ describe('Trust Loop identity keys', () => {
     }));
     expect(source.some((item) => item.GSI2SK === 'SOURCE#source-a#source-artist-1')).toBe(true);
     expect(canonical.some((item) => item.GSI2SK === 'CANONICAL#bndy-canonical-artist#bndy:artist:artist-1')).toBe(true);
+  });
+});
+
+describe('Trust Loop cohort selection', () => {
+  it('balances source families and entity types instead of returning only Venue rows', () => {
+    const rows = [
+      indexed({ sourceId: 'source-a', candidateType: 'artist', candidateKey: 'a-artist' }),
+      indexed({ sourceId: 'source-a', candidateType: 'venue', candidateKey: 'a-venue' }),
+      indexed({ sourceId: 'source-a', candidateType: 'event', candidateKey: 'a-event' }),
+      indexed({ sourceId: 'source-b', candidateType: 'artist', candidateKey: 'b-artist' }),
+      indexed({ sourceId: 'source-b', candidateType: 'venue', candidateKey: 'b-venue' }),
+      indexed({ sourceId: 'source-b', candidateType: 'event', candidateKey: 'b-event' }),
+    ];
+    const selected = selectBalancedCandidates(['source-a', 'source-b'], rows, 6);
+    expect(new Set(selected.map((row) => row.sourceId))).toEqual(new Set(['source-a', 'source-b']));
+    expect(new Set(selected.map((row) => row.candidateType))).toEqual(new Set(['artist', 'venue', 'event']));
   });
 });
 
