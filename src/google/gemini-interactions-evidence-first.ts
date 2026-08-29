@@ -109,8 +109,11 @@ function safeHttpsUrl(value: string): string {
   return parsed.toString();
 }
 
-function overlaps(left: TextRange, right: TextRange): boolean {
-  return left.start < right.end && left.end > right.start;
+function citationEndsInSegment(citation: TextRange, segment: TextRange): boolean {
+  // Interactions currently emits cumulative citation ranges whose start may be
+  // zero while the end lands on the supported fact. Bind by the end offset so
+  // a later citation cannot leak backwards into earlier FACT lines.
+  return citation.end > segment.start && citation.end <= segment.end;
 }
 
 function modelTextBlock(raw: any): { text: string; annotations: any[] } | undefined {
@@ -358,11 +361,12 @@ export async function enrichTrustLoopEntityWithGeminiInteractionsEvidenceFirst(i
       rejectedFacts.push({ fact, reason: `unrequested predicate: ${fact.predicate}` });
       return [];
     }
-    const supportingCitations = result.citations.filter((citation) => overlaps(fact.segment, citation));
+    const supportingCitations = result.citations
+      .filter((citation) => citationEndsInSegment(citation, fact.segment));
     if (supportingCitations.length === 0) {
       rejectedFacts.push({
         fact,
-        reason: 'no provider url_citation overlaps the exact FACT output segment',
+        reason: 'no provider url_citation ends within the exact FACT output segment',
       });
       return [];
     }
@@ -396,7 +400,8 @@ export async function enrichTrustLoopEntityWithGeminiInteractionsEvidenceFirst(i
       providerResponse: result.raw,
       rejectedFacts,
       admittedFactSegments: parsed.facts
-        .filter((fact) => result.citations.some((citation) => overlaps(fact.segment, citation)))
+        .filter((fact) => result.citations
+          .some((citation) => citationEndsInSegment(citation, fact.segment)))
         .map((fact) => ({ predicate: fact.predicate, segment: fact.segment, text: fact.rawSegment })),
     },
   });
