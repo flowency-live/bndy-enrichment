@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "providerId": "gemini-generatecontent-grounded-v1",
+  "capturedAt": "2026-08-29T17:44:39.813Z",
+  "sourceManifestGeneratedAt": "2026-08-28T14:31:49.401Z",
+  "purpose": "Validate fact-level citations from GenerateContent groundingMetadata on Whittles Oldham",
+  "reviewStatus": "unreviewed",
+  "adapterStatus": "inactive",
+  "cases": 1,
+  "canonicalWrites": 0,
+  "scheduleCreated": false,
+  "providerActivated": false,
+  "maximumReservedCost": 0.05,
+  "estimatedCost": 0.0019845,
+  "actualWithinReservedCost": true,
+  "case": {
+    "caseId": "generatecontent-grounding-01-venue",
+    "sourceId": "gigs-news-daily-import",
+    "sourceCandidateKey": "venue_whittles-oldham",
+    "captureStatus": "captured",
+    "entity": {
+      "entityType": "venue",
+      "entityId": "gigs-news-daily-import:venue_whittles-oldham",
+      "displayName": "Whittles Oldham",
+      "currentValues": {
+        "sourceId": "gigs-news-daily-import",
+        "sourceCandidateKey": "venue_whittles-oldham"
+      },
+      "ownerManagedPredicates": [],
+      "attachedToUpcomingGig": true
+    },
+    "requestedPredicates": [
+      "hasAddress",
+      "hasLocation",
+      "hasGooglePlaceId",
+      "hasFacebookUrl",
+      "hasWebsiteUrl",
+      "hasInstagramUrl",
+      "hasOfficialUrl",
+      "officialPresenceAttempted"
+    ],
+    "bundle": {
+      "providerId": "gemini-generatecontent-grounded-v1",
+      "providerRunId": "932937b0-8457-42f7-884b-6f7d71e878dd",
+      "retrievedAt": "2026-08-29T17:44:39.813Z",
+      "identityConfidence": 0.98,
+      "facts": [],
+      "usage": {
+        "searches": 0,
+        "fetches": 0,
+        "modelCalls": 1,
+        "inputTokens": 976,
+        "outputTokens": 334,
+        "estimatedCost": 0.0019845,
+        "durationMs": 11242
+      },
+      "raw": {
+        "model": "gemini-3.6-flash",
+        "transport": "generateContent",
+        "identityReason": "Whittles Oldham is definitively identified as the live music venue located at 57 Roscoe St, Oldham OL1 1EA, supported by its official website and venue listings.",
+        "response": {
+          "identityConfidence": 0.98,
+          "identityReason": "Whittles Oldham is definitively identified as the live music venue located at 57 Roscoe St, Oldham OL1 1EA, supported by its official website and venue listings.",
+          "facts": [
+            {
+              "predicate": "hasAddress",
+              "value": "57 Roscoe St, Oldham OL1 1EA, UK",
+              "confidence": 0.98,
+              "evidenceUrls": [
+                "https://whittlesoldham.com/"
+              ]
+            },
+            {
+              "predicate": "hasLocation",
+              "value": "Oldham, Greater Manchester, United Kingdom",
+              "confidence": 0.98,
+              "evidenceUrls": [
+                "https://whittlesoldham.com/"
+              ]
+            },
+            {
+              "predicate": "hasWebsiteUrl",
+              "value": "https://whittlesoldham.com/",
+              "confidence": 0.98,
+              "evidenceUrls": [
+                "https://whittlesoldham.com/"
+              ]
+            },
+            {
+              "predicate": "hasOfficialUrl",
+              "value": "https://whittlesoldham.com/",
+              "confidence": 0.98,
+              "evidenceUrls": [
+                "https://whittlesoldham.com/"
+              ]
+            }
+          ]
+        },
+        "responseText": "{\n  \"identityConfidence\": 0.98,\n  \"identityReason\": \"Whittles Oldham is definitively identified as the live music venue located at 57 Roscoe St, Oldham OL1 1EA, supported by its official website and venue listings.\",\n  \"facts\": [\n    {\n      \"predicate\": \"hasAddress\",\n      \"value\": \"57 Roscoe St, Oldham OL1 1EA, UK\",\n      \"confidence\": 0.98,\n      \"evidenceUrls\": [\n        \"https://whittlesoldham.com/\"\n      ]\n    },\n    {\n      \"predicate\": \"hasLocation\",\n      \"value\": \"Oldham, Greater Manchester, United Kingdom\",\n      \"confidence\": 0.98,\n      \"evidenceUrls\": [\n        \"https://whittlesoldham.com/\"\n      ]\n    },\n    {\n      \"predicate\": \"hasWebsiteUrl\",\n      \"value\": \"https://whittlesoldham.com/\",\n      \"confidence\": 0.98,\n      \"evidenceUrls\": [\n        \"https://whittlesoldham.com/\"\n      ]\n    },\n    {\n      \"predicate\": \"hasOfficialUrl\",\n      \"value\": \"https://whittlesoldham.com/\",\n      \"confidence\": 0.98,\n      \"evidenceUrls\": [\n        \"https://whittlesoldham.com/\"\n      ]\n    }\n  ]\n}",
+        "evidence": [],
+        "citedUrls": [],
+        "citationCount": 0,
+        "groundingChunkCount": 0,
+        "groundingSupportCount": 0,
+        "providerResponse": {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "text": "{\n  \"identityConfidence\": 0.98,\n  \"identityReason\": \"Whittles Oldham is definitively identified as the live music venue located at 57 Roscoe St, Oldham OL1 1EA, supported by its official website and venue listings.\",\n  \"facts\": [\n    {\n      \"predicate\": \"hasAddress\",\n      \"value\": \"57 Roscoe St, Oldham OL1 1EA, UK\",\n      \"confidence\": 0.98,\n      \"evidenceUrls\": [\n        \"https://whittlesoldham.com/\"\n      ]\n    },\n    {\n      \"predicate\": \"hasLocation\",\n      \"value\": \"Oldham, Greater Manchester, United Kingdom\",\n      \"confidence\": 0.98,\n      \"evidenceUrls\": [\n        \"https://whittlesoldham.com/\"\n      ]\n    },\n    {\n      \"predicate\": \"hasWebsiteUrl\",\n      \"value\": \"https://whittlesoldham.com/\",\n      \"confidence\": 0.98,\n      \"evidenceUrls\": [\n        \"https://whittlesoldham.com/\"\n      ]\n    },\n    {\n      \"predicate\": \"hasOfficialUrl\",\n      \"value\": \"https://whittlesoldham.com/\",\n      \"confidence\": 0.98,\n      \"evidenceUrls\": [\n        \"https://whittlesoldham.com/\"\n      ]\n    }\n  ]\n}",
+                    "thoughtSignature": "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"
+                  }
+                ],
+                "role": "model"
+              },
+              "finishReason": "STOP",
+              "index": 0
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 976,
+            "candidatesTokenCount": 334,
+            "totalTokenCount": 3110,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 976
+              }
+            ],
+            "thoughtsTokenCount": 1800,
+            "serviceTier": "standard"
+          },
+          "modelVersion": "gemini-3.6-flash",
+          "responseId": "fBqTapybL_3ljMcPrMzDuAc"
+        },
+        "rejectedFacts": [
+          {
+            "fact": {
+              "predicate": "hasAddress",
+              "value": "57 Roscoe St, Oldham OL1 1EA, UK",
+              "confidence": 0.98,
+              "evidenceUrls": [
+                "https://whittlesoldham.com/"
+              ]
+            },
+            "reason": "no groundingSupport linked this fact value or evidence text to a safe groundingChunk"
+          },
+          {
+            "fact": {
+              "predicate": "hasLocation",
+              "value": "Oldham, Greater Manchester, United Kingdom",
+              "confidence": 0.98,
+              "evidenceUrls": [
+                "https://whittlesoldham.com/"
+              ]
+            },
+            "reason": "no groundingSupport linked this fact value or evidence text to a safe groundingChunk"
+          },
+          {
+            "fact": {
+              "predicate": "hasWebsiteUrl",
+              "value": "https://whittlesoldham.com/",
+              "confidence": 0.98,
+              "evidenceUrls": [
+                "https://whittlesoldham.com/"
+              ]
+            },
+            "reason": "no groundingSupport linked this fact value or evidence text to a safe groundingChunk"
+          },
+          {
+            "fact": {
+              "predicate": "hasOfficialUrl",
+              "value": "https://whittlesoldham.com/",
+              "confidence": 0.98,
+              "evidenceUrls": [
+                "https://whittlesoldham.com/"
+              ]
+            },
+            "reason": "no groundingSupport linked this fact value or evidence text to a safe groundingChunk"
+          }
+        ],
+        "citationMappings": [
+          {
+            "factIndex": 0,
+            "factRange": {
+              "start": 234,
+              "end": 421
+            },
+            "supportIndices": [],
+            "groundingChunkIndices": [],
+            "evidenceUrls": []
+          },
+          {
+            "factIndex": 1,
+            "factRange": {
+              "start": 427,
+              "end": 625
+            },
+            "supportIndices": [],
+            "groundingChunkIndices": [],
+            "evidenceUrls": []
+          },
+          {
+            "factIndex": 2,
+            "factRange": {
+              "start": 631,
+              "end": 816
+            },
+            "supportIndices": [],
+            "groundingChunkIndices": [],
+            "evidenceUrls": []
+          },
+          {
+            "factIndex": 3,
+            "factRange": {
+              "start": 822,
+              "end": 1008
+            },
+            "supportIndices": [],
+            "groundingChunkIndices": [],
+            "evidenceUrls": []
+          }
+        ]
+      }
+    }
+  },
+  "contract": {
+    "modelCallAttempts": 1,
+    "exactlyOneModelCallRequested": true,
+    "exactlyOneModelCallObserved": true,
+    "requestedAtMostTwoSearches": true,
+    "observedSearches": 0,
+    "observedAtMostTwoSearches": true,
+    "citationCount": 0,
+    "groundingChunkCount": 0,
+    "groundingSupportCount": 0,
+    "admittedFacts": 0,
+    "providerResponseCaptured": true,
+    "groundingMetadataCaptured": false,
+    "canonicalWrites": 0
+  }
+}
