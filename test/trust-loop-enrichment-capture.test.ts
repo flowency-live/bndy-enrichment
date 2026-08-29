@@ -63,7 +63,14 @@ describe('Trust Loop enrichment qualification capture', () => {
       }),
       steps: [
         { type: 'google_search_call', arguments: { queries: ['The Test Band official'] } },
-        { type: 'google_search_result', url: evidenceUrl, title: 'The Test Band' },
+        {
+          type: 'model_output',
+          content: [{
+            type: 'text',
+            text: 'The official site describes the act as a rock band.',
+            annotations: [{ type: 'url_citation', url: evidenceUrl, title: 'The Test Band' }],
+          }],
+        },
       ],
       usage: { total_input_tokens: 1_000, total_output_tokens: 200 },
     }), { status: 200, headers: { 'content-type': 'application/json' } })));
@@ -83,11 +90,33 @@ describe('Trust Loop enrichment qualification capture', () => {
     });
     expect(bundle.usage!.estimatedCost).toBeLessThan(0.03);
     const request = JSON.parse((vi.mocked(fetch).mock.calls[0]?.[1] as RequestInit).body as string);
-    expect(request).not.toHaveProperty('response_format');
+    expect(request.store).toBe(false);
+    expect(request.tools).toEqual([{ type: 'google_search' }]);
+    expect(request.response_format).toMatchObject({
+      type: 'text',
+      mime_type: 'application/json',
+      schema: {
+        required: ['identityConfidence', 'identityReason', 'facts'],
+        properties: {
+          facts: {
+            items: {
+              properties: {
+                predicate: { enum: qualificationPredicates('artist') },
+              },
+            },
+          },
+        },
+      },
+    });
     expect(request.input).toMatch(/at most two Google Search queries/i);
+    expect(bundle.raw).toMatchObject({
+      citationCount: 1,
+      citedUrls: [evidenceUrl],
+      providerResponse: expect.objectContaining({ output_text: expect.any(String) }),
+    });
   });
 
-  it('captures inline citation annotations from unstructured grounded JSON', async () => {
+  it('captures inline citation annotations from schema-constrained grounded JSON', async () => {
     const evidenceUrl = 'https://the-test-band.example/about';
     const modelText = `\`\`\`json\n${JSON.stringify({
       identityConfidence: 0.999,
@@ -196,19 +225,23 @@ describe('Trust Loop enrichment qualification capture', () => {
     expect((failure as GroundedEnrichmentCaptureError).bundle.usage!.estimatedCost).toBeGreaterThan(0.014);
   });
 
-  it('quarantines model citations that were not captured by the grounded search', async () => {
+  it('quarantines a search-result URL that lacks a provider citation annotation', async () => {
+    const evidenceUrl = 'https://invented.example';
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
       output_text: JSON.stringify({
         identityConfidence: 0.999,
         identityReason: 'Claimed official result.',
         facts: [{
           predicate: 'hasWebsiteUrl',
-          value: 'https://invented.example',
+          value: evidenceUrl,
           confidence: 0.999,
-          evidenceUrls: ['https://invented.example'],
+          evidenceUrls: [evidenceUrl],
         }],
       }),
-      steps: [{ type: 'google_search_call', arguments: { queries: ['test'] } }],
+      steps: [
+        { type: 'google_search_call', arguments: { queries: ['test'] } },
+        { type: 'google_search_result', url: evidenceUrl, title: 'Uncited result' },
+      ],
       usage: { total_input_tokens: 400, total_output_tokens: 100 },
     }), { status: 200, headers: { 'content-type': 'application/json' } })));
     const item = reviewCase('venue', 'fixture-source', 'venue-1', 'The Test Hall');
@@ -223,9 +256,10 @@ describe('Trust Loop enrichment qualification capture', () => {
     expect(bundle.usage).toMatchObject({ modelCalls: 1, inputTokens: 400, outputTokens: 100 });
     expect(bundle.raw).toMatchObject({
       rejectedFacts: [{
-        fact: { predicate: 'hasWebsiteUrl', value: 'https://invented.example' },
+        fact: { predicate: 'hasWebsiteUrl', value: evidenceUrl },
         reason: expect.stringMatching(/uncaptured citation/i),
       }],
+      evidence: [expect.objectContaining({ sourceUrl: evidenceUrl })],
     });
   });
 
