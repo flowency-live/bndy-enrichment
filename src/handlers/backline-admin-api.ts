@@ -5,6 +5,7 @@ import { LEMONROCK_SOURCES } from '../sources/adapters/lemonrock/sources.js';
 import { ONTHECASE_SOURCES } from '../sources/adapters/onthecase/sources.js';
 import { SCENICEYE_SOURCES } from '../sources/adapters/sceniceye/sources.js';
 import { waveOneSources } from '../cli/seed-wave1-sources.js';
+import { DynamoProjectionControlStore, type ProjectionControlStore } from '../projection/control-store.js';
 
 // Backline Evidence Explorer admin read API (Lambda Function URL).
 //
@@ -85,11 +86,13 @@ function respond(statusCode: number, body: unknown): UrlResult {
 export type HandlerDependencies = {
   reader: GraphReader;
   loadToken: TokenLoader;
+  projectionControls: ProjectionControlStore;
 };
 
 export function createHandler(deps?: Partial<HandlerDependencies>) {
   const loadToken = deps?.loadToken ?? defaultTokenLoader;
   let readerInstance = deps?.reader;
+  let projectionControlsInstance = deps?.projectionControls;
 
   function reader(): GraphReader {
     if (!readerInstance) {
@@ -98,6 +101,15 @@ export function createHandler(deps?: Partial<HandlerDependencies>) {
       readerInstance = new GraphReader(tableName);
     }
     return readerInstance;
+  }
+
+  function projectionControls(): ProjectionControlStore {
+    if (!projectionControlsInstance) {
+      const tableName = process.env.STATE_TABLE;
+      if (!tableName) throw new Error('STATE_TABLE is required');
+      projectionControlsInstance = new DynamoProjectionControlStore(tableName);
+    }
+    return projectionControlsInstance;
   }
 
   return async function handler(event: UrlEvent): Promise<UrlResult> {
@@ -143,7 +155,8 @@ export function createHandler(deps?: Partial<HandlerDependencies>) {
 
       if (path === '/trust-loop') {
         const runs = await reader().listTrustLoopRuns(Math.min(limit, 25));
-        return respond(200, { runs, canonicalWritesEnabled: false });
+        const canonicalWritesEnabled = await projectionControls().canonicalWritesEnabled();
+        return respond(200, { runs, canonicalWritesEnabled });
       }
 
       return respond(404, { error: `Unknown path ${path}` });

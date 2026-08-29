@@ -15,13 +15,14 @@ import { mergeExternalIds, type ProjectionBndyApi, type ResolvedArtist, type Res
 import { enrichmentItem, type EntityEnrichmentPublisher } from './enrichment-publisher.js';
 import type { ProjectionExceptionSink } from './exception-sink.js';
 import type { ProjectionCountDelta, ProjectionMapping } from './projection-store.js';
+import type { ProjectionControlStore } from './control-store.js';
 
 export interface ProjectionSourceRegistry {
   get(sourceId: string): Promise<GigSource | null>;
 }
 export interface ProjectionClaimStore {
   get(claimId: string): Promise<KnowledgeClaim | null>;
-  listBySubject(subjectType: 'event-candidate', subjectKey: string, limit?: number): Promise<KnowledgeClaim[]>;
+  listBySubjectComplete(subjectType: 'event-candidate', subjectKey: string, maximumClaims?: number): Promise<KnowledgeClaim[]>;
   listSupportClaimIds(entityType: 'artist' | 'venue' | 'event', entityId: string): Promise<string[]>;
   linkCanonicalEntity(entityType: 'artist' | 'venue' | 'event', entityId: string, claimId: string): Promise<void>;
 }
@@ -51,6 +52,7 @@ export interface ProjectionStateStore {
 }
 
 export type ProjectionDependencies = {
+  controls: ProjectionControlStore;
   sources: ProjectionSourceRegistry;
   claims: ProjectionClaimStore;
   tombstones: ProjectionTombstoneStore;
@@ -82,7 +84,7 @@ function stringField(value: unknown): string | undefined {
 }
 
 async function loadItemClaims(item: ProjectionWorkItem, store: ProjectionClaimStore): Promise<KnowledgeClaim[]> {
-  const subjectClaims = await store.listBySubject('event-candidate', item.candidateKey, 1000);
+  const subjectClaims = await store.listBySubjectComplete('event-candidate', item.candidateKey, 1000);
   if (subjectClaims.length) return subjectClaims;
   const claims: KnowledgeClaim[] = [];
   for (const id of item.claimIds) {
@@ -206,6 +208,17 @@ async function handledException(
   };
 }
 
+async function retryableFailure(
+  item: ProjectionWorkItem,
+  reason: string,
+  deps: ProjectionDependencies,
+  claims = 0,
+): Promise<never> {
+  await deps.state.recordFailure(item, reason);
+  await deps.state.recordRunItem(item, { claims, projectionFailures: 1 }, reason);
+  throw new Error(reason);
+}
+
 async function maybeReinstate(
   tombstone: Tombstone | null,
   candidate: ProjectionEventCandidate,
@@ -270,16 +283,21 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
   }
 
   const source = await deps.sources.get(item.sourceId);
-  if (!source) return await handledException(item, `Unknown source ${item.sourceId}`, deps);
+  if (!source) return await retryableFailure(item, `Unknown source ${item.sourceId}`, deps);
 
-  const claims = await loadItemClaims(item, deps.claims);
-  if (!claims.length) return await handledException(item, 'Projection item has no readable Claims', deps);
+  let claims: KnowledgeClaim[];
+  try {
+    claims = await loadItemClaims(item, deps.claims);
+  } catch (error) {
+    return await retryableFailure(item, error instanceof Error ? error.message : String(error), deps);
+  }
+  if (!claims.length) return await retryableFailure(item, 'Projection item has no readable Claims', deps);
 
   let candidate: ProjectionEventCandidate;
   try {
     candidate = materialiseEventCandidate(item.candidateKey, item.sourceId, claims);
   } catch (error) {
-    return await handledException(item, error instanceof Error ? error.message : String(error), deps);
+    return await retryableFailure(item, error instanceof Error ? error.message : String(error), deps, claims.length);
   }
 
   const previous = await deps.state.getMapping(item.sourceId, item.candidateKey);
@@ -297,10 +315,46 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
     return { status: 'shadow', sourceId: item.sourceId, candidateKey: item.candidateKey, action: item.action, message: reason };
   }
 
-  if (source.id === 'klma-stoke-gig-list' && !source.projectionPolicy) {
-    return await handledException(item, 'KLMA projection requires an explicit source projection policy', deps);
+  let canonicalWritesEnabled: boolean;
+  try {
+    canonicalWritesEnabled = await deps.controls.canonicalWritesEnabled();
+  } catch (error) {
+    return await retryableFailure(
+      item,
+      `Canonical projection control could not be read: ${error instanceof Error ? error.message : String(error)}`,
+      deps,
+      claims.length,
+    );
   }
-  const additiveOnly = source.projectionPolicy?.mode === 'additive-only';
+  if (!canonicalWritesEnabled) {
+    const reason = 'global canonical projection is disabled';
+    await deps.state.markSuccess(item, mappingFrom(undefined, undefined, undefined, previous), 'shadow', {
+      wouldWrite: item.action,
+      candidate,
+      reason,
+    });
+    await deps.state.recordRunItem(item, { claims: claims.length });
+    return { status: 'shadow', sourceId: item.sourceId, candidateKey: item.candidateKey, action: item.action, message: reason };
+  }
+
+  const projectionPolicy = source.projectionPolicy;
+  if (!projectionPolicy?.allowedActions?.length || !projectionPolicy.allowedPredicates?.length) {
+    return await handledException(item, 'Live projection requires explicit action and predicate allowlists', deps);
+  }
+  if (!projectionPolicy.allowedActions.includes(item.action)) {
+    return await handledException(item, `Projection action allowlist blocks ${item.action}`, deps);
+  }
+  const disallowedPredicates = [...new Set(claims
+    .map((claim) => claim.predicate)
+    .filter((predicate) => !projectionPolicy.allowedPredicates!.includes(predicate)))];
+  if (disallowedPredicates.length) {
+    return await handledException(
+      item,
+      `Projection predicate allowlist blocks ${disallowedPredicates.sort().join(', ')}`,
+      deps,
+    );
+  }
+  const additiveOnly = projectionPolicy.mode === 'additive-only';
   if (additiveOnly && item.action !== 'create') {
     return await handledException(item, `Additive-only projection blocks ${item.action}`, deps);
   }

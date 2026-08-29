@@ -67,6 +67,37 @@ export class ClaimStore {
     return (response.Items ?? []).map((item) => KnowledgeClaimSchema.parse(item));
   }
 
+  async listBySubjectComplete(
+    subjectType: ClaimSubjectType,
+    subjectKey: string,
+    maximumClaims = 1000,
+  ): Promise<KnowledgeClaim[]> {
+    const items: Record<string, unknown>[] = [];
+    let exclusiveStartKey: Record<string, unknown> | undefined;
+
+    do {
+      const remaining = maximumClaims + 1 - items.length;
+      const response = await this.client.send(new QueryCommand({
+        TableName: this.tableName,
+        IndexName: CLAIM_BY_SUBJECT_INDEX,
+        KeyConditionExpression: 'GSI2PK = :pk',
+        ExpressionAttributeValues: { ':pk': `SUBJECT#${subjectType}#${subjectKey}` },
+        ScanIndexForward: true,
+        Limit: remaining,
+        ExclusiveStartKey: exclusiveStartKey,
+      }));
+      items.push(...(response.Items ?? []));
+      exclusiveStartKey = response.LastEvaluatedKey;
+    } while (exclusiveStartKey && items.length <= maximumClaims);
+
+    if (items.length > maximumClaims || exclusiveStartKey) {
+      throw new Error(
+        `Claim safety limit exceeded for ${subjectType}:${subjectKey}; more than ${maximumClaims} Claims require explicit review`,
+      );
+    }
+    return items.map((item) => KnowledgeClaimSchema.parse(item));
+  }
+
   async linkCanonicalEntity(entityType: CanonicalEntityType, entityId: string, claimId: string): Promise<void> {
     await this.client.send(new PutCommand({
       TableName: this.tableName,

@@ -41,8 +41,18 @@ export type WriterAuthority = z.infer<typeof WriterAuthoritySchema>;
 export const ProjectionModeSchema = z.enum(['full', 'additive-only']);
 export type ProjectionMode = z.infer<typeof ProjectionModeSchema>;
 
+const ProjectionPolicyActionSchema = z.enum([
+  'create',
+  'update',
+  'cancel',
+  'withdraw',
+  'reconcile',
+]);
+
 export const SourceProjectionPolicySchema = z.object({
   mode: ProjectionModeSchema,
+  allowedActions: z.array(ProjectionPolicyActionSchema).min(1).optional(),
+  allowedPredicates: z.array(z.string().min(1)).min(1).optional(),
   minAcceptedEventsPerRun: z.number().int().nonnegative().optional(),
   maxAcceptedEventsPerRun: z.number().int().positive().optional(),
   maxProjectionActionsPerRun: z.number().int().positive().optional(),

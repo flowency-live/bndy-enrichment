@@ -53,6 +53,12 @@ export function waveOneSources(now = new Date()): GigSource[] {
       runtimeClass: 'standard',
       projectionPolicy: {
         mode: 'additive-only',
+        allowedActions: ['create'],
+        allowedPredicates: [
+          'hasPerformerName', 'hasPerformer', 'hasVenueName', 'occursAt',
+          'occursOn', 'startsAt', 'endsAt', 'hasTitle', 'hasAdmissionStatus',
+          'hasPrice', 'hasTicketUrl', 'hasEventUrl', 'hasStatus',
+        ],
         minAcceptedEventsPerRun: 50,
         maxAcceptedEventsPerRun: 500,
         maxProjectionActionsPerRun: 500,

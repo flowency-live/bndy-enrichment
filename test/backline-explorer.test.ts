@@ -188,4 +188,15 @@ describe('admin API handler', () => {
     const body = JSON.parse(response.body) as { sources: Array<{ id: string }> };
     expect(body.sources.map((source) => source.id)).toEqual(['onthecase-gig-index']);
   });
+
+  it('reports the dynamic global canonical-write control', async () => {
+    const handler = createHandler({
+      reader,
+      loadToken: async () => 'secret-token',
+      projectionControls: { async canonicalWritesEnabled() { return true; } },
+    });
+    const response = await handler(event('/trust-loop', 'secret-token'));
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body)).toMatchObject({ canonicalWritesEnabled: true });
+  });
 });
