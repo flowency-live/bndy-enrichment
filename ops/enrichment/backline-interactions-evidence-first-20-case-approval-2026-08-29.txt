@@ -1,0 +1,21 @@
+Approval record - 20-case Interactions evidence-first qualification capture
+
+Approved by: Jason (Product Owner/CTO)
+Channel: CTO working session (Claude), 2026-08-29
+Words: "Ok, yes to both of those" - covering (1) merging PR 116 and (2) the
+20-case qualification run as proposed: 20 cases, one model call per case,
+one-to-two searches per case, $1.50 total reserved cost, zero canonical
+writes.
+
+Bounds bound to this approval:
+- cases: 20 (existing Trust Loop cohort, 10 Artist + 10 Venue)
+- model calls: exactly 1 per case
+- searches: 1-2 per case (Google Search grounding via Gemini Interactions)
+- per-case reserved cost: $0.05; total reserved: $1.50, hard stop
+- canonical writes: 0; no schedule; provider remains inactive
+- output: ops/enrichment/gemini-interactions-evidence-first-20-case-unreviewed.json (one-shot)
+- contract: docs/INTERACTIONS-EVIDENCE-FIRST-QUALIFICATION-CONTRACT.md
+
+This approval covers exactly one run of the dispatch-gated workflow
+"Capture 20-case Interactions evidence-first qualification". Any re-run
+requires a fresh approval.
