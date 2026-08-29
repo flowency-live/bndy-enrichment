@@ -3,6 +3,7 @@ import { SourceRegistryStore } from '../knowledge/stores/source-registry-store.j
 import { nextScheduledAt } from '../source-runner/schedule.js';
 
 function withNext(source: Omit<GigSource, 'nextScanAt'>, now: Date): GigSource {
+  if (!source.enabled || source.cadence === 'manual') return source;
   const provisional: GigSource = { ...source, nextScanAt: now.toISOString() };
   return { ...provisional, nextScanAt: nextScheduledAt(provisional, now) };
 }
@@ -28,7 +29,12 @@ export function waveOneSources(now = new Date()): GigSource[] {
       type: 'AGGREGATOR',
       url: 'https://gigs-news.uk',
       region: 'Greater Manchester / East Cheshire',
-      cadence: 'weekly',
+      cadence: 'daily',
+      sourceFamily: 'gigs-news',
+      sourceRole: 'coverage-root',
+      scheduleAuthority: 'registry',
+      effectiveCadence: 'daily',
+      maxStalenessHours: 26,
       localTime: '09:00',
       mode: 'append-only',
       snapshotSemantics: 'incremental',
@@ -47,6 +53,11 @@ export function waveOneSources(now = new Date()): GigSource[] {
       url: 'https://docs.google.com/spreadsheets/d/1atEqyN-RI1smTzSaCtMUSui7oNp2dhCpiGoAfY5ySno',
       region: 'Staffordshire / Cheshire',
       cadence: 'daily',
+      sourceFamily: 'klma',
+      sourceRole: 'coverage-root',
+      scheduleAuthority: 'registry',
+      effectiveCadence: 'daily',
+      maxStalenessHours: 26,
       localTime: '09:00',
       authorityClass: 'curated',
       adapter: 'klma-stoke',
@@ -65,32 +76,6 @@ export function waveOneSources(now = new Date()): GigSource[] {
       },
     }, now),
     withNext({
-      ...safeDefaults,
-      id: 'onthecase-daily-import',
-      name: 'On The Case Music',
-      type: 'AGGREGATOR',
-      url: 'https://onthecasemusic.co.uk/gigs',
-      region: 'North East England',
-      cadence: 'daily',
-      localTime: '04:05',
-      authorityClass: 'aggregator',
-      adapter: 'onthecase',
-      runtimeClass: 'browser',
-    }, now),
-    withNext({
-      ...safeDefaults,
-      id: 'sceniceye-daily-import',
-      name: 'sceniceye',
-      type: 'AGGREGATOR',
-      url: 'https://scenicmind.co.uk/sceniceye',
-      region: 'Hampshire',
-      cadence: 'daily',
-      localTime: '09:00',
-      authorityClass: 'aggregator',
-      adapter: 'sceniceye',
-      runtimeClass: 'browser',
-    }, now),
-    withNext({
       // Current Cowork reports fire at ~05:03Z during BST, i.e. ~06:03 local.
       // This bootstrap remains disabled until WP-10 validates the exact minute,
       // acquisition mode and snapshot semantics from the source fixtures/spec.
@@ -100,7 +85,11 @@ export function waveOneSources(now = new Date()): GigSource[] {
       type: 'AGGREGATOR',
       url: 'https://insangel.co.uk',
       region: 'North East England',
-      cadence: 'daily',
+      cadence: 'manual',
+      sourceFamily: 'insangel',
+      sourceRole: 'planned',
+      scheduleAuthority: 'manual',
+      effectiveCadence: 'manual',
       localTime: '06:00',
       mode: 'append-only',
       snapshotSemantics: 'incremental',

@@ -79,4 +79,36 @@ export class SourceRegistryStore {
       },
     }));
   }
+
+  async retireSchedule(sourceId: string, retiredAt: string): Promise<boolean> {
+    const existing = await this.client.send(new GetCommand({
+      TableName: this.tableName,
+      Key: { pk: `SOURCE#${sourceId}`, sk: 'CONFIG' },
+      ProjectionExpression: 'pk',
+    }));
+    if (!existing.Item) return false;
+    await this.client.send(new UpdateCommand({
+      TableName: this.tableName,
+      Key: { pk: `SOURCE#${sourceId}`, sk: 'CONFIG' },
+      UpdateExpression: `SET ${[
+        'enabled = :disabled',
+        'shadow = :shadow',
+        'writerAuthority = :writer',
+        'sourceRole = :role',
+        'scheduleAuthority = :authority',
+        'effectiveCadence = :cadence',
+        'retiredAt = :retiredAt',
+      ].join(', ')} REMOVE nextScanAt, lastScheduledAt, GSI_SCHEDULE_PK, GSI_SCHEDULE_SK`,
+      ExpressionAttributeValues: {
+        ':disabled': false,
+        ':shadow': true,
+        ':writer': 'cowork',
+        ':role': 'planned',
+        ':authority': 'manual',
+        ':cadence': 'manual',
+        ':retiredAt': retiredAt,
+      },
+    }));
+    return true;
+  }
 }

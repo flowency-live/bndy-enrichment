@@ -75,7 +75,8 @@ describe('On The Case production adapter', () => {
     const parsed = parseOnTheCase('<html></html>', 'https://onthecasemusic.co.uk/gigs', run('onthecase-full-reconcile', 'full-reconcile'));
     expect((parsed.nextRequests ?? []).map((r) => r.sourceId)).toEqual(['onthecase-gig-index']);
     expect(ONTHECASE_SOURCES).toHaveLength(6);
-    expect(ONTHECASE_SOURCES.every((s) => !s.enabled && s.shadow && s.writerAuthority === 'cowork')).toBe(true);
+    expect(ONTHECASE_SOURCES.every((s) => s.shadow && s.writerAuthority === 'cowork')).toBe(true);
+    expect(ONTHECASE_SOURCES.filter((s) => s.enabled).map((s) => s.id)).toEqual(['onthecase-gig-index']);
     expect(ONTHECASE_SOURCES.find((s) => s.id === 'onthecase-band-index')?.cadence).toBe('manual');
     expect(ONTHECASE_SOURCES.find((s) => s.id === 'onthecase-venue-index')?.cadence).toBe('manual');
   });

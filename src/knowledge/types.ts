@@ -73,6 +73,15 @@ export type SourceHealth = z.infer<typeof SourceHealthSchema>;
 export const ScheduleCadenceSchema = z.enum(['daily', 'twice-daily', 'weekly', 'manual']);
 export type ScheduleCadence = z.infer<typeof ScheduleCadenceSchema>;
 
+export const SourceRoleSchema = z.enum(['coverage-root', 'child', 'maintenance', 'planned']);
+export type SourceRole = z.infer<typeof SourceRoleSchema>;
+
+export const ScheduleAuthoritySchema = z.enum(['registry', 'eventbridge', 'child', 'manual']);
+export type ScheduleAuthority = z.infer<typeof ScheduleAuthoritySchema>;
+
+export const EffectiveCadenceSchema = z.enum(['hourly', 'twice-daily', 'daily', 'weekly', 'monthly', 'on-discovery', 'manual']);
+export type EffectiveCadence = z.infer<typeof EffectiveCadenceSchema>;
+
 export const LinkedEntitySchema = z.object({
   type: z.enum(['artist', 'venue', 'event']),
   id: z.string().min(1),
@@ -96,6 +105,11 @@ export const GigSourceSchema = z.object({
   region: z.string().optional(),
   timezone: z.string().default('Europe/London'),
   cadence: ScheduleCadenceSchema.default('daily'),
+  sourceFamily: z.string().min(1).optional(),
+  sourceRole: SourceRoleSchema.optional(),
+  scheduleAuthority: ScheduleAuthoritySchema.optional(),
+  effectiveCadence: EffectiveCadenceSchema.optional(),
+  maxStalenessHours: z.number().positive().optional(),
   localTime: TimeOfDaySchema.default('05:00'),
   mode: SourceModeSchema,
   snapshotSemantics: SnapshotSemanticsSchema,
