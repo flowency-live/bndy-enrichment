@@ -2,7 +2,8 @@ name: deploy-capture-pipeline
 
 # One-shot push trigger: creating/changing this workflow deploys the capture pipeline.
 # It can also be run manually later if required.
-# Trigger production deploy and record the Facebook Event Capture acceptance result.
+# Release Send to bndy transport and reliable Backline resolution to production.
+# WhatsApp remains disabled until the protected Meta parameters are configured.
 on:
   workflow_dispatch:
   push:
