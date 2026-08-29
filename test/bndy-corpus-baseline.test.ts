@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCanonicalBaselineClaims, provenanceForRecord, stableJson } from '../src/bndy-baseline/mapper.js';
+import { buildCanonicalBaselineClaims, buildCanonicalRemovalClaims, provenanceForRecord, stableJson } from '../src/bndy-baseline/mapper.js';
 import { entityResolutionItem } from '../src/knowledge/stores/resolution-store.js';
 
 const base = {
@@ -130,5 +130,25 @@ describe('canonical BNDY Backline baseline', () => {
     const first = buildCanonicalBaselineClaims({ ...base, contentHash: 'hash-a', record: { id: 'a1', name: 'Name A' } });
     const second = buildCanonicalBaselineClaims({ ...base, contentHash: 'hash-b', record: { id: 'a1', name: 'Name B' } });
     expect(first.map((claim) => claim.id)).not.toEqual(second.map((claim) => claim.id));
+  });
+
+  it('represents canonical removal as evidence and status rather than deleting history', () => {
+    const claims = buildCanonicalRemovalClaims({
+      changeId: 'change-1',
+      removedAt: '2026-08-29T10:00:00.000Z',
+      sourceId: 'bndy-canonical-artists',
+      entityType: 'artist',
+      canonicalId: 'artist-1',
+      observationId: 'obs-remove',
+      oldRecord: { id: 'artist-1', name: 'Old Name', source: 'join_bndy' },
+      contentHash: 'old-hash',
+    });
+    expect(claims).toEqual(expect.arrayContaining([
+      expect.objectContaining({ predicate: 'hasStatus', value: 'canonical-record-removed' }),
+      expect.objectContaining({
+        predicate: 'derivedFrom',
+        value: expect.objectContaining({ provenance: { classification: 'recoverable-source-label', sourceLabel: 'join_bndy' } }),
+      }),
+    ]));
   });
 });

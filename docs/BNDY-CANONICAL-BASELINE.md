@@ -69,3 +69,5 @@ npm run bndy:baseline -- \
 The command is resumable. Observations and Claims are content-addressed so a changed canonical record encountered during a resumed run creates new immutable evidence rather than overwriting an earlier observation.
 
 A completed run writes `BASELINE#<snapshotId> / META` with exact logical-entity, observation, Claim, Resolution and evidence counts.
+
+The baseline is not the ongoing sync mechanism. See `CANONICAL-CONTINUOUS-HYDRATION.md` for the content-delta catch-up and opt-in DynamoDB stream path that captures canonical changes made after this snapshot.

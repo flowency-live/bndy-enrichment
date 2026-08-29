@@ -30,6 +30,16 @@ function extensionFor(contentType?: string): string {
   return 'bin';
 }
 
+export function sourceObservationEvidenceKey(observation: SourceObservation, extension?: string): string {
+  const observed = new Date(observation.observedAt);
+  if (Number.isNaN(observed.getTime())) throw new Error(`Invalid observedAt: ${observation.observedAt}`);
+  const yyyy = String(observed.getUTCFullYear());
+  const mm = String(observed.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(observed.getUTCDate()).padStart(2, '0');
+  const ext = extension ?? extensionFor(observation.contentType);
+  return `source-observations/${safeSegment(observation.sourceId)}/${yyyy}/${mm}/${dd}/${safeSegment(observation.id)}/raw.${ext}`;
+}
+
 export function sourceObservationItem(observation: SourceObservation): Record<string, unknown> {
   const stored = SourceObservationSchema.parse(observation);
   return {
@@ -51,13 +61,7 @@ export class ObservationStore {
   ) {}
 
   evidenceKey(observation: SourceObservation, extension?: string): string {
-    const observed = new Date(observation.observedAt);
-    if (Number.isNaN(observed.getTime())) throw new Error(`Invalid observedAt: ${observation.observedAt}`);
-    const yyyy = String(observed.getUTCFullYear());
-    const mm = String(observed.getUTCMonth() + 1).padStart(2, '0');
-    const dd = String(observed.getUTCDate()).padStart(2, '0');
-    const ext = extension ?? extensionFor(observation.contentType);
-    return `source-observations/${safeSegment(observation.sourceId)}/${yyyy}/${mm}/${dd}/${safeSegment(observation.id)}/raw.${ext}`;
+    return sourceObservationEvidenceKey(observation, extension);
   }
 
   async put(

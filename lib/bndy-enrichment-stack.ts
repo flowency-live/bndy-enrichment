@@ -11,6 +11,7 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as lambdaDestinations from 'aws-cdk-lib/aws-lambda-destinations';
 
 export class BndyEnrichmentStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -145,6 +146,67 @@ export class BndyEnrichmentStack extends cdk.Stack {
     }));
     entityClaimsTable.grantStreamRead(claimAuthorityStreamWorker);
     table.grantReadWriteData(claimAuthorityStreamWorker);
+
+    // Canonical table streams are opt-in because enabling DynamoDB Streams on
+    // the three legacy production tables and publishing their ARNs are separate
+    // owner-approved production changes. The default stack remains deployable
+    // with this path absent and canonical projection remains globally disabled.
+    const canonicalStreamsContext = this.node.tryGetContext('canonicalChangeStreamsEnabled');
+    const canonicalChangeStreamsEnabled = canonicalStreamsContext === true || canonicalStreamsContext === 'true';
+    if (canonicalChangeStreamsEnabled) {
+      const canonicalChangeDlq = new sqs.Queue(this, 'CanonicalChangeDLQ', {
+        retentionPeriod: cdk.Duration.days(14),
+      });
+      const canonicalChangeWorker = new lambdaNode.NodejsFunction(this, 'CanonicalChangeStreamWorker', {
+        runtime: lambda.Runtime.NODEJS_22_X,
+        entry: 'src/handlers/canonical-change-stream-worker.ts',
+        handler: 'handler',
+        timeout: cdk.Duration.minutes(2),
+        memorySize: 512,
+        environment: {
+          STATE_TABLE: table.tableName,
+          EVIDENCE_BUCKET: evidenceBucket.bucketName,
+        },
+        bundling: { minify: true, sourceMap: true },
+      });
+      table.grantReadWriteData(canonicalChangeWorker);
+      evidenceBucket.grantReadWrite(canonicalChangeWorker);
+
+      for (const [id, tableName, parameterName] of [
+        ['CanonicalArtistsTable', 'bndy-artists', '/bndy/canonical/artists/stream-arn'],
+        ['CanonicalVenuesTable', 'bndy-venues', '/bndy/canonical/venues/stream-arn'],
+        ['CanonicalEventsTable', 'bndy-events', '/bndy/canonical/events/stream-arn'],
+      ] as const) {
+        const streamArn = ssm.StringParameter.valueForStringParameter(this, parameterName);
+        const canonicalTable = dynamodb.Table.fromTableAttributes(this, id, { tableName, tableStreamArn: streamArn });
+        canonicalChangeWorker.addEventSource(new sources.DynamoEventSource(canonicalTable, {
+          startingPosition: lambda.StartingPosition.TRIM_HORIZON,
+          batchSize: 10,
+          maxBatchingWindow: cdk.Duration.seconds(1),
+          retryAttempts: 5,
+          maxRecordAge: cdk.Duration.hours(23),
+          bisectBatchOnError: true,
+          reportBatchItemFailures: true,
+          onFailure: new lambdaDestinations.SqsDestination(canonicalChangeDlq),
+        }));
+        canonicalTable.grantStreamRead(canonicalChangeWorker);
+      }
+
+      new cloudwatch.Alarm(this, 'CanonicalChangeWorkerErrors', {
+        metric: canonicalChangeWorker.metricErrors({ period: cdk.Duration.minutes(5) }),
+        threshold: 1,
+        evaluationPeriods: 1,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
+      new cloudwatch.Alarm(this, 'CanonicalChangeDLQNotEmpty', {
+        metric: canonicalChangeDlq.metricApproximateNumberOfMessagesVisible({ period: cdk.Duration.minutes(5) }),
+        threshold: 1,
+        evaluationPeriods: 1,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
+      new cdk.CfnOutput(this, 'CanonicalChangeStreamWorkerFunctionName', { value: canonicalChangeWorker.functionName });
+      new cdk.CfnOutput(this, 'CanonicalChangeDLQUrl', { value: canonicalChangeDlq.queueUrl });
+    }
 
     const sourceDispatcher = new lambdaNode.NodejsFunction(this, 'SourceDispatcher', {
       runtime: lambda.Runtime.NODEJS_22_X,
