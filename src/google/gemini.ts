@@ -265,32 +265,6 @@ const GroundedEnrichmentResponseSchema = z.object({
   })).max(50),
 });
 
-function groundedEnrichmentResponseSchema(predicates: ClaimPredicate[]): object {
-  return {
-    type: 'object',
-    properties: {
-      identityConfidence: { type: 'number', minimum: 0, maximum: 1 },
-      identityReason: { type: 'string' },
-      facts: {
-        type: 'array',
-        maxItems: 50,
-        items: {
-          type: 'object',
-          properties: {
-            predicate: { type: 'string', enum: predicates },
-            value: { anyOf: [{ type: 'string' }, { type: 'boolean' }] },
-            confidence: { type: 'number', minimum: 0, maximum: 1 },
-            evidenceUrls: { type: 'array', minItems: 1, items: { type: 'string' } },
-            evidenceText: { type: 'string' },
-          },
-          required: ['predicate', 'value', 'confidence', 'evidenceUrls'],
-        },
-      },
-    },
-    required: ['identityConfidence', 'identityReason', 'facts'],
-  };
-}
-
 interface ApiCallResult {
   raw: any;
   text: string;
@@ -563,7 +537,11 @@ export async function enrichTrustLoopEntityWithGemini(input: {
     options.apiKey,
     model,
     buildTrustLoopEnrichmentPrompt({ ...input, requestedPredicates }),
-    groundedEnrichmentResponseSchema(requestedPredicates),
+    // Search grounding already returned prompt-shaped JSON in the successful
+    // qualification captures. Adding response_format made the Interactions API
+    // reject this combined request with invalid_request before model execution.
+    // Keep the working tool call shape and enforce structure with Zod below.
+    undefined,
     60_000,
   );
   const usage = groundedEnrichmentUsage(result, startedAt);
