@@ -5,6 +5,7 @@ import { SqsEntityEnrichmentPublisher } from './enrichment-publisher.js';
 import { DynamoProjectionExceptionSink } from './exception-sink.js';
 import { ProjectionStore } from './projection-store.js';
 import type { ProjectionDependencies } from './engine.js';
+import { DynamoProjectionControlStore } from './control-store.js';
 
 export function createProjectionDependencies(): ProjectionDependencies {
   const tableName = process.env.STATE_TABLE;
@@ -13,6 +14,7 @@ export function createProjectionDependencies(): ProjectionDependencies {
   if (!enrichmentQueueUrl) throw new Error('ENTITY_ENRICHMENT_QUEUE_URL is required');
 
   return {
+    controls: new DynamoProjectionControlStore(tableName),
     sources: new SourceRegistryStore(tableName),
     claims: new ClaimStore(tableName),
     tombstones: new TombstoneStore(tableName),
