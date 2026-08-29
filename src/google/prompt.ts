@@ -65,7 +65,22 @@ FACT SAFETY:
 - Confidence describes the fact itself, separately from identityConfidence.
 - Do not write to any canonical system. This is evidence capture for human qualification only.
 
-Return one JSON object only in the requested schema. Do not use Markdown code fences or prose outside the JSON object.`;
+REQUIRED JSON CONTRACT:
+- Return exactly these top-level keys: identityConfidence, identityReason and facts.
+- identityConfidence must be a number from 0 to 1.
+- identityReason must always be a non-empty string explaining why the identity is safe or why you abstained. It is required even when facts is empty.
+- facts must always be an array. Use [] when no requested fact is identity-safe and publicly evidenced.
+- Every facts item must contain predicate, value, confidence and evidenceUrls.
+- predicate must be one of the requested predicates above.
+- value must be a string or boolean.
+- confidence must be a number from 0 to 1.
+- evidenceUrls must be a non-empty array of public HTTPS URLs returned by Google Search grounding for that fact.
+- evidenceText is optional and, when present, must be a string.
+
+Example abstention shape:
+{"identityConfidence":0.2,"identityReason":"The search results do not safely distinguish this entity from same-name artists.","facts":[]}
+
+Return one JSON object only. Do not use Markdown code fences or prose outside the JSON object.`;
 }
 
 export function buildEntityEnrichmentFollowUpPrompt(entities: EntityEnrichment[]): string {
