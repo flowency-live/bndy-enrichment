@@ -17,6 +17,7 @@
     "capture:probe": "tsx src/cli/capture-probe.ts",
     "source:klma": "tsx src/cli/klma-knowledge.ts",
     "sources:seed-wave1": "tsx src/cli/seed-wave1-sources.ts",
+    "sources:seed-catalog": "tsx src/cli/seed-source-catalog.ts",
     "source:parity": "tsx src/cli/source-parity.ts",
     "enrichment:qualify": "tsx src/cli/qualify-enrichment-provider.ts",
     "lemonrock:bootstrap": "tsx src/cli/lemonrock-bootstrap.ts",
