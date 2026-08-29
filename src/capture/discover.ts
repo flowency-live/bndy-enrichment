@@ -34,7 +34,7 @@ const responseSchema = {
         confidence: { type: 'number', minimum: 0, maximum: 1 },
         evidenceUrls: { type: 'array', items: { type: 'string' } },
       },
-      required: ['name', 'facebookUrl', 'location', 'artistType', 'actTypes', 'confidence', 'evidenceUrls'],
+      required: ['name', 'confidence', 'evidenceUrls'],
     },
     events: {
       type: 'array',
@@ -177,6 +177,7 @@ async function imageInput(capture: CaptureRecord): Promise<any | undefined> {
 export function buildCapturePrompt(capture: CaptureRecord, metadata: string, horizonDays: number): string {
   const today = new Date().toISOString().slice(0, 10);
   const isImage = capture.media?.type === 'image';
+  const isTextOnly = !isImage && !capture.sharedUrl && Boolean(capture.sharedText?.trim());
   const target = classifyCaptureTarget({
     sharedUrl: capture.sharedUrl,
     mimeType: capture.mimeType,
@@ -202,7 +203,12 @@ export function buildCapturePrompt(capture: CaptureRecord, metadata: string, hor
 - If the event is live music, return classification=event and exactly one event row.
 - For classification=event, ALSO populate the top-level artist object for the primary/headline performing artist with the same identity quality required for an artist capture. The tactical BNDY projection path needs that artist object to resolve the canonical artist safely.
 - If more than one act is billed, use the primary/headline act for the top-level artist and describe the exact Facebook event in eventName. Do not invent separate performances for support acts in this tactical path.
-- Facebook metadata may be a login/interstitial page. Login-wall text is not event evidence.` : `FACEBOOK / URL SHARE RULES
+- Facebook metadata may be a login/interstitial page. Login-wall text is not event evidence.` : isTextOnly ? `TEXT EVENT MESSAGE RULES
+- Treat the submitted text as user-supplied event evidence, not as a URL or artist-profile share.
+- Identify the exact live event described by the text. Use grounded search to corroborate the artist, venue, date and time when possible.
+- A complete event message can be classified as event even when it has no public URL.
+- Do not invent missing facts. If the event is credible but a safe canonical match or required event fact is unavailable, return the supported facts and explain the uncertainty.
+- Populate the top-level artist with the strongest supported identity. Do not invent profile fields merely to make a new Artist creatable.` : `PUBLIC URL SHARE RULES
 - The normal case is a Facebook artist/band page shared from a phone.
 - Treat the supplied sharedUrl as the primary identity/provenance for this capture. Do not discard it merely because anonymous Facebook fetching is blocked or Google exposes limited Facebook text.
 - Resolve redirects/share URLs to the canonical artist/page URL when evidence allows.
@@ -234,13 +240,14 @@ ${sourceRules}
 
 For an ARTIST capture, or the primary artist attached to an EVENT capture:
 - identify the exact artist name from its own/official source${isImage ? ' or the supplied poster' : ''};
-- preserve/find the canonical Facebook profile/page URL;
-- location is REQUIRED for creation. Prefer the artist's own About/intro/website. If unavailable, infer a performing region only when repeated venue evidence supports it and use locationType=regional;
-- artistType is REQUIRED: Band, Solo Act, Duo, Trio, Group, DJ, Collective;
-- at least one actType is REQUIRED: Originals, Covers, Tribute Act. Multiple are allowed;
+- preserve/find the canonical Facebook profile/page URL when evidence supports it;
+- prefer the artist's own About/intro/website for location. If unavailable, infer a performing region only when repeated venue evidence supports it and use locationType=regional;
+- provide artistType when supported: Band, Solo Act, Duo, Trio, Group, DJ, Collective;
+- provide actTypes when supported: Originals, Covers, Tribute Act. Multiple are allowed;
 - genres are optional and must use only the controlled enum;
 - bio is optional. Prefer concise factual wording derived from artist-declared/official text. Never fabricate a bio;
 - for an artist-profile capture only, discover upcoming gigs from ${isImage ? 'the poster plus ' : ''}official artist sources, venue/promoter listings and search results. Facebook event pages may be used if indexed publicly.
+- BNDY resolves a safe existing Artist match before deciding whether enough profile data exists to create a new Artist. Return supported identity fields even when optional profile enrichment is incomplete.
 
 EVENT RULES
 - Only output real upcoming live performances supported by evidence.
@@ -256,13 +263,13 @@ EVENT RULES
 - deduplicate the same performance when multiple sources find it.
 
 CLASSIFICATION
-- artist: the shared ${isImage ? 'image' : 'page'} represents a music artist/band/act${isImage ? ', including an artist gig-guide poster' : ''}.
+- artist: the shared content represents a music artist/band/act${isImage ? ', including an artist gig-guide poster' : ''}.
 - venue: it is primarily a music venue rather than an artist.
 - event: it is one specific live-music event rather than an artist profile${isImage ? '/gig guide' : ''}.
 - non_music: clearly unrelated to live music.
 - unsupported: cannot reliably identify the source/entity.
 
-CRITICAL SCHEMA CONTRACT: When classification is "artist" OR "event", the response MUST include a complete artist object. ALL of these fields are REQUIRED in the artist object and will be validated by the schema: name, facebookUrl, location, artistType, actTypes (array with at least one value), confidence, evidenceUrls (array with at least one URL). Missing any required field will cause validation failure. If you cannot confidently determine ALL required fields from available evidence, use classification="unsupported" with a clear reason instead of returning an incomplete artist object.
+CRITICAL SCHEMA CONTRACT: When classification is "artist" OR "event", the response MUST include an artist object with name, confidence and evidenceUrls. Include facebookUrl, location, artistType and actTypes only when supported by evidence. Never guess profile fields merely to satisfy Artist creation requirements.
 
 Return JSON only matching the supplied schema.`;
 }

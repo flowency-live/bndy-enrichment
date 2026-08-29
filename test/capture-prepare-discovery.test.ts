@@ -55,4 +55,18 @@ describe('prepareCaptureForDiscovery', () => {
     const prepared = prepareCaptureForDiscovery(original, 'https://www.facebook.com/login/');
     expect(prepared).toEqual(original);
   });
+
+  it('uses event-message rules for text-only submissions instead of URL-share rules', () => {
+    const prompt = buildCapturePrompt({
+      id: 'capture-text',
+      sharedText: 'The Torrists at Disley Club on 26 September at 9pm',
+      mimeType: 'text/plain',
+      suggestedEntityType: 'event',
+      status: 'processing',
+    }, '', 90);
+
+    expect(prompt).toContain('TEXT EVENT MESSAGE RULES');
+    expect(prompt).toContain('can be classified as event even when it has no public URL');
+    expect(prompt).not.toContain('PUBLIC URL SHARE RULES');
+  });
 });
