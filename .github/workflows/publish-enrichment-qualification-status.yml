@@ -43,12 +43,24 @@ jobs:
       - name: Publish the read-only qualification summary
         env:
           STATE_TABLE: ${{ steps.resources.outputs.state_table }}
-          QUALIFICATION_RUN_URL: https://github.com/flowency-live/bndy-enrichment/actions/runs/33214350278
-          QUALIFICATION_ARTIFACT_URL: https://github.com/flowency-live/bndy-enrichment/blob/main/ops/enrichment/gemini-grounded-unreviewed.json
-          QUALIFICATION_REVIEW_URL: https://github.com/flowency-live/bndy-enrichment/blob/main/ops/enrichment/gemini-grounded-review.md
+          QUALIFICATION_RUN_URL: https://github.com/flowency-live/bndy-enrichment/actions/runs/33264108261
+          QUALIFICATION_ARTIFACT_URL: https://github.com/flowency-live/bndy-enrichment/blob/main/ops/enrichment/gemini-grounded-explicit-contract-20-case-unreviewed.json
+          QUALIFICATION_REVIEW_URL: https://github.com/flowency-live/bndy-enrichment/blob/main/ops/enrichment/gemini-grounded-explicit-contract-20-case-review.md
         run: |
           set -euo pipefail
-          npm run enrichment:qualification:publish | tee qualification-publish.log
+          npm run enrichment:qualification:publish -- ops/enrichment/gemini-grounded-explicit-contract-20-case-unreviewed.json | tee qualification-publish.log
           tail -n 1 qualification-publish.log | jq -e \
-            '.status == "published" and .canonicalWrites == 0 and .cases == 20 and .captureErrors == 20 and .gateStatus == "capture-failed" and .costMeasurement == "unavailable"' \
+            '.status == "published"
+            and .canonicalWrites == 0
+            and .cases == 20
+            and .artistCases == 10
+            and .venueCases == 10
+            and .capturedCases == 20
+            and .captureErrors == 0
+            and .gateStatus == "awaiting-human-review"
+            and .costMeasurement == "complete"
+            and .acceptedFacts == 0
+            and .quarantinedFacts == 67
+            and .highConfidenceCases == 15
+            and .abstainedCases == 5' \
             >/dev/null
