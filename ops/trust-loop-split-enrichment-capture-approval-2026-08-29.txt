@@ -1,0 +1,9 @@
+Backline Trust Layer split-provider qualification approval
+
+Approved: 2026-08-29
+Scope: exactly one bounded 20-case qualification run using the existing 10 Artist and 10 Venue cohort.
+Provider: at most two explicit Google Programmable Search evidence captures followed by one stateless Gemini structured reasoning call per case.
+Budget: maximum reserved cohort cost $0.60, with the existing per-case token, deadline and cost ceilings.
+Outputs: public evidence and qualification results may be committed to bndy-enrichment, published read-only to Godmode and recorded on the workboard.
+Controls: shadow-only, zero canonical writes, no schedule and no provider activation.
+Authorisation: explicit Product Owner approval was provided after the production environment received GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID.
