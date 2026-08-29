@@ -211,6 +211,31 @@ describe('ClaimStore', () => {
     expect(ids).toEqual(['claim-1', 'claim-2']);
     expect((ddb.commands[0] as QueryCommand).input.KeyConditionExpression).toContain('begins_with');
   });
+
+  it('paginates complete subject reads and rejects silent claim truncation', async () => {
+    const ddb = new FakeDynamo();
+    const first = {
+      ...claim(),
+      GSI2PK: 'SUBJECT#event-candidate#event:klma:123',
+      GSI2SK: '2026-08-20T22:00:00.000Z#claim-1',
+    };
+    const second = {
+      ...claim(),
+      id: 'claim-2',
+      GSI2PK: 'SUBJECT#event-candidate#event:klma:123',
+      GSI2SK: '2026-08-20T22:00:00.000Z#claim-2',
+    };
+    ddb.responses.push(
+      { Items: [first], LastEvaluatedKey: { GSI2PK: first.GSI2PK, GSI2SK: first.GSI2SK } },
+      { Items: [second] },
+    );
+    const store = new ClaimStore('StateTable', ddb);
+
+    await expect(store.listBySubjectComplete('event-candidate', 'event:klma:123', 1))
+      .rejects.toThrow(/Claim safety limit exceeded/);
+    expect(ddb.commands).toHaveLength(2);
+    expect((ddb.commands[1] as QueryCommand).input.ExclusiveStartKey).toBeDefined();
+  });
 });
 
 describe('TombstoneStore', () => {
