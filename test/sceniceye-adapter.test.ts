@@ -9,7 +9,7 @@ const edition = `<html><head><title>Scenic Eye</title></head><body>
 <tr><td>The Example Band</td><td>The Crown, High Street, Winchester, SO23 9AP, England</td><td>7:30 PM - 9:30 PM</td></tr>
 </table></body></html>`;
 
-function run(date: string): SourceRunContext { return { runId: 'run-test', sourceId: 'sceniceye-weekly-listing', startedAt: `${date}T00:00:00.000Z`, runDate: date, reason: 'manual', requestedAt: `${date}T00:00:00.000Z` }; }
+function run(date: string): SourceRunContext { return { runId: 'run-test', sourceId: 'sceniceye-daily-import', startedAt: `${date}T00:00:00.000Z`, runDate: date, reason: 'manual', requestedAt: `${date}T00:00:00.000Z` }; }
 
 describe('Scenic Eye adapter', () => {
   it('derives stable event identity and venue evidence from a weekly edition', () => {
