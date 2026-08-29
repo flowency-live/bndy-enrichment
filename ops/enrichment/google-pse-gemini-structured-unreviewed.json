@@ -1,0 +1,949 @@
+{
+  "schemaVersion": 1,
+  "providerId": "google-pse-gemini-structured-v1",
+  "capturedAt": "2026-08-29T11:28:16.823Z",
+  "sourceManifestGeneratedAt": "2026-08-28T14:31:49.401Z",
+  "reviewStatus": "unreviewed",
+  "qualificationGate": "Human adjudication is required before provider activation",
+  "architecture": "two explicit Google result sets followed by one stateless schema-constrained Gemini call",
+  "cases": 20,
+  "artistCases": 10,
+  "venueCases": 10,
+  "captureErrors": 20,
+  "totalEstimatedCost": 0,
+  "costMeasurement": "unavailable",
+  "measuredUsageCases": 0,
+  "canonicalWrites": 0,
+  "items": [
+    {
+      "caseId": "split-01-artist",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "artist_the-reform",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "gigs-news-daily-import:artist_the-reform",
+        "displayName": "the Reform",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "artist_the-reform"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "4c0d23ec-7062-4d7b-8ed8-735478730df3",
+        "retrievedAt": "2026-08-29T11:28:16.914Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-02-artist",
+      "sourceId": "klma-stoke-gig-list",
+      "sourceCandidateKey": "klma-artist-ff14ed763cec",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "klma-stoke-gig-list:klma-artist-ff14ed763cec",
+        "displayName": "Catalyst",
+        "currentValues": {
+          "sourceId": "klma-stoke-gig-list",
+          "sourceCandidateKey": "klma-artist-ff14ed763cec"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "024feae4-42c0-40e8-acdf-746491ff5c8c",
+        "retrievedAt": "2026-08-29T11:28:16.947Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-03-artist",
+      "sourceId": "lemonrock-artist-hydration",
+      "sourceCandidateKey": "lemonrock:artist:neovenator",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "lemonrock-artist-hydration:lemonrock:artist:neovenator",
+        "displayName": "Neovenator",
+        "currentValues": {
+          "sourceId": "lemonrock-artist-hydration",
+          "sourceCandidateKey": "lemonrock:artist:neovenator"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "4dc74810-14a6-492a-bdaa-843b053145ed",
+        "retrievedAt": "2026-08-29T11:28:16.961Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-04-artist",
+      "sourceId": "onthecase-band-hydration",
+      "sourceCandidateKey": "onthecase:band:1211",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "onthecase-band-hydration:onthecase:band:1211",
+        "displayName": "Jonny Trax",
+        "currentValues": {
+          "sourceId": "onthecase-band-hydration",
+          "sourceCandidateKey": "onthecase:band:1211"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "1f434257-7fc0-4d0c-b249-81a6ea7431f3",
+        "retrievedAt": "2026-08-29T11:28:16.979Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-05-artist",
+      "sourceId": "lemonrock-artist-hydration",
+      "sourceCandidateKey": "lemonrock:artist:thehumbuckers",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "lemonrock-artist-hydration:lemonrock:artist:thehumbuckers",
+        "displayName": "The Humbuckers",
+        "currentValues": {
+          "sourceId": "lemonrock-artist-hydration",
+          "sourceCandidateKey": "lemonrock:artist:thehumbuckers"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "26d6624c-cf21-427d-975c-7ea04d5d9179",
+        "retrievedAt": "2026-08-29T11:28:16.991Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-06-artist",
+      "sourceId": "onthecase-band-hydration",
+      "sourceCandidateKey": "onthecase:band:26683",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "onthecase-band-hydration:onthecase:band:26683",
+        "displayName": "Charlotte Forman",
+        "currentValues": {
+          "sourceId": "onthecase-band-hydration",
+          "sourceCandidateKey": "onthecase:band:26683"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "81cae2fd-618c-469a-9836-695b5a5537ef",
+        "retrievedAt": "2026-08-29T11:28:17.023Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-07-artist",
+      "sourceId": "onthecase-band-hydration",
+      "sourceCandidateKey": "onthecase:band:27822",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "onthecase-band-hydration:onthecase:band:27822",
+        "displayName": "Anna Reay",
+        "currentValues": {
+          "sourceId": "onthecase-band-hydration",
+          "sourceCandidateKey": "onthecase:band:27822"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "df261c6d-8a7c-421a-88f8-6625309e8578",
+        "retrievedAt": "2026-08-29T11:28:17.058Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-08-artist",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "artist_the-select-committee",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "gigs-news-daily-import:artist_the-select-committee",
+        "displayName": "the Select Committee",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "artist_the-select-committee"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "5628837e-dcd6-4e98-830c-afbb53673483",
+        "retrievedAt": "2026-08-29T11:28:17.076Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-09-artist",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "artist_the-tall-faces",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "gigs-news-daily-import:artist_the-tall-faces",
+        "displayName": "the Tall Faces",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "artist_the-tall-faces"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "29d493eb-1e07-4bf0-ae1a-c6203109505d",
+        "retrievedAt": "2026-08-29T11:28:17.097Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-10-artist",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "artist_tom-meighan-raw26",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "artist",
+        "entityId": "gigs-news-daily-import:artist_tom-meighan-raw26",
+        "displayName": "Tom Meighan Raw26",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "artist_tom-meighan-raw26"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasArtistType",
+        "hasActType",
+        "isAcoustic",
+        "hasGenre",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasBandcampUrl",
+        "hasSpotifyUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "12c19a2c-6afc-40b7-998c-a10883c15065",
+        "retrievedAt": "2026-08-29T11:28:17.115Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-11-venue",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "venue_whittles-oldham",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "gigs-news-daily-import:venue_whittles-oldham",
+        "displayName": "Whittles Oldham",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "venue_whittles-oldham"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "6a80b78f-5f2e-4249-b68d-5efd4177aba2",
+        "retrievedAt": "2026-08-29T11:28:17.139Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-12-venue",
+      "sourceId": "klma-stoke-gig-list",
+      "sourceCandidateKey": "klma-venue-fef3609d34f8",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "klma-stoke-gig-list:klma-venue-fef3609d34f8",
+        "displayName": "Shoulder, Fulford",
+        "currentValues": {
+          "sourceId": "klma-stoke-gig-list",
+          "sourceCandidateKey": "klma-venue-fef3609d34f8"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "0274b8cb-ba37-4149-b1ca-b1921858e69f",
+        "retrievedAt": "2026-08-29T11:28:17.171Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-13-venue",
+      "sourceId": "onthecase-gig-index",
+      "sourceCandidateKey": "onthecase:venue:90",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "onthecase-gig-index:onthecase:venue:90",
+        "displayName": "Bebside Inn Blyth",
+        "currentValues": {
+          "sourceId": "onthecase-gig-index",
+          "sourceCandidateKey": "onthecase:venue:90"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "32342aa0-7533-4ece-aede-405e1d77bc63",
+        "retrievedAt": "2026-08-29T11:28:17.181Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-14-venue",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "venue_town-house-festival-oswestry",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "gigs-news-daily-import:venue_town-house-festival-oswestry",
+        "displayName": "Town House Festival Oswestry",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "venue_town-house-festival-oswestry"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "00563ee2-d5f2-4425-a4ad-c064ea8dbc7f",
+        "retrievedAt": "2026-08-29T11:28:17.201Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-15-venue",
+      "sourceId": "onthecase-gig-index",
+      "sourceCandidateKey": "onthecase:venue:915",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "onthecase-gig-index:onthecase:venue:915",
+        "displayName": "Murton Officials Club Seaham",
+        "currentValues": {
+          "sourceId": "onthecase-gig-index",
+          "sourceCandidateKey": "onthecase:venue:915"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "2b2331df-0a08-4ed0-8c81-c65ccd959f1e",
+        "retrievedAt": "2026-08-29T11:28:17.214Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-16-venue",
+      "sourceId": "onthecase-gig-index",
+      "sourceCandidateKey": "onthecase:venue:940",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "onthecase-gig-index:onthecase:venue:940",
+        "displayName": "Crook Hotel Crook",
+        "currentValues": {
+          "sourceId": "onthecase-gig-index",
+          "sourceCandidateKey": "onthecase:venue:940"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "ecac2aa5-0777-46a4-a13d-b28f0bae3c93",
+        "retrievedAt": "2026-08-29T11:28:17.236Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-17-venue",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "venue_the-whitehouse-stalybridge",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "gigs-news-daily-import:venue_the-whitehouse-stalybridge",
+        "displayName": "the Whitehouse Stalybridge",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "venue_the-whitehouse-stalybridge"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "7813fa09-a281-4c06-abe8-0230fce3e70b",
+        "retrievedAt": "2026-08-29T11:28:17.261Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-18-venue",
+      "sourceId": "gigs-news-daily-import",
+      "sourceCandidateKey": "venue_white-hart-woodley",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "gigs-news-daily-import:venue_white-hart-woodley",
+        "displayName": "White Hart Woodley",
+        "currentValues": {
+          "sourceId": "gigs-news-daily-import",
+          "sourceCandidateKey": "venue_white-hart-woodley"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "bd7650ab-ac1c-4d5c-b2e2-9ca875010456",
+        "retrievedAt": "2026-08-29T11:28:17.274Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-19-venue",
+      "sourceId": "klma-stoke-gig-list",
+      "sourceCandidateKey": "klma-venue-f84e844c02e3",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "klma-stoke-gig-list:klma-venue-f84e844c02e3",
+        "displayName": "The Globe, Nantwich",
+        "currentValues": {
+          "sourceId": "klma-stoke-gig-list",
+          "sourceCandidateKey": "klma-venue-f84e844c02e3"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "8200fb92-d782-433e-a8a0-025b5d1dd025",
+        "retrievedAt": "2026-08-29T11:28:17.289Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    },
+    {
+      "caseId": "split-20-venue",
+      "sourceId": "klma-stoke-gig-list",
+      "sourceCandidateKey": "klma-venue-f88c79f4c673",
+      "captureStatus": "error",
+      "entity": {
+        "entityType": "venue",
+        "entityId": "klma-stoke-gig-list:klma-venue-f88c79f4c673",
+        "displayName": "The Roebuck, Chesterton",
+        "currentValues": {
+          "sourceId": "klma-stoke-gig-list",
+          "sourceCandidateKey": "klma-venue-f88c79f4c673"
+        },
+        "ownerManagedPredicates": [],
+        "attachedToUpcomingGig": true
+      },
+      "requestedPredicates": [
+        "hasAddress",
+        "hasLocation",
+        "hasGooglePlaceId",
+        "hasFacebookUrl",
+        "hasWebsiteUrl",
+        "hasInstagramUrl",
+        "hasOfficialUrl",
+        "officialPresenceAttempted"
+      ],
+      "bundle": {
+        "providerId": "google-pse-gemini-structured-v1",
+        "providerRunId": "a5815d41-d9df-4449-bd1f-502da3a09ce5",
+        "retrievedAt": "2026-08-29T11:28:17.308Z",
+        "identityConfidence": 0,
+        "facts": [],
+        "raw": {
+          "captureError": "Google Programmable Search 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"This project does not have the access to Custom Search JSON API.\",\n    \"errors\": [\n      {\n        \"message\": \"This project does not have the access to Custom Search JSON API.\",\n        \"domain\": \"global\",\n        \"reason\": \"forbidden\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
+        }
+      },
+      "review": {
+        "expectedIdentity": null,
+        "adjudicationNotes": null,
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "factJudgements": []
+      },
+      "canonicalWrites": 0
+    }
+  ]
+}
