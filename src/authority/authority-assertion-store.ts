@@ -9,7 +9,7 @@ export function authorityAssertionItem(assertion: AuthorityAssertion): Record<st
   return {
     pk: `AUTHORITY#${parsed.id}`,
     sk: 'META',
-    entityType: 'AuthorityAssertion',
+    recordType: 'AuthorityAssertion',
     ...parsed,
     GSI2PK: `AUTHORITY_ENTITY#${parsed.entityType}#${parsed.entityId}`,
     GSI2SK: `${parsed.updatedAt}#${parsed.id}`,
