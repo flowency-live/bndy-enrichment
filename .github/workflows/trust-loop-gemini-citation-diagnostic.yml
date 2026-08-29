@@ -41,7 +41,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
       - name: Enforce unused one-shot target
-        run: test ! -e ops/enrichment/gemini-native-citation-diagnostic-unreviewed.json
+        run: test ! -e ops/enrichment/gemini-native-citation-diagnostic-request-shape-fix-unreviewed.json
       - name: Load deployed Gemini credential
         run: |
           set -euo pipefail
@@ -61,6 +61,7 @@ jobs:
       - name: Capture exactly one shadow-only diagnostic case
         env:
           GEMINI_MODEL: gemini-3.6-flash
+          ENRICHMENT_DIAGNOSTIC_PATH: ops/enrichment/gemini-native-citation-diagnostic-request-shape-fix-unreviewed.json
         run: |
           set -euo pipefail
           npm run trust-loop:diagnose-gemini-citations | tee trust-loop-gemini-citation-diagnostic.log
@@ -68,14 +69,14 @@ jobs:
             .cases == 1
             and .canonicalWrites == 0
             and .reviewStatus == "unreviewed"
-          ' ops/enrichment/gemini-native-citation-diagnostic-unreviewed.json >/dev/null
+          ' ops/enrichment/gemini-native-citation-diagnostic-request-shape-fix-unreviewed.json >/dev/null
       - name: Record the unreviewed public diagnostic
         run: |
           set -euo pipefail
           git config user.name bndy-backline-bot
           git config user.email actions@users.noreply.github.com
           git pull --rebase --autostash origin main
-          git add ops/enrichment/gemini-native-citation-diagnostic-unreviewed.json
+          git add ops/enrichment/gemini-native-citation-diagnostic-request-shape-fix-unreviewed.json
           git commit -m "Record unreviewed Backline Gemini citation diagnostic"
           git push origin HEAD:main
       - name: Require a completed provider response
@@ -83,4 +84,4 @@ jobs:
           jq -e '
             .contract.exactlyOneModelCall == true
             and .contract.providerResponseCaptured == true
-          ' ops/enrichment/gemini-native-citation-diagnostic-unreviewed.json >/dev/null
+          ' ops/enrichment/gemini-native-citation-diagnostic-request-shape-fix-unreviewed.json >/dev/null
