@@ -25,6 +25,7 @@
     "trust-loop:index": "tsx src/cli/backfill-trust-loop-index.ts",
     "trust-loop:refresh-profiles": "tsx src/cli/refresh-trust-loop-profiles.ts",
     "trust-loop:capture-enrichment": "tsx src/cli/capture-trust-loop-enrichment.ts",
+    "trust-loop:diagnose-gemini-citations": "tsx src/cli/capture-trust-loop-gemini-citation-diagnostic.ts",
     "trust-loop:capture-split-enrichment": "tsx src/cli/capture-trust-loop-split-enrichment.ts",
     "enrichment:qualification:review": "tsx src/cli/render-enrichment-qualification-review.ts",
     "enrichment:qualification:publish": "tsx src/cli/publish-enrichment-qualification-status.ts"

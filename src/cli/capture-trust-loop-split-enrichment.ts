@@ -4,11 +4,9 @@ import { dirname } from 'node:path';
 import { z } from 'zod';
 import { GeminiStructuredEnrichmentReasoner } from '../enrichment/providers/gemini-structured-reasoner.js';
 import { GoogleProgrammableSearchClient } from '../enrichment/providers/google-programmable-search.js';
-import { SerpApiGoogleSearchClient } from '../enrichment/providers/serpapi-google-search.js';
 import {
   SearchModelEnrichmentCaptureError,
   SearchModelEnrichmentProvider,
-  type EnrichmentSearchClient,
 } from '../enrichment/providers/search-model.js';
 import {
   qualificationEntity,
@@ -25,54 +23,30 @@ const ManifestSchema = z.object({
   reviewCases: z.array(TrustLoopReviewCaseSchema),
 });
 
-const searchProvider = process.env.ENRICHMENT_SEARCH_PROVIDER ?? 'google-pse';
-if (!['google-pse', 'serpapi-google'].includes(searchProvider)) {
-  throw new Error(`Unsupported ENRICHMENT_SEARCH_PROVIDER: ${searchProvider}`);
-}
-const isSerpApiGoogle = searchProvider === 'serpapi-google';
-const providerId = isSerpApiGoogle
-  ? 'serpapi-google-gemini-structured-v1'
-  : 'google-pse-gemini-structured-v1';
-const outputStem = isSerpApiGoogle
-  ? 'serpapi-google-gemini-structured'
-  : 'google-pse-gemini-structured';
+const providerId = 'google-pse-gemini-structured-v1';
 const manifestPath = process.env.TRUST_LOOP_MANIFEST_PATH ?? 'ops/trust-loop-v1-manifest.json';
 const outputPath = process.env.ENRICHMENT_CAPTURE_PATH
-  ?? `ops/enrichment/${outputStem}-unreviewed.json`;
+  ?? 'ops/enrichment/google-pse-gemini-structured-unreviewed.json';
 const reviewPath = process.env.ENRICHMENT_REVIEW_PATH
-  ?? `ops/enrichment/${outputStem}-review.md`;
+  ?? 'ops/enrichment/google-pse-gemini-structured-review.md';
+const googleSearchApiKey = process.env.GOOGLE_SEARCH_API_KEY;
+const googleSearchEngineId = process.env.GOOGLE_SEARCH_ENGINE_ID;
 const geminiApiKey = process.env.GEMINI_API_KEY;
+if (!googleSearchApiKey) throw new Error('GOOGLE_SEARCH_API_KEY is required');
+if (!googleSearchEngineId) throw new Error('GOOGLE_SEARCH_ENGINE_ID is required');
 if (!geminiApiKey) throw new Error('GEMINI_API_KEY is required');
 
-const estimatedSearchCost = Number(isSerpApiGoogle
-  ? process.env.SERPAPI_ESTIMATED_COST_PER_QUERY ?? '0'
-  : process.env.GOOGLE_SEARCH_ESTIMATED_COST_PER_QUERY ?? '0.005');
+const estimatedSearchCost = Number(process.env.GOOGLE_SEARCH_ESTIMATED_COST_PER_QUERY ?? '0.005');
 if (!Number.isFinite(estimatedSearchCost) || estimatedSearchCost < 0) {
-  throw new Error('Search estimated cost per query must be a non-negative number');
-}
-
-let searchClient: EnrichmentSearchClient;
-if (isSerpApiGoogle) {
-  const serpApiKey = process.env.SERPAPI_KEY;
-  if (!serpApiKey) throw new Error('SERPAPI_KEY is required');
-  searchClient = new SerpApiGoogleSearchClient({
-    apiKey: serpApiKey,
-    estimatedCostPerSearch: estimatedSearchCost,
-  });
-} else {
-  const googleSearchApiKey = process.env.GOOGLE_SEARCH_API_KEY;
-  const googleSearchEngineId = process.env.GOOGLE_SEARCH_ENGINE_ID;
-  if (!googleSearchApiKey) throw new Error('GOOGLE_SEARCH_API_KEY is required');
-  if (!googleSearchEngineId) throw new Error('GOOGLE_SEARCH_ENGINE_ID is required');
-  searchClient = new GoogleProgrammableSearchClient({
-    apiKey: googleSearchApiKey,
-    engineId: googleSearchEngineId,
-    estimatedCostPerSearch: estimatedSearchCost,
-  });
+  throw new Error('GOOGLE_SEARCH_ESTIMATED_COST_PER_QUERY must be a non-negative number');
 }
 
 const provider = new SearchModelEnrichmentProvider(
-  searchClient,
+  new GoogleProgrammableSearchClient({
+    apiKey: googleSearchApiKey,
+    engineId: googleSearchEngineId,
+    estimatedCostPerSearch: estimatedSearchCost,
+  }),
   new GeminiStructuredEnrichmentReasoner({
     apiKey: geminiApiKey,
     model: process.env.GEMINI_MODEL ?? 'gemini-3.6-flash',
@@ -167,9 +141,7 @@ const artifact = {
   sourceManifestGeneratedAt: manifest.generatedAt,
   reviewStatus: 'unreviewed',
   qualificationGate: 'Human adjudication is required before provider activation',
-  architecture: isSerpApiGoogle
-    ? 'two explicit SerpAPI Google result sets followed by one stateless schema-constrained Gemini call'
-    : 'two explicit Google Programmable Search result sets followed by one stateless schema-constrained Gemini call',
+  architecture: 'two explicit Google result sets followed by one stateless schema-constrained Gemini call',
   cases: cases.length,
   artistCases,
   venueCases,

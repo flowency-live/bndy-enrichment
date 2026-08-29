@@ -4,7 +4,6 @@ import {
   buildGeminiStructuredEnrichmentPrompt,
 } from '../src/enrichment/providers/gemini-structured-reasoner.js';
 import { GoogleProgrammableSearchClient } from '../src/enrichment/providers/google-programmable-search.js';
-import { SerpApiGoogleSearchClient } from '../src/enrichment/providers/serpapi-google-search.js';
 import {
   EnrichmentReasonerCaptureError,
   SearchModelEnrichmentCaptureError,
@@ -78,62 +77,6 @@ describe('Google Programmable Search enrichment client', () => {
       }],
       usage: { estimatedCost: 0.005, durationMs: expect.any(Number) },
     });
-  });
-});
-
-describe('SerpAPI Google Search enrichment client', () => {
-  it('captures one bounded Google result set with deterministic usage', async () => {
-    let requestedUrl: URL | undefined;
-    const fetchImpl = vi.fn(async (input: string | URL | Request) => {
-      requestedUrl = new URL(input.toString());
-      return new Response(JSON.stringify({
-        organic_results: [{
-          title: '  Official   profile  ',
-          link: 'https://example.test/profile',
-          snippet: '  Norwich   live band  ',
-        }, {
-          title: 'Unsafe result',
-          link: 'http://unsafe.example.test/profile',
-        }],
-      }), { status: 200, headers: { 'content-type': 'application/json' } });
-    }) as typeof fetch;
-    const client = new SerpApiGoogleSearchClient({
-      apiKey: 'serpapi-secret',
-      estimatedCostPerSearch: 0,
-      fetchImpl,
-    });
-
-    const result = await client.search('The Example Band Norwich', { maxResults: 50, deadlineMs: 5_000 });
-
-    expect(requestedUrl).toBeDefined();
-    const url = requestedUrl!;
-    expect(url.origin + url.pathname).toBe('https://serpapi.com/search');
-    expect(url.searchParams.get('api_key')).toBe('serpapi-secret');
-    expect(url.searchParams.get('engine')).toBe('google');
-    expect(url.searchParams.get('q')).toBe('The Example Band Norwich');
-    expect(url.searchParams.get('location')).toBe('United Kingdom');
-    expect(url.searchParams.get('google_domain')).toBe('google.co.uk');
-    expect(url.searchParams.get('gl')).toBe('uk');
-    expect(url.searchParams.get('num')).toBe('10');
-    expect(url.searchParams.get('safe')).toBe('active');
-    expect(result).toEqual({
-      results: [{
-        title: 'Official profile',
-        url: 'https://example.test/profile',
-        snippet: 'Norwich live band',
-      }],
-      usage: { estimatedCost: 0, durationMs: expect.any(Number) },
-    });
-  });
-
-  it('fails closed when SerpAPI returns an application error', async () => {
-    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({
-      error: 'Invalid API key',
-    }), { status: 200, headers: { 'content-type': 'application/json' } })) as typeof fetch;
-    const client = new SerpApiGoogleSearchClient({ apiKey: 'serpapi-secret', fetchImpl });
-
-    await expect(client.search('The Example Band Norwich', { maxResults: 5, deadlineMs: 5_000 }))
-      .rejects.toThrow('SerpAPI Google Search error: Invalid API key');
   });
 });
 

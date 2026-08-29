@@ -265,10 +265,37 @@ const GroundedEnrichmentResponseSchema = z.object({
   })).max(50),
 });
 
+function groundedEnrichmentResponseSchema(predicates: ClaimPredicate[]): object {
+  return {
+    type: 'object',
+    properties: {
+      identityConfidence: { type: 'number', minimum: 0, maximum: 1 },
+      identityReason: { type: 'string' },
+      facts: {
+        type: 'array',
+        maxItems: 50,
+        items: {
+          type: 'object',
+          properties: {
+            predicate: { type: 'string', enum: predicates },
+            value: { anyOf: [{ type: 'string' }, { type: 'boolean' }] },
+            confidence: { type: 'number', minimum: 0, maximum: 1 },
+            evidenceUrls: { type: 'array', minItems: 1, items: { type: 'string' } },
+            evidenceText: { type: 'string' },
+          },
+          required: ['predicate', 'value', 'confidence', 'evidenceUrls'],
+        },
+      },
+    },
+    required: ['identityConfidence', 'identityReason', 'facts'],
+  };
+}
+
 interface ApiCallResult {
   raw: any;
   text: string;
   evidence: Evidence[];
+  citedUrls: string[];
   queryCount: number;
   inputTokens?: number;
   outputTokens?: number;
@@ -335,10 +362,11 @@ function parseJsonModelOutput(text: string): unknown {
   }
 }
 
-function extractEvidence(raw: any): { evidence: Evidence[]; queryCount: number } {
+function extractEvidence(raw: any): { evidence: Evidence[]; citedUrls: string[]; queryCount: number } {
   const evidence: Evidence[] = [];
   let queryCount = 0;
   const seen = new Set<string>();
+  const citedUrls = new Set<string>();
 
   const addEvidence = (node: any, snippet?: string) => {
     const url = node?.url ?? node?.uri ?? node?.source?.url;
@@ -363,6 +391,9 @@ function extractEvidence(raw: any): { evidence: Evidence[]; queryCount: number }
       if (item?.type !== 'text' || typeof item.text !== 'string') continue;
       for (const annotation of item.annotations ?? []) {
         if (annotation?.type !== 'url_citation') continue;
+        if (typeof annotation.url === 'string' && /^https?:\/\//.test(annotation.url)) {
+          citedUrls.add(annotation.url);
+        }
         const start = annotation.start_index ?? annotation.startIndex;
         const end = annotation.end_index ?? annotation.endIndex;
         const snippet = Number.isInteger(start) && Number.isInteger(end)
@@ -391,7 +422,7 @@ function extractEvidence(raw: any): { evidence: Evidence[]; queryCount: number }
   };
 
   walk(raw);
-  return { evidence, queryCount };
+  return { evidence, citedUrls: [...citedUrls], queryCount };
 }
 
 async function callGemini(
@@ -411,6 +442,7 @@ async function callGemini(
     body: JSON.stringify({
       model,
       input: prompt,
+      store: false,
       tools: [{ type: 'google_search' }],
       ...(schema ? {
         response_format: { type: 'text', mime_type: 'application/json', schema },
@@ -428,6 +460,7 @@ async function callGemini(
     raw,
     text,
     evidence: extracted.evidence,
+    citedUrls: extracted.citedUrls,
     queryCount: extracted.queryCount,
     inputTokens: raw?.usage?.total_input_tokens ?? raw?.usage?.input_tokens ?? raw?.usageMetadata?.promptTokenCount,
     outputTokens: raw?.usage?.total_output_tokens ?? raw?.usage?.output_tokens ?? raw?.usageMetadata?.candidatesTokenCount,
@@ -530,10 +563,7 @@ export async function enrichTrustLoopEntityWithGemini(input: {
     options.apiKey,
     model,
     buildTrustLoopEnrichmentPrompt({ ...input, requestedPredicates }),
-    // Gemini search grounding emits url_citation annotations on normal text
-    // output. Its structured-output mode may omit those annotations, so this
-    // qualification path relies on prompt-shaped JSON plus strict Zod parsing.
-    undefined,
+    groundedEnrichmentResponseSchema(requestedPredicates),
     60_000,
   );
   const usage = groundedEnrichmentUsage(result, startedAt);
@@ -554,6 +584,9 @@ export async function enrichTrustLoopEntityWithGemini(input: {
         captureError: `Provider response failed the Backline schema: ${message}`,
         responseText: result.text,
         evidence: result.evidence,
+        citedUrls: result.citedUrls,
+        citationCount: result.citedUrls.length,
+        providerResponse: result.raw,
         rejectedFacts: [],
         citationMappings: [],
       },
@@ -564,9 +597,12 @@ export async function enrichTrustLoopEntityWithGemini(input: {
       error,
     );
   }
-  const capturedUrls = new Set(result.evidence.flatMap((item) => {
+  // Only URL citations attached by the provider to model output are admissible
+  // fact evidence. Search-result URLs and model-returned URLs remain visible in
+  // the raw capture, but cannot satisfy Backline provenance by themselves.
+  const capturedUrls = new Set(result.citedUrls.flatMap((sourceUrl) => {
     try {
-      return [safeHttpsEvidenceUrl(item.sourceUrl)];
+      return [safeHttpsEvidenceUrl(sourceUrl)];
     } catch {
       return [];
     }
@@ -649,6 +685,9 @@ export async function enrichTrustLoopEntityWithGemini(input: {
       identityReason: parsed.identityReason,
       response: parsed,
       evidence: result.evidence,
+      citedUrls: result.citedUrls,
+      citationCount: result.citedUrls.length,
+      providerResponse: result.raw,
       rejectedFacts,
       citationMappings,
     },
