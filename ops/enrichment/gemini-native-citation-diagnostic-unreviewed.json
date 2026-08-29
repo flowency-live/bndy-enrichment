@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "providerId": "gemini-grounded-v1",
+  "capturedAt": "2026-08-29T16:11:38.976Z",
+  "sourceManifestGeneratedAt": "2026-08-28T14:31:49.401Z",
+  "purpose": "Verify Gemini structured output plus Google Search returns provider citation annotations",
+  "reviewStatus": "unreviewed",
+  "cases": 1,
+  "canonicalWrites": 0,
+  "case": {
+    "caseId": "diagnostic-01-artist",
+    "sourceId": "gigs-news-daily-import",
+    "sourceCandidateKey": "artist_the-reform",
+    "captureStatus": "error",
+    "entity": {
+      "entityType": "artist",
+      "entityId": "gigs-news-daily-import:artist_the-reform",
+      "displayName": "the Reform",
+      "currentValues": {
+        "sourceId": "gigs-news-daily-import",
+        "sourceCandidateKey": "artist_the-reform"
+      },
+      "ownerManagedPredicates": [],
+      "attachedToUpcomingGig": true
+    },
+    "requestedPredicates": [
+      "hasArtistType",
+      "hasActType",
+      "isAcoustic",
+      "hasGenre",
+      "hasFacebookUrl",
+      "hasWebsiteUrl",
+      "hasInstagramUrl",
+      "hasBandcampUrl",
+      "hasSpotifyUrl",
+      "hasOfficialUrl",
+      "officialPresenceAttempted"
+    ],
+    "bundle": {
+      "providerId": "gemini-grounded-v1",
+      "providerRunId": "e954deef-cad0-4d4b-86e1-30053c5af455",
+      "retrievedAt": "2026-08-29T16:11:38.976Z",
+      "identityConfidence": 0,
+      "facts": [],
+      "raw": {
+        "captureError": "Gemini 400: {\"error\":{\"message\":\"Request contains an invalid argument.\",\"code\":\"invalid_request\"}}"
+      }
+    }
+  },
+  "contract": {
+    "exactlyOneModelCall": false,
+    "requestedAtMostTwoSearches": true,
+    "observedSearches": null,
+    "observedAtMostTwoSearches": false,
+    "citationCount": 0,
+    "providerResponseCaptured": false
+  }
+}
