@@ -9,6 +9,7 @@ import * as sources from 'aws-cdk-lib/aws-lambda-event-sources';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 export class BndyEnrichmentStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -117,6 +118,32 @@ export class BndyEnrichmentStack extends cdk.Stack {
       timeout: cdk.Duration.minutes(5),
       memorySize: 1024,
     };
+
+    // Claim V2 authority is consumed asynchronously from the canonical BNDY
+    // claims table. Raw claimant evidence is transient only; the worker stores
+    // the privacy-minimised AuthorityAssertion defined by ADR-111.
+    const claimStreamArn = ssm.StringParameter.valueForStringParameter(this, '/bndy/claims/stream-arn');
+    const entityClaimsTable = dynamodb.Table.fromTableAttributes(this, 'EntityClaimsTable', {
+      tableName: 'bndy-entity-claims',
+      tableStreamArn: claimStreamArn,
+    });
+    const claimAuthorityStreamWorker = new lambdaNode.NodejsFunction(this, 'ClaimAuthorityStreamWorker', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      entry: 'src/handlers/claim-authority-stream-worker.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+      environment: { STATE_TABLE: table.tableName },
+      bundling: { minify: true, sourceMap: true },
+    });
+    claimAuthorityStreamWorker.addEventSource(new sources.DynamoEventSource(entityClaimsTable, {
+      startingPosition: lambda.StartingPosition.LATEST,
+      batchSize: 10,
+      retryAttempts: 3,
+      bisectBatchOnError: true,
+    }));
+    entityClaimsTable.grantStreamRead(claimAuthorityStreamWorker);
+    table.grantReadWriteData(claimAuthorityStreamWorker);
 
     const sourceDispatcher = new lambdaNode.NodejsFunction(this, 'SourceDispatcher', {
       runtime: lambda.Runtime.NODEJS_22_X,
