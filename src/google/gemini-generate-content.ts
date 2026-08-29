@@ -39,6 +39,22 @@ interface GenerateContentResult {
   outputTokens: number;
 }
 
+function buildGenerateContentGroundingPrompt(input: {
+  entity: CanonicalEntitySnapshot;
+  sourceId: string;
+  sourceCandidateKey: string;
+  requestedPredicates: ClaimPredicate[];
+}): string {
+  return `MANDATORY GENERATECONTENT SEARCH GATE:
+- You MUST invoke the supplied Google Search tool before answering.
+- Execute one or two focused, non-empty Google Search queries for this exact entity.
+- Do not answer from model memory or prior knowledge, even if the entity appears familiar.
+- Return no facts unless the live Google Search evidence supports them.
+- If Google Search is unavailable or cannot be invoked, abstain with identityConfidence 0 and facts [].
+
+${buildTrustLoopEnrichmentPrompt(input)}`;
+}
+
 function safeHttpsUrl(value: string): string {
   const parsed = assertSafeUrl(value);
   if (parsed.protocol !== 'https:') throw new Error(`Grounding evidence must use HTTPS: ${value}`);
@@ -262,9 +278,23 @@ export async function enrichTrustLoopEntityWithGeminiGenerateContent(input: {
   const result = await callGenerateContent(
     options.apiKey,
     model,
-    buildTrustLoopEnrichmentPrompt({ ...input, requestedPredicates }),
+    buildGenerateContentGroundingPrompt({ ...input, requestedPredicates }),
     60_000,
   );
+  if (!result.groundingMetadata) {
+    const message = 'Provider response contained no groundingMetadata after the mandatory Google Search request';
+    throw new GroundedEnrichmentCaptureError(
+      `Gemini GenerateContent grounding failed closed: ${message}`,
+      failureBundle(providerRunId, model, result, startedAt, message),
+    );
+  }
+  if (result.queryCount === 0) {
+    const message = 'Provider groundingMetadata contained no non-empty Google Search query';
+    throw new GroundedEnrichmentCaptureError(
+      `Gemini GenerateContent grounding failed closed: ${message}`,
+      failureBundle(providerRunId, model, result, startedAt, message),
+    );
+  }
   let parsed: z.infer<typeof ProviderResponseSchema>;
   try {
     parsed = ProviderResponseSchema.parse(parseJsonModelOutput(result.text));
