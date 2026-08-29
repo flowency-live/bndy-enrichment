@@ -17,6 +17,15 @@ const EvidenceSchema = z.object({
   sourceDomain: z.string().optional(),
 }).passthrough();
 
+const SearchSchema = z.object({
+  query: z.string().min(1),
+  results: z.array(z.object({
+    title: z.string().min(1),
+    url: z.string().url(),
+    snippet: z.string().optional(),
+  }).passthrough()),
+}).passthrough();
+
 const ReviewArtifactSchema = z.object({
   capturedAt: z.string().min(1),
   cases: z.number().int().positive(),
@@ -44,6 +53,11 @@ const ReviewArtifactSchema = z.object({
         captureError: z.string().optional(),
         rejectedFacts: z.array(RejectedFactSchema).optional(),
         evidence: z.array(EvidenceSchema).optional(),
+        searches: z.array(SearchSchema).optional(),
+        reasoner: z.object({
+          identityReason: z.string().optional(),
+          captureError: z.string().optional(),
+        }).passthrough().optional(),
       }).passthrough().optional(),
     }).passthrough(),
   }).passthrough()),
@@ -98,16 +112,24 @@ export function renderQualificationReview(input: unknown): string {
   for (const item of artifact.items) {
     const raw = item.bundle.raw;
     const rejected = raw?.rejectedFacts ?? [];
-    const capturedEvidence = raw?.evidence?.map((evidence) => evidence.sourceUrl) ?? [];
+    const capturedEvidence = [
+      ...(raw?.evidence?.map((evidence) => evidence.sourceUrl) ?? []),
+      ...(raw?.searches?.flatMap((search) => search.results.map((result) => result.url)) ?? []),
+    ];
     const acceptedEvidence = item.bundle.facts.flatMap((fact) => fact.evidenceUrls);
     const rejectedEvidence = rejected.flatMap((entry) => entry.fact.evidenceUrls);
+    const providerReason = raw?.identityReason
+      ?? raw?.reasoner?.identityReason
+      ?? raw?.captureError
+      ?? raw?.reasoner?.captureError
+      ?? 'None returned';
     lines.push(
       `### ${item.caseId}: ${item.entity.displayName}`,
       '',
       `- Source: ${item.sourceId} / ${item.sourceCandidateKey}`,
       `- Capture status: ${item.captureStatus}`,
       `- Provider identity confidence: ${item.bundle.identityConfidence.toFixed(3)}`,
-      `- Provider reasoning or error: ${escaped(raw?.identityReason ?? raw?.captureError ?? 'None returned')}`,
+      `- Provider reasoning or error: ${escaped(providerReason)}`,
       `- Accepted facts: ${item.bundle.facts.length ? item.bundle.facts.map(factLabel).join('; ') : 'none'}`,
       `- Quarantined facts: ${rejected.length ? rejected.map((entry) => `${factLabel(entry.fact)} [${escaped(entry.reason)}]`).join('; ') : 'none'}`,
       `- Captured provider evidence: ${evidenceLinks(capturedEvidence)}`,

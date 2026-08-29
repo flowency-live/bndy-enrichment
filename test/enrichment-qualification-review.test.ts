@@ -64,4 +64,48 @@ describe('enrichment qualification review', () => {
     expect(review).toContain('Gemini 503: service unavailable');
     expect(review).toContain('cannot project to canonical BNDY');
   });
+
+  it('renders explicit split-search evidence and nested Gemini reasoning', () => {
+    const review = renderQualificationReview({
+      capturedAt: '2026-08-29T11:30:00.000Z',
+      cases: 1,
+      artistCases: 1,
+      venueCases: 0,
+      captureErrors: 0,
+      totalEstimatedCost: 0.012,
+      costMeasurement: 'complete',
+      measuredUsageCases: 1,
+      canonicalWrites: 0,
+      items: [{
+        caseId: 'split-01-artist',
+        sourceId: 'source-a',
+        sourceCandidateKey: 'artist-a',
+        captureStatus: 'captured',
+        entity: { entityType: 'artist', displayName: 'Artist A' },
+        bundle: {
+          identityConfidence: 0.99,
+          facts: [{
+            predicate: 'hasWebsiteUrl',
+            value: 'https://artist.example/',
+            confidence: 0.99,
+            evidenceUrls: ['https://artist.example/'],
+          }],
+          raw: {
+            searches: [{
+              query: 'Artist A official',
+              results: [{
+                title: 'Artist A',
+                url: 'https://artist.example/',
+                snippet: 'Official website',
+              }],
+            }],
+            reasoner: { identityReason: 'The official site and source context agree.' },
+          },
+        },
+      }],
+    });
+
+    expect(review).toContain('https://artist.example/');
+    expect(review).toContain('The official site and source context agree.');
+  });
 });

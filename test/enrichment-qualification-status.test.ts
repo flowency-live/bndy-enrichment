@@ -94,4 +94,39 @@ describe('enrichment qualification status', () => {
       items: [],
     })).toThrow(/item count/i);
   });
+
+  it('publishes nested split-reasoner identity reasoning', () => {
+    const summary = qualificationSummaryFromArtifact({
+      schemaVersion: 1,
+      providerId: 'google-pse-gemini-structured-v1',
+      capturedAt: '2026-08-29T11:30:00.000Z',
+      reviewStatus: 'unreviewed',
+      cases: 1,
+      artistCases: 1,
+      venueCases: 0,
+      captureErrors: 0,
+      totalEstimatedCost: 0.012,
+      costMeasurement: 'complete',
+      measuredUsageCases: 1,
+      canonicalWrites: 0,
+      items: [{
+        caseId: 'split-01-artist',
+        sourceId: 'source-a',
+        captureStatus: 'captured',
+        entity: { entityType: 'artist', displayName: 'Artist A' },
+        bundle: {
+          identityConfidence: 0.99,
+          facts: [],
+          usage: { searches: 2 },
+          raw: { reasoner: { identityReason: 'Exact split-provider identity match.' } },
+        },
+        canonicalWrites: 0,
+      }],
+    });
+
+    expect(summary.reviewCases[0]).toMatchObject({
+      decision: 'review-required',
+      reason: 'Exact split-provider identity match.',
+    });
+  });
 });
