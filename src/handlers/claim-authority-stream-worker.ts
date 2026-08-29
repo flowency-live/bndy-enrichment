@@ -2,10 +2,11 @@ import type { AttributeValue, DynamoDBRecord, DynamoDBStreamEvent } from 'aws-la
 import { mapClaimV2ToAuthorityAssertion, type ClaimV2AuthorityInput } from '../authority/claim-authority.js';
 import { AuthorityAssertionStore } from '../authority/authority-assertion-store.js';
 
-const STATE_TABLE = process.env.STATE_TABLE;
-if (!STATE_TABLE) throw new Error('STATE_TABLE is required');
-
-const store = new AuthorityAssertionStore(STATE_TABLE);
+function getStore(): AuthorityAssertionStore {
+  const tableName = process.env.STATE_TABLE;
+  if (!tableName) throw new Error('STATE_TABLE is required');
+  return new AuthorityAssertionStore(tableName);
+}
 
 function decode(value: AttributeValue | undefined): unknown {
   if (!value) return undefined;
@@ -73,7 +74,7 @@ export async function processRecord(record: DynamoDBRecord): Promise<'stored' | 
   if (!claim) return 'ignored';
   const assertion = mapClaimV2ToAuthorityAssertion(claim);
   try {
-    await store.put(assertion);
+    await getStore().put(assertion);
     return 'stored';
   } catch (error) {
     if (isConditionalFailure(error)) return 'duplicate';

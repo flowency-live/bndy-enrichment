@@ -145,7 +145,7 @@ export function mapClaimV2ToAuthorityAssertion(input: ClaimV2AuthorityInput): Au
   const pageUrl = safePublicUrl(pageField(facebook, 'page_url'));
 
   const assertion: AuthorityAssertion = {
-    id: `authority:${input.claim_id}:r${revision}`,
+    id: `authority:${input.claim_id}:r${revision}:${input.status}`,
     claimRequestId: input.claim_id,
     evidenceRevision: revision,
     entityType: input.entity_type,

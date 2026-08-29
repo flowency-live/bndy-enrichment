@@ -84,6 +84,6 @@ describe('Claim V2 authority boundary', () => {
     });
 
     expect(result.ownershipConflict).toBe(true);
-    expect(result.id).toBe('authority:claim-conflict:r1');
+    expect(result.id).toBe('authority:claim-conflict:r1:conflict');
   });
 });
