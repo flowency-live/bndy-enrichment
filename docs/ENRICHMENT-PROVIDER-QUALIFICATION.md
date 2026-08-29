@@ -16,6 +16,31 @@ The minimum cohort is 20 real Backline entities and must include:
 
 The provider must return identity confidence below 0.98 for every expected-park case. A confident false match or an unnecessary park fails the provider. Expected-park cases do not count towards predicate coverage, so no provider is rewarded for inventing facts about an ambiguous entity.
 
+## Split search and reasoning contract
+
+The next qualification adapter separates evidence capture from interpretation:
+
+1. issue at most two explicit Google Programmable Search JSON API requests;
+2. preserve the exact public result title, HTTPS URL, snippet, query, duration and conservative per-query cost;
+3. pass only that fixed evidence allow-list to one stateless Gemini reasoning call;
+4. require Gemini structured output against Backline's JSON schema, with no search tool available to the reasoning call;
+5. reject every predicate outside the request and every citation that is not an exact captured allow-list URL;
+6. preserve response text, public evidence and measured token/cost usage when schema parsing fails;
+7. make zero canonical writes and expose no schedule until the reviewed cohort passes.
+
+The default item ceiling remains two searches, one model call, 12,000 input tokens, 2,000 output tokens, $0.03 estimated cost and 60 seconds. The adapter checks the worst-case reserved Gemini token cost before calling the model and fails closed if search usage, token usage or cost measurement is absent.
+
+The inactive capture command is:
+
+```bash
+GOOGLE_SEARCH_API_KEY=... \
+GOOGLE_SEARCH_ENGINE_ID=... \
+GEMINI_API_KEY=... \
+npm run trust-loop:capture-split-enrichment
+```
+
+Running it is a new external-provider action and requires a fresh bounded approval. Committing the adapter, tests and command does not make a provider call.
+
 ## Run the gate
 
 ```bash
