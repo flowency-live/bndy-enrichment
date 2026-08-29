@@ -95,4 +95,23 @@ describe('search model entity enrichment provider', () => {
       .rejects.toThrow(/does not permit search and reasoning/);
     expect(fx.searched).toHaveLength(0);
   });
+
+  it('fails closed when search cost or duration is not measured', async () => {
+    const searchClient: EnrichmentSearchClient = {
+      id: 'unmeasured-search',
+      async search() {
+        return { results: [] } as any;
+      },
+    };
+    const reasoner: EnrichmentReasoner = {
+      id: 'unused-reasoner',
+      async analyse() {
+        throw new Error('reasoner must not run');
+      },
+    };
+    const provider = new SearchModelEnrichmentProvider(searchClient, reasoner, { id: 'unmeasured' });
+
+    await expect(provider.gather(entity, SAFE_ENRICHMENT_BUDGET, ['hasWebsiteUrl']))
+      .rejects.toThrow(/complete non-negative usage/);
+  });
 });

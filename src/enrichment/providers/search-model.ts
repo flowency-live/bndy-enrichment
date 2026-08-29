@@ -16,7 +16,7 @@ export type EnrichmentSearchResult = {
 
 export type EnrichmentSearchResponse = {
   results: EnrichmentSearchResult[];
-  usage?: {
+  usage: {
     estimatedCost: number;
     durationMs: number;
   };
@@ -47,6 +47,7 @@ export interface EnrichmentReasoner {
     entity: CanonicalEntitySnapshot;
     requestedPredicates: NonNullable<EntityEnrichmentWorkItem['requestedPredicates']>;
     searches: Array<{ query: string; results: EnrichmentSearchResult[] }>;
+    budget: Pick<DiscoveryBudget, 'maxInputTokens' | 'maxOutputTokens' | 'maxEstimatedCost' | 'deadlineMs'>;
   }): Promise<EnrichmentReasonerResult>;
 }
 
@@ -54,6 +55,26 @@ export type SearchModelEnrichmentProviderOptions = {
   id: string;
   maxResultsPerSearch?: number;
 };
+
+export class EnrichmentReasonerCaptureError extends Error {
+  readonly result: EnrichmentReasonerResult;
+
+  constructor(message: string, result: EnrichmentReasonerResult, cause?: unknown) {
+    super(message, { cause });
+    this.name = 'EnrichmentReasonerCaptureError';
+    this.result = result;
+  }
+}
+
+export class SearchModelEnrichmentCaptureError extends Error {
+  readonly bundle: EnrichmentEvidenceBundle;
+
+  constructor(message: string, bundle: EnrichmentEvidenceBundle, cause?: unknown) {
+    super(message, { cause });
+    this.name = 'SearchModelEnrichmentCaptureError';
+    this.bundle = bundle;
+  }
+}
 
 function safeHttpsUrl(value: string): string {
   const url = assertSafeUrl(value);
@@ -99,6 +120,16 @@ function assertWithinBudget(bundle: EnrichmentEvidenceBundle, budget: DiscoveryB
   }
 }
 
+function assertMeasuredSearchUsage(usage: EnrichmentSearchResponse['usage']): void {
+  if (!usage
+    || !Number.isFinite(usage.estimatedCost)
+    || usage.estimatedCost < 0
+    || !Number.isFinite(usage.durationMs)
+    || usage.durationMs < 0) {
+    throw new Error('Enrichment search client must report complete non-negative usage');
+  }
+}
+
 /**
  * Provider-neutral, inactive search plus one-model-call orchestration.
  *
@@ -131,24 +162,50 @@ export class SearchModelEnrichmentProvider implements EntityEnrichmentProvider {
 
     const startedAt = Date.now();
     const queries = buildEnrichmentQueries(entity).slice(0, Math.min(2, budget.maxSearches));
-    const searchResponses: Array<{ query: string; results: EnrichmentSearchResult[]; usage?: EnrichmentSearchResponse['usage'] }> = [];
+    const searchResponses: Array<{ query: string; results: EnrichmentSearchResult[]; usage: EnrichmentSearchResponse['usage'] }> = [];
     for (const query of queries) {
+      const remainingDeadlineMs = budget.deadlineMs - (Date.now() - startedAt);
+      if (remainingDeadlineMs <= 0) throw new Error('Enrichment provider exhausted its deadline before search completed');
       const response = await this.searchClient.search(query, {
         maxResults: this.maxResultsPerSearch,
-        deadlineMs: budget.deadlineMs,
+        deadlineMs: remainingDeadlineMs,
       });
+      assertMeasuredSearchUsage(response.usage);
       const results = response.results.slice(0, this.maxResultsPerSearch).map((result) => ({
         ...result,
         url: safeHttpsUrl(result.url),
       }));
       searchResponses.push({ query, results, usage: response.usage });
+
+      const searchCost = searchResponses.reduce((total, item) => total + item.usage.estimatedCost, 0);
+      if (searchCost >= budget.maxEstimatedCost) {
+        throw new Error('Enrichment search consumed the reserved cost before reasoning');
+      }
     }
 
-    const reasoned = await this.reasoner.analyse({
+    const searchCost = searchResponses.reduce((total, response) => total + response.usage.estimatedCost, 0);
+    const remainingDeadlineMs = budget.deadlineMs - (Date.now() - startedAt);
+    if (remainingDeadlineMs <= 0) throw new Error('Enrichment provider exhausted its deadline before reasoning');
+    const reasonerInput = {
       entity,
       requestedPredicates,
       searches: searchResponses.map(({ query, results }) => ({ query, results })),
-    });
+      budget: {
+        maxInputTokens: budget.maxInputTokens,
+        maxOutputTokens: budget.maxOutputTokens,
+        maxEstimatedCost: budget.maxEstimatedCost - searchCost,
+        deadlineMs: remainingDeadlineMs,
+      },
+    };
+    let reasoned: EnrichmentReasonerResult;
+    let reasonerError: EnrichmentReasonerCaptureError | undefined;
+    try {
+      reasoned = await this.reasoner.analyse(reasonerInput);
+    } catch (error) {
+      if (!(error instanceof EnrichmentReasonerCaptureError)) throw error;
+      reasoned = error.result;
+      reasonerError = error;
+    }
     const citedUrls = new Set(searchResponses.flatMap(({ results }) => results.map(({ url }) => url)));
     for (const fact of reasoned.facts) {
       if (!requestedPredicates.includes(fact.predicate)) {
@@ -159,8 +216,7 @@ export class SearchModelEnrichmentProvider implements EntityEnrichmentProvider {
       }
     }
 
-    const searchCost = searchResponses.reduce((total, response) => total + (response.usage?.estimatedCost ?? 0), 0);
-    const reportedDuration = searchResponses.reduce((total, response) => total + (response.usage?.durationMs ?? 0), 0)
+    const reportedDuration = searchResponses.reduce((total, response) => total + response.usage.durationMs, 0)
       + reasoned.usage.durationMs;
     const bundle = EnrichmentEvidenceBundleSchema.parse({
       providerId: this.id,
@@ -185,6 +241,9 @@ export class SearchModelEnrichmentProvider implements EntityEnrichmentProvider {
       },
     });
     assertWithinBudget(bundle, budget);
+    if (reasonerError) {
+      throw new SearchModelEnrichmentCaptureError(reasonerError.message, bundle, reasonerError);
+    }
     return bundle;
   }
 }
