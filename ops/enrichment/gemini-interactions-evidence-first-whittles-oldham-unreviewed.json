@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "providerId": "gemini-interactions-evidence-first-v1",
+  "capturedAt": "2026-08-29T18:20:12.403Z",
+  "sourceManifestGeneratedAt": "2026-08-28T14:31:49.401Z",
+  "purpose": "Validate exact-segment url_citation admission with deterministic Interactions output on Whittles Oldham",
+  "reviewStatus": "unreviewed",
+  "adapterStatus": "inactive",
+  "cases": 1,
+  "canonicalWrites": 0,
+  "scheduleCreated": false,
+  "providerActivated": false,
+  "maximumReservedCost": 0.05,
+  "estimatedCost": 0.02963275,
+  "actualWithinReservedCost": true,
+  "case": {
+    "caseId": "interactions-evidence-first-01-venue",
+    "sourceId": "gigs-news-daily-import",
+    "sourceCandidateKey": "venue_whittles-oldham",
+    "captureStatus": "captured",
+    "entity": {
+      "entityType": "venue",
+      "entityId": "gigs-news-daily-import:venue_whittles-oldham",
+      "displayName": "Whittles Oldham",
+      "currentValues": {
+        "sourceId": "gigs-news-daily-import",
+        "sourceCandidateKey": "venue_whittles-oldham"
+      },
+      "ownerManagedPredicates": [],
+      "attachedToUpcomingGig": true
+    },
+    "requestedPredicates": [
+      "hasAddress",
+      "hasLocation",
+      "hasGooglePlaceId",
+      "hasFacebookUrl",
+      "hasWebsiteUrl",
+      "hasInstagramUrl",
+      "hasOfficialUrl",
+      "officialPresenceAttempted"
+    ],
+    "bundle": {
+      "providerId": "gemini-interactions-evidence-first-v1",
+      "providerRunId": "5f720481-f54e-4e76-ad26-19b67a555fc7",
+      "retrievedAt": "2026-08-29T18:20:12.402Z",
+      "identityConfidence": 0.99,
+      "facts": [
+        {
+          "predicate": "hasAddress",
+          "value": "57 Roscoe St, Oldham OL1 1EA",
+          "confidence": 0.99,
+          "evidenceUrls": [
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk=",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGLFRug7DmpsK9rD0MgGoDQ5rFg7Rv53h6i_ce_XifYla5b_304xuNZTGp2oVctiStSr87e_GkX0gQmgK1bv1ZNpzvc1nfGLbKLMAVG1kOR-tq2-MY41FEI0Xbvu6uzeu9BZGRNsUCY11tlb0V8AJY986_IBlLmby056PI-dAvEKR8BE7CW80b24hcNbVai1Hceg_3QVMZYFJ5Q7hDX-NhRIbc63Lkaye4C"
+          ],
+          "evidenceText": "The official website and partner listings state the venue address as 57 Roscoe St, Oldham OL1 1EA."
+        },
+        {
+          "predicate": "hasLocation",
+          "value": "Oldham, United Kingdom",
+          "confidence": 0.99,
+          "evidenceUrls": [
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGLFRug7DmpsK9rD0MgGoDQ5rFg7Rv53h6i_ce_XifYla5b_304xuNZTGp2oVctiStSr87e_GkX0gQmgK1bv1ZNpzvc1nfGLbKLMAVG1kOR-tq2-MY41FEI0Xbvu6uzeu9BZGRNsUCY11tlb0V8AJY986_IBlLmby056PI-dAvEKR8BE7CW80b24hcNbVai1Hceg_3QVMZYFJ5Q7hDX-NhRIbc63Lkaye4C",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk="
+          ],
+          "evidenceText": "Event details confirm Whittles is located in Oldham, United Kingdom."
+        },
+        {
+          "predicate": "hasWebsiteUrl",
+          "value": "https://whittlesoldham.com/",
+          "confidence": 0.99,
+          "evidenceUrls": [
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk="
+          ],
+          "evidenceText": "The venue website URL is https://whittlesoldham.com/."
+        },
+        {
+          "predicate": "hasOfficialUrl",
+          "value": "https://whittlesoldham.com/",
+          "confidence": 0.99,
+          "evidenceUrls": [
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk="
+          ],
+          "evidenceText": "The venue official website URL is https://whittlesoldham.com/."
+        },
+        {
+          "predicate": "officialPresenceAttempted",
+          "value": true,
+          "confidence": 0.99,
+          "evidenceUrls": [
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk="
+          ],
+          "evidenceText": "Official web presence was attempted and found for the venue."
+        }
+      ],
+      "usage": {
+        "searches": 2,
+        "fetches": 0,
+        "modelCalls": 1,
+        "inputTokens": 812,
+        "outputTokens": 273,
+        "estimatedCost": 0.02963275,
+        "durationMs": 14252
+      },
+      "raw": {
+        "model": "gemini-3.6-flash",
+        "transport": "interactions",
+        "outputContract": "tab-delimited-evidence-first-v1",
+        "identityReason": "The live music venue Whittles Oldham is established by its official website and event directory listings.",
+        "rawIdentityConfidence": 0.99,
+        "responseText": "IDENTITY\t0.99\t\"The live music venue Whittles Oldham is established by its official website and event directory listings.\"\nFACT\t\"hasAddress\"\t\"57 Roscoe St, Oldham OL1 1EA\"\t0.99\t\"The official website and partner listings state the venue address as 57 Roscoe St, Oldham OL1 1EA.\"\nFACT\t\"hasLocation\"\t\"Oldham, United Kingdom\"\t0.99\t\"Event details confirm Whittles is located in Oldham, United Kingdom.\"\nFACT\t\"hasWebsiteUrl\"\t\"https://whittlesoldham.com/\"\t0.99\t\"The venue website URL is https://whittlesoldham.com/.\"\nFACT\t\"hasOfficialUrl\"\t\"https://whittlesoldham.com/\"\t0.99\t\"The venue official website URL is https://whittlesoldham.com/.\"\nFACT\t\"officialPresenceAttempted\"\ttrue\t0.99\t\"Official web presence was attempted and found for the venue.\"",
+        "queryCount": 2,
+        "citationCount": 6,
+        "citations": [
+          {
+            "start": 0,
+            "end": 276,
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk=",
+            "title": "whittlesoldham.com"
+          },
+          {
+            "start": 0,
+            "end": 276,
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+            "title": "manchesterjazz.com"
+          },
+          {
+            "start": 0,
+            "end": 396,
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGLFRug7DmpsK9rD0MgGoDQ5rFg7Rv53h6i_ce_XifYla5b_304xuNZTGp2oVctiStSr87e_GkX0gQmgK1bv1ZNpzvc1nfGLbKLMAVG1kOR-tq2-MY41FEI0Xbvu6uzeu9BZGRNsUCY11tlb0V8AJY986_IBlLmby056PI-dAvEKR8BE7CW80b24hcNbVai1Hceg_3QVMZYFJ5Q7hDX-NhRIbc63Lkaye4C",
+            "title": "facebook.com"
+          },
+          {
+            "start": 0,
+            "end": 508,
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+            "title": "manchesterjazz.com"
+          },
+          {
+            "start": 0,
+            "end": 630,
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+            "title": "manchesterjazz.com"
+          },
+          {
+            "start": 0,
+            "end": 736,
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk=",
+            "title": "whittlesoldham.com"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "ev_0a9af305c5e2",
+            "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk=",
+            "sourceDomain": "vertexaisearch.cloud.google.com",
+            "title": "whittlesoldham.com",
+            "snippet": "IDENTITY\t0.99\t\"The live music venue Whittles Oldham is established by its official website and event directory listings.\"\nFACT\t\"hasAddress\"\t\"57 Roscoe St, Oldham OL1 1EA\"\t0.99\t\"The official website and partner listings state the venue address as 57 Roscoe St, Oldham OL1 1EA.\"",
+            "supports": []
+          },
+          {
+            "id": "ev_83514ee95ca6",
+            "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+            "sourceDomain": "vertexaisearch.cloud.google.com",
+            "title": "manchesterjazz.com",
+            "snippet": "IDENTITY\t0.99\t\"The live music venue Whittles Oldham is established by its official website and event directory listings.\"\nFACT\t\"hasAddress\"\t\"57 Roscoe St, Oldham OL1 1EA\"\t0.99\t\"The official website and partner listings state the venue address as 57 Roscoe St, Oldham OL1 1EA.\"",
+            "supports": []
+          },
+          {
+            "id": "ev_419cb32e94b5",
+            "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGLFRug7DmpsK9rD0MgGoDQ5rFg7Rv53h6i_ce_XifYla5b_304xuNZTGp2oVctiStSr87e_GkX0gQmgK1bv1ZNpzvc1nfGLbKLMAVG1kOR-tq2-MY41FEI0Xbvu6uzeu9BZGRNsUCY11tlb0V8AJY986_IBlLmby056PI-dAvEKR8BE7CW80b24hcNbVai1Hceg_3QVMZYFJ5Q7hDX-NhRIbc63Lkaye4C",
+            "sourceDomain": "vertexaisearch.cloud.google.com",
+            "title": "facebook.com",
+            "snippet": "IDENTITY\t0.99\t\"The live music venue Whittles Oldham is established by its official website and event directory listings.\"\nFACT\t\"hasAddress\"\t\"57 Roscoe St, Oldham OL1 1EA\"\t0.99\t\"The official website and partner listings state the venue address as 57 Roscoe St, Oldham OL1 1EA.\"\nFACT\t\"hasLocation\"\t\"Oldham, United Kingdom\"\t0.99\t\"Event details confirm Whittles is located in Oldham, United Kingdom.\"",
+            "supports": []
+          }
+        ],
+        "providerResponse": {
+          "status": "completed",
+          "usage": {
+            "total_tokens": 3239,
+            "total_input_tokens": 812,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 812
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 273,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 2154,
+            "grounding_tool_count": [
+              {
+                "type": "google_search",
+                "count": 2,
+                "search_query_count": 2
+              }
+            ],
+            "raw_prompt_token": 8206
+          },
+          "created": "2026-08-29T18:20:12Z",
+          "updated": "2026-08-29T18:20:12Z",
+          "service_tier": "standard",
+          "steps": [
+            {
+              "id": "call_61227",
+              "signature": "EtoGCtcGCAIS0gYBEU0yD6RhxlW/9yOi4r4mfP1hp/JuXImzTMFB59l8/uKSztwi75yCamr4+Sanw34kLFuNHRpoGDNpj9CJt1dMn82KYOuF/DwI1JNcFIDgfdzgNw/ictC3d3MSgpdTEFRgdw8i0gT8h7Zui6wGmWFh9YJ0UeVgV4IDLl0wfs35Fs6NoEpMuIgUDYTDel/svoGDQKhsF5ZfTzvCtIxR0cFzVhvCx2fYGWlioXI+XsbvP/OuzyM4S0uxRNo6waVpWjudkemQ0Uk74N4ZUFe5HKi0a6qZ4pPzEX9/BsLpM9o4FaqWsKIXuZq0/wUV2nrrJv514NDX1vYZ1H+DNScuufP31YnJY9m6weClRdI1R2VEXOlbSDtHRR9q7+//lzvQ6YdoiH6ai7AER5bRm0U1C5/RGrJzJrIZO1jIg1wRYqNkvz5E/GAI17+z1Y3D72atzWtO6jCM631rx0+oLigk0JUG0rMDAppE0XTYhG6NcBWg21NMcwQYmpsu9ZPN8qXrsOpgOtZ2WuhaNPFx+m3LKYFdjbN1tLgNuwYfoyPUW0MNdekv40oKa9M8aQ7OqK28gLcg3XMWg0uob3pM3reHh8y1EzhsFysw8ZThjulL2qAl9oXYIkOMwMCNgzWH2ZgqivZWFlWicD/3CfwLWZyBQEvgbL/mXbi3A3+ugMBQleTDxljn5ommzvvuWCZuIkWQN/Ec1icEtK9A1d9THgovae5RyWf7m3k2eBLa74AHze1DprSv2aTws3aozu7GVB5E0o23kyvf1kOt/Az2uFtNvQDfKj5pjfxXGlo5GeWcL8VeY/U62Q+Lg6GxFQq3vvbVmO7UgV7Ix/mKxy7JQvOng7QXtgBdHUrMe4KkOusMef+f6oDaC7ORDFbB027Xi8bQUoNT+Y34HTOAvbdwXfVyhCrLLo75phabm2JIlrUwBH9BKP/Bz1KZXhaUt8fqBPHFmWoL0SnVTCnq4uiD/YcVykLCo6XSWk0h7PYWdxzqTYKagWbn1tqG8lCQ27OTVLXbxdCXyEL9tBFXIgd239LsA2QzG4Upf5hH3EsvjuU8/FPxJMbqSEYqdNya7VK34U/qJJ6MGWrctHqDiOLfd2wbYmJcIn4a9oKZicx50Mdx2++Xq4Mb",
+              "type": "google_search_call",
+              "arguments": {
+                "queries": [
+                  "Whittles Oldham live music venue official page address",
+                  "Whittles Oldham venue address website facebook instagram"
+                ]
+              },
+              "search_type": "web_search"
+            },
+            {
+              "call_id": "call_61227",
+              "signature": "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",
+              "type": "google_search_result",
+              "result": [
+                {
+                  "search_suggestions": "<style>\n.container {\n  align-items: center;\n  border-radius: 8px;\n  display: flex;\n  font-family: Google Sans, Roboto, sans-serif;\n  font-size: 14px;\n  line-height: 20px;\n  padding: 8px 12px;\n}\n.chip {\n  display: inline-block;\n  border: solid 1px;\n  border-radius: 16px;\n  min-width: 14px;\n  padding: 5px 16px;\n  text-align: center;\n  user-select: none;\n  margin: 0 8px;\n  -webkit-tap-highlight-color: transparent;\n}\n.carousel {\n  overflow: auto;\n  scrollbar-width: none;\n  white-space: nowrap;\n  margin-right: -12px;\n}\n.headline {\n  display: flex;\n  margin-right: 4px;\n}\n.gradient-container {\n  position: relative;\n}\n.gradient {\n  position: absolute;\n  transform: translate(3px, -9px);\n  height: 36px;\n  width: 9px;\n}\n@media (prefers-color-scheme: light) {\n  .container {\n    background-color: #fafafa;\n    box-shadow: 0 0 0 1px #0000000f;\n  }\n  .headline-label {\n    color: #1f1f1f;\n  }\n  .chip {\n    background-color: #ffffff;\n    border-color: #d2d2d2;\n    color: #5e5e5e;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #f2f2f2;\n  }\n  .chip:focus {\n    background-color: #f2f2f2;\n  }\n  .chip:active {\n    background-color: #d8d8d8;\n    border-color: #b6b6b6;\n  }\n  .logo-dark {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #fafafa 15%, #fafafa00 100%);\n  }\n}\n@media (prefers-color-scheme: dark) {\n  .container {\n    background-color: #1f1f1f;\n    box-shadow: 0 0 0 1px #ffffff26;\n  }\n  .headline-label {\n    color: #fff;\n  }\n  .chip {\n    background-color: #2c2c2c;\n    border-color: #3c4043;\n    color: #fff;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #353536;\n  }\n  .chip:focus {\n    background-color: #353536;\n  }\n  .chip:active {\n    background-color: #464849;\n    border-color: #53575b;\n  }\n  .logo-light {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #1f1f1f 15%, #1f1f1f00 100%);\n  }\n}\n</style>\n<div class=\"container\">\n  <div class=\"headline\">\n    <svg class=\"logo-light\" width=\"18\" height=\"18\" viewBox=\"9 9 35 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M42.8622 27.0064C42.8622 25.7839 42.7525 24.6084 42.5487 23.4799H26.3109V30.1568H35.5897C35.1821 32.3041 33.9596 34.1222 32.1258 35.3448V39.6864H37.7213C40.9814 36.677 42.8622 32.2571 42.8622 27.0064V27.0064Z\" fill=\"#4285F4\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 43.8555C30.9659 43.8555 34.8687 42.3195 37.7213 39.6863L32.1258 35.3447C30.5898 36.3792 28.6306 37.0061 26.3109 37.0061C21.8282 37.0061 18.0195 33.9811 16.6559 29.906H10.9194V34.3573C13.7563 39.9841 19.5712 43.8555 26.3109 43.8555V43.8555Z\" fill=\"#34A853\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16.6559 29.8904C16.3111 28.8559 16.1074 27.7588 16.1074 26.6146C16.1074 25.4704 16.3111 24.3733 16.6559 23.3388V18.8875H10.9194C9.74388 21.2072 9.06992 23.8247 9.06992 26.6146C9.06992 29.4045 9.74388 32.022 10.9194 34.3417L15.3864 30.8621L16.6559 29.8904V29.8904Z\" fill=\"#FBBC05\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 16.2386C28.85 16.2386 31.107 17.1164 32.9095 18.8091L37.8466 13.8719C34.853 11.082 30.9659 9.3736 26.3109 9.3736C19.5712 9.3736 13.7563 13.245 10.9194 18.8875L16.6559 23.3388C18.0195 19.2636 21.8282 16.2386 26.3109 16.2386V16.2386Z\" fill=\"#EA4335\"/>\n    </svg>\n    <svg class=\"logo-dark\" width=\"18\" height=\"18\" viewBox=\"0 0 48 48\" xmlns=\"http://www.w3.org/2000/svg\">\n      <circle cx=\"24\" cy=\"23\" fill=\"#FFF\" r=\"22\"/>\n      <path d=\"M33.76 34.26c2.75-2.56 4.49-6.37 4.49-11.26 0-.89-.08-1.84-.29-3H24.01v5.99h8.03c-.4 2.02-1.5 3.56-3.07 4.56v.75l3.91 2.97h.88z\" fill=\"#4285F4\"/>\n      <path d=\"M15.58 25.77A8.845 8.845 0 0 0 24 31.86c1.92 0 3.62-.46 4.97-1.31l4.79 3.71C31.14 36.7 27.65 38 24 38c-5.93 0-11.01-3.4-13.45-8.36l.17-1.01 4.06-2.85h.8z\" fill=\"#34A853\"/>\n      <path d=\"M15.59 20.21a8.864 8.864 0 0 0 0 5.58l-5.03 3.86c-.98-2-1.53-4.25-1.53-6.64 0-2.39.55-4.64 1.53-6.64l1-.22 3.81 2.98.22 1.08z\" fill=\"#FBBC05\"/>\n      <path d=\"M24 14.14c2.11 0 4.02.75 5.52 1.98l4.36-4.36C31.22 9.43 27.81 8 24 8c-5.93 0-11.01 3.4-13.45 8.36l5.03 3.85A8.86 8.86 0 0 1 24 14.14z\" fill=\"#EA4335\"/>\n    </svg>\n    <div class=\"gradient-container\"><div class=\"gradient\"></div></div>\n  </div>\n  <div class=\"carousel\">\n<a class=\"chip\" href=\"https://www.google.com/search?q=Whittles+Oldham+venue+address+website+facebook+instagram&client=app-vertex-grounding&safesearch=active\">Whittles Oldham venue address website facebook instagram</a>\n<a class=\"chip\" href=\"https://www.google.com/search?q=Whittles+Oldham+live+music+venue+official+page+address&client=app-vertex-grounding&safesearch=active\">Whittles Oldham live music venue official page address</a>\n  </div>\n</div>"
+                }
+              ],
+              "is_error": false
+            },
+            {
+              "signature": "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",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "IDENTITY\t0.99\t\"The live music venue Whittles Oldham is established by its official website and event directory listings.\"\nFACT\t\"hasAddress\"\t\"57 Roscoe St, Oldham OL1 1EA\"\t0.99\t\"The official website and partner listings state the venue address as 57 Roscoe St, Oldham OL1 1EA.\"\nFACT\t\"hasLocation\"\t\"Oldham, United Kingdom\"\t0.99\t\"Event details confirm Whittles is located in Oldham, United Kingdom.\"\nFACT\t\"hasWebsiteUrl\"\t\"https://whittlesoldham.com/\"\t0.99\t\"The venue website URL is https://whittlesoldham.com/.\"\nFACT\t\"hasOfficialUrl\"\t\"https://whittlesoldham.com/\"\t0.99\t\"The venue official website URL is https://whittlesoldham.com/.\"\nFACT\t\"officialPresenceAttempted\"\ttrue\t0.99\t\"Official web presence was attempted and found for the venue.\"",
+                  "annotations": [
+                    {
+                      "start_index": 0,
+                      "end_index": 276,
+                      "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk=",
+                      "title": "whittlesoldham.com",
+                      "type": "url_citation"
+                    },
+                    {
+                      "start_index": 0,
+                      "end_index": 276,
+                      "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+                      "title": "manchesterjazz.com",
+                      "type": "url_citation"
+                    },
+                    {
+                      "start_index": 0,
+                      "end_index": 396,
+                      "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGLFRug7DmpsK9rD0MgGoDQ5rFg7Rv53h6i_ce_XifYla5b_304xuNZTGp2oVctiStSr87e_GkX0gQmgK1bv1ZNpzvc1nfGLbKLMAVG1kOR-tq2-MY41FEI0Xbvu6uzeu9BZGRNsUCY11tlb0V8AJY986_IBlLmby056PI-dAvEKR8BE7CW80b24hcNbVai1Hceg_3QVMZYFJ5Q7hDX-NhRIbc63Lkaye4C",
+                      "title": "facebook.com",
+                      "type": "url_citation"
+                    },
+                    {
+                      "start_index": 0,
+                      "end_index": 508,
+                      "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+                      "title": "manchesterjazz.com",
+                      "type": "url_citation"
+                    },
+                    {
+                      "start_index": 0,
+                      "end_index": 630,
+                      "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHuoE7pJvszYOJvNmHCluyXhm22XTX7kk6k0LNY5Lrh73Oe9JAUQcyAIyl-j7VCVT1y5gQODAuakovtAwQVWgFta6P0596cGQbkdgWajvKaqYgKvawgE8q3dDM=",
+                      "title": "manchesterjazz.com",
+                      "type": "url_citation"
+                    },
+                    {
+                      "start_index": 0,
+                      "end_index": 736,
+                      "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg1CeOAPV7wPaeEUpQKAVjhhZRi3wZgzF3-myV3UUqRk6v_pqVlWfeI0p1I8kg4x5oLjclmlYm1xawgRvd7TRO2VwlVg7nLhOe9-l3cbY_BNk=",
+                      "title": "whittlesoldham.com",
+                      "type": "url_citation"
+                    }
+                  ],
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "object": "interaction",
+          "model": "gemini-3.6-flash"
+        },
+        "rejectedFacts": [],
+        "admittedFactSegments": [
+          {
+            "predicate": "hasAddress",
+            "segment": {
+              "start": 122,
+              "end": 276
+            },
+            "text": "FACT\t\"hasAddress\"\t\"57 Roscoe St, Oldham OL1 1EA\"\t0.99\t\"The official website and partner listings state the venue address as 57 Roscoe St, Oldham OL1 1EA.\""
+          },
+          {
+            "predicate": "hasLocation",
+            "segment": {
+              "start": 277,
+              "end": 396
+            },
+            "text": "FACT\t\"hasLocation\"\t\"Oldham, United Kingdom\"\t0.99\t\"Event details confirm Whittles is located in Oldham, United Kingdom.\""
+          },
+          {
+            "predicate": "hasWebsiteUrl",
+            "segment": {
+              "start": 397,
+              "end": 508
+            },
+            "text": "FACT\t\"hasWebsiteUrl\"\t\"https://whittlesoldham.com/\"\t0.99\t\"The venue website URL is https://whittlesoldham.com/.\""
+          },
+          {
+            "predicate": "hasOfficialUrl",
+            "segment": {
+              "start": 509,
+              "end": 630
+            },
+            "text": "FACT\t\"hasOfficialUrl\"\t\"https://whittlesoldham.com/\"\t0.99\t\"The venue official website URL is https://whittlesoldham.com/.\""
+          },
+          {
+            "predicate": "officialPresenceAttempted",
+            "segment": {
+              "start": 631,
+              "end": 736
+            },
+            "text": "FACT\t\"officialPresenceAttempted\"\ttrue\t0.99\t\"Official web presence was attempted and found for the venue.\""
+          }
+        ]
+      }
+    }
+  },
+  "contract": {
+    "outputFormat": "tab-delimited-evidence-first-v1",
+    "modelCallAttempts": 1,
+    "exactlyOneModelCallRequested": true,
+    "exactlyOneModelCallObserved": true,
+    "requestedSearches": {
+      "minimum": 1,
+      "maximum": 2
+    },
+    "observedSearches": 2,
+    "observedWithinRequestedSearches": true,
+    "citationCount": 6,
+    "admittedFacts": 5,
+    "allAdmittedFactsHaveProviderSegmentCitations": true,
+    "providerResponseCaptured": true,
+    "canonicalWrites": 0
+  }
+}
