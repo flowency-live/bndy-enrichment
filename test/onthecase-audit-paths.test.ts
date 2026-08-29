@@ -67,7 +67,7 @@ describe('On The Case manual directory/audit paths', () => {
     expect((parsed.nextRequests ?? []).filter((r) => r.task?.kind === 'gig-inventory-control')).toHaveLength(0);
   });
 
-  it('keeps all registry seeds manual so directory audit paths cannot self-schedule', () => {
+  it('uses one hourly EventBridge root while directory audit paths remain manual', () => {
     const band = ONTHECASE_SOURCES.find((s) => s.id === 'onthecase-band-index');
     const venue = ONTHECASE_SOURCES.find((s) => s.id === 'onthecase-venue-index');
     const full = ONTHECASE_SOURCES.find((s) => s.id === 'onthecase-full-reconcile');
@@ -76,5 +76,9 @@ describe('On The Case manual directory/audit paths', () => {
     expect(venue?.cadence).toBe('manual');
     expect(full?.cadence).toBe('manual');
     expect(gig?.cadence).toBe('manual');
+    expect(gig).toMatchObject({
+      enabled: true, sourceRole: 'coverage-root', scheduleAuthority: 'eventbridge',
+      effectiveCadence: 'hourly', maxStalenessHours: 26,
+    });
   });
 });
