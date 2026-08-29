@@ -92,22 +92,7 @@ describe('Trust Loop enrichment qualification capture', () => {
     const request = JSON.parse((vi.mocked(fetch).mock.calls[0]?.[1] as RequestInit).body as string);
     expect(request.store).toBe(false);
     expect(request.tools).toEqual([{ type: 'google_search' }]);
-    expect(request.response_format).toMatchObject({
-      type: 'text',
-      mime_type: 'application/json',
-      schema: {
-        required: ['identityConfidence', 'identityReason', 'facts'],
-        properties: {
-          facts: {
-            items: {
-              properties: {
-                predicate: { enum: qualificationPredicates('artist') },
-              },
-            },
-          },
-        },
-      },
-    });
+    expect(request).not.toHaveProperty('response_format');
     expect(request.input).toMatch(/at most two Google Search queries/i);
     expect(bundle.raw).toMatchObject({
       citationCount: 1,
