@@ -6,6 +6,20 @@ import { projectWorkItem, type ProjectionDependencies } from '../src/projection/
 
 const candidateKey = 'event:test-source:gig-1';
 
+const allowedPredicates = [
+  'hasPerformerName', 'hasPerformer', 'hasVenueName', 'occursAt', 'occursOn',
+  'startsAt', 'endsAt', 'hasTitle', 'hasAdmissionStatus', 'hasPrice',
+  'hasTicketUrl', 'hasEventUrl', 'hasStatus',
+];
+
+function projectionPolicy(mode: 'full' | 'additive-only' = 'full') {
+  return {
+    mode,
+    allowedActions: ['create', 'update', 'cancel', 'withdraw', 'reconcile'] as Array<'create' | 'update' | 'cancel' | 'withdraw' | 'reconcile'>,
+    allowedPredicates,
+  };
+}
+
 function source(overrides: Partial<GigSource> = {}): GigSource {
   return {
     id: 'test-source',
@@ -24,6 +38,7 @@ function source(overrides: Partial<GigSource> = {}): GigSource {
     enabled: true,
     shadow: false,
     writerAuthority: 'aws',
+    projectionPolicy: projectionPolicy(),
     health: 'healthy',
     ...overrides,
   };
@@ -113,6 +128,7 @@ function deps(options: {
   const primary = options.source ?? source();
 
   const dependencies: ProjectionDependencies = {
+    controls: { async canonicalWritesEnabled() { return true; } },
     sources: {
       async get(sourceId) {
         if (sourceId === primary.id) return primary;
@@ -121,7 +137,7 @@ function deps(options: {
     },
     claims: {
       async get(id) { return claimById.get(id) ?? null; },
-      async listBySubject() { return claims; },
+      async listBySubjectComplete() { return claims; },
       async listSupportClaimIds() { return supportClaims.map((entry) => entry.id); },
       async linkCanonicalEntity(type, id, claimId) { linked.push({ type, id, claimId }); },
     },
@@ -197,6 +213,56 @@ describe('ProjectionEngine', () => {
     expect(result.status).toBe('shadow');
     expect(mockApi.resolveArtist).not.toHaveBeenCalled();
     expect(mockApi.ensureEvent).not.toHaveBeenCalled();
+  });
+
+  it('records would-write evidence and does no BNDY API work while the global control is disabled', async () => {
+    const mockApi = api();
+    const fx = deps({ api: mockApi });
+    fx.dependencies.controls = { async canonicalWritesEnabled() { return false; } };
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result).toMatchObject({ status: 'shadow', message: 'global canonical projection is disabled' });
+    expect(mockApi.resolveArtist).not.toHaveBeenCalled();
+    expect(mockApi.ensureEvent).not.toHaveBeenCalled();
+    expect(fx.successes).toContainEqual(expect.arrayContaining([
+      expect.anything(), expect.anything(), 'shadow', expect.objectContaining({ wouldWrite: 'create' }),
+    ]));
+  });
+
+  it('retries without writing if the global control cannot be read', async () => {
+    const mockApi = api();
+    const fx = deps({ api: mockApi });
+    fx.dependencies.controls = { async canonicalWritesEnabled() { throw new Error('Dynamo unavailable'); } };
+
+    await expect(projectWorkItem(item('create'), fx.dependencies)).rejects.toThrow(/control could not be read/i);
+    expect(mockApi.resolveArtist).not.toHaveBeenCalled();
+    expect(fx.failures).toHaveLength(1);
+  });
+
+  it('fails closed if a live source has no explicit projection policy', async () => {
+    const mockApi = api();
+    const fx = deps({ source: source({ projectionPolicy: undefined }), api: mockApi });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result).toMatchObject({ status: 'exception' });
+    expect(result.message).toContain('requires explicit action and predicate allowlists');
+    expect(mockApi.resolveArtist).not.toHaveBeenCalled();
+  });
+
+  it('fails closed if a Claim predicate is outside the live source allowlist', async () => {
+    const mockApi = api();
+    const fx = deps({
+      source: source({ projectionPolicy: { ...projectionPolicy(), allowedPredicates: ['hasStatus'] } }),
+      api: mockApi,
+    });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result).toMatchObject({ status: 'exception' });
+    expect(result.message).toContain('Projection predicate allowlist blocks');
+    expect(mockApi.resolveArtist).not.toHaveBeenCalled();
   });
 
   it('active tombstone blocks recreation from a curated source', async () => {
@@ -303,7 +369,7 @@ describe('ProjectionEngine', () => {
   it('blocks non-create work before any BNDY API call for an additive-only source', async () => {
     const mockApi = api();
     const fx = deps({
-      source: source({ projectionPolicy: { mode: 'additive-only' } }),
+      source: source({ projectionPolicy: projectionPolicy('additive-only') }),
       api: mockApi,
     });
     const result = await projectWorkItem(item('update'), fx.dependencies);
@@ -318,14 +384,14 @@ describe('ProjectionEngine', () => {
   it('fails closed if live KLMA projection has no explicit policy', async () => {
     const mockApi = api();
     const fx = deps({
-      source: source({ id: 'klma-stoke-gig-list' }),
+      source: source({ id: 'klma-stoke-gig-list', projectionPolicy: undefined }),
       api: mockApi,
     });
     const klmaItem = { ...item('create'), sourceId: 'klma-stoke-gig-list' };
     const result = await projectWorkItem(klmaItem, fx.dependencies);
 
     expect(result.status).toBe('exception');
-    expect(result.message).toContain('requires an explicit source projection policy');
+    expect(result.message).toContain('requires explicit action and predicate allowlists');
     expect(mockApi.resolveArtist).not.toHaveBeenCalled();
     expect(mockApi.ensureEvent).not.toHaveBeenCalled();
   });
@@ -337,7 +403,7 @@ describe('ProjectionEngine', () => {
       ensureEvent: vi.fn(async () => ({ id: 'event-1', created: false, duplicate: true })),
     });
     const fx = deps({
-      source: source({ projectionPolicy: { mode: 'additive-only' } }),
+      source: source({ projectionPolicy: projectionPolicy('additive-only') }),
       api: mockApi,
     });
     const result = await projectWorkItem(item('create'), fx.dependencies);
@@ -363,7 +429,7 @@ describe('ProjectionEngine', () => {
       resolveVenue: vi.fn(async () => ({ id: 'venue-1', created: false })),
     });
     const fx = deps({
-      source: source({ projectionPolicy: { mode: 'additive-only' } }),
+      source: source({ projectionPolicy: projectionPolicy('additive-only') }),
       tombstone,
       api: mockApi,
     });
