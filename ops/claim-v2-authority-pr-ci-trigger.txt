@@ -1,0 +1,1 @@
+Full PR CI validation trigger for Claim V2 authority boundary.
