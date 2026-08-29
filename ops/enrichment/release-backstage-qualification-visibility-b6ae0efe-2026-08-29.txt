@@ -1,0 +1,8 @@
+Approved Backstage Amplify release marker
+
+Backstage source commit: b6ae0efeb03c59cf0db7b66e1e5ea230b039dd55
+Release count authorised: one
+Scope: read-only UI only
+Provider calls: zero
+Canonical writes: zero
+Approved date: 2026-08-29
