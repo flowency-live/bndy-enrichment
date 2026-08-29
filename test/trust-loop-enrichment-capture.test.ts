@@ -94,6 +94,10 @@ describe('Trust Loop enrichment qualification capture', () => {
     expect(request.tools).toEqual([{ type: 'google_search' }]);
     expect(request).not.toHaveProperty('response_format');
     expect(request.input).toMatch(/at most two Google Search queries/i);
+    expect(request.input).toMatch(/exactly these top-level keys: identityConfidence, identityReason and facts/i);
+    expect(request.input).toMatch(/identityReason must always be a non-empty string/i);
+    expect(request.input).toMatch(/facts must always be an array/i);
+    expect(request.input).toContain('{"identityConfidence":0.2,"identityReason":');
     expect(bundle.raw).toMatchObject({
       citationCount: 1,
       citedUrls: [evidenceUrl],
