@@ -1,0 +1,7 @@
+Purpose: publish the latest failed qualification status through the verified pull-request close trigger.
+Source run: https://github.com/flowency-live/bndy-enrichment/actions/runs/33214350278
+Expected gate: capture-failed
+Expected cases: 20 attempted, 20 errors, 0 accepted facts
+Cost measurement: unavailable
+Canonical writes: 0
+Provider schedule: disabled
