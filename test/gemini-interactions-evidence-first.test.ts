@@ -38,7 +38,7 @@ function run() {
 }
 
 describe('Gemini Interactions evidence-first adapter', () => {
-  it('admits a fact only when a provider url_citation overlaps its exact FACT line', async () => {
+  it('admits a fact only when a provider url_citation ends within its exact FACT line', async () => {
     const identity = 'IDENTITY\t0.99\t"Official evidence establishes the exact Oldham venue."';
     const fact = 'FACT\t"hasAddress"\t"57 Roscoe St, Oldham OL1 1EA"\t0.99\t"The official venue page states this address."';
     const text = `${identity}\n${fact}`;
@@ -96,7 +96,29 @@ describe('Gemini Interactions evidence-first adapter', () => {
     expect(bundle.raw).toMatchObject({
       citationCount: 1,
       rejectedFacts: [expect.objectContaining({
-        reason: 'no provider url_citation overlaps the exact FACT output segment',
+        reason: 'no provider url_citation ends within the exact FACT output segment',
+      })],
+    });
+  });
+
+  it('does not leak a cumulative citation backwards into an earlier FACT line', async () => {
+    const identity = 'IDENTITY\t0.99\t"Official evidence establishes the exact Oldham venue."';
+    const address = 'FACT\t"hasAddress"\t"57 Roscoe St, Oldham OL1 1EA"\t0.99\t"The address is stated."';
+    const location = 'FACT\t"hasLocation"\t"Oldham, United Kingdom"\t0.99\t"The location is stated."';
+    const text = `${identity}\n${address}\n${location}`;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(text, [{
+      type: 'url_citation',
+      url: 'https://whittlesoldham.example/contact',
+      startIndex: 0,
+      endIndex: text.length,
+    }])));
+
+    const bundle = await run();
+
+    expect(bundle.facts).toEqual([expect.objectContaining({ predicate: 'hasLocation' })]);
+    expect(bundle.raw).toMatchObject({
+      rejectedFacts: [expect.objectContaining({
+        fact: expect.objectContaining({ predicate: 'hasAddress' }),
       })],
     });
   });
