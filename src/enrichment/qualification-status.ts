@@ -15,6 +15,10 @@ const QualificationItemSchema = z.object({
       rejectedFacts: z.array(z.unknown()).optional(),
       captureError: z.string().optional(),
       identityReason: z.string().optional(),
+      reasoner: z.object({
+        captureError: z.string().optional(),
+        identityReason: z.string().optional(),
+      }).passthrough().optional(),
     }).passthrough().optional(),
   }).passthrough(),
   canonicalWrites: z.literal(0),
@@ -102,7 +106,12 @@ export function qualificationSummaryFromArtifact(
       acceptedFacts: acceptedFactsForCase,
       quarantinedFacts: quarantinedFactsForCase,
       decision,
-      reason: (item.bundle.raw?.captureError ?? item.bundle.raw?.identityReason)?.slice(0, 500),
+      reason: (
+        item.bundle.raw?.captureError
+        ?? item.bundle.raw?.identityReason
+        ?? item.bundle.raw?.reasoner?.captureError
+        ?? item.bundle.raw?.reasoner?.identityReason
+      )?.slice(0, 500),
     };
   });
   const gateStatus: QualificationGateStatus = artifact.captureErrors > 0
