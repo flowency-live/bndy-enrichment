@@ -22,27 +22,64 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
-      - name: Start and verify the Backstage release
+      - name: Start or join the approved Backstage release
         env:
           AMPLIFY_APP_ID: d3hbhqxqqchzbb
           AMPLIFY_BRANCH: main
+          EXPECTED_COMMIT: b6ae0efeb03c59cf0db7b66e1e5ea230b039dd55
         run: |
           set -euo pipefail
-          JOB_ID=$(aws amplify start-job \
+
+          JOBS=$(aws amplify list-jobs \
             --app-id "$AMPLIFY_APP_ID" \
             --branch-name "$AMPLIFY_BRANCH" \
-            --job-type RELEASE \
-            --query 'jobSummary.jobId' \
-            --output text)
-          echo "Amplify job: $JOB_ID"
+            --max-results 50 \
+            --output json)
+
+          ACTIVE_JOB=$(jq -c '.jobSummaries | map(select(.status == "PENDING" or .status == "RUNNING")) | first // {}' <<<"$JOBS")
+          ACTIVE_ID=$(jq -r '.jobId // empty' <<<"$ACTIVE_JOB")
+          ACTIVE_COMMIT=$(jq -r '.commitId // empty' <<<"$ACTIVE_JOB")
+
+          MATCHING_JOB=$(jq -c --arg commit "$EXPECTED_COMMIT" '.jobSummaries | map(select(.commitId == $commit)) | first // {}' <<<"$JOBS")
+          MATCHING_ID=$(jq -r '.jobId // empty' <<<"$MATCHING_JOB")
+          MATCHING_STATUS=$(jq -r '.status // empty' <<<"$MATCHING_JOB")
+
+          if [[ -n "$ACTIVE_ID" ]]; then
+            if [[ "$ACTIVE_COMMIT" != "$EXPECTED_COMMIT" ]]; then
+              echo "Amplify job $ACTIVE_ID is active for unrelated commit $ACTIVE_COMMIT; refusing to start another release" >&2
+              exit 2
+            fi
+            JOB_ID="$ACTIVE_ID"
+            echo "Joining existing approved Amplify job: $JOB_ID"
+          elif [[ -n "$MATCHING_ID" && "$MATCHING_STATUS" == "SUCCEED" ]]; then
+            echo "Approved Backstage commit is already live via Amplify job: $MATCHING_ID"
+            exit 0
+          else
+            JOB_ID=$(aws amplify start-job \
+              --app-id "$AMPLIFY_APP_ID" \
+              --branch-name "$AMPLIFY_BRANCH" \
+              --job-type RELEASE \
+              --query 'jobSummary.jobId' \
+              --output text)
+            echo "Started approved Amplify job: $JOB_ID"
+          fi
+
           for ATTEMPT in $(seq 1 90); do
-            STATUS=$(aws amplify get-job \
+            SUMMARY=$(aws amplify get-job \
               --app-id "$AMPLIFY_APP_ID" \
               --branch-name "$AMPLIFY_BRANCH" \
               --job-id "$JOB_ID" \
-              --query 'job.summary.status' \
-              --output text)
-            echo "poll=$ATTEMPT status=$STATUS"
+              --query 'job.summary' \
+              --output json)
+            STATUS=$(jq -r '.status' <<<"$SUMMARY")
+            COMMIT=$(jq -r '.commitId // empty' <<<"$SUMMARY")
+            echo "poll=$ATTEMPT job=$JOB_ID status=$STATUS commit=$COMMIT"
+
+            if [[ -n "$COMMIT" && "$COMMIT" != "$EXPECTED_COMMIT" ]]; then
+              echo "Amplify job $JOB_ID resolved to unexpected commit $COMMIT" >&2
+              exit 3
+            fi
+
             case "$STATUS" in
               SUCCEED) exit 0 ;;
               FAILED|CANCELLED) exit 1 ;;
