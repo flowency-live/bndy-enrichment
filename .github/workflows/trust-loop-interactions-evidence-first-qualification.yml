@@ -1,0 +1,86 @@
+name: Capture 20-case Interactions evidence-first qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type "Run the approved 20-case Interactions evidence-first qualification"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: trust-loop-interactions-evidence-first-qualification
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      && github.event.inputs.confirmation == 'Run the approved 20-case Interactions evidence-first qualification'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Enforce unused one-shot target
+        run: test ! -e ops/enrichment/gemini-interactions-evidence-first-20-case-unreviewed.json
+      - name: Require the recorded approval artefact
+        run: test -s ops/enrichment/backline-interactions-evidence-first-20-case-approval-2026-08-29.txt
+      - name: Load deployed Gemini credential
+        run: |
+          set -euo pipefail
+          SECRET_ARN=$(aws cloudformation describe-stacks \
+            --stack-name BndyEnrichmentStack \
+            --query "Stacks[0].Outputs[?OutputKey=='GeminiSecretArn'].OutputValue | [0]" \
+            --output text)
+          test -n "$SECRET_ARN"
+          test "$SECRET_ARN" != "None"
+          GEMINI_API_KEY=$(aws secretsmanager get-secret-value \
+            --secret-id "$SECRET_ARN" \
+            --query SecretString \
+            --output text | jq -r '.apiKey // empty')
+          test -n "$GEMINI_API_KEY"
+          echo "::add-mask::$GEMINI_API_KEY"
+          echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> "$GITHUB_ENV"
+      - name: Capture the approved shadow-only 20-case qualification cohort
+        env:
+          GEMINI_MODEL: gemini-3.6-flash
+          ENRICHMENT_QUALIFICATION_PATH: ops/enrichment/gemini-interactions-evidence-first-20-case-unreviewed.json
+        run: |
+          set -euo pipefail
+          npm run trust-loop:qualify-interactions-evidence-first | tee interactions-qualification.log
+          jq -e '
+            .cases == 20
+            and .canonicalWrites == 0
+            and .reviewStatus == "unreviewed"
+            and .adapterStatus == "inactive"
+            and .scheduleCreated == false
+            and .providerActivated == false
+            and .maximumReservedCost == 1.5
+            and .actualWithinReservedCost == true
+          ' ops/enrichment/gemini-interactions-evidence-first-20-case-unreviewed.json >/dev/null
+      - name: Commit the public cohort response or exact failure
+        if: always()
+        run: |
+          set -euo pipefail
+          test -e ops/enrichment/gemini-interactions-evidence-first-20-case-unreviewed.json || exit 0
+          git config user.name bndy-backline-bot
+          git config user.email actions@users.noreply.github.com
+          git pull --rebase --autostash origin main
+          git add ops/enrichment/gemini-interactions-evidence-first-20-case-unreviewed.json
+          git commit -m "Record Interactions evidence-first 20-case qualification capture"
+          git push origin HEAD:main
