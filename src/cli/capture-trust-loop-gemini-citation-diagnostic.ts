@@ -62,6 +62,7 @@ try {
 const raw = bundle.raw && typeof bundle.raw === 'object'
   ? bundle.raw as Record<string, unknown>
   : {};
+const captureError = typeof raw.captureError === 'string' ? raw.captureError : undefined;
 const artifact = {
   schemaVersion: 1,
   providerId: 'gemini-grounded-v1',
@@ -99,5 +100,6 @@ console.log(JSON.stringify({
   modelCalls: bundle.usage?.modelCalls ?? 0,
   searches: bundle.usage?.searches ?? null,
   citationCount: artifact.contract.citationCount,
+  captureError,
   outputPath,
 }));
