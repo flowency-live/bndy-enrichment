@@ -1,0 +1,1 @@
+Full PR CI validation for Claim V2 authority boundary.
