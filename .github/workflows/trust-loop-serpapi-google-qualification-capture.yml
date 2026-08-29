@@ -1,0 +1,126 @@
+name: Capture SerpAPI Google Trust Loop qualification cohort
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: trust-loop-serpapi-google-qualification-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    if: contains(github.event.head_commit.message, 'Capture Backline SerpAPI Google qualification cohort')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Enforce approved one-shot scope
+        run: |
+          set -euo pipefail
+          test ! -e ops/enrichment/serpapi-google-gemini-structured-unreviewed.json
+          test ! -e ops/enrichment/serpapi-google-gemini-structured-review.md
+      - name: Load deployed Gemini credential
+        run: |
+          set -euo pipefail
+          SECRET_ARN=$(aws cloudformation describe-stacks \
+            --stack-name BndyEnrichmentStack \
+            --query "Stacks[0].Outputs[?OutputKey=='GeminiSecretArn'].OutputValue | [0]" \
+            --output text)
+          test -n "$SECRET_ARN"
+          test "$SECRET_ARN" != "None"
+          GEMINI_API_KEY=$(aws secretsmanager get-secret-value \
+            --secret-id "$SECRET_ARN" \
+            --query SecretString \
+            --output text | jq -r '.apiKey // empty')
+          test -n "$GEMINI_API_KEY"
+          echo "::add-mask::$GEMINI_API_KEY"
+          echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> "$GITHUB_ENV"
+      - name: Capture approved bounded Google-result cases
+        env:
+          ENRICHMENT_SEARCH_PROVIDER: serpapi-google
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          SERPAPI_ESTIMATED_COST_PER_QUERY: "0"
+          GEMINI_MODEL: gemini-3.6-flash
+        run: |
+          set -euo pipefail
+          test -n "$SERPAPI_KEY"
+          test -n "$GEMINI_API_KEY"
+          echo "::add-mask::$SERPAPI_KEY"
+          npm run trust-loop:capture-split-enrichment | tee trust-loop-serpapi-google-capture.log
+          jq -e '
+            .providerId == "serpapi-google-gemini-structured-v1"
+            and .cases == 20
+            and .artistCases == 10
+            and .venueCases == 10
+            and ([.items[].bundle.usage.searches // 0] | add) <= 40
+            and .canonicalWrites == 0
+            and .reviewStatus == "unreviewed"
+            and .totalEstimatedCost <= 0.60
+          ' ops/enrichment/serpapi-google-gemini-structured-unreviewed.json >/dev/null
+      - name: Record the unreviewed public evidence cohort
+        run: |
+          set -euo pipefail
+          git config user.name bndy-backline-bot
+          git config user.email actions@users.noreply.github.com
+          git pull --rebase --autostash origin main
+          git add \
+            ops/enrichment/serpapi-google-gemini-structured-unreviewed.json \
+            ops/enrichment/serpapi-google-gemini-structured-review.md
+          git commit -m "Record unreviewed Backline SerpAPI Google evidence cohort"
+          git push origin HEAD:main
+      - name: Resolve the deployed StateTable
+        id: resources
+        run: |
+          set -euo pipefail
+          STATE_TABLE=$(aws cloudformation describe-stacks \
+            --stack-name BndyEnrichmentStack \
+            --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" \
+            --output text)
+          test -n "$STATE_TABLE"
+          test "$STATE_TABLE" != "None"
+          echo "state_table=$STATE_TABLE" >> "$GITHUB_OUTPUT"
+      - name: Publish the read-only qualification summary
+        env:
+          STATE_TABLE: ${{ steps.resources.outputs.state_table }}
+          QUALIFICATION_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          QUALIFICATION_ARTIFACT_URL: https://github.com/${{ github.repository }}/blob/main/ops/enrichment/serpapi-google-gemini-structured-unreviewed.json
+          QUALIFICATION_REVIEW_URL: https://github.com/${{ github.repository }}/blob/main/ops/enrichment/serpapi-google-gemini-structured-review.md
+        run: |
+          set -euo pipefail
+          npm run enrichment:qualification:publish -- \
+            ops/enrichment/serpapi-google-gemini-structured-unreviewed.json \
+            | tee qualification-publish.log
+          tail -n 1 qualification-publish.log | jq -e '
+            .status == "published"
+            and .providerId == "serpapi-google-gemini-structured-v1"
+            and .canonicalWrites == 0
+            and .cases == 20
+            and .gateStatus == (if .captureErrors > 0 then "capture-failed" else "awaiting-human-review" end)
+          ' >/dev/null
+      - name: Require complete measured capture for qualification review
+        run: |
+          set -euo pipefail
+          jq -e '
+            .captureErrors == 0
+            and .measuredUsageCases == 20
+            and .costMeasurement == "complete"
+            and ([.items[].bundle.usage.searches // 0] | add) <= 40
+            and .canonicalWrites == 0
+            and .totalEstimatedCost <= 0.60
+          ' ops/enrichment/serpapi-google-gemini-structured-unreviewed.json >/dev/null
