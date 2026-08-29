@@ -1,0 +1,10 @@
+Approved Backstage Amplify release verification marker
+
+Backstage source commit: b6ae0efeb03c59cf0db7b66e1e5ea230b039dd55
+Prior start attempt: rejected before job creation because Amplify already had an active job
+Controller behaviour: join exact matching job, accept exact completed job, refuse unrelated active job, otherwise start one job
+Release count authorised: one
+Scope: read-only UI only
+Provider calls: zero
+Canonical writes: zero
+Approved date: 2026-08-29
