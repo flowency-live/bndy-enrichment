@@ -116,45 +116,646 @@
     {
       "section": "sqsQueue",
       "type": "QueueDoesNotExist"
+    },
+    {
+      "section": "sqsQueue",
+      "type": "QueueDoesNotExist"
     }
   ],
   "evidenceBucket": {
-    "bytes": 146719773,
-    "newestAt": "2026-08-24T18:42:04+00:00",
-    "objects": 35543
+    "bytes": 25365927446,
+    "newestAt": "2026-08-29T21:16:24+00:00",
+    "objects": 1021990
   },
-  "generatedAt": "2026-08-24T18:46:06.053507+00:00",
+  "generatedAt": "2026-08-29T21:20:27.064607+00:00",
   "identityVerified": true,
   "lemonrock": {
-    "claims": 34618,
+    "claims": 1358285,
     "claimsBySource": {
-      "lemonrock-artist-hydration": 299,
-      "lemonrock-gig-hydration": 16935,
-      "lemonrock-venue-hydration": 17384
+      "lemonrock-artist-hydration": 67672,
+      "lemonrock-gig-hydration": 1217374,
+      "lemonrock-venue-hydration": 73239
     },
-    "entityResolutions": 0,
-    "evidenceReferences": 4050,
+    "entityResolutions": 4,
+    "evidenceReferences": 193592,
     "failedTasks": [
       {
-        "errorType": "fetch failed",
-        "kind": null,
-        "sourceId": null,
-        "updatedAt": "2026-08-24T05:06:49.041Z"
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:53:37.587Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:31:06.377Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:38:52.080Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:58:49.818Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:54:33.173Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:52:33.837Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:40:54.511Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:46:40.584Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:29:03.363Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:00:25.431Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:13:57.193Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:55:14.076Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:00:49.462Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:53:56.060Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:03:56.528Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:13:11.509Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:14:39.128Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:27:02.062Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:48:28.103Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:51:54.431Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:15:53.427Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:22:50.136Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:28:13.698Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:10:18.998Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:28:39.163Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:29:37.745Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:30:22.843Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:12:42.272Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:13:21.038Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:54:38.547Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:21:47.067Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:51:14.569Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:56:48.205Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:07:31.602Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:10:40.166Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:26:29.531Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:36:40.754Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:35:45.641Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:25:59.708Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:13:36.065Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T05:10:05.889Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:38:39.142Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:33:32.336Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:43:06.855Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:00:48.493Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:18:30.574Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:16:11.686Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T05:07:08.076Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:01:22.605Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:53:03.983Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:35:19.939Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:16:45.158Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:03:17.695Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:03:33.923Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:36:26.153Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:22:19.017Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T08:24:25.063Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:09:46.750Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:54:43.392Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:12:03.396Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:04:58.616Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:07:00.109Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:43:33.233Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:52:16.815Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:51:27.851Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:22:19.514Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:09:22.667Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:06:51.599Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:15:57.545Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:10:27.124Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:17:22.926Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:25:38.800Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:04:42.854Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:04:37.952Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:33:19.933Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:32:05.350Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:29:57.315Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:05:28.177Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:44:32.112Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:50:21.486Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:05:20.186Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:08:17.989Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:10:29.834Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:11:40.015Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T05:10:03.869Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:54:52.899Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:59:45.899Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:24:55.335Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:25:27.647Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:23:28.079Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:22:23.052Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:10:48.944Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:26:57.050Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T10:09:57.784Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:27:49.312Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:54:54.544Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:18:44.057Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:43:57.243Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:10:59.564Z"
+      },
+      {
+        "errorType": "Source fetch returned HTTP 410",
+        "kind": "gig-index",
+        "sourceId": "lemonrock-future-reconcile",
+        "updatedAt": "2026-08-26T09:09:51.599Z"
       }
     ],
-    "lastActivityAt": "2026-08-24T18:42:03.226Z",
-    "observations": 4050,
+    "lastActivityAt": "2026-08-29T21:16:23.472Z",
+    "observations": 193592,
     "observationsBySource": {
-      "lemonrock-artist-hydration": 53,
-      "lemonrock-artist-index": 5,
-      "lemonrock-cancellations": 90,
-      "lemonrock-future-reconcile": 3,
-      "lemonrock-gig-hydration": 1305,
-      "lemonrock-new-gigs": 86,
-      "lemonrock-venue-hydration": 2477,
-      "lemonrock-venue-index": 31
+      "lemonrock-artist-hydration": 12818,
+      "lemonrock-artist-index": 320,
+      "lemonrock-cancellations": 346,
+      "lemonrock-full-reconcile": 5,
+      "lemonrock-future-reconcile": 74029,
+      "lemonrock-gig-hydration": 94843,
+      "lemonrock-new-gigs": 346,
+      "lemonrock-venue-hydration": 10541,
+      "lemonrock-venue-index": 344
     },
-    "resolutionsByType": {},
+    "resolutionsByType": {
+      "artist": 4
+    },
     "sources": [
       {
         "cadence": "manual",
@@ -247,23 +848,49 @@
         "shadow": true
       }
     ],
-    "taskHistoryRows": 3881,
+    "taskHistoryRows": 192602,
     "taskStatus": {
-      "completed": 2662,
-      "failed": 1
+      "completed": 45536,
+      "failed": 4017
     },
     "taxonomy": {
       "artist": {
-        "completed": 53,
-        "discovered": 53
+        "completed": 10553,
+        "discovered": 10553
+      },
+      "artist-index": {
+        "completed": 1,
+        "discovered": 1
       },
       "artist-index-page": {
+        "completed": 56,
+        "discovered": 56
+      },
+      "artist-inventory-control": {
+        "completed": 27,
+        "discovered": 27
+      },
+      "cancellations": {
+        "completed": 1,
+        "discovered": 1
+      },
+      "future-index": {
         "completed": 1,
         "discovered": 1
       },
       "gig": {
-        "completed": 87,
-        "discovered": 87
+        "completed": 8016,
+        "discovered": 8024,
+        "failed": 8
+      },
+      "gig-index": {
+        "completed": 18460,
+        "discovered": 22468,
+        "failed": 4008
+      },
+      "new-gigs": {
+        "completed": 1,
+        "discovered": 1
       },
       "other": {
         "completed": 16,
@@ -271,15 +898,23 @@
         "failed": 1
       },
       "venue": {
-        "completed": 2477,
-        "discovered": 2477
+        "completed": 8321,
+        "discovered": 8321
+      },
+      "venue-index": {
+        "completed": 1,
+        "discovered": 1
       },
       "venue-index-page": {
-        "completed": 28,
-        "discovered": 28
+        "completed": 55,
+        "discovered": 55
+      },
+      "venue-inventory-control": {
+        "completed": 27,
+        "discovered": 27
       }
     },
-    "uniqueCurrentTasks": 2663
+    "uniqueCurrentTasks": 49553
   },
   "queues": [],
   "readOnly": true,
@@ -287,15 +922,16 @@
   "resourceCounts": {
     "AWS::CDK::Metadata": 1,
     "AWS::DynamoDB::Table": 1,
-    "AWS::Events::Rule": 6,
-    "AWS::IAM::Policy": 8,
-    "AWS::IAM::Role": 8,
-    "AWS::Lambda::EventSourceMapping": 5,
-    "AWS::Lambda::Function": 8,
-    "AWS::Lambda::Permission": 3,
+    "AWS::Events::Rule": 8,
+    "AWS::IAM::Policy": 11,
+    "AWS::IAM::Role": 11,
+    "AWS::Lambda::EventSourceMapping": 6,
+    "AWS::Lambda::Function": 11,
+    "AWS::Lambda::Permission": 6,
+    "AWS::Lambda::Url": 1,
     "AWS::S3::Bucket": 1,
     "AWS::S3::BucketPolicy": 1,
-    "AWS::SQS::Queue": 12,
+    "AWS::SQS::Queue": 13,
     "AWS::SQS::QueuePolicy": 1,
     "AWS::SecretsManager::Secret": 1
   },
@@ -326,20 +962,20 @@
       ]
     },
     {
-      "logicalRole": "LemonrockDailyReconcile4F5BB31C",
+      "logicalRole": "LemonrockDailyHealthCheckEE745091",
       "scheduleExpression": "cron(10 2 * * ? *)",
       "state": "ENABLED",
       "targetInputs": [
         {
           "reason": "scheduled",
           "sourceId": "lemonrock-future-reconcile",
-          "taskKind": null
+          "taskKind": "future-health"
         }
       ]
     },
     {
       "logicalRole": "LemonrockFastGigTickB23E8683",
-      "scheduleExpression": "rate(15 minutes)",
+      "scheduleExpression": "rate(1 hour)",
       "state": "ENABLED",
       "targetInputs": [
         {
@@ -355,25 +991,44 @@
       ]
     },
     {
-      "logicalRole": "LemonrockWeeklyDirectoryReconcileCB1A5499",
-      "scheduleExpression": "cron(20 2 ? * SUN *)",
+      "logicalRole": "LemonrockMonthlyFutureReconcileE22F76CE",
+      "scheduleExpression": "cron(20 2 1 * ? *)",
       "state": "ENABLED",
       "targetInputs": [
         {
           "reason": "scheduled",
-          "sourceId": "lemonrock-artist-index",
-          "taskKind": null
-        },
+          "sourceId": "lemonrock-future-reconcile",
+          "taskKind": "future-index"
+        }
+      ]
+    },
+    {
+      "logicalRole": "OnTheCaseHourlyGigTick6AD850EB",
+      "scheduleExpression": "rate(1 hour)",
+      "state": "ENABLED",
+      "targetInputs": [
         {
           "reason": "scheduled",
-          "sourceId": "lemonrock-venue-index",
+          "sourceId": "onthecase-gig-index",
           "taskKind": null
         }
       ]
     },
     {
       "logicalRole": "SourceDispatchTick13E0B2C9",
-      "scheduleExpression": "rate(15 minutes)",
+      "scheduleExpression": "rate(1 hour)",
+      "state": "ENABLED",
+      "targetInputs": [
+        {
+          "reason": null,
+          "sourceId": null,
+          "taskKind": null
+        }
+      ]
+    },
+    {
+      "logicalRole": "TrustLoopDailyClassification6A973B5D",
+      "scheduleExpression": "cron(35 3 * * ? *)",
       "state": "ENABLED",
       "targetInputs": [
         {
@@ -385,11 +1040,11 @@
     }
   ],
   "stack": {
-    "lastUpdatedAt": "2026-08-24T06:33:00.868000+00:00",
+    "lastUpdatedAt": "2026-08-29T16:59:00.573000+00:00",
     "status": "UPDATE_COMPLETE"
   },
   "stateTable": {
-    "itemsScanned": 598531,
-    "scanCapacityUnits": 72060.5
+    "itemsScanned": 2969574,
+    "scanCapacityUnits": 318577.0
   }
 }
