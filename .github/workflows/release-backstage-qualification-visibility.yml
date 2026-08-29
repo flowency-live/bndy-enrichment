@@ -3,6 +3,8 @@ name: Release Backstage qualification visibility
 on:
   push:
     branches: [main]
+  pull_request:
+    types: [closed]
 
 permissions:
   contents: read
@@ -10,7 +12,9 @@ permissions:
 
 jobs:
   release:
-    if: startsWith(github.event.head_commit.message, 'Release Backstage qualification visibility')
+    if: >-
+      (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'Release Backstage qualification visibility')) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, 'Release Backstage qualification visibility'))
     runs-on: ubuntu-latest
     environment: production
     steps:
