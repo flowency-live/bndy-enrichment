@@ -1,0 +1,100 @@
+name: Validate GenerateContent Backline citations
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type "Run one Whittles GenerateContent citation validation"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: trust-loop-generatecontent-grounding-validation
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: >-
+      (github.event_name == 'workflow_dispatch'
+      && github.event.inputs.confirmation == 'Run one Whittles GenerateContent citation validation')
+      || (github.event_name == 'push'
+      && startsWith(github.event.head_commit.message, 'Run one Whittles GenerateContent citation validation'))
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Enforce unused one-shot target
+        run: test ! -e ops/enrichment/gemini-generatecontent-whittles-oldham-citation-validation-unreviewed.json
+      - name: Load deployed Gemini credential
+        run: |
+          set -euo pipefail
+          SECRET_ARN=$(aws cloudformation describe-stacks \
+            --stack-name BndyEnrichmentStack \
+            --query "Stacks[0].Outputs[?OutputKey=='GeminiSecretArn'].OutputValue | [0]" \
+            --output text)
+          test -n "$SECRET_ARN"
+          test "$SECRET_ARN" != "None"
+          GEMINI_API_KEY=$(aws secretsmanager get-secret-value \
+            --secret-id "$SECRET_ARN" \
+            --query SecretString \
+            --output text | jq -r '.apiKey // empty')
+          test -n "$GEMINI_API_KEY"
+          echo "::add-mask::$GEMINI_API_KEY"
+          echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> "$GITHUB_ENV"
+      - name: Capture exactly one shadow-only Whittles validation
+        env:
+          GEMINI_MODEL: gemini-3.6-flash
+          ENRICHMENT_VALIDATION_PATH: ops/enrichment/gemini-generatecontent-whittles-oldham-citation-validation-unreviewed.json
+        run: |
+          set -euo pipefail
+          npm run trust-loop:validate-generatecontent-grounding | tee trust-loop-generatecontent-grounding-validation.log
+          jq -e '
+            .cases == 1
+            and .case.entity.displayName == "Whittles Oldham"
+            and .canonicalWrites == 0
+            and .adapterStatus == "inactive"
+            and .scheduleCreated == false
+            and .providerActivated == false
+            and .maximumReservedCost == 0.05
+            and .contract.modelCallAttempts == 1
+            and .contract.exactlyOneModelCallRequested == true
+            and .contract.requestedAtMostTwoSearches == true
+          ' ops/enrichment/gemini-generatecontent-whittles-oldham-citation-validation-unreviewed.json >/dev/null
+      - name: Record the public response or exact failure
+        run: |
+          set -euo pipefail
+          git config user.name bndy-backline-bot
+          git config user.email actions@users.noreply.github.com
+          git pull --rebase --autostash origin main
+          git add ops/enrichment/gemini-generatecontent-whittles-oldham-citation-validation-unreviewed.json
+          git commit -m "Record Whittles GenerateContent citation validation"
+          git push origin HEAD:main
+      - name: Require the approved validation boundary
+        run: |
+          jq -e '
+            .contract.exactlyOneModelCallObserved == true
+            and .contract.observedAtMostTwoSearches == true
+            and .contract.providerResponseCaptured == true
+            and .contract.groundingMetadataCaptured == true
+            and .actualWithinReservedCost == true
+            and .canonicalWrites == 0
+            and .scheduleCreated == false
+            and .providerActivated == false
+          ' ops/enrichment/gemini-generatecontent-whittles-oldham-citation-validation-unreviewed.json >/dev/null

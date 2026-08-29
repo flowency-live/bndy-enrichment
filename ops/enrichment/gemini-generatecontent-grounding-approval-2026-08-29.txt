@@ -1,0 +1,10 @@
+Approved scope: prepare, push and merge an inactive Gemini 3.6 Flash GenerateContent
+Google-grounding adapter that admits facts only through provider groundingMetadata
+groundingChunks and groundingSupports.
+
+Approved validation: exactly one shadow-only citation validation on the existing
+Whittles Oldham cohort case, requesting at most two searches and exactly one model
+call, with a maximum reserved cost of USD 0.05.
+
+The public response or exact failure may be committed. No canonical writes,
+schedule or provider activation are authorised.
