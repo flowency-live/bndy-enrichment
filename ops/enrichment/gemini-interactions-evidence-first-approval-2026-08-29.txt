@@ -1,0 +1,7 @@
+Approval received 2026-08-29:
+
+Prepare, push and merge an inactive Gemini Interactions evidence-first adapter using a deterministic plain-text fact format. Facts may be admitted only when their exact output segment has a provider url_citation.
+
+After merge, run exactly one shadow-only Whittles Oldham validation using Gemini 3.6 Flash. Request one to two Google searches and make exactly one model call. Maximum reserved cost: $0.05.
+
+Commit the public response or exact failure. No canonical writes, schedule or provider activation.
