@@ -30,7 +30,8 @@
     "trust-loop:validate-generatecontent-grounding": "tsx src/cli/validate-gemini-generate-content-grounding.ts",
     "trust-loop:capture-split-enrichment": "tsx src/cli/capture-trust-loop-split-enrichment.ts",
     "enrichment:qualification:review": "tsx src/cli/render-enrichment-qualification-review.ts",
-    "enrichment:qualification:publish": "tsx src/cli/publish-enrichment-qualification-status.ts"
+    "enrichment:qualification:publish": "tsx src/cli/publish-enrichment-qualification-status.ts",
+    "trust-loop:qualify-interactions-evidence-first": "tsx src/cli/qualify-gemini-interactions-evidence-first.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
