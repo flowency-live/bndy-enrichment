@@ -134,6 +134,30 @@ describe('SourceRegistryStore', () => {
     expect(command.input.IndexName).toBe('SourceScheduleIndex');
     expect(command.input.KeyConditionExpression).toContain('GSI_SCHEDULE_PK');
   });
+
+  it('retires legacy aliases and removes their schedule index keys', async () => {
+    const ddb = new FakeDynamo();
+    ddb.responses.push({ Item: { pk: 'SOURCE#sceniceye-weekly-listing' } }, {});
+    const retired = await new SourceRegistryStore('StateTable', ddb).retireSchedule(
+      'sceniceye-weekly-listing',
+      '2026-08-29T12:00:00.000Z',
+    );
+    expect(retired).toBe(true);
+    const input = (ddb.commands[1] as UpdateCommand).input;
+    expect(input.Key).toEqual({ pk: 'SOURCE#sceniceye-weekly-listing', sk: 'CONFIG' });
+    expect(input.UpdateExpression).toContain('REMOVE nextScanAt, lastScheduledAt, GSI_SCHEDULE_PK, GSI_SCHEDULE_SK');
+    expect(input.ExpressionAttributeValues?.[':disabled']).toBe(false);
+  });
+
+  it('does not create a phantom record when a legacy alias is absent', async () => {
+    const ddb = new FakeDynamo();
+    const retired = await new SourceRegistryStore('StateTable', ddb).retireSchedule(
+      'missing-alias',
+      '2026-08-29T12:00:00.000Z',
+    );
+    expect(retired).toBe(false);
+    expect(ddb.commands).toHaveLength(1);
+  });
 });
 
 describe('SourceStateStore', () => {
