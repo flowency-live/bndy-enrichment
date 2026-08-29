@@ -1,0 +1,172 @@
+name: Diagnose Claim V2 authority consumer read-only once
+
+on:
+  push:
+    branches: [ops/diagnose-claim-v2-authority-readonly-20260829]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  diagnose:
+    if: contains(github.event.head_commit.message, '[diagnose-claim-authority-readonly]')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+      - name: Inspect deployed worker without mutation
+        env:
+          SOURCE_RUN_ID: '33264350521'
+        run: |
+          set -u
+
+          STACK_NAME=BndyEnrichmentStack
+          CLAIMS_TABLE=bndy-entity-claims
+          CLAIM_ID="codex-claim-authority-e2e-${SOURCE_RUN_ID}"
+          AUTHORITY_ID="authority:${CLAIM_ID}:r1:pending_review"
+          AUTHORITY_PK="AUTHORITY#${AUTHORITY_ID}"
+          START_TIME=2026-08-29T16:59:00Z
+          END_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          START_MS=$(date -u -d "$START_TIME" +%s000)
+
+          mkdir -p /tmp/claim-authority-diagnostic
+          OUT=/tmp/claim-authority-diagnostic/result.json
+
+          STATE_TABLE=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='StateTableName'].OutputValue | [0]" \
+            --output text 2>/tmp/claim-authority-diagnostic/state-table.error || true)
+          WORKER_FUNCTION=$(aws cloudformation list-stack-resources \
+            --stack-name "$STACK_NAME" \
+            --query "StackResourceSummaries[?ResourceType=='AWS::Lambda::Function' && contains(LogicalResourceId, 'ClaimAuthorityStreamWorker')].PhysicalResourceId | [0]" \
+            --output text 2>/tmp/claim-authority-diagnostic/worker.error || true)
+          STREAM_ARN=$(aws ssm get-parameter \
+            --name /bndy/claims/stream-arn \
+            --query 'Parameter.Value' \
+            --output text 2>/tmp/claim-authority-diagnostic/stream.error || true)
+          LIVE_STREAM_ARN=$(aws dynamodb describe-table \
+            --table-name "$CLAIMS_TABLE" \
+            --query 'Table.LatestStreamArn' \
+            --output text 2>/tmp/claim-authority-diagnostic/live-stream.error || true)
+
+          if [ -n "$WORKER_FUNCTION" ] && [ "$WORKER_FUNCTION" != None ]; then
+            aws lambda list-event-source-mappings \
+              --function-name "$WORKER_FUNCTION" \
+              --event-source-arn "$STREAM_ARN" \
+              --query 'EventSourceMappings[0].{uuid:UUID,state:State,stateTransitionReason:StateTransitionReason,lastProcessingResult:LastProcessingResult,eventSourceArn:EventSourceArn,functionArn:FunctionArn,batchSize:BatchSize,bisectBatchOnFunctionError:BisectBatchOnFunctionError,maximumRetryAttempts:MaximumRetryAttempts,lastModified:LastModified}' \
+              --output json > /tmp/claim-authority-diagnostic/mapping.json \
+              2>/tmp/claim-authority-diagnostic/mapping.error || true
+
+            aws cloudwatch get-metric-statistics \
+              --namespace AWS/Lambda \
+              --metric-name Invocations \
+              --dimensions Name=FunctionName,Value="$WORKER_FUNCTION" \
+              --start-time "$START_TIME" \
+              --end-time "$END_TIME" \
+              --period 60 \
+              --statistics Sum \
+              --output json > /tmp/claim-authority-diagnostic/invocations.json \
+              2>/tmp/claim-authority-diagnostic/invocations.error || true
+            aws cloudwatch get-metric-statistics \
+              --namespace AWS/Lambda \
+              --metric-name Errors \
+              --dimensions Name=FunctionName,Value="$WORKER_FUNCTION" \
+              --start-time "$START_TIME" \
+              --end-time "$END_TIME" \
+              --period 60 \
+              --statistics Sum \
+              --output json > /tmp/claim-authority-diagnostic/errors.json \
+              2>/tmp/claim-authority-diagnostic/errors.error || true
+            aws cloudwatch get-metric-statistics \
+              --namespace AWS/Lambda \
+              --metric-name Throttles \
+              --dimensions Name=FunctionName,Value="$WORKER_FUNCTION" \
+              --start-time "$START_TIME" \
+              --end-time "$END_TIME" \
+              --period 60 \
+              --statistics Sum \
+              --output json > /tmp/claim-authority-diagnostic/throttles.json \
+              2>/tmp/claim-authority-diagnostic/throttles.error || true
+
+            aws logs filter-log-events \
+              --log-group-name "/aws/lambda/${WORKER_FUNCTION}" \
+              --start-time "$START_MS" \
+              --filter-pattern '?ERROR ?Error ?error ?Exception ?"Task timed out"' \
+              --query 'events[].{timestamp:timestamp,message:message}' \
+              --output json > /tmp/claim-authority-diagnostic/log-errors.json \
+              2>/tmp/claim-authority-diagnostic/log-errors.error || true
+          fi
+
+          aws dynamodb get-item \
+            --table-name "$CLAIMS_TABLE" \
+            --consistent-read \
+            --projection-expression claim_id \
+            --key "{\"claim_id\":{\"S\":\"$CLAIM_ID\"}}" \
+            --output json > /tmp/claim-authority-diagnostic/claim-item.json \
+            2>/tmp/claim-authority-diagnostic/claim-item.error || true
+
+          if [ -n "$STATE_TABLE" ] && [ "$STATE_TABLE" != None ]; then
+            aws dynamodb get-item \
+              --table-name "$STATE_TABLE" \
+              --consistent-read \
+              --projection-expression 'pk,sk,recordType,#id,claimRequestId,#status' \
+              --expression-attribute-names '{"#id":"id","#status":"status"}' \
+              --key "{\"pk\":{\"S\":\"$AUTHORITY_PK\"},\"sk\":{\"S\":\"META\"}}" \
+              --output json > /tmp/claim-authority-diagnostic/authority-item.json \
+              2>/tmp/claim-authority-diagnostic/authority-item.error || true
+          fi
+
+          file_json() {
+            local path="$1"
+            if [ -s "$path" ] && jq empty "$path" >/dev/null 2>&1; then cat "$path"; else echo null; fi
+          }
+          error_text() {
+            local path="$1"
+            if [ -s "$path" ]; then jq -Rs . < "$path"; else echo null; fi
+          }
+
+          jq -n \
+            --arg observedAt "$END_TIME" \
+            --arg sourceRunId "$SOURCE_RUN_ID" \
+            --arg workerFunction "$WORKER_FUNCTION" \
+            --arg stateTable "$STATE_TABLE" \
+            --arg streamArn "$STREAM_ARN" \
+            --arg liveStreamArn "$LIVE_STREAM_ARN" \
+            --argjson mapping "$(file_json /tmp/claim-authority-diagnostic/mapping.json)" \
+            --argjson invocations "$(file_json /tmp/claim-authority-diagnostic/invocations.json)" \
+            --argjson errors "$(file_json /tmp/claim-authority-diagnostic/errors.json)" \
+            --argjson throttles "$(file_json /tmp/claim-authority-diagnostic/throttles.json)" \
+            --argjson logErrors "$(file_json /tmp/claim-authority-diagnostic/log-errors.json)" \
+            --argjson claimItem "$(file_json /tmp/claim-authority-diagnostic/claim-item.json)" \
+            --argjson authorityItem "$(file_json /tmp/claim-authority-diagnostic/authority-item.json)" \
+            --argjson mappingReadError "$(error_text /tmp/claim-authority-diagnostic/mapping.error)" \
+            --argjson logReadError "$(error_text /tmp/claim-authority-diagnostic/log-errors.error)" \
+            --argjson claimReadError "$(error_text /tmp/claim-authority-diagnostic/claim-item.error)" \
+            --argjson authorityReadError "$(error_text /tmp/claim-authority-diagnostic/authority-item.error)" \
+            '{
+              observedAt:$observedAt,
+              readOnly:true,
+              sourceRunId:$sourceRunId,
+              workerFunction:$workerFunction,
+              stateTable:$stateTable,
+              streamPointerMatchesLiveTable:($streamArn != "" and $streamArn == $liveStreamArn),
+              eventSourceMapping:$mapping,
+              metrics:{invocations:$invocations,errors:$errors,throttles:$throttles},
+              cloudWatchErrors:$logErrors,
+              syntheticClaimStillPresent:($claimItem != null and ($claimItem | has("Item"))),
+              syntheticAuthorityStillPresent:($authorityItem != null and ($authorityItem | has("Item"))),
+              syntheticAuthorityProjection:($authorityItem.Item // null),
+              readErrors:{mapping:$mappingReadError,logs:$logReadError,claim:$claimReadError,authority:$authorityReadError}
+            }' > "$OUT"
+
+          cat "$OUT"
+          {
+            echo '### Claim V2 authority read-only diagnostic'
+            echo '```json'
+            cat "$OUT"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
