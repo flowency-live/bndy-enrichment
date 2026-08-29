@@ -1,6 +1,7 @@
-import type { AttributeValue, DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda';
+import type { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda';
 import { mapClaimV2ToAuthorityAssertion, type ClaimV2AuthorityInput } from '../authority/claim-authority.js';
 import { AuthorityAssertionStore } from '../authority/authority-assertion-store.js';
+import { decodeDynamoImage } from '../knowledge/dynamo-image.js';
 
 function getStore(): AuthorityAssertionStore {
   const tableName = process.env.STATE_TABLE;
@@ -8,25 +9,8 @@ function getStore(): AuthorityAssertionStore {
   return new AuthorityAssertionStore(tableName);
 }
 
-function decode(value: AttributeValue | undefined): unknown {
-  if (!value) return undefined;
-  if ('S' in value) return value.S;
-  if ('N' in value) return Number(value.N);
-  if ('BOOL' in value) return value.BOOL;
-  if ('NULL' in value) return null;
-  if ('L' in value) return (value.L ?? []).map((item) => decode(item));
-  if ('M' in value) return Object.fromEntries(Object.entries(value.M ?? {}).map(([key, item]) => [key, decode(item)]));
-  if ('SS' in value) return value.SS ?? [];
-  if ('NS' in value) return (value.NS ?? []).map(Number);
-  if ('BS' in value) return value.BS ?? [];
-  if ('B' in value) return value.B;
-  return undefined;
-}
-
 export function decodeNewImage(record: DynamoDBRecord): Record<string, unknown> | null {
-  const image = record.dynamodb?.NewImage;
-  if (!image) return null;
-  return Object.fromEntries(Object.entries(image).map(([key, value]) => [key, decode(value)]));
+  return decodeDynamoImage(record.dynamodb?.NewImage);
 }
 
 function isConditionalFailure(error: unknown): boolean {

@@ -260,6 +260,23 @@ describe('ClaimStore', () => {
     expect(ddb.commands).toHaveLength(2);
     expect((ddb.commands[1] as QueryCommand).input.ExclusiveStartKey).toBeDefined();
   });
+
+  it('finds the latest source-specific canonical hash and removal state without scanning', async () => {
+    const ddb = new FakeDynamo();
+    ddb.responses.push({ Items: [
+      { ...claim(), id: 'other', sourceId: 'other-source', observedAt: '2026-08-30T00:00:00.000Z' },
+      { ...claim(), id: 'removed', sourceId: 'bndy-canonical-events', observationId: 'obs-remove', observedAt: '2026-08-29T10:00:00.000Z', predicate: 'hasStatus', value: 'canonical-record-removed', evidence: { contentHash: 'hash-old' } },
+      { ...claim(), id: 'derived', sourceId: 'bndy-canonical-events', observationId: 'obs-remove', observedAt: '2026-08-29T10:00:00.000Z', predicate: 'derivedFrom', evidence: { contentHash: 'hash-old' } },
+      { ...claim(), id: 'older', sourceId: 'bndy-canonical-events', observationId: 'obs-old', observedAt: '2026-08-28T10:00:00.000Z', evidence: { contentHash: 'hash-older' } },
+    ] as unknown as Record<string, unknown>[] });
+    const result = await new ClaimStore('StateTable', ddb).latestSourceStateBySubject(
+      'event', 'event-1', 'bndy-canonical-events',
+    );
+    expect(result).toEqual({
+      observationId: 'obs-remove', observedAt: '2026-08-29T10:00:00.000Z', contentHash: 'hash-old', removed: true,
+    });
+    expect((ddb.commands[0] as QueryCommand).input.ScanIndexForward).toBe(false);
+  });
 });
 
 describe('TombstoneStore', () => {

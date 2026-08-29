@@ -13,6 +13,7 @@ import { ObservationStore, sourceObservationItem } from '../knowledge/stores/obs
 import { entityResolutionItem } from '../knowledge/stores/resolution-store.js';
 import { SourceRegistryStore } from '../knowledge/stores/source-registry-store.js';
 import type { EntityResolution, GigSource, SourceObservation } from '../knowledge/types.js';
+import { CANONICAL_SOURCE_IDS, canonicalEvidenceSource } from '../bndy-baseline/sources.js';
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -44,31 +45,8 @@ const s3 = new S3Client({ region });
 const registry = new SourceRegistryStore(stateTable);
 const observationKeys = new ObservationStore(stateTable, evidenceBucket);
 
-const sourceIds: Record<BaselineEntityType, string> = {
-  artist: 'bndy-canonical-artists',
-  venue: 'bndy-canonical-venues',
-  event: 'bndy-canonical-events',
-  festival: 'bndy-canonical-festivals',
-};
-
 function sourceConfig(entityType: BaselineEntityType): GigSource {
-  return {
-    id: sourceIds[entityType],
-    name: `Canonical BNDY ${entityType}s baseline`,
-    type: 'CURATED_SOURCE',
-    timezone: 'Europe/London',
-    cadence: 'manual',
-    localTime: '05:00',
-    mode: 'append-only',
-    snapshotSemantics: 'one_shot',
-    authorityClass: 'curated',
-    thresholds: {},
-    runtimeClass: 'standard',
-    enabled: false,
-    shadow: true,
-    writerAuthority: 'aws',
-    health: 'healthy',
-  };
+  return canonicalEvidenceSource(entityType);
 }
 
 type TypeCounts = {
@@ -203,7 +181,7 @@ async function processEntity(entityType: BaselineEntityType, record: Record<stri
     return;
   }
 
-  const sourceId = sourceIds[entityType];
+  const sourceId = CANONICAL_SOURCE_IDS[entityType];
   const recordJson = stableJson(record);
   const contentHash = sha256(recordJson);
   const observationId = `bndy-baseline:${snapshotId}:${entityType}:${id}:${contentHash.slice(0, 16)}`;

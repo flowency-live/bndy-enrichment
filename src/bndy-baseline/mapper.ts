@@ -17,6 +17,18 @@ export type CanonicalBaselineInput = {
   observationId: string;
   record: Record<string, unknown>;
   contentHash: string;
+  resolutionMethod?: string;
+};
+
+export type CanonicalRemovalInput = {
+  changeId: string;
+  removedAt: string;
+  sourceId: string;
+  entityType: BaselineEntityType;
+  canonicalId: string;
+  observationId: string;
+  oldRecord: Record<string, unknown>;
+  contentHash: string;
 };
 
 type FlatField = { path: string; value: unknown };
@@ -171,7 +183,7 @@ export function buildCanonicalBaselineClaims(input: CanonicalBaselineInput): Kno
     value: {
       entityType: input.entityType,
       canonicalEntityId: input.canonicalId,
-      method: 'canonical-self-baseline',
+      method: input.resolutionMethod ?? 'canonical-self-baseline',
       snapshotId: input.snapshotId,
     },
     confidence: 1,
@@ -182,4 +194,38 @@ export function buildCanonicalBaselineClaims(input: CanonicalBaselineInput): Kno
   });
 
   return claims;
+}
+
+export function buildCanonicalRemovalClaims(input: CanonicalRemovalInput): KnowledgeClaim[] {
+  const subject = { type: input.entityType as ClaimSubjectType, key: input.canonicalId };
+  const evidence = { rawItemId: input.canonicalId, contentHash: input.contentHash };
+  const identity = [input.changeId, input.contentHash, input.entityType, input.canonicalId, 'removed'];
+  const common = {
+    observationId: input.observationId,
+    sourceId: input.sourceId,
+    subject,
+    confidence: 1,
+    evidence,
+    observedAt: input.removedAt,
+    assertedAt: input.removedAt,
+    status: 'active' as const,
+  };
+  return [
+    {
+      ...common,
+      id: claimId([...identity, 'hasStatus']),
+      predicate: 'hasStatus',
+      value: 'canonical-record-removed',
+    },
+    {
+      ...common,
+      id: claimId([...identity, 'derivedFrom']),
+      predicate: 'derivedFrom',
+      value: {
+        field: '$record',
+        value: 'removed',
+        provenance: provenanceForRecord(input.oldRecord),
+      },
+    },
+  ];
 }

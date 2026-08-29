@@ -23,6 +23,8 @@
     "lemonrock:bootstrap": "tsx src/cli/lemonrock-bootstrap.ts",
     "onthecase:bootstrap": "tsx src/cli/onthecase-bootstrap.ts",
     "bndy:baseline": "tsx src/cli/bndy-corpus-bootstrap.ts",
+    "bndy:delta-hydration": "tsx src/cli/bndy-corpus-delta-hydration.ts",
+    "bndy:activate-change-sources": "tsx src/cli/activate-canonical-change-sources.ts",
     "trust-loop:index": "tsx src/cli/backfill-trust-loop-index.ts",
     "trust-loop:refresh-profiles": "tsx src/cli/refresh-trust-loop-profiles.ts",
     "trust-loop:capture-enrichment": "tsx src/cli/capture-trust-loop-enrichment.ts",

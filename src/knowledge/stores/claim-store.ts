@@ -7,6 +7,13 @@ export const CLAIM_BY_SUBJECT_INDEX = 'SubjectClaimsIndex';
 
 export type CanonicalEntityType = 'artist' | 'venue' | 'event' | 'festival';
 
+export type LatestSourceClaimState = {
+  observationId: string;
+  observedAt: string;
+  contentHash: string;
+  removed: boolean;
+};
+
 export function knowledgeClaimItem(claim: KnowledgeClaim): Record<string, unknown> {
   const parsed = KnowledgeClaimSchema.parse(claim);
   return {
@@ -96,6 +103,58 @@ export class ClaimStore {
       );
     }
     return items.map((item) => KnowledgeClaimSchema.parse(item));
+  }
+
+  async latestSourceStateBySubject(
+    subjectType: ClaimSubjectType,
+    subjectKey: string,
+    sourceId: string,
+    maximumClaims = 1000,
+  ): Promise<LatestSourceClaimState | null> {
+    let exclusiveStartKey: Record<string, unknown> | undefined;
+    let inspected = 0;
+    let targetObservationId: string | undefined;
+    let targetObservedAt: string | undefined;
+    let contentHash: string | undefined;
+    let removed = false;
+
+    do {
+      const response = await this.client.send(new QueryCommand({
+        TableName: this.tableName,
+        IndexName: CLAIM_BY_SUBJECT_INDEX,
+        KeyConditionExpression: 'GSI2PK = :pk',
+        ExpressionAttributeValues: { ':pk': `SUBJECT#${subjectType}#${subjectKey}` },
+        ScanIndexForward: false,
+        Limit: Math.min(100, maximumClaims - inspected),
+        ExclusiveStartKey: exclusiveStartKey,
+      }));
+      const items = response.Items ?? [];
+      inspected += items.length;
+      for (const item of items) {
+        if (item.sourceId !== sourceId) continue;
+        const observationId = typeof item.observationId === 'string' ? item.observationId : undefined;
+        const observedAt = typeof item.observedAt === 'string' ? item.observedAt : undefined;
+        if (!observationId || !observedAt) continue;
+        if (!targetObservationId) {
+          targetObservationId = observationId;
+          targetObservedAt = observedAt;
+        }
+        if (observedAt < targetObservedAt!) {
+          if (!contentHash) throw new Error(`Latest canonical Claim state has no content hash for ${subjectType}:${subjectKey}`);
+          return { observationId: targetObservationId, observedAt: targetObservedAt!, contentHash, removed };
+        }
+        if (observationId !== targetObservationId) continue;
+        const evidence = item.evidence && typeof item.evidence === 'object'
+          ? item.evidence as Record<string, unknown> : undefined;
+        if (!contentHash && typeof evidence?.contentHash === 'string') contentHash = evidence.contentHash;
+        if (item.predicate === 'hasStatus' && item.value === 'canonical-record-removed') removed = true;
+      }
+      exclusiveStartKey = response.LastEvaluatedKey;
+    } while (exclusiveStartKey && inspected < maximumClaims);
+
+    if (!targetObservationId) return null;
+    if (!contentHash) throw new Error(`Latest canonical Claim state has no content hash for ${subjectType}:${subjectKey}`);
+    return { observationId: targetObservationId, observedAt: targetObservedAt!, contentHash, removed };
   }
 
   async linkCanonicalEntity(entityType: CanonicalEntityType, entityId: string, claimId: string): Promise<void> {
