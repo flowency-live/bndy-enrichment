@@ -1,0 +1,14 @@
+Approved scope: exactly one shadow-only 20-case Backline Trust Layer qualification using the existing 10 Artist and 10 Venue cohort with Gemini 3.6 Flash and Google Search grounding.
+
+Constraints:
+- request at most two searches per case; provider may autonomously perform additional searches
+- exactly one Gemini call per case
+- maximum reserved cohort cost: $0.60
+- commit public evidence and qualification results
+- publish results read-only to Godmode
+- record outcome on the workboard
+- zero canonical writes
+- no schedule
+- no provider activation
+
+User approval recorded 2026-08-29.
