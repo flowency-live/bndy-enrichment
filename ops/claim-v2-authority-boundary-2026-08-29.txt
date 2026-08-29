@@ -1,0 +1,4 @@
+Claim V2 authority evidence boundary validation marker.
+Main substrate revision: a9f83f57ce353fbdb6410c856077f420c954a979
+Purpose: force full PR CI against the privacy-safe authority assertion contract and regression suite.
+No production transport or canonical projection is enabled by this marker.
