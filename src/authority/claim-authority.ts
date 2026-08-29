@@ -54,6 +54,7 @@ export const AuthorityAssertionSchema = z.object({
 export type AuthorityAssertion = z.infer<typeof AuthorityAssertionSchema>;
 
 export type ClaimV2Evidence = {
+  // Preferred portable shape.
   type?: string;
   explanation?: string;
   official_email?: string | null;
@@ -62,6 +63,20 @@ export type ClaimV2Evidence = {
   page_name?: string | null;
   page_url?: string | null;
   verified_at?: string | null;
+
+  // Current bndy-serverless-api persistence shape. Supporting both shapes keeps
+  // this boundary honest to production without copying its private metadata.
+  method?: string;
+  public_reference?: string | null;
+  observed_at?: string | null;
+  metadata?: {
+    explanation?: string | null;
+    official_email?: string | null;
+    page_id?: string | null;
+    page_name?: string | null;
+    page_url?: string | null;
+    verified_at?: string | null;
+  } | null;
 };
 
 export type ClaimV2AuthorityInput = {
@@ -98,13 +113,36 @@ function safePublicUrl(value: string | null | undefined): string | undefined {
   }
 }
 
+function evidenceKind(item: ClaimV2Evidence): 'manual' | 'facebook_page' | 'other' {
+  if (item.type === 'manual_relationship' || item.method === 'manual_explanation') return 'manual';
+  if (item.type === 'facebook_page_control' || item.method === 'facebook_page_control') return 'facebook_page';
+  return 'other';
+}
+
+function manualExplanation(item: ClaimV2Evidence | undefined): string | undefined {
+  return item?.explanation ?? item?.metadata?.explanation ?? undefined;
+}
+
+function manualEmail(item: ClaimV2Evidence | undefined): string | undefined {
+  return item?.official_email ?? item?.metadata?.official_email ?? undefined;
+}
+
+function supportingReference(item: ClaimV2Evidence | undefined): string | undefined {
+  return item?.supporting_url ?? item?.public_reference ?? undefined;
+}
+
+function pageField(item: ClaimV2Evidence | undefined, field: 'page_id' | 'page_name' | 'page_url' | 'verified_at'): string | undefined {
+  return item?.[field] ?? item?.metadata?.[field] ?? undefined;
+}
+
 export function mapClaimV2ToAuthorityAssertion(input: ClaimV2AuthorityInput): AuthorityAssertion {
   const evidence = input.evidence ?? [];
-  const manual = evidence.find((item) => item.type === 'manual_relationship');
-  const facebook = evidence.find((item) => item.type === 'facebook_page_control');
+  const manual = evidence.find((item) => evidenceKind(item) === 'manual');
+  const facebook = evidence.find((item) => evidenceKind(item) === 'facebook_page');
   const revision = input.evidence_revision ?? 1;
-  const supportingUrl = safePublicUrl(manual?.supporting_url);
-  const pageUrl = safePublicUrl(facebook?.page_url);
+  const supportingUrl = safePublicUrl(supportingReference(manual));
+  const pageId = pageField(facebook, 'page_id');
+  const pageUrl = safePublicUrl(pageField(facebook, 'page_url'));
 
   const assertion: AuthorityAssertion = {
     id: `authority:${input.claim_id}:r${revision}`,
@@ -118,18 +156,18 @@ export function mapClaimV2ToAuthorityAssertion(input: ClaimV2AuthorityInput): Au
     verificationMethod: input.verification_method,
     status: input.status,
     evidenceClasses: {
-      explanationSupplied: Boolean(manual?.explanation?.trim()),
-      officialEmailSupplied: Boolean(manual?.official_email?.trim()),
+      explanationSupplied: Boolean(manualExplanation(manual)?.trim()),
+      officialEmailSupplied: Boolean(manualEmail(manual)?.trim()),
       supportingUrlSupplied: Boolean(supportingUrl),
-      facebookPageControlSupplied: Boolean(facebook?.page_id),
+      facebookPageControlSupplied: Boolean(pageId),
     },
     supportingUrl,
-    facebookPage: facebook?.page_id
+    facebookPage: pageId
       ? {
-          pageId: facebook.page_id,
-          pageName: facebook.page_name || undefined,
+          pageId,
+          pageName: pageField(facebook, 'page_name'),
           pageUrl,
-          verifiedAt: facebook.verified_at || undefined,
+          verifiedAt: pageField(facebook, 'verified_at') ?? facebook?.observed_at ?? undefined,
         }
       : undefined,
     ownershipConflict: Boolean(input.owner_conflict || input.status === 'conflict'),
@@ -141,8 +179,26 @@ export function mapClaimV2ToAuthorityAssertion(input: ClaimV2AuthorityInput): Au
 }
 
 export function containsSensitiveClaimMaterial(value: AuthorityAssertion): boolean {
-  const serialised = JSON.stringify(value).toLowerCase();
-  return serialised.includes('official_email')
-    || serialised.includes('explanation')
-    || serialised.includes('@');
+  // Check values only. The safe schema intentionally contains boolean field
+  // names such as explanationSupplied and officialEmailSupplied; those names
+  // are not sensitive material themselves.
+  const values: string[] = [
+    value.id,
+    value.claimRequestId,
+    value.entityType,
+    value.entityId,
+    value.actorRef,
+    value.requestedRole,
+    value.relationshipKind,
+    value.verificationMethod,
+    value.status,
+    value.supportingUrl ?? '',
+    value.facebookPage?.pageId ?? '',
+    value.facebookPage?.pageName ?? '',
+    value.facebookPage?.pageUrl ?? '',
+    value.facebookPage?.verifiedAt ?? '',
+    value.assertedAt,
+    value.updatedAt,
+  ];
+  return values.some((entry) => entry.includes('@'));
 }
