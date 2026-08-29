@@ -34,7 +34,7 @@ const responseSchema = {
         confidence: { type: 'number', minimum: 0, maximum: 1 },
         evidenceUrls: { type: 'array', items: { type: 'string' } },
       },
-      required: ['name', 'actTypes', 'genres', 'confidence', 'evidenceUrls'],
+      required: ['name', 'facebookUrl', 'location', 'artistType', 'actTypes', 'confidence', 'evidenceUrls'],
     },
     events: {
       type: 'array',
@@ -262,7 +262,7 @@ CLASSIFICATION
 - non_music: clearly unrelated to live music.
 - unsupported: cannot reliably identify the source/entity.
 
-CRITICAL: When classification is "artist" OR "event", you MUST populate the artist object with ALL required creation fields (name, facebookUrl, location, artistType, actTypes, confidence, evidenceUrls). For classification="event" you MUST return exactly one event row. If you cannot determine the required identity safely, use classification="unsupported" instead of guessing.
+CRITICAL SCHEMA CONTRACT: When classification is "artist" OR "event", the response MUST include a complete artist object. ALL of these fields are REQUIRED in the artist object and will be validated by the schema: name, facebookUrl, location, artistType, actTypes (array with at least one value), confidence, evidenceUrls (array with at least one URL). Missing any required field will cause validation failure. If you cannot confidently determine ALL required fields from available evidence, use classification="unsupported" with a clear reason instead of returning an incomplete artist object.
 
 Return JSON only matching the supplied schema.`;
 }
