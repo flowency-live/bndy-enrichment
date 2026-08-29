@@ -1,0 +1,10 @@
+Approved scope: exactly one shadow-only validation of the explicit-contract Gemini 3.6 Flash Google-grounded request on diagnostic-01-artist, the first case of the existing Backline cohort.
+
+Constraints:
+- multiple Google searches may occur despite requesting at most two
+- commit the public response or exact failure
+- zero canonical writes
+- no schedule
+- no provider activation
+
+User approval recorded 2026-08-29.
