@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { eventShouldPublish } from '../src/handlers/capture-processor.js';
+import { eventShouldPublish, reviewableProjectionError } from '../src/handlers/capture-processor.js';
 import type { CaptureEvent } from '../src/capture/schema.js';
 
 function event(overrides: Partial<CaptureEvent> = {}): CaptureEvent {
@@ -28,5 +28,10 @@ describe('Capture event publication policy', () => {
 
   it('still holds explicitly cancelled events', () => {
     expect(eventShouldPublish(event({ cancelled: true }))).toBe(false);
+  });
+
+  it('separates human-review projection failures from transient retries', () => {
+    expect(reviewableProjectionError(new Error('Venue resolution needs review'))).toBe(true);
+    expect(reviewableProjectionError(new Error('Meta API timed out'))).toBe(false);
   });
 });

@@ -1,6 +1,27 @@
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { CaptureRecordSchema, type CaptureRecord } from './schema.js';
 
+export type CapturePublicOutcome = {
+  state: 'added' | 'already_exists' | 'processed' | 'needs_review' | 'could_not_resolve' | 'ignored';
+  message?: string;
+  result?: {
+    artist?: {
+      name: string;
+      action?: string;
+      id?: string;
+    };
+    event?: {
+      id: string;
+      date: string;
+      time: string;
+      venue: string;
+      action?: string;
+      venueAction?: string;
+      url: string;
+    };
+  };
+};
+
 const secrets = new SecretsManagerClient({});
 let cachedToken: string | undefined;
 
@@ -76,10 +97,14 @@ export async function claimCapture(id: string, workerId: string, leaseMinutes = 
   return false;
 }
 
-export async function updateCaptureStatus(id: string, status: CaptureRecord['status']): Promise<void> {
+export async function updateCaptureStatus(
+  id: string,
+  status: CaptureRecord['status'],
+  publicOutcome?: CapturePublicOutcome,
+): Promise<void> {
   await request(`/v1/captures/${encodeURIComponent(id)}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, ...(publicOutcome ? { publicOutcome } : {}) }),
   });
 }
 

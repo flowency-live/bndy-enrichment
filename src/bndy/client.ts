@@ -72,6 +72,7 @@ export type ArtistResolution = {
   artistId?: string;
   artistName?: string;
   candidates?: any[];
+  reason?: string;
   raw: any;
 };
 
@@ -104,7 +105,7 @@ export async function findOrCreateArtist(artist: CaptureArtist, captureId: strin
     };
   }
   if (body.action === 'review') {
-    return { action: 'review', candidates: body.candidates ?? [], raw: body };
+    return { action: 'review', candidates: body.candidates ?? [], reason: body.reason ?? body.error, raw: body };
   }
 
   // The canonical artist Lambda returns a hard uniqueness conflict as HTTP 409
@@ -121,6 +122,15 @@ export async function findOrCreateArtist(artist: CaptureArtist, captureId: strin
     (out.status === 409 && /duplicate artist/i.test(String(body.error ?? body.message ?? '')));
   if (explicitDuplicate && duplicateArtistId) {
     return { action: 'duplicate', artistId: duplicateArtistId, raw: body };
+  }
+
+  if (out.status === 422 && body.action === 'create_failed') {
+    return {
+      action: 'review',
+      candidates: body.candidates ?? [],
+      reason: body.error ?? body.message ?? 'Artist creation needs more verified profile data',
+      raw: body,
+    };
   }
 
   throw new Error(`Unexpected artist find-or-create response: ${JSON.stringify(body)}`);

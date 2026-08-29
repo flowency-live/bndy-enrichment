@@ -1,6 +1,11 @@
 import type { SQSBatchResponse, SQSHandler } from 'aws-lambda';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
-import { addCaptureNote, getCapture, updateCaptureStatus } from '../capture/client.js';
+import {
+  addCaptureNote,
+  getCapture,
+  updateCaptureStatus,
+  type CapturePublicOutcome,
+} from '../capture/client.js';
 import { discoverCapture, inspectPublicPage } from '../capture/discover.js';
 import { prepareCaptureForDiscovery } from '../capture/prepare-discovery.js';
 import { findOrCreateArtist, findOrCreateVenue, createEvent, getArtist, patchMissingArtistFields } from '../bndy/client.js';
@@ -38,6 +43,11 @@ export function eventShouldPublish(event: CaptureEvent): boolean {
   return !event.cancelled;
 }
 
+export function reviewableProjectionError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /needs review|cannot be resolved|unresolvable|data.?quality/i.test(message);
+}
+
 function compact(value: unknown, max = 800): string {
   const text = typeof value === 'string' ? value : JSON.stringify(value);
   return text.length <= max ? text : `${text.slice(0, max)}…`;
@@ -71,13 +81,23 @@ async function processCapture(captureId: string): Promise<void> {
 
   if (discovery.classification === 'non_music') {
     await addCaptureNote(captureId, `AWS processor: ignored non-music capture. ${discovery.reason}`);
-    await updateCaptureStatus(captureId, 'ignored');
+    await updateCaptureStatus(captureId, 'ignored', {
+      state: 'ignored',
+      message: 'This submission was not recognised as a live music event.',
+    });
     return;
   }
 
   if (!processableClassification(discovery.classification) || !discovery.artist) {
     await addCaptureNote(captureId, `AWS processor: REVIEW_REQUIRED. Capture classified as ${discovery.classification}. ${discovery.reason}`);
-    await updateCaptureStatus(captureId, 'failed');
+    const hasUsefulFacts = Boolean(discovery.artist?.name || discovery.events.length);
+    await updateCaptureStatus(captureId, 'failed', hasUsefulFacts ? {
+      state: 'needs_review',
+      message: 'BNDY found useful details, but this submission needs a human check.',
+    } : {
+      state: 'could_not_resolve',
+      message: 'BNDY could not identify this gig reliably enough to add it.',
+    });
     return;
   }
 
@@ -85,17 +105,25 @@ async function processCapture(captureId: string): Promise<void> {
     await addCaptureNote(captureId,
       `AWS processor: REVIEW_REQUIRED. Direct event capture must resolve to exactly one event, got ${discovery.events.length}. ${discovery.reason}`
     );
-    await updateCaptureStatus(captureId, 'failed');
+    await updateCaptureStatus(captureId, 'failed', {
+      state: 'needs_review',
+      message: 'BNDY found the event, but the result needs a human check before it can be added.',
+    });
     return;
   }
 
   if (discovery.classification === 'event') {
     const event = discovery.events[0];
     if (!event.cancelled && !event.startTime) {
-      // The canonical community event API currently requires startTime. Do not silently
-      // mark a direct user submission processed when the model missed it: retry the whole
-      // exact-event extraction instead. Artist/profile multi-event discovery remains best-effort.
-      throw new Error(`Direct event capture ${captureId} resolved without a start time; retry exact-event extraction`);
+      await addCaptureNote(
+        captureId,
+        `AWS processor: REVIEW_REQUIRED. Direct event capture resolved without a start time. ${discovery.reason}`,
+      );
+      await updateCaptureStatus(captureId, 'failed', {
+        state: 'needs_review',
+        message: 'BNDY found the gig, but the start time needs a human check before it can be added.',
+      });
+      return;
     }
 
     // When the transport URL was deterministically resolved to a canonical Facebook Event,
@@ -108,30 +136,32 @@ async function processCapture(captureId: string): Promise<void> {
     }
   }
 
+  // Resolve against canonical Artists before applying requirements that are only
+  // needed to create a brand-new profile. Existing Artists can be matched safely
+  // from supported identity evidence even when the incoming event omits profile data.
   const missing = validateArtistForCreation(discovery.artist);
-  if (missing.length) {
-    await addCaptureNote(captureId,
-      `AWS processor: REVIEW_REQUIRED. Artist creation blocked because required fields are missing: ${missing.join(', ')}. ` +
-      `Identified artist: ${discovery.artist.name ?? '(unknown)'}. Evidence: ${discovery.evidenceUrls.join(', ') || 'none'}`
-    );
-    await updateCaptureStatus(captureId, 'failed');
-    return;
-  }
-
   const artistResult = await findOrCreateArtist(discovery.artist, captureId);
   if (artistResult.action === 'review') {
     await addCaptureNote(captureId,
       `AWS processor: REVIEW_REQUIRED. Artist resolver returned ambiguous candidates for ${discovery.artist.name}: ` +
-      compact(artistResult.candidates ?? artistResult.raw)
+      `${compact(artistResult.candidates ?? artistResult.raw)}. ` +
+      `${missing.length ? `New Artist creation would also require: ${missing.join(', ')}. ` : ''}` +
+      `${artistResult.reason ? `Reason: ${artistResult.reason}` : ''}`
     );
-    await updateCaptureStatus(captureId, 'failed');
+    await updateCaptureStatus(captureId, 'failed', {
+      state: 'needs_review',
+      message: 'BNDY found the artist, but the identity needs a human check before this gig can be added.',
+    });
     return;
   }
 
   const artistId = artistResult.artistId;
   if (!artistId) {
     await addCaptureNote(captureId, `AWS processor: failed to obtain artist ID. Resolver response: ${compact(artistResult.raw)}`);
-    await updateCaptureStatus(captureId, 'failed');
+    await updateCaptureStatus(captureId, 'failed', {
+      state: 'could_not_resolve',
+      message: 'BNDY could not resolve the artist safely enough to add this gig.',
+    });
     return;
   }
 
@@ -151,6 +181,7 @@ async function processCapture(captureId: string): Promise<void> {
   let createdEvents = 0;
   let duplicateEvents = 0;
   let heldEvents = 0;
+  let publicEvent: NonNullable<CapturePublicOutcome['result']>['event'];
 
   for (const event of discovery.events) {
     if (!eventShouldPublish(event)) {
@@ -170,9 +201,31 @@ async function processCapture(captureId: string): Promise<void> {
         `${event.date}${event.startTime ? ` ${event.startTime}` : ''} | ${venue.name}${venue.city ? `, ${venue.city}` : ''} | ` +
         `${result.created ? 'created' : 'existing duplicate'} ${result.id}${venue.isNew ? ' | venue newly created' : ' | venue matched'}`
       );
+      if (discovery.classification === 'event') {
+        publicEvent = {
+          id: result.id,
+          date: event.date,
+          time: event.startTime!,
+          venue: venue.name,
+          action: result.created ? 'created' : 'existing',
+          venueAction: venue.isNew ? 'created' : 'matched',
+          url: `https://bndy.live/g/${result.id}`,
+        };
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (discovery.classification === 'event') {
+        if (reviewableProjectionError(error)) {
+          await addCaptureNote(
+            captureId,
+            `AWS processor: REVIEW_REQUIRED. Direct event projection needs review for ${event.date} ${event.venueName}: ${message}`,
+          );
+          await updateCaptureStatus(captureId, 'failed', {
+            state: 'needs_review',
+            message: 'BNDY found the gig, but the venue or artist identity needs a human check.',
+          });
+          return;
+        }
         // A direct share represents one user-requested event. Never swallow a projection
         // failure and mark it processed: let SQS retry and eventually surface a failed capture.
         throw new Error(`Direct event projection failed for ${event.date} ${event.venueName}: ${message}`);
@@ -195,8 +248,30 @@ async function processCapture(captureId: string): Promise<void> {
     ...(venueLines.length ? ['New venues:', ...venueLines.map(line => `- ${line}`)] : ['No new venues.']),
   ].join('\n');
 
+  const publicResult: NonNullable<CapturePublicOutcome['result']> = {
+    artist: {
+      name: discovery.artist.name,
+      action: artistResult.action,
+      id: artistId,
+    },
+    ...(publicEvent ? { event: publicEvent } : {}),
+  };
+  const publicOutcome: CapturePublicOutcome = createdEvents > 0 ? {
+    state: 'added',
+    message: createdEvents === 1 ? 'Added to bndy.' : `${createdEvents} gigs added to bndy.`,
+    result: publicResult,
+  } : duplicateEvents > 0 ? {
+    state: 'already_exists',
+    message: duplicateEvents === 1 ? 'This gig is already in bndy.' : 'These gigs are already in bndy.',
+    result: publicResult,
+  } : {
+    state: 'processed',
+    message: heldEvents > 0 ? 'BNDY checked the submission and did not publish cancelled events.' : 'BNDY finished checking the submission.',
+    result: publicResult,
+  };
+
   await addCaptureNote(captureId, note);
-  await updateCaptureStatus(captureId, 'processed');
+  await updateCaptureStatus(captureId, 'processed', publicOutcome);
 }
 
 export const handler: SQSHandler = async (event): Promise<SQSBatchResponse> => {
@@ -215,7 +290,10 @@ export const handler: SQSHandler = async (event): Promise<SQSBatchResponse> => {
       if (captureId && receiveCount >= 3) {
         try {
           await addCaptureNote(captureId, `AWS processor: failed after ${receiveCount} attempts. ${error instanceof Error ? error.message : String(error)}`);
-          await updateCaptureStatus(captureId, 'failed');
+          await updateCaptureStatus(captureId, 'failed', {
+            state: 'could_not_resolve',
+            message: 'BNDY could not complete this submission after several attempts.',
+          });
           continue;
         } catch (finaliseError) {
           console.error('Could not finalise failed capture', { captureId, finaliseError });

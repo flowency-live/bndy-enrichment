@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { storedImageKey } from '../src/handlers/capture-scan.js';
+import { captureBatchIdentity, storedImageKey, usableSharedText } from '../src/handlers/capture-scan.js';
 import type { CaptureRecord } from '../src/capture/schema.js';
 
 function capture(overrides: Partial<CaptureRecord> = {}): CaptureRecord {
@@ -57,5 +57,27 @@ describe('storedImageKey', () => {
         imageKey: 'captures/legacy/poster.jpg',
       },
     }))).toBeUndefined();
+  });
+});
+
+describe('text Capture intake', () => {
+  it('accepts meaningful event text without requiring a URL or stored image', () => {
+    const item = capture({
+      mimeType: 'text/plain',
+      sharedText: 'The Torrists at Disley Club on 26 September at 9pm',
+    });
+
+    expect(usableSharedText(item)).toBe(item.sharedText);
+    expect(captureBatchIdentity(item)).toMatch(/^text:[0-9a-f]{64}$/);
+  });
+
+  it('normalises equivalent text for scanner-batch deduplication', () => {
+    const first = capture({ mimeType: 'text/plain', sharedText: 'Band at Venue on Friday' });
+    const second = capture({ mimeType: 'text/plain', sharedText: '  BAND   AT venue ON friday  ' });
+    expect(captureBatchIdentity(first)).toBe(captureBatchIdentity(second));
+  });
+
+  it('does not spend interpretation work on empty or trivial text', () => {
+    expect(usableSharedText(capture({ mimeType: 'text/plain', sharedText: 'gig' }))).toBeUndefined();
   });
 });

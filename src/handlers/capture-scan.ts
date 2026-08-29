@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { Handler } from 'aws-lambda';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { addCaptureNote, claimCapture, listUnprocessedCaptures, updateCaptureStatus } from '../capture/client.js';
@@ -45,6 +46,22 @@ export function storedImageKey(capture: CaptureRecord): string | undefined {
   return bucket && key ? `s3://${bucket}/${key}` : undefined;
 }
 
+export function usableSharedText(capture: CaptureRecord): string | undefined {
+  const text = capture.sharedText?.trim();
+  return text && text.length >= 8 ? text : undefined;
+}
+
+export function captureBatchIdentity(capture: CaptureRecord): string | undefined {
+  const url = canonicalUrl(capture.sharedUrl);
+  if (url) return `url:${url}`;
+  const imageKey = storedImageKey(capture);
+  if (imageKey) return `image:${imageKey}`;
+  const text = usableSharedText(capture);
+  if (!text) return undefined;
+  const normalised = text.toLocaleLowerCase('en-GB').replace(/\s+/g, ' ');
+  return `text:${createHash('sha256').update(normalised).digest('hex')}`;
+}
+
 function sortNewestFirst(captures: CaptureRecord[]): CaptureRecord[] {
   return [...captures].sort((a, b) =>
     String(b.receivedAt ?? b.capturedAt ?? '').localeCompare(String(a.receivedAt ?? a.capturedAt ?? ''))
@@ -72,22 +89,26 @@ export const handler: Handler = async () => {
 
     const url = canonicalUrl(capture.sharedUrl);
     const imageKey = storedImageKey(capture);
+    const sharedText = usableSharedText(capture);
 
-    if (!url && !imageKey) {
+    if (!url && !imageKey && !sharedText) {
       await addCaptureNote(
         capture.id,
         capture.mimeType?.startsWith('image/')
           ? 'AWS processor: failed because this image capture has no uploaded image object.'
-          : 'AWS processor: failed because the capture contains no usable public URL or stored image.'
+          : 'AWS processor: failed because the capture contains no usable public URL, stored image or event text.'
       );
-      await updateCaptureStatus(capture.id, 'failed');
+      await updateCaptureStatus(capture.id, 'failed', {
+        state: 'could_not_resolve',
+        message: 'There was not enough event information to check this submission.',
+      });
       failed++;
       continue;
     }
 
-    // Dedupe only within this scanner batch. URLs use their canonical public identity;
-    // image captures use the immutable S3 object identity.
-    const identity = url ? `url:${url}` : `image:${imageKey}`;
+    // Dedupe only within this scanner batch. URLs use their canonical public identity,
+    // images use the immutable S3 object identity and text uses a normalised hash.
+    const identity = captureBatchIdentity(capture)!;
     const firstId = seen.get(identity);
     if (firstId) {
       await addCaptureNote(capture.id, `AWS processor: duplicate of capture ${firstId}.`);

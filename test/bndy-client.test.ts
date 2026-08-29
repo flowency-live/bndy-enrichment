@@ -79,6 +79,34 @@ describe('findOrCreateArtist', () => {
       raw: body,
     });
   });
+
+  it('holds a genuinely new incomplete Artist for review after matching has run', async () => {
+    process.env.BNDY_SERVICE_TOKEN = 'test-service-token';
+    const body = {
+      action: 'create_failed',
+      error: 'Location and artist type are required to create a new artist.',
+      code: 'VALIDATION_ERROR',
+    };
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), {
+      status: 422,
+      headers: { 'content-type': 'application/json' },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await findOrCreateArtist({
+      name: 'An Existing-Looking Band',
+      confidence: 0.9,
+      evidenceUrls: ['https://venue.example/gigs'],
+      actTypes: [],
+      genres: [],
+    }, 'capture-incomplete');
+
+    expect(result).toMatchObject({
+      action: 'review',
+      reason: body.error,
+      raw: body,
+    });
+  });
 });
 
 describe('Capture ticketing policy', () => {
