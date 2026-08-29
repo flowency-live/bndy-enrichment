@@ -68,8 +68,6 @@ jobs:
             .cases == 1
             and .canonicalWrites == 0
             and .reviewStatus == "unreviewed"
-            and .contract.exactlyOneModelCall == true
-            and .contract.providerResponseCaptured == true
           ' ops/enrichment/gemini-native-citation-diagnostic-unreviewed.json >/dev/null
       - name: Record the unreviewed public diagnostic
         run: |
@@ -80,3 +78,9 @@ jobs:
           git add ops/enrichment/gemini-native-citation-diagnostic-unreviewed.json
           git commit -m "Record unreviewed Backline Gemini citation diagnostic"
           git push origin HEAD:main
+      - name: Require a completed provider response
+        run: |
+          jq -e '
+            .contract.exactlyOneModelCall == true
+            and .contract.providerResponseCaptured == true
+          ' ops/enrichment/gemini-native-citation-diagnostic-unreviewed.json >/dev/null
