@@ -10,6 +10,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 
 export class BndyEnrichmentStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -166,6 +167,28 @@ export class BndyEnrichmentStack extends cdk.Stack {
     new events.Rule(this, 'SourceDispatchTick', {
       schedule: events.Schedule.rate(cdk.Duration.hours(1)),
       targets: [new targets.LambdaFunction(sourceDispatcher)],
+    });
+
+    const sourceHealth = new lambdaNode.NodejsFunction(this, 'SourceHealthWorker', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      entry: 'src/handlers/source-health.ts',
+      handler: 'handler',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+      environment: { STATE_TABLE: table.tableName },
+      bundling: { minify: true, sourceMap: true },
+    });
+    table.grantReadData(sourceHealth);
+    new events.Rule(this, 'SourceHealthTick', {
+      schedule: events.Schedule.rate(cdk.Duration.hours(1)),
+      targets: [new targets.LambdaFunction(sourceHealth)],
+    });
+    new cloudwatch.Alarm(this, 'SourceFreshnessAlarm', {
+      metric: sourceHealth.metricErrors({ period: cdk.Duration.minutes(5) }),
+      threshold: 1,
+      evaluationPeriods: 1,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      alarmDescription: 'At least one enabled Backline coverage root has not completed successfully within 26 hours.',
     });
 
     const sourceWorkerEnvironment = {
@@ -439,6 +462,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'ProjectionQueueUrl', { value: projectionQueue.queueUrl });
     new cdk.CfnOutput(this, 'EntityEnrichmentQueueUrl', { value: entityEnrichmentQueue.queueUrl });
     new cdk.CfnOutput(this, 'SourceDispatcherFunctionName', { value: sourceDispatcher.functionName });
+    new cdk.CfnOutput(this, 'SourceHealthFunctionName', { value: sourceHealth.functionName });
     new cdk.CfnOutput(this, 'SourceWorkerFunctionName', { value: sourceWorker.functionName });
     new cdk.CfnOutput(this, 'BrowserSourceWorkerFunctionName', { value: browserSourceWorker.functionName });
     new cdk.CfnOutput(this, 'ProjectionWorkerFunctionName', { value: projectionWorker.functionName });
