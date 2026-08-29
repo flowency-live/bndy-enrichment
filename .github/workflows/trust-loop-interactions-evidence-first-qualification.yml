@@ -1,6 +1,8 @@
 name: Capture 20-case Interactions evidence-first qualification
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       confirmation:
@@ -19,8 +21,10 @@ concurrency:
 jobs:
   qualify:
     if: >-
-      github.event_name == 'workflow_dispatch'
-      && github.event.inputs.confirmation == 'Run the approved 20-case Interactions evidence-first qualification'
+      (github.event_name == 'workflow_dispatch'
+      && github.event.inputs.confirmation == 'Run the approved 20-case Interactions evidence-first qualification')
+      || (github.event_name == 'push'
+      && startsWith(github.event.head_commit.message, 'Run the approved 20-case Interactions evidence-first qualification'))
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 30
