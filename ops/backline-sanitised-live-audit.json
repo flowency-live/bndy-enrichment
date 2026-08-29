@@ -70,65 +70,62 @@
   },
   "errors": [
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:BacklineAdminApi9B1E7442",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:BrowserSourceWorkerCA2BC3A6",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:CaptureProcessorA6E403AD",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:CaptureScannerA0D85922",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:ClaimAuthorityStreamWorker0E6B1DD9",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:GoogleDiscoveryWorker66B9CA30",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:ProjectionWorker2E654DBF",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:ScanPlannerBC522289",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:SourceDispatcherB94114BB",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:SourceWorker336FEA29",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "lambda:TrustLoop620D9456",
+      "type": "ClientError"
     },
     {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
-    },
-    {
-      "section": "sqsQueue",
-      "type": "QueueDoesNotExist"
+      "section": "cloudWatchAlarms",
+      "type": "ClientError"
     }
   ],
   "evidenceBucket": {
-    "bytes": 25365927446,
-    "newestAt": "2026-08-29T21:16:24+00:00",
-    "objects": 1021990
+    "bytes": 25367170409,
+    "newestAt": "2026-08-29T22:16:24+00:00",
+    "objects": 1022223
   },
-  "generatedAt": "2026-08-29T21:20:27.064607+00:00",
+  "generatedAt": "2026-08-29T21:50:30.709596+00:00",
   "identityVerified": true,
+  "lambdaFunctions": [],
   "lemonrock": {
     "claims": 1358285,
     "claimsBySource": {
@@ -916,7 +913,112 @@
     },
     "uniqueCurrentTasks": 49553
   },
-  "queues": [],
+  "queues": [
+    {
+      "deadLetterRole": null,
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "BrowserScanDLQF60E07F4",
+      "visibilityTimeoutSeconds": 30,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": "BrowserScanDLQF60E07F4",
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "BrowserScanQueue4C491B38",
+      "visibilityTimeoutSeconds": 900,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": null,
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "CaptureProcessingDLQ0A31D9DF",
+      "visibilityTimeoutSeconds": 30,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": "CaptureProcessingDLQ0A31D9DF",
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "CaptureProcessingQueue6959335B",
+      "visibilityTimeoutSeconds": 420,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": null,
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "EntityEnrichmentDLQA8E8FCCD",
+      "visibilityTimeoutSeconds": 30,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": "EntityEnrichmentDLQA8E8FCCD",
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "EntityEnrichmentQueueD721536B",
+      "visibilityTimeoutSeconds": 360,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": null,
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "GoogleDiscoveryDLQE4DD72E1",
+      "visibilityTimeoutSeconds": 30,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": "GoogleDiscoveryDLQE4DD72E1",
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "GoogleDiscoveryQueue5D916585",
+      "visibilityTimeoutSeconds": 360,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": null,
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "HistoricalSourceFailureQuarantine6F3AD1FE",
+      "visibilityTimeoutSeconds": 30,
+      "visible": 6048
+    },
+    {
+      "deadLetterRole": null,
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "ProjectionDLQ7E1DC66F",
+      "visibilityTimeoutSeconds": 30,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": "ProjectionDLQ7E1DC66F",
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "ProjectionQueue84CD9FA9",
+      "visibilityTimeoutSeconds": 300,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": null,
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "SourceScanDLQB39C3B51",
+      "visibilityTimeoutSeconds": 30,
+      "visible": 0
+    },
+    {
+      "deadLetterRole": "SourceScanDLQB39C3B51",
+      "delayed": 0,
+      "inFlight": 0,
+      "logicalRole": "SourceScanQueue1C378650",
+      "visibilityTimeoutSeconds": 900,
+      "visible": 0
+    }
+  ],
   "readOnly": true,
   "region": "eu-west-2",
   "resourceCounts": {
@@ -1044,7 +1146,7 @@
     "status": "UPDATE_COMPLETE"
   },
   "stateTable": {
-    "itemsScanned": 2969574,
-    "scanCapacityUnits": 318577.0
+    "itemsScanned": 2971588,
+    "scanCapacityUnits": 318817.5
   }
 }
