@@ -1,6 +1,8 @@
 name: Diagnose Gemini-native Backline citations
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       confirmation:
@@ -18,7 +20,11 @@ concurrency:
 
 jobs:
   capture:
-    if: github.event.inputs.confirmation == 'Run one Backline Gemini citation diagnostic'
+    if: >-
+      (github.event_name == 'workflow_dispatch'
+      && github.event.inputs.confirmation == 'Run one Backline Gemini citation diagnostic')
+      || (github.event_name == 'push'
+      && startsWith(github.event.head_commit.message, 'Run one Backline Gemini citation diagnostic'))
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 15
