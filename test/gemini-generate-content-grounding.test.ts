@@ -82,7 +82,46 @@ describe('Gemini GenerateContent grounded enrichment adapter', () => {
     const request = JSON.parse(requestInit?.body as string);
     expect(request.tools).toEqual([{ google_search: {} }]);
     expect(request.contents[0].parts[0].text).toMatch(/at most two Google Search queries/i);
+    expect(request.contents[0].parts[0].text).toMatch(/MUST invoke the supplied Google Search tool/i);
+    expect(request.contents[0].parts[0].text).toMatch(/Do not answer from model memory/i);
     expect(request).not.toHaveProperty('generationConfig');
+  });
+
+  it('fails closed and retains the response when GenerateContent omits groundingMetadata', async () => {
+    const modelText = JSON.stringify({
+      identityConfidence: 0.98,
+      identityReason: 'Answered from model knowledge without grounding.',
+      facts: [{
+        predicate: 'hasAddress',
+        value: '57 Roscoe St, Oldham OL1 1EA',
+        confidence: 0.98,
+        evidenceUrls: ['https://whittlesoldham.com/'],
+      }],
+    });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      candidates: [{ content: { parts: [{ text: modelText }] }, finishReason: 'STOP' }],
+      usageMetadata: { promptTokenCount: 800, candidatesTokenCount: 160 },
+    }), { status: 200 })));
+
+    const item = venueCase();
+    const failure = await enrichTrustLoopEntityWithGeminiGenerateContent({
+      entity: qualificationEntity(item),
+      sourceId: item.sourceId,
+      sourceCandidateKey: item.candidateKey,
+      requestedPredicates: qualificationPredicates('venue'),
+    }, { apiKey: 'fixture-key' }).catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(GroundedEnrichmentCaptureError);
+    expect((failure as GroundedEnrichmentCaptureError).bundle).toMatchObject({
+      identityConfidence: 0,
+      facts: [],
+      usage: { searches: 0, modelCalls: 1, inputTokens: 800, outputTokens: 160 },
+      raw: {
+        captureError: expect.stringMatching(/no groundingMetadata/i),
+        responseText: modelText,
+        providerResponse: expect.objectContaining({ candidates: expect.any(Array) }),
+      },
+    });
   });
 
   it('quarantines model URLs when groundingSupports do not cover the fact claim', async () => {

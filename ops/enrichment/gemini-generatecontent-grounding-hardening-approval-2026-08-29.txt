@@ -1,0 +1,10 @@
+Approved scope: prepare, push and merge minimal hardening of the inactive Gemini
+3.6 Flash GenerateContent adapter. The prompt must require a Google Search before
+returning facts, and the adapter must fail closed without groundingMetadata.
+
+Approved validation: exactly one further shadow-only Whittles Oldham validation,
+requesting one to two searches and exactly one model call, with a maximum reserved
+cost of USD 0.05.
+
+The public response or exact failure may be committed. No canonical writes,
+schedule or provider activation are authorised.
