@@ -28,6 +28,11 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
+      - name: Enforce unused one-shot targets
+        run: |
+          set -euo pipefail
+          test ! -e ops/enrichment/gemini-grounded-explicit-contract-20-case-unreviewed.json
+          test ! -e ops/enrichment/gemini-grounded-explicit-contract-20-case-review.md
       - name: Load deployed Gemini credential
         run: |
           set -euo pipefail
@@ -47,22 +52,52 @@ jobs:
       - name: Capture bounded grounded-enrichment cases
         env:
           GEMINI_MODEL: gemini-3.6-flash
+          ENRICHMENT_CAPTURE_PATH: ops/enrichment/gemini-grounded-explicit-contract-20-case-unreviewed.json
+          ENRICHMENT_REVIEW_PATH: ops/enrichment/gemini-grounded-explicit-contract-20-case-review.md
         run: |
           set -euo pipefail
           test -n "$GEMINI_API_KEY"
           npm run trust-loop:capture-enrichment | tee trust-loop-enrichment-capture.log
-          jq -e '.cases == 20 and .artistCases == 10 and .venueCases == 10 and .canonicalWrites == 0 and .reviewStatus == "unreviewed"' \
-            ops/enrichment/gemini-grounded-unreviewed.json >/dev/null
+          artifact=ops/enrichment/gemini-grounded-explicit-contract-20-case-unreviewed.json
+          temp=$(mktemp)
+          jq '
+            .maximumReservedCost = 0.60
+            | .reservedCost = 0.60
+            | .requestedSearchesPerCaseMaximum = 2
+            | .providerMayAutonomouslyExceedSearchRequest = true
+            | .totalObservedSearches = ([.items[].bundle.usage.searches // 0] | add)
+            | .actualWithinReservedCost = (.totalEstimatedCost <= 0.60)
+          ' "$artifact" > "$temp"
+          mv "$temp" "$artifact"
+          jq -e '
+            .cases == 20
+            and .artistCases == 10
+            and .venueCases == 10
+            and .canonicalWrites == 0
+            and .reviewStatus == "unreviewed"
+            and .maximumReservedCost == 0.60
+            and .reservedCost == 0.60
+            and .requestedSearchesPerCaseMaximum == 2
+            and .providerMayAutonomouslyExceedSearchRequest == true
+            and (.items | length) == 20
+            and all(.items[]; .canonicalWrites == 0)
+            and all(.items[]; .bundle.usage.modelCalls == 1)
+          ' "$artifact" >/dev/null
       - name: Record the unreviewed evidence cohort
         run: |
           set -euo pipefail
           git config user.name bndy-backline-bot
           git config user.email actions@users.noreply.github.com
           git pull --rebase --autostash origin main
-          git add ops/enrichment/gemini-grounded-unreviewed.json ops/enrichment/gemini-grounded-review.md
+          git add ops/enrichment/gemini-grounded-explicit-contract-20-case-unreviewed.json ops/enrichment/gemini-grounded-explicit-contract-20-case-review.md
           git commit -m "Record unreviewed Backline enrichment evidence cohort" || true
           git push origin HEAD:main
       - name: Require a complete provider capture
         run: |
           set -euo pipefail
-          jq -e '.captureErrors == 0' ops/enrichment/gemini-grounded-unreviewed.json >/dev/null
+          jq -e '
+            .captureErrors == 0
+            and .measuredUsageCases == 20
+            and all(.items[]; .captureStatus == "captured")
+            and all(.items[]; .bundle.raw.providerResponse.status == "completed")
+          ' ops/enrichment/gemini-grounded-explicit-contract-20-case-unreviewed.json >/dev/null
