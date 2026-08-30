@@ -1,14 +1,14 @@
 name: deploy-capture-pipeline
 
-# One-shot push trigger: creating/changing this workflow deploys the capture pipeline.
-# It can also be run manually later if required.
-# Trigger production deploy and record the Facebook Event Capture acceptance result.
+# Combined Capture and Enrichment release. Manual, explicitly enabled and
+# intentionally separate from ordinary application merges.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/deploy-capture-pipeline.yml'
+    inputs:
+      confirm_deploy:
+        description: 'Type "deploy-capture-and-enrichment" to confirm both production deployments'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -16,6 +16,10 @@ permissions:
 
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.confirm_deploy == 'deploy-capture-and-enrichment' &&
+      vars.BNDY_CAPTURE_PIPELINE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -34,9 +38,14 @@ jobs:
         with:
           node-version: 22
 
+      - name: Require the production deploy role
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+        run: test -n "$AWS_DEPLOY_ROLE_ARN"
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
 
       - name: Recover current capture deployment parameters
@@ -86,12 +95,13 @@ jobs:
             --no-fail-on-empty-changeset
 
       - name: Install enrichment dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Validate enrichment before deployment
+        run: npm run check
 
       - name: Deploy enrichment stack
-        run: |
-          npx cdk bootstrap
-          npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+        run: npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
 
       - name: Configure Gemini API key
         env:
