@@ -1,11 +1,20 @@
 name: deploy-aws
 on:
   workflow_dispatch:
+    inputs:
+      confirm_deploy:
+        description: 'Type "deploy-enrichment" to confirm production deployment'
+        required: true
+        type: string
 permissions:
   contents: read
   id-token: write
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.confirm_deploy == 'deploy-enrichment' &&
+      vars.BNDY_ENRICHMENT_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -13,17 +22,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+      - run: npm ci
+      - run: npm run check
+      - run: npm run synth
+      - name: Require the production deploy role
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+        run: test -n "$AWS_DEPLOY_ROLE_ARN"
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
-      - run: npx cdk bootstrap
       - run: npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
       - name: Configure Gemini API key
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          set -euo pipefail
+          test -n "$GEMINI_API_KEY"
           SECRET_ARN=$(node -e "const x=require('./cdk-outputs.json'); console.log(x.BndyEnrichmentStack.GeminiSecretArn)")
           aws secretsmanager put-secret-value \
             --secret-id "$SECRET_ARN" \
