@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Handler } from 'aws-lambda';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
-import { addCaptureNote, claimCapture, listUnprocessedCaptures, updateCaptureStatus } from '../capture/client.js';
+import { addCaptureNote, listUnprocessedCaptures, updateCaptureStatus } from '../capture/client.js';
 import type { CaptureRecord } from '../capture/schema.js';
 
 const sqs = new SQSClient({});
@@ -118,9 +118,8 @@ export const handler: Handler = async () => {
     }
     seen.set(identity, capture.id);
 
-    const claimed = await claimCapture(capture.id, 'bndy-capture-scan', 20);
-    if (!claimed) continue;
-
+    // The processor owns the atomic claim. This scanner is only a recovery
+    // dispatcher, so duplicate queue messages remain safe.
     await sqs.send(new SendMessageCommand({
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify({ captureId: capture.id }),

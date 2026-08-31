@@ -2,6 +2,7 @@ import type { SQSBatchResponse, SQSHandler } from 'aws-lambda';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import {
   addCaptureNote,
+  claimCapture,
   getCapture,
   updateCaptureStatus,
   type CapturePublicOutcome,
@@ -48,6 +49,17 @@ export function reviewableProjectionError(error: unknown): boolean {
   return /needs review|cannot be resolved|unresolvable|data.?quality/i.test(message);
 }
 
+// Keep Capture aligned with the canonical Events API rule in RUNBOOK §5.6.
+// Missing source time is not a human-review condition: it is a deterministic
+// default with explicit provenance.
+export function defaultCaptureStartTime(date: string, sourceText = ''): string {
+  if (/\bafternoon\b/i.test(sourceText)) return '14:00';
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay();
+  if (day === 5 || day === 6) return '21:00';
+  if (day === 0) return '19:00';
+  return '20:00';
+}
+
 function compact(value: unknown, max = 800): string {
   const text = typeof value === 'string' ? value : JSON.stringify(value);
   return text.length <= max ? text : `${text.slice(0, max)}…`;
@@ -65,9 +77,18 @@ async function prepareDiscoveryCapture(capture: CaptureRecord): Promise<CaptureR
   return prepareCaptureForDiscovery(capture, inspection?.finalUrl);
 }
 
-async function processCapture(captureId: string): Promise<void> {
+async function processCapture(captureId: string, workerId: string): Promise<void> {
+  // The SQS message ID is stable across retries and different across duplicate
+  // dispatches. Capture therefore permits this delivery to resume its own claim
+  // after a transient failure without allowing a second message to run it twice.
+  const claimed = await claimCapture(captureId, workerId, 20);
+  if (!claimed) {
+    console.log('Skipping capture because another worker already claimed it', { captureId });
+    return;
+  }
+
   const capture = await getCapture(captureId);
-  if (capture.status !== 'processing' && capture.status !== 'unprocessed') {
+  if (capture.status !== 'processing') {
     console.log('Skipping capture with terminal/non-processable status', { captureId, status: capture.status });
     return;
   }
@@ -112,18 +133,12 @@ async function processCapture(captureId: string): Promise<void> {
     return;
   }
 
+  let defaultedStartTime: string | undefined;
   if (discovery.classification === 'event') {
     const event = discovery.events[0];
     if (!event.cancelled && !event.startTime) {
-      await addCaptureNote(
-        captureId,
-        `AWS processor: REVIEW_REQUIRED. Direct event capture resolved without a start time. ${discovery.reason}`,
-      );
-      await updateCaptureStatus(captureId, 'failed', {
-        state: 'needs_review',
-        message: 'BNDY found the gig, but the start time needs a human check before it can be added.',
-      });
-      return;
+      defaultedStartTime = defaultCaptureStartTime(event.date, capture.sharedText);
+      event.startTime = defaultedStartTime;
     }
 
     // When the transport URL was deterministically resolved to a canonical Facebook Event,
@@ -244,6 +259,9 @@ async function processCapture(captureId: string): Promise<void> {
     discovery.canonicalUrl ? `Canonical capture URL: ${discovery.canonicalUrl}` : 'Canonical capture URL: not resolved',
     discovery.artist.bio ? `Bio: ${discovery.artist.bio}` : 'Bio: not found',
     `Events: ${createdEvents} created, ${duplicateEvents} existing duplicates, ${heldEvents} held.`,
+    ...(defaultedStartTime
+      ? [`Start time: ${defaultedStartTime} (defaulted from missing source time under RUNBOOK §5.6).`]
+      : []),
     ...(eventLines.length ? ['Event detail:', ...eventLines.map(line => `- ${line}`)] : ['No upcoming events found.']),
     ...(venueLines.length ? ['New venues:', ...venueLines.map(line => `- ${line}`)] : ['No new venues.']),
   ].join('\n');
@@ -284,7 +302,7 @@ export const handler: SQSHandler = async (event): Promise<SQSBatchResponse> => {
       const parsed = JSON.parse(record.body);
       captureId = parsed.captureId;
       if (!captureId) throw new Error('captureId is required');
-      await processCapture(captureId);
+      await processCapture(captureId, `bndy-capture-processor:${record.messageId}`);
     } catch (error) {
       console.error('Capture processing failed', { captureId, receiveCount, error });
       if (captureId && receiveCount >= 3) {
