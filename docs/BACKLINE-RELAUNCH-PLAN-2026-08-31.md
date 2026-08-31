@@ -6,6 +6,34 @@ Prepared: 2026-08-31
 
 Authority: this document supersedes the Backline and source-automation status shown on the website workboard before this date. It does not supersede the safety controls or execution gates in the linked repository documents.
 
+## Ownership and execution model
+
+The Backline owner owns the complete product and repository programme:
+
+- architecture, source policy and delivery sequencing;
+- `bndy-enrichment` runtime, Claims, resolution, projection and hydration code;
+- the Backline read contract in `bndy-serverless-api`;
+- the Godmode intelligence and graph experience in `bndy-backstage`;
+- source reconciliation against `bndy-ops` evidence;
+- the authoritative Backline lane in `bndy-website`;
+- tests, release candidates, acceptance evidence and deployment handoffs.
+
+The designated infrastructure agent is the live-AWS operator. Its boundary is deployment coordination, CloudFormation/CDK/SAM review, narrowly requested production inspection and execution of separately approved AWS operations. Infrastructure uncertainty does not pause repository work, fixture work, parser work, graph work, reconciliation design or release preparation.
+
+## Product release train
+
+Backline will move through complete, visible intelligence loops rather than disconnected infrastructure tasks.
+
+| Slice | Product outcome | Repository delivery | Live handoff |
+| --- | --- | --- | --- |
+| 0. Truthful control surface | Godmode shows real write-gate state, every source family and a walkable evidence graph | Bounded graph route, source families, live control lookup and graph UI | Deploy the existing SourceRuns function and Backstage application |
+| 1. Canonical convergence | Godmode shows that Backline represents current BNDY, including Fizgig and Live Band Photos legacy imports | Delta reconciliation report, hydration manifest visibility and canonical source coverage | Run reviewed dry-run, then one separately approved Backline-only hydration |
+| 2. Shadow intelligence BAU | New evidence and Claims visibly accumulate every day, with freshness and conflicts | Source adapters, immutable fixtures, structural gates, metrics and identity reports | Activate one reviewed source schedule at a time |
+| 3. Controlled canonical loop | A small set of reviewed future Events is created through policy and read back exactly | Candidate pack, authority decision, projection evidence and rollback pack | Temporarily authorise the exact KLMA pilot run only |
+| 4. Continuous authority | Qualified predicates and sources project under explicit policy while uncertainty stays parked | Predicate/source allowlists, exception monitoring and audit history | Expand the global gate only through later bounded approvals |
+
+Every slice must produce something visible in Godmode. A source is not operational merely because a Lambda ran; it is operational when evidence, Claims, resolution, decision, freshness and failures can be inspected end to end.
+
 ## Decision
 
 Backline does not need a restart. Its evidence graph, source runtime, canonical safety gate, freshness controls, continuous hydration path, Explorer and reliability controls survived and are now on `main`.
@@ -49,6 +77,21 @@ The first compelling proof is therefore an end-to-end intelligence loop: source 
 | Explorer and Godmode | Core graph reader survived | Release and truthful live status unverified | Extend as the control surface |
 
 Green repository state must not be presented as green production state.
+
+### 31 August infrastructure evidence reconciliation
+
+The infrastructure packet proves that `BndyEnrichmentStack` is `IN_SYNC`, the global projection control record is absent, the inspected 39 source configurations are shadow, and the named legacy Signals schedules are disabled. It does not clear the release.
+
+The current release blockers are:
+
+1. the active Projection DLQ contains 1,108 messages and must not be purged or replayed before classification;
+2. the live Capture processor is Python while the enrichment CDK proposes a Node replacement, so Capture remains outside every Backline release until ownership is separated;
+3. deployed Lambda hashes have not been reconciled to repository commits, so the live projection gate code is not yet proved;
+4. `/bndy/claims/stream-arn` is missing and the Claims event-source mapping was not evidenced;
+5. Artists, Venues, Events and Claims stream states were not returned;
+6. Cowork schedule authority, direct canonical IAM permissions and an actual delta hydration dry-run remain outstanding.
+
+The reported CDK diff is not an approved bounded release because it combines Capture changes, reliability controls and unrelated code updates. Repository product work continues while the infrastructure agent resolves only these live concerns.
 
 ## Canonical catch-up decision
 
