@@ -12,6 +12,7 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as lambdaDestinations from 'aws-cdk-lib/aws-lambda-destinations';
+import * as logs from 'aws-cdk-lib/aws-logs';
 
 export class BndyEnrichmentStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -114,12 +115,63 @@ export class BndyEnrichmentStack extends cdk.Stack {
 
     const bndyServiceSecret = secretsmanager.Secret.fromSecretNameV2(this, 'BndyMcpServiceSecret', 'bndy/mcp-service');
     const captureServiceSecret = secretsmanager.Secret.fromSecretNameV2(this, 'BndyCaptureServiceSecret', 'bndy/capture-service');
+    const lambdaLogRetention = logs.RetentionDays.ONE_MONTH;
 
     const common = {
       runtime: lambda.Runtime.NODEJS_22_X,
       timeout: cdk.Duration.minutes(5),
       memorySize: 1024,
     };
+
+    const applyLambdaLogRetention = (id: string, worker: lambda.IFunction): void => {
+      new logs.LogRetention(this, `${id}LogRetention`, {
+        logGroupName: `/aws/lambda/${worker.functionName}`,
+        retention: lambdaLogRetention,
+        removalPolicy: cdk.RemovalPolicy.RETAIN,
+      });
+    };
+
+    const addLambdaErrorAlarm = (
+      id: string,
+      worker: lambda.IFunction,
+      alarmDescription: string,
+    ): cloudwatch.Alarm => new cloudwatch.Alarm(this, id, {
+      metric: worker.metricErrors({ period: cdk.Duration.minutes(5) }),
+      threshold: 1,
+      evaluationPeriods: 1,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      alarmDescription,
+    });
+
+    const addQueueReliabilityAlarms = (
+      id: string,
+      activeQueue: sqs.IQueue,
+      deadLetterQueue: sqs.IQueue,
+      maximumAge: cdk.Duration,
+    ): void => {
+      new cloudwatch.Alarm(this, `${id}DLQNotEmpty`, {
+        metric: deadLetterQueue.metricApproximateNumberOfMessagesVisible({ period: cdk.Duration.minutes(5) }),
+        threshold: 1,
+        evaluationPeriods: 1,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        alarmDescription: `${id} has at least one message in its operational dead-letter queue.`,
+      });
+      new cloudwatch.Alarm(this, `${id}QueueAge`, {
+        metric: activeQueue.metricApproximateAgeOfOldestMessage({ period: cdk.Duration.minutes(5) }),
+        threshold: maximumAge.toSeconds(),
+        evaluationPeriods: 2,
+        datapointsToAlarm: 2,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        alarmDescription: `${id} has retained unprocessed work beyond its expected operating window.`,
+      });
+    };
+
+    addQueueReliabilityAlarms('GoogleDiscovery', queue, dlq, cdk.Duration.minutes(30));
+    addQueueReliabilityAlarms('CaptureProcessing', captureQueue, captureDlq, cdk.Duration.minutes(15));
+    addQueueReliabilityAlarms('SourceScan', sourceScanQueue, sourceScanDlq, cdk.Duration.minutes(30));
+    addQueueReliabilityAlarms('BrowserScan', browserScanQueue, browserScanDlq, cdk.Duration.minutes(30));
+    addQueueReliabilityAlarms('Projection', projectionQueue, projectionDlq, cdk.Duration.minutes(15));
+    addQueueReliabilityAlarms('EntityEnrichment', entityEnrichmentQueue, entityEnrichmentDlq, cdk.Duration.minutes(30));
 
     // Claim V2 authority is consumed asynchronously from the canonical BNDY
     // claims table. Raw claimant evidence is transient only; the worker stores
@@ -146,6 +198,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
     }));
     entityClaimsTable.grantStreamRead(claimAuthorityStreamWorker);
     table.grantReadWriteData(claimAuthorityStreamWorker);
+    applyLambdaLogRetention('ClaimAuthorityStreamWorker', claimAuthorityStreamWorker);
+    addLambdaErrorAlarm(
+      'ClaimAuthorityStreamWorkerErrors',
+      claimAuthorityStreamWorker,
+      'The Claim V2 authority stream worker reported an error.',
+    );
 
     // Canonical table streams are opt-in because enabling DynamoDB Streams on
     // the three legacy production tables and publishing their ARNs are separate
@@ -171,6 +229,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       });
       table.grantReadWriteData(canonicalChangeWorker);
       evidenceBucket.grantReadWrite(canonicalChangeWorker);
+      applyLambdaLogRetention('CanonicalChangeStreamWorker', canonicalChangeWorker);
 
       for (const [id, tableName, parameterName] of [
         ['CanonicalArtistsTable', 'bndy-artists', '/bndy/canonical/artists/stream-arn'],
@@ -225,6 +284,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
     table.grantReadWriteData(sourceDispatcher);
     sourceScanQueue.grantSendMessages(sourceDispatcher);
     browserScanQueue.grantSendMessages(sourceDispatcher);
+    applyLambdaLogRetention('SourceDispatcher', sourceDispatcher);
+    addLambdaErrorAlarm(
+      'SourceDispatcherErrors',
+      sourceDispatcher,
+      'The source dispatcher failed to schedule due Backline source work.',
+    );
 
     new events.Rule(this, 'SourceDispatchTick', {
       schedule: events.Schedule.rate(cdk.Duration.hours(1)),
@@ -241,6 +306,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       bundling: { minify: true, sourceMap: true },
     });
     table.grantReadData(sourceHealth);
+    applyLambdaLogRetention('SourceHealthWorker', sourceHealth);
     new events.Rule(this, 'SourceHealthTick', {
       schedule: events.Schedule.rate(cdk.Duration.hours(1)),
       targets: [new targets.LambdaFunction(sourceHealth)],
@@ -282,6 +348,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
     evidenceBucket.grantReadWrite(sourceWorker);
     projectionQueue.grantSendMessages(sourceWorker);
     sourceScanQueue.grantSendMessages(sourceWorker);
+    applyLambdaLogRetention('SourceWorker', sourceWorker);
+    addLambdaErrorAlarm(
+      'SourceWorkerErrors',
+      sourceWorker,
+      'The standard source worker reported an acquisition or persistence error.',
+    );
 
     const browserSourceWorker = new lambdaNode.NodejsFunction(this, 'BrowserSourceWorker', {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -289,6 +361,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       handler: 'handler',
       timeout: cdk.Duration.minutes(14),
       memorySize: 3072,
+      reservedConcurrentExecutions: 2,
       environment: {
         STATE_TABLE: table.tableName,
         EVIDENCE_BUCKET: evidenceBucket.bucketName,
@@ -303,10 +376,17 @@ export class BndyEnrichmentStack extends cdk.Stack {
     browserSourceWorker.addEventSource(new sources.SqsEventSource(browserScanQueue, {
       batchSize: 1,
       reportBatchItemFailures: true,
+      maxConcurrency: 2,
     }));
     table.grantReadWriteData(browserSourceWorker);
     evidenceBucket.grantReadWrite(browserSourceWorker);
     projectionQueue.grantSendMessages(browserSourceWorker);
+    applyLambdaLogRetention('BrowserSourceWorker', browserSourceWorker);
+    addLambdaErrorAlarm(
+      'BrowserSourceWorkerErrors',
+      browserSourceWorker,
+      'The browser source worker reported an acquisition or persistence error.',
+    );
 
     const projectionWorker = new lambdaNode.NodejsFunction(this, 'ProjectionWorker', {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -314,6 +394,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       handler: 'handler',
       timeout: cdk.Duration.minutes(4),
       memorySize: 1024,
+      reservedConcurrentExecutions: 2,
       environment: {
         STATE_TABLE: table.tableName,
         ENTITY_ENRICHMENT_QUEUE_URL: entityEnrichmentQueue.queueUrl,
@@ -325,10 +406,17 @@ export class BndyEnrichmentStack extends cdk.Stack {
     projectionWorker.addEventSource(new sources.SqsEventSource(projectionQueue, {
       batchSize: 1,
       reportBatchItemFailures: true,
+      maxConcurrency: 2,
     }));
     table.grantReadWriteData(projectionWorker);
     entityEnrichmentQueue.grantSendMessages(projectionWorker);
     bndyServiceSecret.grantRead(projectionWorker);
+    applyLambdaLogRetention('ProjectionWorker', projectionWorker);
+    addLambdaErrorAlarm(
+      'ProjectionWorkerErrors',
+      projectionWorker,
+      'The globally gated projection worker reported an error.',
+    );
 
     // Backline Evidence Explorer admin read API. Read-only bounded graph
     // traversal over the knowledge substrate for the Godmode explorer.
@@ -348,6 +436,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
     });
     table.grantReadData(backlineAdminApi);
     bndyServiceSecret.grantRead(backlineAdminApi);
+    applyLambdaLogRetention('BacklineAdminApi', backlineAdminApi);
+    addLambdaErrorAlarm(
+      'BacklineAdminApiErrors',
+      backlineAdminApi,
+      'The read-only Backline admin API reported an error.',
+    );
     const backlineAdminApiUrl = backlineAdminApi.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,
       cors: {
@@ -368,6 +462,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
       bundling: { minify: true, sourceMap: true },
     });
     table.grantReadWriteData(trustLoop);
+    applyLambdaLogRetention('TrustLoop', trustLoop);
+    addLambdaErrorAlarm(
+      'TrustLoopErrors',
+      trustLoop,
+      'The Backline trust-loop classifier reported an error.',
+    );
     new events.Rule(this, 'TrustLoopDailyClassification', {
       schedule: events.Schedule.cron({ minute: '35', hour: '3' }),
       targets: [new targets.LambdaFunction(trustLoop)],
@@ -432,6 +532,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       ...common,
       entry: 'src/handlers/google-discovery.ts',
       handler: 'handler',
+      reservedConcurrentExecutions: 2,
       environment: {
         STATE_TABLE: table.tableName,
         GEMINI_SECRET_ARN: geminiSecret.secretArn,
@@ -441,10 +542,20 @@ export class BndyEnrichmentStack extends cdk.Stack {
       },
       bundling: { minify: true, sourceMap: true },
     });
-    worker.addEventSource(new sources.SqsEventSource(queue, { batchSize: 1, reportBatchItemFailures: true }));
+    worker.addEventSource(new sources.SqsEventSource(queue, {
+      batchSize: 1,
+      reportBatchItemFailures: true,
+      maxConcurrency: 2,
+    }));
     table.grantWriteData(worker);
     geminiSecret.grantRead(worker);
     evidenceBucket.grantReadWrite(worker);
+    applyLambdaLogRetention('GoogleDiscoveryWorker', worker);
+    addLambdaErrorAlarm(
+      'GoogleDiscoveryWorkerErrors',
+      worker,
+      'The paid discovery worker reported an error.',
+    );
 
     const planner = new lambdaNode.NodejsFunction(this, 'ScanPlanner', {
       ...common,
@@ -456,6 +567,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
     });
     queue.grantSendMessages(planner);
     table.grantReadData(planner);
+    applyLambdaLogRetention('ScanPlanner', planner);
+    addLambdaErrorAlarm(
+      'ScanPlannerErrors',
+      planner,
+      'The daily discovery planner reported an error.',
+    );
 
     new events.Rule(this, 'DailyScanRule', {
       schedule: events.Schedule.cron({ minute: '15', hour: '3' }),
@@ -469,6 +586,7 @@ export class BndyEnrichmentStack extends cdk.Stack {
       functionName: 'bndy-capture-processor',
       entry: 'src/handlers/capture-processor.ts',
       handler: 'handler',
+      reservedConcurrentExecutions: 2,
       environment: {
         GEMINI_SECRET_ARN: geminiSecret.secretArn,
         GEMINI_MODEL: 'gemini-3.6-flash',
@@ -480,11 +598,21 @@ export class BndyEnrichmentStack extends cdk.Stack {
       },
       bundling: { minify: true, sourceMap: true },
     });
-    captureProcessor.addEventSource(new sources.SqsEventSource(captureQueue, { batchSize: 1, reportBatchItemFailures: true }));
+    captureProcessor.addEventSource(new sources.SqsEventSource(captureQueue, {
+      batchSize: 1,
+      reportBatchItemFailures: true,
+      maxConcurrency: 2,
+    }));
     geminiSecret.grantRead(captureProcessor);
     captureServiceSecret.grantRead(captureProcessor);
     bndyServiceSecret.grantRead(captureProcessor);
     captureImagesBucket.grantRead(captureProcessor);
+    applyLambdaLogRetention('CaptureProcessor', captureProcessor);
+    addLambdaErrorAlarm(
+      'CaptureProcessorErrors',
+      captureProcessor,
+      'The paid Capture processor reported an error.',
+    );
 
     const captureScanner = new lambdaNode.NodejsFunction(this, 'CaptureScanner', {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -503,6 +631,12 @@ export class BndyEnrichmentStack extends cdk.Stack {
     });
     captureQueue.grantSendMessages(captureScanner);
     captureServiceSecret.grantRead(captureScanner);
+    applyLambdaLogRetention('CaptureScanner', captureScanner);
+    addLambdaErrorAlarm(
+      'CaptureScannerErrors',
+      captureScanner,
+      'The Capture scanner reported an error.',
+    );
 
     new events.Rule(this, 'CaptureScanRule', {
       schedule: events.Schedule.rate(cdk.Duration.minutes(5)),
