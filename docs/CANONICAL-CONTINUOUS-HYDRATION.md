@@ -22,6 +22,32 @@ The 2026-08-24 baseline predates current BNDY data. `npm run bndy:delta-hydratio
 
 Every run writes `DELTA_HYDRATION#<runId> / META` with exact scanned, unchanged, inserted, modified, removed, Claim and checkpoint counts. The manifest always reports `canonicalWritesEnabled: false`.
 
+The CLI requires an explicit baseline snapshot and run ID. Before any write it consistently reads the global projection control and the named baseline manifest. It stops unless canonical writes are disabled and the baseline is complete, shadow-only and reports `canonicalWritesEnabled: false`.
+
+An authorised operator can first produce a read-only plan with credentials that cannot write:
+
+```bash
+STATE_TABLE=<backline-state-table> \
+EVIDENCE_BUCKET=<backline-evidence-bucket> \
+npm run bndy:delta-hydration -- \
+  --baseline-snapshot-id=<approved-complete-baseline> \
+  --run-id=<planned-run-id> \
+  --dry-run
+```
+
+Dry-run mode scans the canonical tables and reads existing Backline Claims and checkpoints. It does not update source records, checkpoints, evidence, Claims, resolutions or a run manifest. It reports the would-insert, would-modify, would-remove and planned-checkpoint counts in the normal summary.
+
+The separately approved write form requires an exact confirmation:
+
+```bash
+STATE_TABLE=<backline-state-table> \
+EVIDENCE_BUCKET=<backline-evidence-bucket> \
+npm run bndy:delta-hydration -- \
+  --baseline-snapshot-id=<approved-complete-baseline> \
+  --run-id=<approved-run-id> \
+  --confirm=WRITE_BACKLINE_CANONICAL_DELTA
+```
+
 ## Production HITL gate
 
 These steps change production infrastructure or write the Backline production state and require explicit approval:
@@ -30,7 +56,7 @@ These steps change production infrastructure or write the Backline production st
 2. publish the three exact stream ARNs to `/bndy/canonical/artists/stream-arn`, `/bndy/canonical/venues/stream-arn` and `/bndy/canonical/events/stream-arn`;
 3. while streams retain changes, run one approved delta hydration from baseline `bndy-baseline-2026-08-24-v1`;
 4. deploy Backline with CDK context `canonicalChangeStreamsEnabled=true`; each mapping starts at `TRIM_HORIZON`, uses partial-batch failure reporting and has a 14-day DLQ;
-5. run `npm run bndy:activate-change-sources` against the deployed Backline state table;
+5. run `npm run bndy:activate-change-sources -- --confirm=ACTIVATE_BACKLINE_CANONICAL_CHANGE_SOURCES` against the deployed Backline state table;
 6. prove one controlled insert, update and removal in a non-user-owned test record and verify evidence, Claims, resolution/checkpoint and zero canonical projection calls;
 7. compare current canonical counts with the completed delta manifest and clear all worker/DLQ alarms.
 

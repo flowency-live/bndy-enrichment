@@ -63,8 +63,11 @@ STATE_TABLE=<backline-state-table> \
 EVIDENCE_BUCKET=<backline-evidence-bucket> \
 npm run bndy:baseline -- \
   --snapshot-id=bndy-baseline-2026-08-24-v1 \
-  --snapshot-at=2026-08-24T07:00:00.000Z
+  --snapshot-at=2026-08-24T07:00:00.000Z \
+  --confirm=WRITE_BACKLINE_CANONICAL_BASELINE
 ```
+
+The snapshot ID, timestamp and exact confirmation are mandatory. The CLI also reads the live global projection control before its first write and fails closed if canonical writes are enabled. This protects the command boundary but does not replace explicit HITL approval or infrastructure-owner execution.
 
 The command is resumable. Observations and Claims are content-addressed so a changed canonical record encountered during a resumed run creates new immutable evidence rather than overwriting an earlier observation.
 
