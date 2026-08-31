@@ -1,6 +1,6 @@
 # Interactions evidence-first qualification contract
 
-Status: approved run pending capture
+Status: capture complete; failed capture contract; human adjudication pending
 Approved by: Jason (Product Owner/CTO), 2026-08-29, in the CTO working session
 Provider under test: `gemini-interactions-evidence-first-v1` (inactive)
 
@@ -9,6 +9,26 @@ the full qualification contract for the approved 20-case cohort run. It binds
 what the run may do, what must be recorded per case, and what passing means.
 It does not activate the provider, create any schedule or authorise any
 canonical write.
+
+## Captured outcome
+
+The approved run completed on 2026-08-29. It attempted all 20 cases with
+exactly 20 model calls. Twelve cases captured successfully: nine admitted 50
+facts and three were safe abstentions with zero facts. Eight cases failed
+closed. Six of those used four searches, exceeding the approved one-to-two
+search allowance, and two returned invalid FACT-line formatting. The capture
+recorded 86 provider citations and 52 searches in total. Estimated cost was
+$0.758573 against the $1.50 reserve. There were zero canonical writes, no
+schedule was created and the provider remains inactive.
+
+The capture verdict is `FAILED_CAPTURE_CONTRACT`. The provider cannot qualify
+on this cohort even if the remaining facts are correct. Human adjudication of
+the nine fact-bearing cases and three abstentions is still required to measure
+identity and factual quality. Increasing the allowance to four searches would
+constitute a fresh qualification and cost contract, not a repair to this run.
+
+The generated review packet is
+`ops/enrichment/gemini-interactions-evidence-first-20-case-review.md`.
 
 ## Approved run parameters
 
