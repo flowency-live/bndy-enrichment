@@ -15,6 +15,20 @@ function capture(url: string): CaptureRecord {
 }
 
 describe('prepareCaptureForDiscovery', () => {
+  it('adds human review context to discovery without replacing original text', () => {
+    const prepared = prepareCaptureForDiscovery({
+      id: 'capture-review',
+      status: 'processing',
+      mimeType: 'text/plain',
+      suggestedEntityType: 'event',
+      sharedText: 'The band is playing on Friday.',
+      reviewContext: 'The venue is The Castle Hotel, Manchester.',
+    });
+
+    expect(prepared.sharedText).toContain('The band is playing on Friday.')
+    expect(prepared.sharedText).toContain('Human reviewer context: The venue is The Castle Hotel, Manchester.')
+  })
+
   it('replaces an opaque Facebook share transport URL with the resolved event URL for discovery', () => {
     const original = capture('https://www.facebook.com/share/18FZZvzpfF/');
     const prepared = prepareCaptureForDiscovery(

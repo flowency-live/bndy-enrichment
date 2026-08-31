@@ -16,13 +16,13 @@ export function prepareCaptureForDiscovery(capture: CaptureRecord, resolvedUrl?:
   });
   const refined = refineCaptureTargetFromResolvedUrl(initial, resolvedUrl);
 
-  if (
+  const prepared = (
     initial.kind === 'facebook_share' &&
     refined.platform === 'facebook' &&
     refined.normalisedUrl &&
     (refined.kind === 'facebook_event' || refined.kind === 'facebook_url')
-  ) {
-    return {
+  )
+    ? {
       ...capture,
       sharedUrl: refined.normalisedUrl,
       rawPayload: {
@@ -30,8 +30,15 @@ export function prepareCaptureForDiscovery(capture: CaptureRecord, resolvedUrl?:
         captureTransportUrl: capture.sharedUrl,
         captureResolvedUrl: refined.normalisedUrl,
       },
-    };
-  }
+    }
+    : capture;
 
-  return capture;
+  const reviewContext = capture.reviewContext?.trim();
+  if (!reviewContext) return prepared;
+  return {
+    ...prepared,
+    sharedText: [prepared.sharedText?.trim(), `Human reviewer context: ${reviewContext}`]
+      .filter(Boolean)
+      .join('\n\n'),
+  };
 }

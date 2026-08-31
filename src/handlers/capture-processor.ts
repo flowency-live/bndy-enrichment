@@ -2,6 +2,7 @@ import type { SQSBatchResponse, SQSHandler } from 'aws-lambda';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import {
   addCaptureNote,
+  claimCapture,
   getCapture,
   updateCaptureStatus,
   type CapturePublicOutcome,
@@ -65,9 +66,18 @@ async function prepareDiscoveryCapture(capture: CaptureRecord): Promise<CaptureR
   return prepareCaptureForDiscovery(capture, inspection?.finalUrl);
 }
 
-async function processCapture(captureId: string): Promise<void> {
+async function processCapture(captureId: string, workerId: string): Promise<void> {
+  // The SQS message ID is stable across retries and different across duplicate
+  // dispatches. Capture therefore permits this delivery to resume its own claim
+  // after a transient failure without allowing a second message to run it twice.
+  const claimed = await claimCapture(captureId, workerId, 20);
+  if (!claimed) {
+    console.log('Skipping capture because another worker already claimed it', { captureId });
+    return;
+  }
+
   const capture = await getCapture(captureId);
-  if (capture.status !== 'processing' && capture.status !== 'unprocessed') {
+  if (capture.status !== 'processing') {
     console.log('Skipping capture with terminal/non-processable status', { captureId, status: capture.status });
     return;
   }
@@ -284,7 +294,7 @@ export const handler: SQSHandler = async (event): Promise<SQSBatchResponse> => {
       const parsed = JSON.parse(record.body);
       captureId = parsed.captureId;
       if (!captureId) throw new Error('captureId is required');
-      await processCapture(captureId);
+      await processCapture(captureId, `bndy-capture-processor:${record.messageId}`);
     } catch (error) {
       console.error('Capture processing failed', { captureId, receiveCount, error });
       if (captureId && receiveCount >= 3) {

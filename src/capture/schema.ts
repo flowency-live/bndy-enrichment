@@ -17,6 +17,7 @@ export const CaptureRecordSchema = z.object({
   receivedAt: z.string().optional(),
   updatedAt: z.string().optional(),
   sharedText: z.string().optional(),
+  reviewContext: z.string().optional(),
   sharedUrl: z.string().optional(),
   mimeType: z.string().default('text/plain'),
   sourceApp: z.string().optional(),
