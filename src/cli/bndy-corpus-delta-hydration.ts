@@ -1,13 +1,21 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { CanonicalChangeStore } from '../bndy-baseline/change-store.js';
 import { canonicalChangeFromImage } from '../bndy-baseline/change.js';
 import { needsCanonicalHydration, needsCanonicalRemoval, type PriorCanonicalState } from '../bndy-baseline/delta.js';
 import { sha256, stableJson, type BaselineEntityType } from '../bndy-baseline/mapper.js';
+import {
+  assertCompleteCanonicalBaseline,
+  assertGlobalCanonicalWritesDisabled,
+  isReadOnlyPlan,
+  requireCanonicalBacklineConfirmation,
+  requiredNamedArgument,
+} from '../bndy-baseline/operation-gate.js';
 import { CANONICAL_SOURCE_IDS, canonicalEvidenceSource } from '../bndy-baseline/sources.js';
 import { CanonicalSyncStateStore } from '../bndy-baseline/sync-state.js';
 import { ClaimStore } from '../knowledge/stores/claim-store.js';
 import { SourceRegistryStore } from '../knowledge/stores/source-registry-store.js';
+import { DynamoProjectionControlStore } from '../projection/control-store.js';
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -18,16 +26,17 @@ function requiredEnv(name: string): string {
 const region = process.env.AWS_REGION ?? 'eu-west-2';
 const stateTable = requiredEnv('STATE_TABLE');
 const evidenceBucket = requiredEnv('EVIDENCE_BUCKET');
+const cliArgs = process.argv.slice(2);
+const dryRun = isReadOnlyPlan(cliArgs);
+if (!dryRun) requireCanonicalBacklineConfirmation(cliArgs, 'delta-hydration');
 const canonicalTables = {
   artist: process.env.BNDY_ARTISTS_TABLE ?? 'bndy-artists',
   venue: process.env.BNDY_VENUES_TABLE ?? 'bndy-venues',
   event: process.env.BNDY_EVENTS_TABLE ?? 'bndy-events',
 } as const;
-const baselineSnapshotId = process.argv.find((arg) => arg.startsWith('--baseline-snapshot-id='))
-  ?.slice('--baseline-snapshot-id='.length) ?? 'bndy-baseline-2026-08-24-v1';
+const baselineSnapshotId = requiredNamedArgument(cliArgs, 'baseline-snapshot-id');
 const observedAt = new Date().toISOString();
-const runId = process.argv.find((arg) => arg.startsWith('--run-id='))
-  ?.slice('--run-id='.length) ?? `bndy-delta-${observedAt.replace(/[:.]/g, '-')}`;
+const runId = requiredNamedArgument(cliArgs, 'run-id');
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region }), {
   marshallOptions: { removeUndefinedValues: true },
@@ -36,6 +45,7 @@ const changes = new CanonicalChangeStore(stateTable, evidenceBucket);
 const sync = new CanonicalSyncStateStore(stateTable);
 const claims = new ClaimStore(stateTable);
 const registry = new SourceRegistryStore(stateTable);
+const projectionControls = new DynamoProjectionControlStore(stateTable);
 const currentIds = new Set<string>();
 const summary = {
   runId,
@@ -43,6 +53,7 @@ const summary = {
   startedAt: observedAt,
   completedAt: undefined as string | undefined,
   status: 'running' as 'running' | 'complete' | 'failed',
+  mode: dryRun ? 'read-only-plan' as const : 'backline-write' as const,
   canonicalWritesEnabled: false,
   scanned: 0,
   unchanged: 0,
@@ -51,6 +62,7 @@ const summary = {
   removed: 0,
   claims: 0,
   checkpointsBackfilled: 0,
+  checkpointBackfillsPlanned: 0,
   skippedWithoutId: 0,
   errors: [] as string[],
 };
@@ -87,15 +99,19 @@ async function processCurrent(entityType: BaselineEntityType, record: Record<str
   if (!needsCanonicalHydration(contentHash, prior)) {
     summary.unchanged += 1;
     if (!checkpoint) {
-      await sync.put({
-        entityType,
-        canonicalId: id,
-        contentHash,
-        removed: false,
-        changeId: `baseline:${baselineSnapshotId}`,
-        observedAt: prior!.observedAt,
-      });
-      summary.checkpointsBackfilled += 1;
+      if (dryRun) {
+        summary.checkpointBackfillsPlanned += 1;
+      } else {
+        await sync.put({
+          entityType,
+          canonicalId: id,
+          contentHash,
+          removed: false,
+          changeId: `baseline:${baselineSnapshotId}`,
+          observedAt: prior!.observedAt,
+        });
+        summary.checkpointsBackfilled += 1;
+      }
     }
     return;
   }
@@ -107,7 +123,7 @@ async function processCurrent(entityType: BaselineEntityType, record: Record<str
     version: `${runId}:${entityType}:${id}:${contentHash}`,
     observedAt,
   });
-  await changes.persist(change);
+  if (!dryRun) await changes.persist(change);
   summary[eventName === 'INSERT' ? 'inserted' : 'modified'] += 1;
   summary.claims += change.claims.length;
 }
@@ -161,7 +177,7 @@ async function hydrateRemovals(): Promise<void> {
       version: `${runId}:${baseline.entityType}:${baseline.canonicalId}:removed`,
       observedAt,
     });
-    await changes.persist(change);
+    if (!dryRun) await changes.persist(change);
     summary.removed += 1;
     summary.claims += change.claims.length;
   }
@@ -174,11 +190,24 @@ async function writeManifest(): Promise<void> {
   }));
 }
 
+async function assertPreflight(): Promise<void> {
+  assertGlobalCanonicalWritesDisabled(await projectionControls.canonicalWritesEnabled());
+  const baseline = await ddb.send(new GetCommand({
+    TableName: stateTable,
+    Key: { pk: `BASELINE#${baselineSnapshotId}`, sk: 'META' },
+    ConsistentRead: true,
+  }));
+  assertCompleteCanonicalBaseline(baseline.Item, baselineSnapshotId);
+}
+
 async function main(): Promise<void> {
-  for (const entityType of ['artist', 'venue', 'event', 'festival'] as const) {
-    await registry.put(canonicalEvidenceSource(entityType));
-  }
+  await assertPreflight();
   try {
+    if (!dryRun) {
+      for (const entityType of ['artist', 'venue', 'event', 'festival'] as const) {
+        await registry.put(canonicalEvidenceSource(entityType));
+      }
+    }
     await scanCurrentTable(canonicalTables.artist, () => 'artist');
     await scanCurrentTable(canonicalTables.venue, () => 'venue');
     await scanCurrentTable(canonicalTables.event, logicalEventType);
@@ -186,16 +215,18 @@ async function main(): Promise<void> {
     await hydrateRemovals();
     summary.status = 'complete';
     summary.completedAt = new Date().toISOString();
-    await writeManifest();
-    for (const entityType of ['artist', 'venue', 'event', 'festival'] as const) {
-      await registry.put({ ...canonicalEvidenceSource(entityType), lastSuccessfulScanAt: summary.completedAt });
+    if (!dryRun) {
+      await writeManifest();
+      for (const entityType of ['artist', 'venue', 'event', 'festival'] as const) {
+        await registry.put({ ...canonicalEvidenceSource(entityType), lastSuccessfulScanAt: summary.completedAt });
+      }
     }
     console.log(JSON.stringify(summary));
   } catch (error) {
     summary.status = 'failed';
     summary.completedAt = new Date().toISOString();
     summary.errors.push(error instanceof Error ? error.message : String(error));
-    await writeManifest();
+    if (!dryRun) await writeManifest();
     console.error(JSON.stringify(summary));
     throw error;
   }

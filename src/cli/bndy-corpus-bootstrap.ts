@@ -14,6 +14,12 @@ import { entityResolutionItem } from '../knowledge/stores/resolution-store.js';
 import { SourceRegistryStore } from '../knowledge/stores/source-registry-store.js';
 import type { EntityResolution, GigSource, SourceObservation } from '../knowledge/types.js';
 import { CANONICAL_SOURCE_IDS, canonicalEvidenceSource } from '../bndy-baseline/sources.js';
+import {
+  assertGlobalCanonicalWritesDisabled,
+  requireCanonicalBacklineConfirmation,
+  requiredNamedArgument,
+} from '../bndy-baseline/operation-gate.js';
+import { DynamoProjectionControlStore } from '../projection/control-store.js';
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -24,6 +30,8 @@ function requiredEnv(name: string): string {
 const region = process.env.AWS_REGION ?? 'eu-west-2';
 const stateTable = requiredEnv('STATE_TABLE');
 const evidenceBucket = requiredEnv('EVIDENCE_BUCKET');
+const cliArgs = process.argv.slice(2);
+requireCanonicalBacklineConfirmation(cliArgs, 'baseline');
 
 const canonicalTables = {
   artist: process.env.BNDY_ARTISTS_TABLE ?? 'bndy-artists',
@@ -31,11 +39,8 @@ const canonicalTables = {
   event: process.env.BNDY_EVENTS_TABLE ?? 'bndy-events',
 } as const;
 
-const snapshotArg = process.argv.find((arg) => arg.startsWith('--snapshot-id='))?.slice('--snapshot-id='.length);
-const snapshotAtArg = process.argv.find((arg) => arg.startsWith('--snapshot-at='))?.slice('--snapshot-at='.length);
-const snapshotAt = snapshotAtArg ?? new Date().toISOString();
-const snapshotId = snapshotArg ?? `bndy-baseline-${snapshotAt.replace(/[:.]/g, '-')}`;
-if (!snapshotId.trim()) throw new Error('--snapshot-id must not be empty');
+const snapshotId = requiredNamedArgument(cliArgs, 'snapshot-id');
+const snapshotAt = requiredNamedArgument(cliArgs, 'snapshot-at');
 if (Number.isNaN(new Date(snapshotAt).getTime())) throw new Error(`Invalid --snapshot-at=${snapshotAt}`);
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region }), {
@@ -44,6 +49,7 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region }), {
 const s3 = new S3Client({ region });
 const registry = new SourceRegistryStore(stateTable);
 const observationKeys = new ObservationStore(stateTable, evidenceBucket);
+const projectionControls = new DynamoProjectionControlStore(stateTable);
 
 function sourceConfig(entityType: BaselineEntityType): GigSource {
   return canonicalEvidenceSource(entityType);
@@ -285,6 +291,7 @@ async function writeManifest(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  assertGlobalCanonicalWritesDisabled(await projectionControls.canonicalWritesEnabled());
   for (const entityType of ['artist', 'venue', 'event', 'festival'] as const) {
     await registry.put(sourceConfig(entityType));
   }
