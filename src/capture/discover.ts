@@ -31,6 +31,9 @@ const responseSchema = {
         genres: { type: 'array', items: { type: 'string', enum: genreValues } },
         bio: { type: 'string' },
         officialWebsite: { type: 'string' },
+        instagramUrl: { type: 'string' },
+        youtubeUrl: { type: 'string' },
+        twitterUrl: { type: 'string' },
         confidence: { type: 'number', minimum: 0, maximum: 1 },
         evidenceUrls: { type: 'array', items: { type: 'string' } },
       },
@@ -245,7 +248,7 @@ ${sourceRules}
 
 For an ARTIST capture, or the primary artist attached to an EVENT capture:
 - identify the exact artist name from its own/official source${isImage ? ' or the supplied poster' : ''};
-- preserve/find the canonical Facebook profile/page URL when evidence supports it;
+- preserve/find official profile URLs when evidence supports them. Facebook is optional, as are Instagram, YouTube, X/Twitter and the artist's own website;
 - prefer the artist's own About/intro/website for location. If unavailable, infer a performing region only when repeated venue evidence supports it and use locationType=regional;
 - provide artistType when supported: Band, Solo Act, Duo, Trio, Group, DJ, Collective;
 - provide actTypes when supported: Originals, Covers, Tribute Act. Multiple are allowed;
@@ -274,7 +277,7 @@ CLASSIFICATION
 - non_music: clearly unrelated to live music.
 - unsupported: cannot reliably identify the source/entity.
 
-CRITICAL SCHEMA CONTRACT: When classification is "artist" OR "event", the response MUST include an artist object with name, confidence and evidenceUrls. Include facebookUrl, location, artistType and actTypes only when supported by evidence. Never guess profile fields merely to satisfy Artist creation requirements.
+CRITICAL SCHEMA CONTRACT: When classification is "artist" OR "event", the response MUST include an artist object with name, confidence and evidenceUrls. Include location and any official profile URLs only when supported by evidence. Artist identity requires name plus a distinct location; social URLs, artistType and actTypes are optional enrichment. Never guess profile fields.
 
 Return JSON only matching the supplied schema.`;
 }

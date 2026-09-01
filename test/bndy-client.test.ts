@@ -107,6 +107,64 @@ describe('findOrCreateArtist', () => {
       raw: body,
     });
   });
+
+  it('can confirm a geographically distinct same-name artist without requiring Facebook', async () => {
+    process.env.BNDY_SERVICE_TOKEN = 'test-service-token';
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      action: 'created',
+      artist: { id: 'artist-cheshire', name: 'One For The Road' },
+    }), { status: 201, headers: { 'content-type': 'application/json' } }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await findOrCreateArtist({
+      name: 'One For The Road',
+      location: 'Northwich, Cheshire',
+      locationType: 'regional',
+      confidence: 0.96,
+      evidenceUrls: [],
+      actTypes: [],
+      genres: [],
+    }, 'capture-multi-date', { confirmNew: true });
+
+    expect(result).toMatchObject({ action: 'created', artistId: 'artist-cheshire' });
+    const payload = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(payload).toMatchObject({
+      name: 'One For The Road',
+      location: 'Northwich, Cheshire',
+      confirmNew: true,
+    });
+    expect(payload.facebookUrl).toBeUndefined();
+  });
+
+  it('preserves the machine-readable location conflict returned by the resolver', async () => {
+    process.env.BNDY_SERVICE_TOKEN = 'test-service-token';
+    const body = {
+      action: 'review',
+      reason: 'Name matched but location differs - possible same-name collision',
+      locationConflict: true,
+      inputLocation: 'Northwich, Cheshire',
+      candidates: [{ id: 'artist-devon', name: 'One For The Road', location: 'Exmouth, Devon' }],
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })));
+
+    const result = await findOrCreateArtist({
+      name: 'One For The Road',
+      location: 'Northwich, Cheshire',
+      confidence: 0.96,
+      evidenceUrls: [],
+      actTypes: [],
+      genres: [],
+    }, 'capture-location-conflict');
+
+    expect(result).toMatchObject({
+      action: 'review',
+      locationConflict: true,
+      inputLocation: 'Northwich, Cheshire',
+    });
+  });
 });
 
 describe('Capture ticketing policy', () => {

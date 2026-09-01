@@ -30,11 +30,72 @@ function validateArtistForCreation(artist?: CaptureArtist): string[] {
   const missing: string[] = [];
   if (!artist) return ['artist'];
   if (!artist.name?.trim()) missing.push('name');
-  if (!artist.facebookUrl?.trim()) missing.push('facebookUrl');
   if (!artist.location?.trim()) missing.push('location');
-  if (!artist.artistType) missing.push('artistType');
-  if (!artist.actTypes?.length) missing.push('actType');
   return missing;
+}
+
+export function hasStrongMultiVenueArtistEvidence(artist: CaptureArtist, events: CaptureEvent[]): boolean {
+  if (!artist.location?.trim() || artist.confidence < 0.8) return false;
+  const usable = events.filter(event => !event.cancelled && event.town?.trim());
+  const venues = new Set(usable.map(event => `${event.venueName}|${event.town}`.toLowerCase().trim()));
+  const towns = new Set(usable.map(event => event.town!.toLowerCase().trim()));
+  return venues.size >= 3 && towns.size >= 2;
+}
+
+function submitterConfirmedNewArtist(capture: CaptureRecord, artist: CaptureArtist): boolean {
+  const clarification = capture.publicClarification;
+  return clarification?.confirmed === true
+    && clarification.type === 'confirm_new_artist'
+    && clarification.artistName.trim().toLowerCase() === artist.name.trim().toLowerCase()
+    && clarification.location.trim().toLowerCase() === artist.location?.trim().toLowerCase();
+}
+
+function socialLinkFields(urls: string[]): Partial<CaptureArtist> {
+  const fields: Partial<CaptureArtist> = {};
+  for (const value of urls) {
+    let parsed: URL;
+    try { parsed = new URL(value); } catch { continue; }
+    if (parsed.protocol !== 'https:') continue;
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+    if (host === 'facebook.com' || host.endsWith('.facebook.com')) fields.facebookUrl ??= value;
+    else if (host === 'instagram.com' || host.endsWith('.instagram.com')) fields.instagramUrl ??= value;
+    else if (host === 'youtube.com' || host.endsWith('.youtube.com') || host === 'youtu.be') fields.youtubeUrl ??= value;
+    else if (host === 'x.com' || host.endsWith('.x.com') || host === 'twitter.com' || host.endsWith('.twitter.com')) fields.twitterUrl ??= value;
+    else fields.officialWebsite ??= value;
+  }
+  return fields;
+}
+
+async function processArtistLinkEnrichment(capture: CaptureRecord): Promise<boolean> {
+  if (capture.sourceApp !== 'chatzone-artist-links') return false;
+  const payload = capture.rawPayload?.artistLinkEnrichment;
+  if (!payload || typeof payload !== 'object') throw new Error('Artist link enrichment payload is missing');
+  const targetArtistId = 'targetArtistId' in payload && typeof payload.targetArtistId === 'string' ? payload.targetArtistId : '';
+  const urls = 'urls' in payload && Array.isArray(payload.urls)
+    ? payload.urls.filter((url): url is string => typeof url === 'string').slice(0, 5)
+    : [];
+  if (!targetArtistId || urls.length === 0) throw new Error('Artist link enrichment target or URLs are missing');
+
+  const existing = await getArtist(targetArtistId);
+  const artist: CaptureArtist = {
+    name: existing.name,
+    location: existing.location,
+    locationType: existing.locationType,
+    artistType: undefined,
+    actTypes: [],
+    genres: [],
+    confidence: 1,
+    evidenceUrls: urls,
+    ...socialLinkFields(urls),
+  };
+  await patchMissingArtistFields(targetArtistId, existing, artist);
+  await addCaptureNote(capture.id, `AWS processor: optional artist links applied to ${targetArtistId}: ${urls.join(', ')}`);
+  await updateCaptureStatus(capture.id, 'processed', {
+    state: 'processed',
+    message: 'Artist profile links checked.',
+    result: { artist: { name: existing.name, id: targetArtistId, action: 'enriched' } },
+  });
+  return true;
 }
 
 // A direct Capture submission is an explicit assertion that the event belongs in BNDY.
@@ -107,6 +168,8 @@ async function processCapture(captureId: string, workerId: string): Promise<void
     return;
   }
 
+  if (await processArtistLinkEnrichment(capture)) return;
+
   const discoveryCapture = await prepareDiscoveryCapture(capture);
   const discovery = await discoverCapture(discoveryCapture, {
     apiKey: await geminiKey(),
@@ -164,7 +227,17 @@ async function processCapture(captureId: string, workerId: string): Promise<void
   // needed to create a brand-new profile. Existing Artists can be matched safely
   // from supported identity evidence even when the incoming event omits profile data.
   const missing = validateArtistForCreation(discovery.artist);
-  const artistResult = await findOrCreateArtist(discovery.artist, captureId);
+  let artistResult = await findOrCreateArtist(discovery.artist, captureId);
+  const strongGeography = discovery.classification === 'artist'
+    && hasStrongMultiVenueArtistEvidence(discovery.artist, discovery.events);
+  const submitterConfirmed = submitterConfirmedNewArtist(capture, discovery.artist);
+  if (artistResult.action === 'review' && artistResult.locationConflict && (strongGeography || submitterConfirmed)) {
+    await addCaptureNote(
+      captureId,
+      `AWS processor: same-name artist collision resolved as a distinct new artist using ${strongGeography ? 'strong multi-venue geography' : 'submitter-confirmed location'}: ${discovery.artist.name} | ${discovery.artist.location}`,
+    );
+    artistResult = await findOrCreateArtist(discovery.artist, captureId, { confirmNew: true });
+  }
   if (artistResult.action === 'review') {
     await addCaptureNote(captureId,
       `AWS processor: REVIEW_REQUIRED. Artist resolver returned ambiguous candidates for ${discovery.artist.name}: ` +
@@ -172,9 +245,21 @@ async function processCapture(captureId: string, workerId: string): Promise<void
       `${missing.length ? `New Artist creation would also require: ${missing.join(', ')}. ` : ''}` +
       `${artistResult.reason ? `Reason: ${artistResult.reason}` : ''}`
     );
+    const canAskForLocationConfirmation = artistResult.locationConflict && Boolean(discovery.artist.location);
     await updateCaptureStatus(captureId, 'failed', {
       state: 'needs_review',
-      message: 'BNDY found the artist, but the identity needs a human check before this gig can be added.',
+      message: canAskForLocationConfirmation
+        ? `BNDY found another artist with this name in a different area. Confirm that this is a different ${discovery.artist.location} artist and we can add the gigs.`
+        : 'BNDY found the artist, but the identity needs a human check before this gig can be added.',
+      result: { artist: { name: discovery.artist.name } },
+      ...(canAskForLocationConfirmation ? {
+        clarification: {
+          type: 'confirm_new_artist',
+          artistName: discovery.artist.name,
+          location: discovery.artist.location!,
+          prompt: `Is this a different artist called ${discovery.artist.name}, based in ${discovery.artist.location}?`,
+        },
+      } : {}),
     });
     return;
   }
@@ -292,6 +377,7 @@ async function processCapture(captureId: string, workerId: string): Promise<void
     state: 'added',
     message: createdEvents === 1 ? 'Added to bndy.' : `${createdEvents} gigs added to bndy.`,
     result: publicResult,
+    requestArtistLinks: artistResult.action === 'created',
   } : duplicateEvents > 0 ? {
     state: 'already_exists',
     message: duplicateEvents === 1 ? 'This gig is already in bndy.' : 'These gigs are already in bndy.',

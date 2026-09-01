@@ -73,10 +73,16 @@ export type ArtistResolution = {
   artistName?: string;
   candidates?: any[];
   reason?: string;
+  locationConflict?: boolean;
+  inputLocation?: string;
   raw: any;
 };
 
-export async function findOrCreateArtist(artist: CaptureArtist, captureId: string): Promise<ArtistResolution> {
+export async function findOrCreateArtist(
+  artist: CaptureArtist,
+  captureId: string,
+  options: { confirmNew?: boolean } = {},
+): Promise<ArtistResolution> {
   const payload = {
     name: artist.name,
     location: artist.location,
@@ -84,10 +90,15 @@ export async function findOrCreateArtist(artist: CaptureArtist, captureId: strin
     artistType: artistTypeWire(artist.artistType),
     actType: actTypesWire(artist.actTypes),
     facebookUrl: artist.facebookUrl,
+    instagramUrl: artist.instagramUrl,
+    websiteUrl: artist.officialWebsite,
+    youtubeUrl: artist.youtubeUrl,
+    twitterUrl: artist.twitterUrl,
     bio: artist.bio ?? '',
     genres: artist.genres,
     externalIds: [{ source: 'bndy-capture', id: captureId }],
     verifiedSourceName: Boolean(artist.facebookUrl),
+    ...(options.confirmNew ? { confirmNew: true } : {}),
   };
 
   const out = await request('/api/artists/find-or-create', {
@@ -105,7 +116,14 @@ export async function findOrCreateArtist(artist: CaptureArtist, captureId: strin
     };
   }
   if (body.action === 'review') {
-    return { action: 'review', candidates: body.candidates ?? [], reason: body.reason ?? body.error, raw: body };
+    return {
+      action: 'review',
+      candidates: body.candidates ?? [],
+      reason: body.reason ?? body.error,
+      locationConflict: body.locationConflict === true,
+      inputLocation: body.inputLocation,
+      raw: body,
+    };
   }
 
   // The canonical artist Lambda returns a hard uniqueness conflict as HTTP 409
@@ -144,6 +162,10 @@ export async function getArtist(id: string): Promise<any> {
 export async function patchMissingArtistFields(id: string, existing: any, artist: CaptureArtist): Promise<void> {
   const updates: Record<string, unknown> = {};
   if (!existing?.facebookUrl && !existing?.facebook_url && artist.facebookUrl) updates.facebookUrl = artist.facebookUrl;
+  if (!existing?.instagramUrl && !existing?.instagram_url && artist.instagramUrl) updates.instagramUrl = artist.instagramUrl;
+  if (!existing?.websiteUrl && !existing?.website_url && artist.officialWebsite) updates.websiteUrl = artist.officialWebsite;
+  if (!existing?.youtubeUrl && !existing?.youtube_url && artist.youtubeUrl) updates.youtubeUrl = artist.youtubeUrl;
+  if (!existing?.twitterUrl && !existing?.twitter_url && artist.twitterUrl) updates.twitterUrl = artist.twitterUrl;
   if (!existing?.location && artist.location) updates.location = artist.location;
   if (!existing?.locationType && artist.locationType) updates.locationType = artist.locationType;
   if (!existing?.artistType && !existing?.artist_type && artist.artistType) updates.artistType = artistTypeWire(artist.artistType);
