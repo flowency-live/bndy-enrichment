@@ -215,6 +215,26 @@ describe('ProjectionEngine', () => {
     expect(mockApi.ensureEvent).not.toHaveBeenCalled();
   });
 
+  it('records incomplete candidates as actionable exceptions without poisoning the DLQ', async () => {
+    const incomplete = positiveClaims().map((entry) => entry.id === 'c-venue'
+      ? claim('c-venue', 'occursAt', { name: 'The Test Pub', sourceNativeId: 'venue-9' })
+      : entry);
+    const mockApi = api();
+    const fx = deps({ claims: incomplete, api: mockApi });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result).toMatchObject({ status: 'exception', message: expect.stringContaining('venueLocation') });
+    expect(fx.exceptions).toContainEqual(expect.objectContaining({
+      details: expect.objectContaining({
+        classification: 'incomplete-candidate',
+        missingFields: ['venueLocation'],
+      }),
+    }));
+    expect(fx.failures).toHaveLength(0);
+    expect(mockApi.resolveVenue).not.toHaveBeenCalled();
+  });
+
   it('records would-write evidence and does no BNDY API work while the global control is disabled', async () => {
     const mockApi = api();
     const fx = deps({ api: mockApi });

@@ -10,7 +10,12 @@ import type {
 } from '../knowledge/types.js';
 import { ProjectionWorkItemSchema } from '../knowledge/types.js';
 import { AuthorityPolicy, type SupportingClaim } from './authority-policy.js';
-import { materialiseEventCandidate, ownerManagedEvent, type ProjectionEventCandidate } from './candidate.js';
+import {
+  IncompleteProjectionCandidateError,
+  materialiseEventCandidate,
+  ownerManagedEvent,
+  type ProjectionEventCandidate,
+} from './candidate.js';
 import { mergeExternalIds, type ProjectionBndyApi, type ResolvedArtist, type ResolvedVenue } from './bndy-api.js';
 import { enrichmentItem, type EntityEnrichmentPublisher } from './enrichment-publisher.js';
 import type { ProjectionExceptionSink } from './exception-sink.js';
@@ -297,6 +302,12 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
   try {
     candidate = materialiseEventCandidate(item.candidateKey, item.sourceId, claims);
   } catch (error) {
+    if (error instanceof IncompleteProjectionCandidateError) {
+      return await handledException(item, error.message, deps, {
+        classification: 'incomplete-candidate',
+        missingFields: error.missingFields,
+      });
+    }
     return await retryableFailure(item, error instanceof Error ? error.message : String(error), deps, claims.length);
   }
 

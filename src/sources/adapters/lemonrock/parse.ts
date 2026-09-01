@@ -434,6 +434,16 @@ function fieldClaim(field: string, value: unknown): NormalisedSourceClaim {
   return { predicate: 'derivedFrom', value: { field, value } };
 }
 
+function venueIdentity(label: string | undefined): { name?: string; location?: string } {
+  if (!label) return {};
+  const parts = label.split(',').map((part) => part.trim()).filter(Boolean);
+  if (parts.length < 2) return { name: label.trim() };
+  return {
+    name: parts.slice(0, -1).join(', '),
+    location: parts.at(-1),
+  };
+}
+
 function profileEntity(kind: 'artist' | 'venue', html: string, sourceUrl: string, run: SourceRunContext): NormalisedSourceEntity {
   const text = textFromHtml(html);
   const taskNative = typeof run.task?.nativeId === 'string' ? run.task.nativeId : undefined;
@@ -493,9 +503,10 @@ function parseGig(html: string, sourceUrl: string, run: SourceRunContext): Parse
   const date = extractDate(titleCore) ?? extractDate(text);
   const anchors = anchorsFromHtml(html, sourceUrl);
   const artistName = titleMatch?.[1]?.trim();
-  const venueName = titleMatch?.[2]?.replace(/\s+on\s+.*$/i, '').trim();
+  const venueLabel = titleMatch?.[2]?.replace(/\s+on\s+.*$/i, '').trim();
   const artistAnchor = artistName ? anchors.find((anchor) => comparableLabel(anchor.text) === comparableLabel(artistName) && lemonrockSlug(anchor.href)) : undefined;
-  const venueAnchor = venueName ? anchors.find((anchor) => comparableLabel(anchor.text) === comparableLabel(venueName) && lemonrockSlug(anchor.href)) : undefined;
+  const venueAnchor = venueLabel ? anchors.find((anchor) => comparableLabel(anchor.text) === comparableLabel(venueLabel) && lemonrockSlug(anchor.href)) : undefined;
+  const { name: venueName, location: venueLocation } = venueIdentity(venueAnchor?.text ?? venueLabel);
   const artistSlug = artistAnchor ? lemonrockSlug(artistAnchor.href) : undefined;
   const venueSlug = venueAnchor ? lemonrockSlug(venueAnchor.href) : undefined;
   const timeMatch = text.match(/\b(\d{1,2}(?:[.:]\d{2})?\s*(?:am|pm)|noon|midnight)\s*(?:-|–|to)\s*(\d{1,2}(?:[.:]\d{2})?\s*(?:am|pm)|noon|midnight)/i);
@@ -522,6 +533,7 @@ function parseGig(html: string, sourceUrl: string, run: SourceRunContext): Parse
     artistExternalId: artistSlug ? `lemonrock:artist:${artistSlug}` : undefined,
     venueName,
     venueExternalId: venueSlug ? `lemonrock:venue:${venueSlug}` : undefined,
+    venueLocation,
     date,
     startTime: time24(timeMatch?.[1] ?? singleTime ?? ''),
     endTime: time24(timeMatch?.[2] ?? ''),
@@ -555,6 +567,7 @@ function parseGig(html: string, sourceUrl: string, run: SourceRunContext): Parse
   if (!date) warnings.push(`Gig ${id} has no parseable date`);
   if (!artistName) warnings.push(`Gig ${id} has no parseable artist name`);
   if (!venueName) warnings.push(`Gig ${id} has no parseable venue name`);
+  if (!venueLocation) warnings.push(`Gig ${id} has no parseable venue location`);
   return { events: [event], nextRequests, parked: [], warnings };
 }
 
