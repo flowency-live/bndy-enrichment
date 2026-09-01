@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyCaptureStartTimeDefaults,
   defaultCaptureStartTime,
   eventShouldPublish,
   reviewableProjectionError,
@@ -48,5 +49,20 @@ describe('Capture event publication policy', () => {
 
   it('uses 14:00 only when the captured text explicitly says afternoon', () => {
     expect(defaultCaptureStartTime('2026-09-05', 'Saturday afternoon gig')).toBe('14:00');
+  });
+
+  it('defaults every publishable row in a multi-date poster without overwriting supplied times', () => {
+    const events = [
+      event({ date: '2026-10-03', venueName: 'The Lion Hotel' }),
+      event({ date: '2026-11-15', venueName: 'Lambs Wharf' }),
+      event({ date: '2026-11-27', venueName: 'Grape & Bean', startTime: '20:30' }),
+      event({ date: '2026-12-19', venueName: 'The Red Lion', cancelled: true }),
+    ];
+
+    expect(applyCaptureStartTimeDefaults(events)).toEqual([
+      { date: '2026-10-03', venueName: 'The Lion Hotel', time: '21:00' },
+      { date: '2026-11-15', venueName: 'Lambs Wharf', time: '19:00' },
+    ]);
+    expect(events.map(item => item.startTime)).toEqual(['21:00', '19:00', '20:30', undefined]);
   });
 });

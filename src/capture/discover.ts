@@ -190,6 +190,7 @@ export function buildCapturePrompt(capture: CaptureRecord, metadata: string, hor
 - A poster headed by one artist/band with many dates is an ARTIST capture and a gig guide, not ten unrelated event captures.
 - A poster advertising one specific performance is an EVENT capture. In that case populate the top-level artist object for the primary performing artist as well as the single event.
 - Extract every clearly readable upcoming gig row from a multi-date artist poster, including month/date, time, town, price and annotations such as headline act.
+- Do not apply the general web-discovery horizon to dates printed on the supplied poster. Extract every clearly readable future poster row even when it is more than ${horizonDays} days away.
 - Resolve the artist identity from the poster name using web search. Find the canonical official Facebook artist/profile URL even when no URL was shared from the phone.
 - Do not invent a Facebook URL. The URL must be supported by search evidence and clearly belong to the same act.
 - Distinguish a VENUE from an EVENT/FESTIVAL name. Put a named festival/event/promoter title in eventName and only the actual physical venue in venueName.
@@ -232,7 +233,11 @@ deterministicObjectType: ${target.platformObjectType}
 ANONYMOUS PAGE METADATA (may be empty or a Facebook login page; treat only useful exact page metadata as evidence)
 ${metadata || '(none)'}
 
-Today is ${today}. ${facebookEvent ? 'Resolve only the exact captured event.' : `Find only upcoming events within the next ${horizonDays} days.`}
+Today is ${today}. ${facebookEvent
+  ? 'Resolve only the exact captured event.'
+  : isImage
+    ? `Include every future event printed on the supplied poster. Apply the ${horizonDays}-day horizon only to additional events found through web discovery.`
+    : `Find only upcoming events within the next ${horizonDays} days.`}
 
 Use Google Search grounding aggressively enough to identify the exact captured entity, but do not guess across similarly named acts or events.
 

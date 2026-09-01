@@ -83,4 +83,22 @@ describe('prepareCaptureForDiscovery', () => {
     expect(prompt).toContain('can be classified as event even when it has no public URL');
     expect(prompt).not.toContain('PUBLIC URL SHARE RULES');
   });
+
+  it('keeps future poster dates beyond the web search horizon', () => {
+    const prompt = buildCapturePrompt({
+      id: 'capture-poster',
+      mimeType: 'image/png',
+      suggestedEntityType: 'event',
+      status: 'processing',
+      media: {
+        type: 'image',
+        bucket: 'capture-posters',
+        key: 'captures/public/2026/09/gig-list.png',
+        mimeType: 'image/png',
+      },
+    }, '', 90);
+
+    expect(prompt).toContain('Extract every clearly readable future poster row even when it is more than 90 days away.');
+    expect(prompt).toContain('Apply the 90-day horizon only to additional events found through web discovery.');
+  });
 });

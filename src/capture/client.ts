@@ -1,6 +1,16 @@
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { CaptureRecordSchema, type CaptureRecord } from './schema.js';
 
+export type CapturePublicEvent = {
+  id: string;
+  date: string;
+  time: string;
+  venue: string;
+  action?: string;
+  venueAction?: string;
+  url: string;
+};
+
 export type CapturePublicOutcome = {
   state: 'added' | 'already_exists' | 'processed' | 'needs_review' | 'could_not_resolve' | 'ignored';
   message?: string;
@@ -10,15 +20,8 @@ export type CapturePublicOutcome = {
       action?: string;
       id?: string;
     };
-    event?: {
-      id: string;
-      date: string;
-      time: string;
-      venue: string;
-      action?: string;
-      venueAction?: string;
-      url: string;
-    };
+    event?: CapturePublicEvent;
+    events?: CapturePublicEvent[];
   };
 };
 
