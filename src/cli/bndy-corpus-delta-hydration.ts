@@ -13,6 +13,7 @@ import {
 } from '../bndy-baseline/operation-gate.js';
 import { CANONICAL_SOURCE_IDS, canonicalEvidenceSource } from '../bndy-baseline/sources.js';
 import { CanonicalSyncStateStore } from '../bndy-baseline/sync-state.js';
+import { canonicalHydrationManifestItems, type CanonicalHydrationSummary } from '../bndy-baseline/hydration-manifest.js';
 import { ClaimStore } from '../knowledge/stores/claim-store.js';
 import { SourceRegistryStore } from '../knowledge/stores/source-registry-store.js';
 import { DynamoProjectionControlStore } from '../projection/control-store.js';
@@ -47,7 +48,7 @@ const claims = new ClaimStore(stateTable);
 const registry = new SourceRegistryStore(stateTable);
 const projectionControls = new DynamoProjectionControlStore(stateTable);
 const currentIds = new Set<string>();
-const summary = {
+const summary: CanonicalHydrationSummary = {
   runId,
   baselineSnapshotId,
   startedAt: observedAt,
@@ -137,6 +138,7 @@ async function scanCurrentTable(
     const page = await ddb.send(new ScanCommand({ TableName: tableName, ExclusiveStartKey }));
     for (const record of page.Items ?? []) await processCurrent(classify(record), record);
     ExclusiveStartKey = page.LastEvaluatedKey as Record<string, unknown> | undefined;
+    if (!dryRun) await writeManifest();
     console.log(JSON.stringify({ progress: true, tableName, scanned: summary.scanned, inserted: summary.inserted, modified: summary.modified }));
   } while (ExclusiveStartKey);
 }
@@ -184,10 +186,8 @@ async function hydrateRemovals(): Promise<void> {
 }
 
 async function writeManifest(): Promise<void> {
-  await ddb.send(new PutCommand({
-    TableName: stateTable,
-    Item: { pk: `DELTA_HYDRATION#${runId}`, sk: 'META', entityType: 'CanonicalDeltaHydration', ...summary },
-  }));
+  const items = canonicalHydrationManifestItems(summary, new Date().toISOString());
+  for (const Item of items) await ddb.send(new PutCommand({ TableName: stateTable, Item }));
 }
 
 async function assertPreflight(): Promise<void> {
@@ -207,6 +207,7 @@ async function main(): Promise<void> {
       for (const entityType of ['artist', 'venue', 'event', 'festival'] as const) {
         await registry.put(canonicalEvidenceSource(entityType));
       }
+      await writeManifest();
     }
     await scanCurrentTable(canonicalTables.artist, () => 'artist');
     await scanCurrentTable(canonicalTables.venue, () => 'venue');
