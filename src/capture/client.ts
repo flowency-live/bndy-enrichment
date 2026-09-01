@@ -23,6 +23,13 @@ export type CapturePublicOutcome = {
     event?: CapturePublicEvent;
     events?: CapturePublicEvent[];
   };
+  clarification?: {
+    type: 'confirm_new_artist';
+    artistName: string;
+    location: string;
+    prompt: string;
+  };
+  requestArtistLinks?: boolean;
 };
 
 const secrets = new SecretsManagerClient({});

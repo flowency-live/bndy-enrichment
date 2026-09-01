@@ -25,6 +25,12 @@ export const CaptureRecordSchema = z.object({
   suggestedEntityType: z.enum(['unknown', 'venue', 'artist', 'event']).default('unknown'),
   status: z.enum(['unprocessed', 'processing', 'processed', 'rejected', 'failed', 'ignored']),
   rawPayload: z.record(z.unknown()).optional(),
+  publicClarification: z.object({
+    type: z.literal('confirm_new_artist'),
+    artistName: z.string().min(1),
+    location: z.string().min(1),
+    confirmed: z.literal(true),
+  }).optional(),
   media: CaptureMediaSchema.optional(),
   processingWorkerId: z.string().optional(),
   processingStartedAt: z.string().optional(),
@@ -43,6 +49,9 @@ export const CaptureArtistSchema = z.object({
   genres: z.array(GenreSchema).default([]),
   bio: z.string().optional(),
   officialWebsite: z.string().url().optional(),
+  instagramUrl: z.string().url().optional(),
+  youtubeUrl: z.string().url().optional(),
+  twitterUrl: z.string().url().optional(),
   confidence: z.number().min(0).max(1),
   evidenceUrls: z.array(z.string().url()).default([]),
 });

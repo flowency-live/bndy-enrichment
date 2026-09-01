@@ -4,8 +4,9 @@ import {
   defaultCaptureStartTime,
   eventShouldPublish,
   reviewableProjectionError,
+  hasStrongMultiVenueArtistEvidence,
 } from '../src/handlers/capture-processor.js';
-import type { CaptureEvent } from '../src/capture/schema.js';
+import type { CaptureArtist, CaptureEvent } from '../src/capture/schema.js';
 
 function event(overrides: Partial<CaptureEvent> = {}): CaptureEvent {
   return {
@@ -22,6 +23,33 @@ function event(overrides: Partial<CaptureEvent> = {}): CaptureEvent {
 }
 
 describe('Capture event publication policy', () => {
+  const artist: CaptureArtist = {
+    name: 'One For The Road',
+    location: 'Northwich, Cheshire',
+    locationType: 'regional',
+    confidence: 0.96,
+    evidenceUrls: [],
+    actTypes: [],
+    genres: [],
+  };
+
+  it('treats a confident multi-venue, multi-town poster as strong geographic identity evidence', () => {
+    expect(hasStrongMultiVenueArtistEvidence(artist, [
+      event({ venueName: 'The Lion Hotel', town: 'Moulton' }),
+      event({ venueName: 'Broken Cross', town: 'Rudheath' }),
+      event({ venueName: 'Bird & Hat', town: 'Northwich' }),
+    ])).toBe(true);
+  });
+
+  it('does not auto-confirm a same-name artist from one gig or weak identity confidence', () => {
+    expect(hasStrongMultiVenueArtistEvidence(artist, [event({ town: 'Northwich' })])).toBe(false);
+    expect(hasStrongMultiVenueArtistEvidence({ ...artist, confidence: 0.7 }, [
+      event({ venueName: 'One', town: 'Northwich' }),
+      event({ venueName: 'Two', town: 'Moulton' }),
+      event({ venueName: 'Three', town: 'Winsford' }),
+    ])).toBe(false);
+  });
+
   it('publishes a directly captured event when admission is unknown', () => {
     expect(eventShouldPublish(event({ admission: 'UNKNOWN' }))).toBe(true);
   });
