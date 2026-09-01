@@ -1,5 +1,15 @@
 import type { KnowledgeClaim } from '../knowledge/types.js';
 
+export class IncompleteProjectionCandidateError extends Error {
+  constructor(
+    public readonly candidateKey: string,
+    public readonly missingFields: string[],
+  ) {
+    super(`Projection candidate ${candidateKey} missing ${missingFields.join(', ')}`);
+    this.name = 'IncompleteProjectionCandidateError';
+  }
+}
+
 export type ProjectionEventCandidate = {
   candidateKey: string;
   sourceId: string;
@@ -78,7 +88,7 @@ export function materialiseEventCandidate(
     !date ? 'date' : undefined,
     !startTime ? 'startTime' : undefined,
   ].filter(Boolean);
-  if (missing.length) throw new Error(`Projection candidate ${candidateKey} missing ${missing.join(', ')}`);
+  if (missing.length) throw new IncompleteProjectionCandidateError(candidateKey, missing as string[]);
 
   const observedAt = claims.reduce((latestAt, claim) => claim.observedAt > latestAt ? claim.observedAt : latestAt, '');
 

@@ -225,7 +225,9 @@ describe('Lemonrock source-native identities', () => {
 
     expect(parsed.events[0]).toMatchObject({
       artistExternalId: 'lemonrock:artist:mattdean',
+      venueName: 'The Devon Arms',
       venueExternalId: 'lemonrock:venue:devonarms',
+      venueLocation: 'Torquay',
       status: 'confirmed',
     });
     expect(parsed.events[0]?.claims?.some((claim) => JSON.stringify(claim.value).includes('cancellationText'))).toBe(false);
