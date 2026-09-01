@@ -5,6 +5,7 @@ import {
   claimCapture,
   getCapture,
   updateCaptureStatus,
+  type CapturePublicEvent,
   type CapturePublicOutcome,
 } from '../capture/client.js';
 import { discoverCapture, inspectPublicPage } from '../capture/discover.js';
@@ -58,6 +59,19 @@ export function defaultCaptureStartTime(date: string, sourceText = ''): string {
   if (day === 5 || day === 6) return '21:00';
   if (day === 0) return '19:00';
   return '20:00';
+}
+
+export function applyCaptureStartTimeDefaults(
+  events: CaptureEvent[],
+  sourceText = '',
+): Array<{ date: string; venueName: string; time: string }> {
+  const defaulted: Array<{ date: string; venueName: string; time: string }> = [];
+  for (const event of events) {
+    if (event.cancelled || event.startTime) continue;
+    event.startTime = defaultCaptureStartTime(event.date, sourceText);
+    defaulted.push({ date: event.date, venueName: event.venueName, time: event.startTime });
+  }
+  return defaulted;
 }
 
 function compact(value: unknown, max = 800): string {
@@ -133,14 +147,9 @@ async function processCapture(captureId: string, workerId: string): Promise<void
     return;
   }
 
-  let defaultedStartTime: string | undefined;
+  const defaultedStartTimes = applyCaptureStartTimeDefaults(discovery.events, capture.sharedText);
   if (discovery.classification === 'event') {
     const event = discovery.events[0];
-    if (!event.cancelled && !event.startTime) {
-      defaultedStartTime = defaultCaptureStartTime(event.date, capture.sharedText);
-      event.startTime = defaultedStartTime;
-    }
-
     // When the transport URL was deterministically resolved to a canonical Facebook Event,
     // keep that object identity even if search grounding returns a noisier URL variant.
     if (discoveryCapture.sharedUrl?.includes('facebook.com/events/')) {
@@ -197,6 +206,7 @@ async function processCapture(captureId: string, workerId: string): Promise<void
   let duplicateEvents = 0;
   let heldEvents = 0;
   let publicEvent: NonNullable<CapturePublicOutcome['result']>['event'];
+  const publicEvents: CapturePublicEvent[] = [];
 
   for (const event of discovery.events) {
     if (!eventShouldPublish(event)) {
@@ -216,17 +226,17 @@ async function processCapture(captureId: string, workerId: string): Promise<void
         `${event.date}${event.startTime ? ` ${event.startTime}` : ''} | ${venue.name}${venue.city ? `, ${venue.city}` : ''} | ` +
         `${result.created ? 'created' : 'existing duplicate'} ${result.id}${venue.isNew ? ' | venue newly created' : ' | venue matched'}`
       );
-      if (discovery.classification === 'event') {
-        publicEvent = {
-          id: result.id,
-          date: event.date,
-          time: event.startTime!,
-          venue: venue.name,
-          action: result.created ? 'created' : 'existing',
-          venueAction: venue.isNew ? 'created' : 'matched',
-          url: `https://bndy.live/g/${result.id}`,
-        };
-      }
+      const publicResultEvent: CapturePublicEvent = {
+        id: result.id,
+        date: event.date,
+        time: event.startTime!,
+        venue: venue.name,
+        action: result.created ? 'created' : 'existing',
+        venueAction: venue.isNew ? 'created' : 'matched',
+        url: `https://bndy.live/g/${result.id}`,
+      };
+      publicEvents.push(publicResultEvent);
+      if (discovery.classification === 'event') publicEvent = publicResultEvent;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (discovery.classification === 'event') {
@@ -259,8 +269,11 @@ async function processCapture(captureId: string, workerId: string): Promise<void
     discovery.canonicalUrl ? `Canonical capture URL: ${discovery.canonicalUrl}` : 'Canonical capture URL: not resolved',
     discovery.artist.bio ? `Bio: ${discovery.artist.bio}` : 'Bio: not found',
     `Events: ${createdEvents} created, ${duplicateEvents} existing duplicates, ${heldEvents} held.`,
-    ...(defaultedStartTime
-      ? [`Start time: ${defaultedStartTime} (defaulted from missing source time under RUNBOOK §5.6).`]
+    ...(defaultedStartTimes.length
+      ? [
+          'Start times defaulted from missing source time under RUNBOOK §5.6:',
+          ...defaultedStartTimes.map(item => `- ${item.date} | ${item.venueName} | ${item.time}`),
+        ]
       : []),
     ...(eventLines.length ? ['Event detail:', ...eventLines.map(line => `- ${line}`)] : ['No upcoming events found.']),
     ...(venueLines.length ? ['New venues:', ...venueLines.map(line => `- ${line}`)] : ['No new venues.']),
@@ -273,6 +286,7 @@ async function processCapture(captureId: string, workerId: string): Promise<void
       id: artistId,
     },
     ...(publicEvent ? { event: publicEvent } : {}),
+    ...(publicEvents.length ? { events: publicEvents } : {}),
   };
   const publicOutcome: CapturePublicOutcome = createdEvents > 0 ? {
     state: 'added',
