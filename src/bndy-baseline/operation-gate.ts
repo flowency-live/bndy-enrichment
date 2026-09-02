@@ -1,9 +1,14 @@
-export type CanonicalBacklineOperation = 'baseline' | 'delta-hydration' | 'activate-change-sources';
+export type CanonicalBacklineOperation =
+  | 'baseline'
+  | 'delta-hydration'
+  | 'activate-change-sources'
+  | 'lemonrock-occurs-at-repair';
 
 export const CANONICAL_BACKLINE_CONFIRMATIONS: Record<CanonicalBacklineOperation, string> = {
   baseline: 'WRITE_BACKLINE_CANONICAL_BASELINE',
   'delta-hydration': 'WRITE_BACKLINE_CANONICAL_DELTA',
   'activate-change-sources': 'ACTIVATE_BACKLINE_CANONICAL_CHANGE_SOURCES',
+  'lemonrock-occurs-at-repair': 'WRITE_BACKLINE_LEMONROCK_OCCURS_AT_REPAIR',
 };
 
 export function namedArgument(args: string[], name: string): string | undefined {
