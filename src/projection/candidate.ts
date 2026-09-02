@@ -41,7 +41,11 @@ function latestByPredicate(claims: KnowledgeClaim[]): ClaimMap {
   for (const claim of claims) {
     if (claim.status !== 'active') continue;
     const current = out.get(claim.predicate);
-    if (!current || claim.observedAt > current.observedAt) out.set(claim.predicate, claim);
+    const claimOrder = `${claim.observedAt}#${claim.assertedAt ?? claim.observedAt}#${claim.id}`;
+    const currentOrder = current
+      ? `${current.observedAt}#${current.assertedAt ?? current.observedAt}#${current.id}`
+      : undefined;
+    if (!currentOrder || claimOrder > currentOrder) out.set(claim.predicate, claim);
   }
   return out;
 }

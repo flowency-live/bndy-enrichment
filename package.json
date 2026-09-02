@@ -21,6 +21,7 @@
     "source:parity": "tsx src/cli/source-parity.ts",
     "enrichment:qualify": "tsx src/cli/qualify-enrichment-provider.ts",
     "lemonrock:bootstrap": "tsx src/cli/lemonrock-bootstrap.ts",
+    "lemonrock:repair-occurs-at": "tsx src/cli/repair-lemonrock-occurs-at.ts",
     "onthecase:bootstrap": "tsx src/cli/onthecase-bootstrap.ts",
     "bndy:baseline": "tsx src/cli/bndy-corpus-bootstrap.ts",
     "bndy:delta-hydration": "tsx src/cli/bndy-corpus-delta-hydration.ts",
