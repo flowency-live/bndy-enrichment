@@ -3,7 +3,7 @@ import type { KnowledgeClaim } from '../knowledge/types.js';
 
 export type VenueLocationEvidence = {
   location: string;
-  method: 'gig-evidence-replay' | 'venue-claim-join';
+  method: 'gig-evidence-replay' | 'event-address-claim' | 'venue-claim-join';
   supportingClaimId?: string;
   confidence?: number;
 };

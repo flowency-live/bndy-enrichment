@@ -15,3 +15,15 @@ export function parseLongDate(text:string){const m=text.replace(/\s+/g,' ').trim
 export function parseClockTime(text:string){const c=text.replace(/\s+/g,' ').trim().toUpperCase();const m=c.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/);if(m){let h=Number(m[1]);if(h<1||h>12)return; if(m[3]==='PM'&&h<12)h+=12;if(m[3]==='AM'&&h===12)h=0;return `${String(h).padStart(2,'0')}:${m[2]??'00'}`;}const n=c.match(/^(\d{1,2}):(\d{2})$/);return n&&Number(n[1])<=23?`${String(Number(n[1])).padStart(2,'0')}:${n[2]}`:undefined;}
 export function parseTimePrice(text:string):{startTime?:string;admissionStatus?:string;price?:string}{const p=text.replace(/\s+/g,' ').trim().split('/').map(x=>x.trim()).filter(Boolean);const o:any={};if(p[0])o.startTime=parseClockTime(p[0]);if(/^free$/i.test(p[1]??''))o.admissionStatus='FREE_CONFIRMED';else if(/£\s*\d/.test(p[1]??'')){o.admissionStatus='PAID_CONFIRMED';o.price=p[1];}return o;}
 export function splitActAtVenue(title:string){const c=title.replace(/\s+/g,' ').trim();const i=c.toLowerCase().indexOf(' at ');return i===-1?{actName:c}:{actName:c.slice(0,i).trim(),venueName:c.slice(i+4).trim()};}
+
+const UK_POSTCODE = /\b(?:GIR ?0AA|[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2})\b/i;
+const UK_PHONE = /^0\d[\d ]{7,}$/;
+
+export function onTheCaseLocationFromAddress(address:string):string|undefined {
+  const parts=address.replace(/\s+/g,' ').split(/\s*[,/]\s*/).map(part=>part.trim()).filter(Boolean).filter(part=>!UK_PHONE.test(part));
+  if(parts.length<2)return;
+  const finalWithoutPostcode=parts.at(-1)!.replace(UK_POSTCODE,'').trim();
+  if(finalWithoutPostcode)return finalWithoutPostcode;
+  const preceding=parts.at(-2)?.replace(UK_POSTCODE,'').trim();
+  return preceding||undefined;
+}
