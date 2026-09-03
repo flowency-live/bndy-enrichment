@@ -13,6 +13,7 @@ import {
   gigRef,
   parseLongDate,
   parseTimePrice,
+  onTheCaseLocationFromAddress,
   splitActAtVenue,
   textFromHtml,
   titleFromHtml,
@@ -86,14 +87,17 @@ function assertExpectedPage(kind: string, html: string): string {
 
 const UK_PHONE = /^0\d[\d ]{7,}$/;
 
-function splitAddressPhone(text: string): { address?: string; phone?: string } {
+function splitAddressPhone(text: string): { address?: string; location?: string; phone?: string } {
   const parts = text.replace(/\s+/g, ' ').trim().split('/').map((part) => part.trim()).filter(Boolean);
   if (!parts.length) return {};
   const last = parts[parts.length - 1];
-  if (UK_PHONE.test(last)) {
-    return { address: parts.slice(0, -1).join(', ') || undefined, phone: last };
-  }
-  return { address: parts.join(', ') || undefined };
+  const addressParts = UK_PHONE.test(last) ? parts.slice(0, -1) : parts;
+  const address = addressParts.join(', ') || undefined;
+  return {
+    address,
+    location: address ? onTheCaseLocationFromAddress(address) : undefined,
+    ...(UK_PHONE.test(last) ? { phone: last } : {}),
+  };
 }
 
 function bandHydrationRequest(id: string, slug: string, name?: string): SourceFanoutRequest {
@@ -136,7 +140,7 @@ function parseGigIndex(html: string, sourceUrl: string): ParsedSource {
       }
       const title = textFromHtml(row[2]);
       const { actName, venueName } = splitActAtVenue(title);
-      const { address, phone } = splitAddressPhone(row[3] ? textFromHtml(row[3]) : '');
+      const { address, location, phone } = splitAddressPhone(row[3] ? textFromHtml(row[3]) : '');
       const priceText = textFromHtml(row[4]).split('\n')[0] ?? '';
       const { startTime, admissionStatus, price } = parseTimePrice(priceText);
       if (!date) warnings.push(`gig ${gig.gigId} row had no parseable date`);
@@ -153,6 +157,7 @@ function parseGigIndex(html: string, sourceUrl: string): ParsedSource {
         artistName: actName && !isNonArtistPerformerLabel(actName) ? actName : undefined,
         venueName: venueName ?? undefined,
         venueExternalId: `onthecase:venue:${gig.venueId}`,
+        venueLocation: location,
         venueAddress: address,
         date,
         startTime,
@@ -307,9 +312,10 @@ function parseVenueProfile(html: string, sourceUrl: string, warnOn: string[]): P
     .filter(Boolean);
   const factsText = paragraphs.find((text) => /Capacity:|Accessible:|Food:/i.test(text));
   const bioText = paragraphs.filter((text) => text !== factsText && text.length > 20).join('\n\n') || undefined;
-  const { address, phone } = splitAddressPhone(addressLine ?? '');
+  const { address, location, phone } = splitAddressPhone(addressLine ?? '');
   const claims: NormalisedSourceClaim[] = [];
   if (name) claims.push({ predicate: 'hasName', value: name });
+  if (location) claims.push({ predicate: 'hasLocation', value: location, evidenceText: addressLine });
   if (address) claims.push({ predicate: 'hasAddress', value: address, evidenceText: addressLine });
   if (bioText) claims.push({ predicate: 'hasBio', value: bioText });
   if (phone) claims.push({ predicate: 'derivedFrom', value: { kind: 'venue-phone', phone } });

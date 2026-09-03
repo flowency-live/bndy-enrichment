@@ -44,6 +44,8 @@ describe('On The Case production adapter', () => {
     expect(parsed.events).toHaveLength(2);
     expect(parsed.events[0]).toMatchObject({
       sourceEventKey: 'onthecase:gig:131412', artistName: undefined, venueExternalId: 'onthecase:venue:6011',
+      venueLocation: 'Holywell Whitley Bay',
+      venueAddress: 'Holywell Dene Road, Holywell Whitley Bay',
       data: expect.objectContaining({ unresolvedPerformerLabel: 'Buskers night' }),
     });
     expect(parsed.events[1].artistName).toBe('3rd Stage Red');
@@ -54,6 +56,7 @@ describe('On The Case production adapter', () => {
   it('hydrates venue facts and fans out only linked bands', () => {
     const parsed = parseOnTheCase(venuePage, 'https://onthecasemusic.co.uk/venues/6011/old-fat-ox-holywell', run('onthecase-venue-hydration', 'venue'));
     expect(parsed.entities?.[0]).toMatchObject({ entityType: 'venue', sourceEntityKey: 'onthecase:venue:6011', displayName: 'Old Fat Ox Holywell' });
+    expect(parsed.entities?.[0].claims).toContainEqual(expect.objectContaining({ predicate: 'hasLocation', value: 'Holywell Whitley Bay' }));
     expect(parsed.entities?.[0].claims).toContainEqual(expect.objectContaining({ predicate: 'derivedFrom', value: expect.objectContaining({ kind: 'venue-facts', capacity: '150' }) }));
     expect(parsed.nextRequests).toEqual([expect.objectContaining({ sourceId: 'onthecase-band-hydration', taskKey: 'band:onthecase:band:12550' })]);
   });

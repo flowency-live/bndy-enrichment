@@ -34,6 +34,17 @@ describe('canonical Backline operation gate', () => {
     )).toThrow(/WRITE_BACKLINE_LEMONROCK_OCCURS_AT_REPAIR/);
   });
 
+  it('requires the exact OnTheCase repair confirmation phrase', () => {
+    expect(() => requireCanonicalBacklineConfirmation(
+      ['--confirm=WRITE_BACKLINE_ONTHECASE_OCCURS_AT_REPAIR'],
+      'onthecase-occurs-at-repair',
+    )).not.toThrow();
+    expect(() => requireCanonicalBacklineConfirmation(
+      ['--confirm=WRITE_BACKLINE_LEMONROCK_OCCURS_AT_REPAIR'],
+      'onthecase-occurs-at-repair',
+    )).toThrow(/WRITE_BACKLINE_ONTHECASE_OCCURS_AT_REPAIR/);
+  });
+
   it('rejects duplicate or empty named arguments', () => {
     expect(namedArgument(['--run-id=one'], 'run-id')).toBe('one');
     expect(() => namedArgument(['--run-id=one', '--run-id=two'], 'run-id')).toThrow('at most once');
@@ -76,6 +87,7 @@ describe('canonical Backline operation gate', () => {
     const delta = readFileSync(resolve('src/cli/bndy-corpus-delta-hydration.ts'), 'utf8');
     const activation = readFileSync(resolve('src/cli/activate-canonical-change-sources.ts'), 'utf8');
     const lemonrockRepair = readFileSync(resolve('src/cli/repair-lemonrock-occurs-at.ts'), 'utf8');
+    const onTheCaseRepair = readFileSync(resolve('src/cli/repair-onthecase-occurs-at.ts'), 'utf8');
 
     expect(baseline).toContain("requireCanonicalBacklineConfirmation(cliArgs, 'baseline')");
     expect(baseline).toContain('assertGlobalCanonicalWritesDisabled');
@@ -86,5 +98,7 @@ describe('canonical Backline operation gate', () => {
     expect(activation).toContain('assertGlobalCanonicalWritesDisabled');
     expect(lemonrockRepair).toContain("requireCanonicalBacklineConfirmation(args, 'lemonrock-occurs-at-repair')");
     expect(lemonrockRepair).toContain('assertGlobalCanonicalWritesDisabled');
+    expect(onTheCaseRepair).toContain("requireCanonicalBacklineConfirmation(args, 'onthecase-occurs-at-repair')");
+    expect(onTheCaseRepair).toContain('assertGlobalCanonicalWritesDisabled');
   });
 });
