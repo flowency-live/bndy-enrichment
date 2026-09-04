@@ -320,10 +320,18 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
 
   // Shadow and Cowork-owned sources execute the whole evidence/candidate path but
   // never call BNDY mutation APIs. D19: only one live writer exists at a time.
+  // The would-write record cites its evidence by id. Claim bodies stay in the
+  // Claim store; embedding 300 of them made each record about 250 KB.
+  const { supportingClaims, ...candidateFacts } = candidate;
+  const compactCandidate = {
+    ...candidateFacts,
+    supportingClaimIds: supportingClaims.map((claim) => claim.id),
+    supportingClaimCount: supportingClaims.length,
+  };
   const shadowOutcome = async (reason: string): Promise<ProjectionResult> => {
     await deps.state.markSuccess(item, mappingFrom(undefined, undefined, undefined, previous), 'shadow', {
       wouldWrite: item.action,
-      candidate,
+      candidate: compactCandidate,
       reason,
     });
     await deps.state.recordRunItem(item, { claims: claims.length });
