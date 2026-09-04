@@ -57,6 +57,7 @@ export const SourceProjectionPolicySchema = z.object({
   maxAcceptedEventsPerRun: z.number().int().positive().optional(),
   maxProjectionActionsPerRun: z.number().int().positive().optional(),
   entityCreation: z.enum(['allow', 'match-only']).optional(),
+  pilotCandidateKeys: z.array(z.string().min(1)).min(1).optional(),
 }).refine(
   (policy) => policy.minAcceptedEventsPerRun === undefined
     || policy.maxAcceptedEventsPerRun === undefined

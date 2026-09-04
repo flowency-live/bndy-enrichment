@@ -264,6 +264,39 @@ describe('ProjectionEngine', () => {
     expect(mockApi.resolveArtist).toHaveBeenCalledWith(expect.anything(), { canCreate: true });
   });
 
+  it('pilot allowlist keeps every candidate outside the list in shadow with a would-write record', async () => {
+    const mockApi = api();
+    const fx = deps({
+      source: source({ projectionPolicy: { ...projectionPolicy('additive-only'), pilotCandidateKeys: ['event:test-source:somebody-else'] } }),
+      api: mockApi,
+    });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('shadow');
+    expect(mockApi.resolveArtist).not.toHaveBeenCalled();
+    expect(mockApi.ensureEvent).not.toHaveBeenCalled();
+    expect(fx.successes[0]).toEqual([
+      expect.anything(),
+      expect.anything(),
+      'shadow',
+      expect.objectContaining({ wouldWrite: 'create', reason: 'candidate is outside the pilot allowlist' }),
+    ]);
+  });
+
+  it('pilot allowlist lets a listed candidate through to the live write path', async () => {
+    const mockApi = api();
+    const fx = deps({
+      source: source({ projectionPolicy: { ...projectionPolicy('additive-only'), pilotCandidateKeys: [candidateKey] } }),
+      api: mockApi,
+    });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('success');
+    expect(mockApi.ensureEvent).toHaveBeenCalledTimes(1);
+  });
+
   it('does no BNDY API work in shadow mode', async () => {
     const mockApi = api();
     const fx = deps({ source: source({ shadow: true, writerAuthority: 'cowork' }), api: mockApi });
