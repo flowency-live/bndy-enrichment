@@ -320,8 +320,7 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
 
   // Shadow and Cowork-owned sources execute the whole evidence/candidate path but
   // never call BNDY mutation APIs. D19: only one live writer exists at a time.
-  if (source.shadow || source.writerAuthority !== 'aws') {
-    const reason = source.shadow ? 'source is in shadow mode' : `writerAuthority=${source.writerAuthority}`;
+  const shadowOutcome = async (reason: string): Promise<ProjectionResult> => {
     await deps.state.markSuccess(item, mappingFrom(undefined, undefined, undefined, previous), 'shadow', {
       wouldWrite: item.action,
       candidate,
@@ -329,6 +328,10 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
     });
     await deps.state.recordRunItem(item, { claims: claims.length });
     return { status: 'shadow', sourceId: item.sourceId, candidateKey: item.candidateKey, action: item.action, message: reason };
+  };
+
+  if (source.shadow || source.writerAuthority !== 'aws') {
+    return await shadowOutcome(source.shadow ? 'source is in shadow mode' : `writerAuthority=${source.writerAuthority}`);
   }
 
   let canonicalWritesEnabled: boolean;
@@ -343,14 +346,7 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
     );
   }
   if (!canonicalWritesEnabled) {
-    const reason = 'global canonical projection is disabled';
-    await deps.state.markSuccess(item, mappingFrom(undefined, undefined, undefined, previous), 'shadow', {
-      wouldWrite: item.action,
-      candidate,
-      reason,
-    });
-    await deps.state.recordRunItem(item, { claims: claims.length });
-    return { status: 'shadow', sourceId: item.sourceId, candidateKey: item.candidateKey, action: item.action, message: reason };
+    return await shadowOutcome('global canonical projection is disabled');
   }
 
   const projectionPolicy = source.projectionPolicy;
@@ -369,6 +365,10 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
       `Projection predicate allowlist blocks ${disallowedPredicates.sort().join(', ')}`,
       deps,
     );
+  }
+  // A pilot names its candidates. Everything else stays a would-write record.
+  if (projectionPolicy.pilotCandidateKeys && !projectionPolicy.pilotCandidateKeys.includes(item.candidateKey)) {
+    return await shadowOutcome('candidate is outside the pilot allowlist');
   }
   const additiveOnly = projectionPolicy.mode === 'additive-only';
   const matchOnly = projectionPolicy.entityCreation === 'match-only';
