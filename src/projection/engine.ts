@@ -16,7 +16,7 @@ import {
   ownerManagedEvent,
   type ProjectionEventCandidate,
 } from './candidate.js';
-import { mergeExternalIds, type ProjectionBndyApi, type ResolvedArtist, type ResolvedVenue } from './bndy-api.js';
+import { EntityResolutionReviewError, mergeExternalIds, type ProjectionBndyApi, type ResolvedArtist, type ResolvedVenue } from './bndy-api.js';
 import { enrichmentItem, type EntityEnrichmentPublisher } from './enrichment-publisher.js';
 import type { ProjectionExceptionSink } from './exception-sink.js';
 import type { ProjectionCountDelta, ProjectionMapping } from './projection-store.js';
@@ -371,6 +371,7 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
     );
   }
   const additiveOnly = projectionPolicy.mode === 'additive-only';
+  const matchOnly = projectionPolicy.entityCreation === 'match-only';
   if (additiveOnly && item.action !== 'create') {
     return await handledException(item, `Additive-only projection blocks ${item.action}`, deps);
   }
@@ -447,12 +448,32 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
       return { status: 'success', sourceId: item.sourceId, candidateKey: item.candidateKey, action: item.action, eventId };
     }
 
-    const artist = previous?.artistId
-      ? { id: previous.artistId, created: false } satisfies ResolvedArtist
-      : await deps.api.resolveArtist(candidate);
-    const venue = previous?.venueId
-      ? { id: previous.venueId, created: false } satisfies ResolvedVenue
-      : await deps.api.resolveVenue(candidate);
+    let artist: ResolvedArtist;
+    let venue: ResolvedVenue;
+    try {
+      artist = previous?.artistId
+        ? { id: previous.artistId, created: false } satisfies ResolvedArtist
+        : await deps.api.resolveArtist(candidate, { canCreate: !matchOnly });
+      venue = previous?.venueId
+        ? { id: previous.venueId, created: false } satisfies ResolvedVenue
+        : await deps.api.resolveVenue(candidate, { canCreate: !matchOnly });
+    } catch (error) {
+      if (!(error instanceof EntityResolutionReviewError)) throw error;
+      return await handledException(item, error.message, deps, {
+        classification: 'unresolved-entity',
+        entityType: error.entityType,
+        entityName: error.entityName,
+        reason: error.reason,
+        candidates: error.candidates,
+      });
+    }
+    if (matchOnly && (artist.created || venue.created)) {
+      return await handledException(item, 'match-only policy: canonical API created an entity despite canCreate=false', deps, {
+        classification: 'match-only-violation',
+        artistCreated: artist.created,
+        venueCreated: venue.created,
+      });
+    }
 
     const tombstone = await deps.tombstones.get(artist.id, venue.id, candidate.date);
     const proposedClaim = claims.find((claim) => item.claimIds.includes(claim.id));

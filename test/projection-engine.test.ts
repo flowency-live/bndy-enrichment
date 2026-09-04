@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { GigSource, KnowledgeClaim, ProjectionWorkItem, Tombstone } from '../src/knowledge/types.js';
 import { AuthorityPolicy } from '../src/projection/authority-policy.js';
-import type { ProjectionBndyApi } from '../src/projection/bndy-api.js';
+import { EntityResolutionReviewError, type ProjectionBndyApi } from '../src/projection/bndy-api.js';
 import { projectWorkItem, type ProjectionDependencies } from '../src/projection/engine.js';
 
 const candidateKey = 'event:test-source:gig-1';
@@ -214,6 +214,54 @@ describe('ProjectionEngine', () => {
     expect(result.status).toBe('shadow');
     expect(fx.latestReads).toEqual([['event-candidate', candidateKey, 300]]);
     expect(fx.failures).toHaveLength(0);
+  });
+
+  it('match-only policy resolves entities with canCreate false and creates the event when both match', async () => {
+    const mockApi = api({
+      resolveArtist: vi.fn(async () => ({ id: 'artist-1', created: false, name: 'The Test Band' })),
+      resolveVenue: vi.fn(async () => ({ id: 'venue-1', created: false, name: 'The Test Pub' })),
+    });
+    const fx = deps({
+      source: source({ projectionPolicy: { ...projectionPolicy('additive-only'), entityCreation: 'match-only' } }),
+      api: mockApi,
+    });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('success');
+    expect(mockApi.resolveArtist).toHaveBeenCalledWith(expect.anything(), { canCreate: false });
+    expect(mockApi.resolveVenue).toHaveBeenCalledWith(expect.anything(), { canCreate: false });
+    expect(fx.enrichments).toHaveLength(0);
+    const [, delta] = fx.runItems[0] as [unknown, Record<string, unknown>];
+    expect(delta).toMatchObject({ artistsCreated: 0, venuesCreated: 0, eventsCreated: 1 });
+  });
+
+  it('match-only policy records an unresolved-entity exception instead of retrying when the API asks for review', async () => {
+    const mockApi = api({
+      resolveArtist: vi.fn(async () => { throw new EntityResolutionReviewError('artist', 'The Test Band', 'likely-new', []); }),
+    });
+    const fx = deps({
+      source: source({ projectionPolicy: { ...projectionPolicy('additive-only'), entityCreation: 'match-only' } }),
+      api: mockApi,
+    });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result).toMatchObject({ status: 'exception', message: expect.stringContaining('The Test Band') });
+    expect(fx.exceptions).toContainEqual(expect.objectContaining({
+      details: expect.objectContaining({ classification: 'unresolved-entity', entityType: 'artist', reason: 'likely-new' }),
+    }));
+    expect(fx.failures).toHaveLength(0);
+    expect(mockApi.ensureEvent).not.toHaveBeenCalled();
+  });
+
+  it('default policy still allows entity creation', async () => {
+    const mockApi = api();
+    const fx = deps({ api: mockApi });
+
+    await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(mockApi.resolveArtist).toHaveBeenCalledWith(expect.anything(), { canCreate: true });
   });
 
   it('does no BNDY API work in shadow mode', async () => {

@@ -6,10 +6,26 @@ export type ExternalId = { source: string; id: string };
 export type ResolvedArtist = { id: string; name?: string; created: boolean };
 export type ResolvedVenue = { id: string; name?: string; created: boolean };
 export type EnsuredEvent = { id: string; created: boolean; duplicate: boolean };
+export type ResolveEntityOptions = { canCreate: boolean };
+
+// The canonical API answers `action: 'review'` when it will not create (ADR-021,
+// canCreate=false) or cannot match confidently. That is a decision, not a fault,
+// so it must never become a retryable failure.
+export class EntityResolutionReviewError extends Error {
+  constructor(
+    readonly entityType: 'artist' | 'venue',
+    readonly entityName: string,
+    readonly reason: string,
+    readonly candidates: unknown[],
+  ) {
+    super(`${entityType} '${entityName}' needs review: ${reason}`);
+    this.name = 'EntityResolutionReviewError';
+  }
+}
 
 export interface ProjectionBndyApi {
-  resolveArtist(candidate: ProjectionEventCandidate): Promise<ResolvedArtist>;
-  resolveVenue(candidate: ProjectionEventCandidate): Promise<ResolvedVenue>;
+  resolveArtist(candidate: ProjectionEventCandidate, options?: ResolveEntityOptions): Promise<ResolvedArtist>;
+  resolveVenue(candidate: ProjectionEventCandidate, options?: ResolveEntityOptions): Promise<ResolvedVenue>;
   ensureEvent(candidate: ProjectionEventCandidate, artistId: string, venueId: string): Promise<EnsuredEvent>;
   getEvent(eventId: string): Promise<Record<string, unknown> | null>;
   findEventByExternalId(sourceId: string, externalId: string): Promise<Record<string, unknown> | null>;
@@ -18,6 +34,11 @@ export interface ProjectionBndyApi {
   uncancelEvent(eventId: string): Promise<void>;
   hideEvent(eventId: string, reason: string): Promise<void>;
   restoreEvent(eventId: string): Promise<void>;
+}
+
+function reviewError(entityType: 'artist' | 'venue', name: string, body: Record<string, unknown>): EntityResolutionReviewError {
+  const reason = typeof body.reason === 'string' && body.reason ? body.reason : 'review';
+  return new EntityResolutionReviewError(entityType, name, reason, Array.isArray(body.candidates) ? body.candidates : []);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -80,12 +101,13 @@ export class HttpProjectionBndyApi implements ProjectionBndyApi {
     return { status: response.status, body };
   }
 
-  async resolveArtist(candidate: ProjectionEventCandidate): Promise<ResolvedArtist> {
+  async resolveArtist(candidate: ProjectionEventCandidate, options: ResolveEntityOptions = { canCreate: true }): Promise<ResolvedArtist> {
     const artistExternalId = candidate.artistExternalId ?? `name:${candidate.artistName.toLowerCase()}`;
     const out = await this.request('/api/artists/find-or-create', {
       method: 'POST',
       body: JSON.stringify({
         name: candidate.artistName,
+        canCreate: options.canCreate,
         location: candidate.artistLocation ?? candidate.venueLocation,
         locationType: 'region',
         venueRegion: candidate.venueLocation,
@@ -94,8 +116,9 @@ export class HttpProjectionBndyApi implements ProjectionBndyApi {
       }),
     }, [409, 422]);
     const body = asRecord(out.body);
-    if (out.status === 422 || body.action === 'review') {
-      throw new Error(`Artist resolution needs review for '${candidate.artistName}': ${JSON.stringify(body)}`);
+    if (body.action === 'review') throw reviewError('artist', candidate.artistName, body);
+    if (out.status === 422) {
+      throw new Error(`Artist resolution rejected for '${candidate.artistName}': ${JSON.stringify(body)}`);
     }
     const artist = asRecord(body.artist);
     const id = stringField(artist.id) ?? stringField(body.existingArtistId);
@@ -103,20 +126,22 @@ export class HttpProjectionBndyApi implements ProjectionBndyApi {
     return { id, name: stringField(artist.name), created: body.action === 'created' };
   }
 
-  async resolveVenue(candidate: ProjectionEventCandidate): Promise<ResolvedVenue> {
+  async resolveVenue(candidate: ProjectionEventCandidate, options: ResolveEntityOptions = { canCreate: true }): Promise<ResolvedVenue> {
     const venueExternalId = candidate.venueExternalId ?? `name:${candidate.venueName.toLowerCase()}:${candidate.venueLocation.toLowerCase()}`;
     const out = await this.request('/api/venues/find-or-create', {
       method: 'POST',
       body: JSON.stringify({
         name: candidate.venueName,
+        canCreate: options.canCreate,
         city: candidate.venueLocation,
         ...(candidate.venueAddress ? { address: candidate.venueAddress } : {}),
         externalIds: [{ source: candidate.sourceId, id: venueExternalId }],
       }),
     }, [409, 422]);
     const body = asRecord(out.body);
-    if (out.status === 422 || body.action === 'review' || body.needsReview === true) {
-      throw new Error(`Venue resolution needs review for '${candidate.venueName}': ${JSON.stringify(body)}`);
+    if (body.action === 'review') throw reviewError('venue', candidate.venueName, body);
+    if (out.status === 422 || body.needsReview === true) {
+      throw new Error(`Venue resolution rejected for '${candidate.venueName}': ${JSON.stringify(body)}`);
     }
     const venue = asRecord(body.venue ?? body);
     const id = stringField(venue.id);
