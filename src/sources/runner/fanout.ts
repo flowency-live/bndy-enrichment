@@ -49,7 +49,7 @@ function dedupeKey(request: SourceFanoutRequest, requestedAt: string, reconcilia
   }
   if (request.sourceId === 'lemonrock-gig-hydration') {
     const refreshWindow = request.task.refreshWindow;
-    if (refreshWindow === 'hourly') return `${request.taskKey}@${date.toISOString().slice(0, 13)}`;
+    if (refreshWindow === 'daily') return `${request.taskKey}@${date.toISOString().slice(0, 10)}`;
     return `${request.taskKey}@${date.toISOString().slice(0, 7)}`;
   }
   if (request.sourceId === 'lemonrock-artist-hydration' || request.sourceId === 'lemonrock-venue-hydration') return `${request.taskKey}@${isoWeek(date)}`;

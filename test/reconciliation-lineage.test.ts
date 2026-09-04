@@ -21,13 +21,13 @@ describe('Lemonrock reconciliation lineage', () => {
     expect(JSON.parse((sqsSend.mock.calls[0]?.[0] as any).input.MessageBody).taskKey).toBe(`${discovery.taskKey}@v5@run-parser-v4`);
   });
 
-  it('hydrates fast-feed gigs hourly and reconciliation gigs monthly', async () => {
+  it('hydrates fast-feed gigs daily and reconciliation gigs monthly', async () => {
     const ddbSend = vi.fn().mockResolvedValue({});
     const sqsSend = vi.fn().mockResolvedValue({});
     const publisher = new DynamoSqsSourceFanoutPublisher('state-table', 'queue', { send: ddbSend } as any, { send: sqsSend } as any);
-    await publisher.publish({ ...child, task: { ...child.task, refreshWindow: 'hourly' } }, '2026-08-24T19:05:00.000Z');
+    await publisher.publish({ ...child, task: { ...child.task, refreshWindow: 'daily' } }, '2026-08-24T19:05:00.000Z');
     await publisher.publish({ ...child, task: { ...child.task, refreshWindow: 'monthly' } }, '2026-08-24T20:05:00.000Z');
-    expect((ddbSend.mock.calls[0]?.[0] as any).input.Item.taskKey).toBe(`${child.taskKey}@2026-08-24T19`);
+    expect((ddbSend.mock.calls[0]?.[0] as any).input.Item.taskKey).toBe(`${child.taskKey}@2026-08-24`);
     expect((ddbSend.mock.calls[1]?.[0] as any).input.Item.taskKey).toBe(`${child.taskKey}@2026-08`);
   });
 

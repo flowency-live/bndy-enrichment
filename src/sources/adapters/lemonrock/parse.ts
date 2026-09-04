@@ -60,7 +60,9 @@ function safeProfileLinks(html: string, sourceUrl: string) {
   });
 }
 
-type GigRefreshWindow = 'hourly' | 'monthly';
+// Fast-feed gigs are re-hydrated daily: the hourly cancellations feed carries
+// same-day changes, and a gig page fetched hourly for weeks was pure cost.
+type GigRefreshWindow = 'daily' | 'monthly';
 
 function auditTaskFields(run: SourceRunContext): Record<string, unknown> {
   return run.task?.auditRun === true ? { auditRun: true } : {};
@@ -366,7 +368,7 @@ function listPage(html: string, sourceUrl: string, kind: string, run: SourceRunC
     ...auditTaskFields(run),
     ...(kind === 'cancellations' ? { explicitCancellation: true } : {}),
   };
-  const gigs = gigRequests(html, sourceUrl, fastFeed ? 'hourly' : 'monthly', taskFields);
+  const gigs = gigRequests(html, sourceUrl, fastFeed ? 'daily' : 'monthly', taskFields);
   // Fast feeds deliberately stop at the gig links on the current page. Following
   // global town/date navigation from every hourly scan would recreate the full
   // national crawl 1,440 times per month.
@@ -542,9 +544,24 @@ function parseGig(html: string, sourceUrl: string, run: SourceRunContext): Parse
     status,
     admissionStatus: price?.toUpperCase().startsWith('FREE') ? 'free' : price ? 'paid' : undefined,
     price,
-    contentHash: createHash('sha256').update(html).digest('hex'),
     claims,
   };
+  // Fingerprint the gig's facts, never the page bytes: adverts and served-at
+  // markers change every fetch and must not look like new testimony.
+  event.contentHash = createHash('sha256').update(JSON.stringify({
+    key: event.sourceEventKey,
+    artist: event.artistExternalId ?? event.artistName,
+    venue: event.venueExternalId ?? event.venueName,
+    venueLocation: event.venueLocation,
+    date: event.date,
+    startTime: event.startTime,
+    endTime: event.endTime,
+    title: event.title,
+    status: event.status,
+    price: event.price,
+    admissionStatus: event.admissionStatus,
+    claims: claims.map((claim) => [claim.predicate, claim.value]),
+  })).digest('hex');
   const nextRequests: SourceFanoutRequest[] = [];
   const auditFields = auditTaskFields(run);
   if (artistAnchor && artistSlug) nextRequests.push(request(
