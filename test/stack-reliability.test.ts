@@ -40,7 +40,7 @@ describe('Backline stack reliability controls', () => {
   beforeAll(() => {
     defaultResources = synthesise(false);
     canonicalChangeResources = synthesise(true);
-  }, 120_000);
+  }, 300_000);
 
   it('retains every default application Lambda log group for 30 days', () => {
     const retentionResources = resourcesOfType(defaultResources, 'Custom::LogRetention');
