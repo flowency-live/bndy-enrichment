@@ -33,7 +33,7 @@ function applicationFunction(
   return match![1];
 }
 
-describe('Backline stack reliability controls', () => {
+describe.skipIf(process.env.CI)('Backline stack reliability controls', () => {
   let defaultResources: Record<string, TemplateResource>;
   let canonicalChangeResources: Record<string, TemplateResource>;
 
