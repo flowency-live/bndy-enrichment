@@ -125,6 +125,7 @@ function deps(options: {
   const lifecycle: unknown[] = [];
   const withdrawals: unknown[] = [];
   const tombstonePuts: Tombstone[] = [];
+  const latestReads: unknown[][] = [];
   const primary = options.source ?? source();
 
   const dependencies: ProjectionDependencies = {
@@ -137,7 +138,7 @@ function deps(options: {
     },
     claims: {
       async get(id) { return claimById.get(id) ?? null; },
-      async listBySubjectComplete() { return claims; },
+      async listLatestBySubject(...args: unknown[]) { latestReads.push(args); return claims; },
       async listSupportClaimIds() { return supportClaims.map((entry) => entry.id); },
       async linkCanonicalEntity(type, id, claimId) { linked.push({ type, id, claimId }); },
     },
@@ -163,7 +164,7 @@ function deps(options: {
     now: () => new Date('2026-08-21T12:00:00.000Z'),
   };
 
-  return { dependencies, linked, enrichments, exceptions, successes, failures, runItems, lifecycle, withdrawals, tombstonePuts };
+  return { dependencies, linked, enrichments, exceptions, successes, failures, runItems, lifecycle, withdrawals, tombstonePuts, latestReads };
 }
 
 describe('AuthorityPolicy', () => {
@@ -202,6 +203,16 @@ describe('ProjectionEngine', () => {
     expect(fx.linked.some((link) => link.type === 'event')).toBe(true);
     expect(fx.enrichments).toHaveLength(2);
     expect(fx.successes).toHaveLength(1);
+    expect(fx.failures).toHaveLength(0);
+  });
+
+  it('materialises from a bounded newest-first Claim read so deep histories cannot block projection', async () => {
+    const fx = deps({ source: source({ shadow: true, writerAuthority: 'cowork' }) });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('shadow');
+    expect(fx.latestReads).toEqual([['event-candidate', candidateKey, 300]]);
     expect(fx.failures).toHaveLength(0);
   });
 

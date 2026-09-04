@@ -27,7 +27,7 @@ export interface ProjectionSourceRegistry {
 }
 export interface ProjectionClaimStore {
   get(claimId: string): Promise<KnowledgeClaim | null>;
-  listBySubjectComplete(subjectType: 'event-candidate', subjectKey: string, maximumClaims?: number): Promise<KnowledgeClaim[]>;
+  listLatestBySubject(subjectType: 'event-candidate', subjectKey: string, limit?: number): Promise<KnowledgeClaim[]>;
   listSupportClaimIds(entityType: 'artist' | 'venue' | 'event', entityId: string): Promise<string[]>;
   linkCanonicalEntity(entityType: 'artist' | 'venue' | 'event', entityId: string, claimId: string): Promise<void>;
 }
@@ -88,8 +88,13 @@ function stringField(value: unknown): string | undefined {
   return typeof value === 'string' && value ? value : undefined;
 }
 
+// Projection materialises the latest active Claim per predicate, so it reads the
+// newest Claims first and stops at a fixed window. A candidate re-observed hourly
+// for weeks carries thousands of Claims; the full history is evidence, not input.
+const PROJECTION_CLAIM_WINDOW = 300;
+
 async function loadItemClaims(item: ProjectionWorkItem, store: ProjectionClaimStore): Promise<KnowledgeClaim[]> {
-  const subjectClaims = await store.listBySubjectComplete('event-candidate', item.candidateKey, 1000);
+  const subjectClaims = await store.listLatestBySubject('event-candidate', item.candidateKey, PROJECTION_CLAIM_WINDOW);
   if (subjectClaims.length) return subjectClaims;
   const claims: KnowledgeClaim[] = [];
   for (const id of item.claimIds) {
