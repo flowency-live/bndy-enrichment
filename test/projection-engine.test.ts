@@ -302,7 +302,8 @@ describe('ProjectionEngine', () => {
 
     await projectWorkItem(item('create'), fx.dependencies);
 
-    const details = fx.successes[0]?.[3] as Record<string, unknown>;
+    const [firstSuccess] = fx.successes as unknown[][];
+    const details = firstSuccess?.[3] as Record<string, unknown>;
     const candidate = details.candidate as Record<string, unknown>;
     expect(details.wouldWrite).toBe('create');
     expect(candidate.artistName).toBe('The Test Band');
