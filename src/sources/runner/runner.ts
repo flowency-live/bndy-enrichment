@@ -298,9 +298,17 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     const alreadyProjected = new Set(testimony.reobserved
       .filter((entry) => entry.checkpoint.projectedObservationId)
       .map((entry) => entry.checkpoint.candidateKey));
-    const projection = projectionBootstrap
-      ? built
-      : { ...built, workItems: built.workItems.filter((item) => !alreadyProjected.has(item.candidateKey)) };
+    const kept = projectionBootstrap
+      ? built.workItems
+      : built.workItems.filter((item) => !alreadyProjected.has(item.candidateKey));
+    // A re-observed event has no fresh Claims this run; its work item cites the
+    // Claims recorded on its checkpoint instead.
+    const projection = {
+      ...built,
+      workItems: kept.map((item) => item.claimIds.length
+        ? item
+        : { ...item, claimIds: existingCheckpoints.get(checkpointKey({ candidateType: 'event', candidateKey: item.candidateKey }))?.supportingClaimIds ?? [] }),
+    };
     report.projectionSkipped = built.workItems.length - projection.workItems.length;
     if (projection.blocked.length) {
       const blockedByAction = projection.blocked.reduce<Record<string, number>>((counts, item) => {
