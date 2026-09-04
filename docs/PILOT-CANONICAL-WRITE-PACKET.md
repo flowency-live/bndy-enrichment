@@ -1,6 +1,6 @@
 # Canonical-Write Pilot Packet
 
-**Status:** Draft for human approval. Nothing in this document is authorised until Jason signs the approval block.
+**Status:** Executed 4 September 2026, 20:23 to 20:24 UTC. See Outcome.
 **Date:** 4 September 2026
 
 ## Purpose
@@ -137,8 +137,28 @@ Each created Event id is stored on `PROJECTION#onthecase-gig-index#<candidateKey
 
 | Item | Value |
 |---|---|
-| Approved by | |
-| Date and time | |
-| Reconciliation id | |
-| Candidate keys | |
-| Window start and end | |
+| Approved by | Jason, in session, 4 September 2026 |
+| Date and time | 4 September 2026, about 20:20 UTC |
+| Reconciliation id | onthecase-pilot-2026-09-04-v1 |
+| Candidate keys | the ten rows above |
+| Window start and end | opened about 20:22 UTC, closed 20:24:43 UTC |
+
+## Outcome
+
+| Metric | Expected | Actual |
+|---|---|---|
+| Items projected | 257 | 257, zero failures |
+| Live path taken | 10 | 10 |
+| eventsCreated | up to 8 | **0**. All five successes matched Events that Cowork imports had already created between April and August. The canonical API answered 409 and the engine recorded the existing ids. |
+| artistsMatched, venuesMatched | | 5 and 5 |
+| artistsCreated, venuesCreated | 0 | 0 |
+| unresolved-entity exceptions | up to 2 | 5. The canonical artist matcher returned review with "near-tie margin guard" for The Flames, Rebel Radio, Hard River, Pretty Weeds and A Band Called Horse: canonical holds two near-identical artists for each name. |
+| incomplete-candidate exceptions | | 3, non-approved gigs with no artist name |
+| Shadow, outside allowlist | about 247 | 244 |
+| Dead-letter arrivals | 0 | 0 |
+| Control after window | off | off, explicit, 20:24:43 UTC |
+| Source after window | shadow, cowork | shadow, cowork, allowlist removed |
+
+What the pilot proved: the live write path executes end to end under every containment control, resolves entities match-only, detects an already-existing Event, reads it back and records the mapping, and refuses ambiguous artists instead of creating them. What it did not prove: a brand-new Event creation. The next window must use candidates that do not already exist in canonical.
+
+What it surfaced: five artist names with near-duplicate canonical records. Those belong in the review queue before any BAU write mode.
