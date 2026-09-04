@@ -209,6 +209,24 @@ describe('Lemonrock source-native identities', () => {
     expect(event?.claims?.some((claim) => claim.predicate === 'derivedFrom' && JSON.stringify(claim.value).includes('cancellationText'))).toBe(true);
   });
 
+  it('fingerprints a gig by its facts, not by volatile page bytes', () => {
+    const html = `
+      <html><head><title>Example Band gig at The Example Arms on Monday 24 August 2026 - Lemonrock Gig Guide</title></head><body>
+        <p>8.30pm - 11.00pm | £8 advance</p>
+        <p>Posted by Example Band at 7.15pm on 1 August</p>
+        <a href="/exampleband">Example Band</a>
+        <a href="/examplearms">The Example Arms</a>
+      </body></html>`;
+    const context = run('lemonrock-gig-hydration', { kind: 'gig', nativeId: 'lemonrock:gig:939252' });
+    const url = 'https://www.lemonrock.com/gig.php?id=939252';
+    const first = parseLemonrock(html, url, context).events[0];
+    const volatile = parseLemonrock(html.replace('</body>', '<!-- served 2026-09-04T16:00:01Z --><div class="advert">Sponsored</div></body>'), url, context).events[0];
+    const changed = parseLemonrock(html.replace('8.30pm - 11.00pm', '9.00pm - 11.00pm'), url, context).events[0];
+    expect(first?.contentHash).toBeDefined();
+    expect(volatile?.contentHash).toBe(first?.contentHash);
+    expect(changed?.contentHash).not.toBe(first?.contentHash);
+  });
+
   it('matches live venue markup and ignores the Cancelled Dates navigation label', () => {
     const html = `
       <html><head><title>Matt Dean gig at The Devon Arms, Torquay on Friday 1 May 2026 at 9.00pm - Lemonrock Gig Guide</title></head><body>
@@ -304,7 +322,7 @@ describe('Lemonrock source-native identities', () => {
         task: expect.objectContaining({
           kind: 'gig',
           nativeId: 'lemonrock:gig:930726',
-          refreshWindow: 'hourly',
+          refreshWindow: 'daily',
         }),
       }),
     ]);
