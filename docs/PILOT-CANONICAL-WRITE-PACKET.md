@@ -39,6 +39,27 @@ Take candidates from the Operations tab would-write list for `onthecase-gig-inde
 | Date, time, event URL | Would-write candidate |
 | Supporting Claim count | Would-write row |
 
+## Proposed candidates, verified 4 September 2026
+
+Source: bootstrap run `onthecase-bootstrap-shadow-2026-09-04-v2`, 257 shadow would-writes, zero failures. Artists and venues checked against canonical with the search tools. Confidence is the canonical matcher's score.
+
+| # | Candidate key suffix | Date | Time | Artist (canonical id, confidence) | Venue (canonical id, confidence) |
+|---|---|---|---|---|---|
+| 1 | onthecase:gig:131396 | 26/09/2026 | 21:00 | Hard River (6dffcb83, 100) | Bebside Inn (b23c91b9, 100) |
+| 2 | onthecase:gig:126222 | 26/09/2026 | 21:00 | Perfect Storm (8b725158, 100) | Crown and Cannon (ed1384a2, 100) |
+| 3 | onthecase:gig:131457 | 02/10/2026 | 20:00 | Pretty Weeds (f403789c, 100) | Ivy House (705142b8, 100) |
+| 4 | onthecase:gig:126224 | 09/10/2026 | 21:00 | Steel Blue (1c0c24cc, 100) | Crown and Cannon (ed1384a2, 100) |
+| 5 | onthecase:gig:131462 | 09/10/2026 | 20:00 | A Band Called Horse (a72ac58a, 100) | Ivy House (705142b8, 100) |
+| 6 | onthecase:gig:126340 | 16/10/2026 | 21:00 | Rebel Radio (cdedd99b, 100) | Crown and Cannon (ed1384a2, 100) |
+| 7 | onthecase:gig:129154 | 24/10/2026 | 20:00 | Wicked Dogz (c03a7bbe, 100) | The Prior (8ab19fad, 100) |
+| 8 | onthecase:gig:131459 | 30/10/2026 | 20:00 | Brydon Trio (9638e2c5, 100) | Ivy House (705142b8, 100) |
+| 9 | onthecase:gig:126016 | 25/09/2026 | 21:00 | The Flames (b840d474, 100) | The Blacksmiths Arms (10432a06, 80) |
+| 10 | onthecase:gig:126486 | 30/10/2026 | 21:00 | Dakota (cb798bf5, 100) | The Blacksmiths Arms (10432a06, 80) |
+
+Full candidate keys are `event:onthecase-gig-index:<suffix>`. Rows 9 and 10 sit at a venue the matcher scores 80; if the canonical API answers review for them, they surface as `unresolved-entity` exceptions and prove the match-only path. Rows 1 to 8 are expected to create.
+
+Not selected, because the artist is absent from canonical: GodZZ of Wor, Midnight Echoes, Dust Raisers, Diablo, Trilogy, Proper Boys, Dreadnought, The Lost Boys, Dean Palmer, Hybrids. Those are exactly the events the pilot must not create.
+
 ## Registry change for the pilot source
 
 One update to `SOURCE#onthecase-gig-index / CONFIG`:
