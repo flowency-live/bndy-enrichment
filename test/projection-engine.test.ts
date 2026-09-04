@@ -297,6 +297,21 @@ describe('ProjectionEngine', () => {
     expect(mockApi.ensureEvent).toHaveBeenCalledTimes(1);
   });
 
+  it('stores a compact would-write record: Claim ids and a count, never Claim bodies', async () => {
+    const fx = deps({ source: source({ shadow: true, writerAuthority: 'cowork' }) });
+
+    await projectWorkItem(item('create'), fx.dependencies);
+
+    const details = fx.successes[0]?.[3] as Record<string, unknown>;
+    const candidate = details.candidate as Record<string, unknown>;
+    expect(details.wouldWrite).toBe('create');
+    expect(candidate.artistName).toBe('The Test Band');
+    expect(candidate.supportingClaims).toBeUndefined();
+    expect(candidate.supportingClaimCount).toBe(positiveClaims().length);
+    expect(candidate.supportingClaimIds).toEqual(positiveClaims().map((claim) => claim.id));
+    expect(JSON.stringify(details).length).toBeLessThan(2000);
+  });
+
   it('does no BNDY API work in shadow mode', async () => {
     const mockApi = api();
     const fx = deps({ source: source({ shadow: true, writerAuthority: 'cowork' }), api: mockApi });
