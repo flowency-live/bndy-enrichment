@@ -124,7 +124,7 @@ function isNonArtistPerformerLabel(value: string): boolean {
   return /\b(open\s*mic|buskers?(?:\s+night)?|jam\s+night|open\s+stage|music\s+club)\b/i.test(value.trim());
 }
 
-function parseGigIndex(html: string, sourceUrl: string): ParsedSource {
+function parseGigIndex(html: string, sourceUrl: string, suppressFanout = false): ParsedSource {
   const warnings: string[] = [];
   const events: NormalisedSourceEvent[] = [];
   const blocks = html.split(/<div class="list-item">/i).slice(1);
@@ -201,7 +201,16 @@ function parseGigIndex(html: string, sourceUrl: string): ParsedSource {
     throw new Error('On The Case structural gate failed: the root gig listing parsed to zero gigs on a historically non-empty surface');
   }
 
-  return { events: dedupedEvents, nextRequests: [...venueTasks, ...control], parked: [], warnings };
+  if (suppressFanout) {
+    warnings.push('Manual root-only acquisition: venue, band and inventory-control fanout suppressed');
+  }
+
+  return {
+    events: dedupedEvents,
+    nextRequests: suppressFanout ? [] : [...venueTasks, ...control],
+    parked: [],
+    warnings,
+  };
 }
 
 function parseBandIndex(html: string, sourceUrl: string): ParsedSource {
@@ -358,12 +367,20 @@ function parseFullReconcile(): ParsedSource {
 
 export function parseOnTheCase(html: string, sourceUrl: string, run: SourceRunContext): ParsedSource {
   const kind = taskKind(run);
+  const fanoutMode = run.task?.fanoutMode;
+  if (fanoutMode !== undefined && fanoutMode !== 'none') {
+    throw new Error(`On The Case parser does not understand fanout mode "${String(fanoutMode)}"`);
+  }
+  if (fanoutMode === 'none'
+    && (run.reason !== 'manual' || kind !== 'gig-index' || Boolean(new URL(sourceUrl).search))) {
+    throw new Error('On The Case fanoutMode=none is allowed only for a manual root gig-index acquisition');
+  }
   if (kind === 'full-reconcile') return parseFullReconcile();
   if (kind.endsWith('-inventory-control')) return { events: [], parked: [], warnings: [] };
   assertExpectedPage(kind, html);
   const warnings: string[] = [];
   switch (kind) {
-    case 'gig-index': return parseGigIndex(html, sourceUrl);
+    case 'gig-index': return parseGigIndex(html, sourceUrl, fanoutMode === 'none');
     case 'band-index': return parseBandIndex(html, sourceUrl);
     case 'venue-index': return parseVenueIndex(html, sourceUrl);
     case 'band': return parseBandProfile(html, sourceUrl, warnings);

@@ -4,10 +4,10 @@ import { bandRef, gigRef, venueRef } from '../src/sources/adapters/onthecase/htm
 import { parseOnTheCase } from '../src/sources/adapters/onthecase/parse.js';
 import { ONTHECASE_SOURCES } from '../src/sources/adapters/onthecase/sources.js';
 
-function run(sourceId: string, kind?: string): SourceRunContext {
+function run(sourceId: string, kind?: string, taskFields?: Record<string, unknown>): SourceRunContext {
   return {
     runId: 'run-test', sourceId, startedAt: '2026-08-26T00:00:00.000Z', runDate: '2026-08-26',
-    reason: 'manual', requestedAt: '2026-08-26T00:00:00.000Z', task: kind ? { kind } : undefined,
+    reason: 'manual', requestedAt: '2026-08-26T00:00:00.000Z', task: kind ? { kind, ...taskFields } : undefined,
   };
 }
 
@@ -51,6 +51,28 @@ describe('On The Case production adapter', () => {
     expect(parsed.events[1].artistName).toBe('3rd Stage Red');
     expect((parsed.nextRequests ?? []).filter((r) => r.sourceId === 'onthecase-venue-hydration')).toHaveLength(1);
     expect(parsed.nextRequests).toContainEqual(expect.objectContaining({ task: expect.objectContaining({ kind: 'gig-inventory-control', expectedCount: 2 }) }));
+  });
+
+  it('supports a manual root-only gig acquisition without child fanout', () => {
+    const parsed = parseOnTheCase(
+      gigPage,
+      'https://onthecasemusic.co.uk/gigs',
+      run('onthecase-gig-index', 'gig-index', { fanoutMode: 'none' }),
+    );
+    expect(parsed.events).toHaveLength(2);
+    expect(parsed.nextRequests).toEqual([]);
+    expect(parsed.warnings).toContain('Manual root-only acquisition: venue, band and inventory-control fanout suppressed');
+  });
+
+  it('rejects root-only fanout control outside a manual root gig acquisition', () => {
+    const scheduled = run('onthecase-gig-index', 'gig-index', { fanoutMode: 'none' });
+    scheduled.reason = 'scheduled';
+    expect(() => parseOnTheCase(gigPage, 'https://onthecasemusic.co.uk/gigs', scheduled)).toThrow(/manual root gig-index/);
+    expect(() => parseOnTheCase(
+      venuePage,
+      'https://onthecasemusic.co.uk/venues/6011/old-fat-ox-holywell',
+      run('onthecase-venue-hydration', 'venue', { fanoutMode: 'none' }),
+    )).toThrow(/manual root gig-index/);
   });
 
   it('hydrates venue facts and fans out only linked bands', () => {
