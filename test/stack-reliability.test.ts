@@ -9,7 +9,12 @@ type TemplateResource = {
 };
 
 function synthesise(canonicalChangeStreamsEnabled: boolean): Record<string, TemplateResource> {
-  const app = new App({ context: { canonicalChangeStreamsEnabled } });
+  const app = new App({
+    context: {
+      canonicalChangeStreamsEnabled,
+      'aws:cdk:bundling-stacks': [],
+    },
+  });
   const stack = new BndyEnrichmentStack(app, 'BndyEnrichmentStack', {
     env: { account: '123456789012', region: 'eu-west-2' },
   });
@@ -33,14 +38,14 @@ function applicationFunction(
   return match![1];
 }
 
-describe.skipIf(process.env.CI)('Backline stack reliability controls', () => {
+describe('Backline stack reliability controls', () => {
   let defaultResources: Record<string, TemplateResource>;
   let canonicalChangeResources: Record<string, TemplateResource>;
 
   beforeAll(() => {
     defaultResources = synthesise(false);
     canonicalChangeResources = synthesise(true);
-  }, 300_000);
+  }, 60_000);
 
   it('retains every default application Lambda log group for 30 days', () => {
     const retentionResources = resourcesOfType(defaultResources, 'Custom::LogRetention');
