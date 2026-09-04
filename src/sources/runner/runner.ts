@@ -8,6 +8,7 @@ import { diffSourceEvents } from './diff.js';
 import type { SourceFanoutPublisher } from './fanout.js';
 import type { SourceRunMetricStore } from './metrics.js';
 import { buildKnowledge, buildProjectionWork } from './knowledge.js';
+import { checkpointKey, eventRef, partitionTestimony, type CandidateRef, type TestimonyCheckpoint } from './testimony.js';
 import type { ProjectionPublisher } from './projection-publisher.js';
 import type { SourceRunArtifactStore } from './storage.js';
 import type {
@@ -47,6 +48,8 @@ export interface RunnerClaimStore {
 
 export interface RunnerCandidateStore {
   putMany(candidates: Array<EntityCandidate | EventCandidate>): Promise<void>;
+  getCheckpoints(refs: CandidateRef[]): Promise<Map<string, TestimonyCheckpoint>>;
+  checkpoint(ref: CandidateRef, update: { observationId: string; observedAt: string; projectedObservationId?: string }): Promise<void>;
 }
 
 export type RunnerDependencies = {
@@ -123,6 +126,8 @@ function initialReport(config: GigSource, run: SourceRunContext): SourceRunRepor
     withdrawn: 0,
     unchanged: 0,
     projectionWorkItems: 0,
+    reobservedUnchanged: 0,
+    projectionSkipped: 0,
     fanoutQueued: 0,
     fanoutDuplicates: 0,
     shadow: config.shadow,
@@ -219,20 +224,6 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     report.observationId = storedObservation.id;
     report.complete = storedObservation.complete;
 
-    const knowledge = buildKnowledge(storedObservation, parsed.events, entities);
-    for (const claim of knowledge.claims) await deps.claims.put(claim);
-    await deps.candidates?.putMany(knowledge.candidates);
-    report.claims = knowledge.claims.length;
-
-    if ((parsed.nextRequests?.length ?? 0) > 0) {
-      if (!deps.fanout) throw new Error(`Source ${config.id} produced child work but SOURCE_SCAN_QUEUE_URL is not configured`);
-      for (const child of parsed.nextRequests ?? []) {
-        const queued = await deps.fanout.publish(child, run.startedAt, run.reconciliationId);
-        if (queued) report.fanoutQueued += 1;
-        else report.fanoutDuplicates += 1;
-      }
-    }
-
     const normalisedKey = await deps.artifacts.writeNormalised(config, run, parsed.events);
     report.artifacts.normalised = normalisedKey;
 
@@ -249,6 +240,27 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     report.updated = diff.updated.length;
     report.withdrawn = diff.withdrawn.length;
     report.unchanged = diff.unchanged.length;
+
+    // ADR-114: only fresh testimony becomes Claims. A re-observed, unchanged
+    // event costs one checkpoint update instead of a Claim set.
+    const existingCheckpoints = deps.candidates
+      ? await deps.candidates.getCheckpoints(parsed.events.map((event) => eventRef(config.id, event)))
+      : new Map<string, TestimonyCheckpoint>();
+    const testimony = partitionTestimony(config.id, parsed.events, existingCheckpoints);
+    report.reobservedUnchanged = testimony.reobserved.length;
+
+    const knowledge = buildKnowledge(storedObservation, testimony.fresh, entities);
+    for (const claim of knowledge.claims) await deps.claims.put(claim);
+    report.claims = knowledge.claims.length;
+
+    if ((parsed.nextRequests?.length ?? 0) > 0) {
+      if (!deps.fanout) throw new Error(`Source ${config.id} produced child work but SOURCE_SCAN_QUEUE_URL is not configured`);
+      for (const child of parsed.nextRequests ?? []) {
+        const queued = await deps.fanout.publish(child, run.startedAt, run.reconciliationId);
+        if (queued) report.fanoutQueued += 1;
+        else report.fanoutDuplicates += 1;
+      }
+    }
 
     const parity = buildParityArtifact({
       sourceId: config.id,
@@ -278,10 +290,18 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     if (projectionBootstrap && projectionPolicy?.mode !== 'additive-only') {
       throw new Error('projectionBootstrap requires an additive-only source projection policy');
     }
-    const projection = buildProjectionWork(storedObservation, diff, knowledge.claimsByCandidate, {
+    const built = buildProjectionWork(storedObservation, diff, knowledge.claimsByCandidate, {
       mode: projectionPolicy?.mode,
       bootstrap: projectionBootstrap,
     });
+    // A re-observed candidate that was already projected has nothing new to project.
+    const alreadyProjected = new Set(testimony.reobserved
+      .filter((entry) => entry.checkpoint.projectedObservationId)
+      .map((entry) => entry.checkpoint.candidateKey));
+    const projection = projectionBootstrap
+      ? built
+      : { ...built, workItems: built.workItems.filter((item) => !alreadyProjected.has(item.candidateKey)) };
+    report.projectionSkipped = built.workItems.length - projection.workItems.length;
     if (projection.blocked.length) {
       const blockedByAction = projection.blocked.reduce<Record<string, number>>((counts, item) => {
         counts[item.action] = (counts[item.action] ?? 0) + 1;
@@ -306,6 +326,31 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     });
     for (const item of projection.workItems) await deps.projection.publish(item);
     report.projectionWorkItems = totalWork;
+
+    if (deps.candidates) {
+      const projectedKeys = new Set(projection.workItems.map((item) => item.candidateKey));
+      const freshCandidates = knowledge.candidates.map((candidate) => {
+        if ('entityType' in candidate) return candidate;
+        const key = checkpointKey({ candidateType: 'event', candidateKey: candidate.candidateKey });
+        const projectedObservationId = projectedKeys.has(candidate.candidateKey)
+          ? storedObservation.id
+          : existingCheckpoints.get(key)?.projectedObservationId;
+        return {
+          ...candidate,
+          ...(testimony.fingerprints.has(key) ? { fingerprint: testimony.fingerprints.get(key) } : {}),
+          ...(projectedObservationId ? { projectedObservationId } : {}),
+        };
+      });
+      if (freshCandidates.length) await deps.candidates.putMany(freshCandidates);
+      for (const entry of testimony.reobserved) {
+        const ref: CandidateRef = { candidateType: 'event', candidateKey: entry.checkpoint.candidateKey };
+        await deps.candidates.checkpoint(ref, {
+          observationId: storedObservation.id,
+          observedAt: storedObservation.observedAt,
+          ...(projectedKeys.has(ref.candidateKey) ? { projectedObservationId: storedObservation.id } : {}),
+        });
+      }
+    }
 
     const priorMetadata = previousState?.metadata ?? {};
     const metadata: Record<string, unknown> = {

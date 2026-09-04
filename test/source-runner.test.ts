@@ -6,6 +6,20 @@ import type { SourceAdapter } from '../src/sources/runner/adapter.js';
 import { runSource, type RunnerDependencies } from '../src/sources/runner/runner.js';
 import type { SourceRunArtifactStore } from '../src/sources/runner/storage.js';
 import type { NormalisedSourceEvent, SourceEventDiff, SourceRunContext, SourceRunReport } from '../src/sources/runner/types.js';
+import type { EntityCandidate, EventCandidate } from '../src/knowledge/types.js';
+import { checkpointKey, type CandidateRef, type TestimonyCheckpoint } from '../src/sources/runner/testimony.js';
+
+class FakeCandidates {
+  readonly puts: Array<Array<EntityCandidate | EventCandidate>> = [];
+  readonly checkpoints: Array<{ ref: CandidateRef; update: Record<string, unknown> }> = [];
+  constructor(readonly existing: TestimonyCheckpoint[] = []) {}
+  async putMany(candidates: Array<EntityCandidate | EventCandidate>): Promise<void> { this.puts.push(candidates); }
+  async getCheckpoints(refs: CandidateRef[]): Promise<Map<string, TestimonyCheckpoint>> {
+    const wanted = new Set(refs.map(checkpointKey));
+    return new Map(this.existing.filter((item) => wanted.has(checkpointKey(item))).map((item) => [checkpointKey(item), item]));
+  }
+  async checkpoint(ref: CandidateRef, update: Record<string, unknown>): Promise<void> { this.checkpoints.push({ ref, update }); }
+}
 
 function config(overrides: Partial<GigSource> = {}): GigSource {
   return {
@@ -63,10 +77,14 @@ class MemoryArtifacts implements SourceRunArtifactStore {
   async loadNormalised(): Promise<NormalisedSourceEvent[]> { return this.prior; }
 }
 
-function fixtureDependencies(captureComplete: boolean, sourceOverrides: Partial<GigSource> = {}) {
+function fixtureDependencies(
+  captureComplete: boolean,
+  sourceOverrides: Partial<GigSource> = {},
+  options: { prior?: NormalisedSourceEvent[]; current?: NormalisedSourceEvent[]; candidates?: FakeCandidates } = {},
+) {
   const source = config(sourceOverrides);
-  const prior = [event('e1', 'old'), event('e3', 'gone')];
-  const current = [event('e1', 'new'), event('e2', 'new')];
+  const prior = options.prior ?? [event('e1', 'old'), event('e3', 'gone')];
+  const current = options.current ?? [event('e1', 'new'), event('e2', 'new')];
   const artifacts = new MemoryArtifacts(prior);
   const claims: KnowledgeClaim[] = [];
   const projection: ProjectionWorkItem[] = [];
@@ -114,6 +132,7 @@ function fixtureDependencies(captureComplete: boolean, sourceOverrides: Partial<
       },
     },
     claims: { async put(claim) { claims.push(claim); } },
+    candidates: options.candidates,
     artifacts,
     projection: { async publish(item) { projection.push(item); } },
     metrics: { async put(report) { metrics.push(structuredClone(report)); } },
@@ -123,8 +142,68 @@ function fixtureDependencies(captureComplete: boolean, sourceOverrides: Partial<
     newId: () => 'run-fixed',
   };
 
-  return { deps, artifacts, claims, projection, states, observations, metrics };
+  return { deps, artifacts, claims, projection, states, observations, metrics, candidates: options.candidates };
 }
+
+describe('testimony checkpoints', () => {
+  it('writes no Claims and no projection work for events re-observed unchanged, only a checkpoint each', async () => {
+    const same = [event('e1', 'same'), event('e2', 'same')];
+    const candidates = new FakeCandidates([
+      { candidateType: 'event', candidateKey: 'event:fixture-source:e1', sourceId: 'fixture-source', fingerprint: 'same', projectedObservationId: 'obs-old' },
+      { candidateType: 'event', candidateKey: 'event:fixture-source:e2', sourceId: 'fixture-source', fingerprint: 'same', projectedObservationId: 'obs-old' },
+    ]);
+    const fx = fixtureDependencies(true, {}, { prior: same, current: same, candidates });
+
+    const result = await runSource({ sourceId: 'fixture-source', reason: 'scheduled', requestedAt: '2026-08-20T10:00:00.000Z' }, fx.deps);
+
+    expect(result.report.status).toBe('completed');
+    expect(fx.claims).toHaveLength(0);
+    expect(fx.projection).toHaveLength(0);
+    expect(candidates.puts.flat()).toHaveLength(0);
+    expect(candidates.checkpoints.map((item) => item.ref.candidateKey).sort()).toEqual(['event:fixture-source:e1', 'event:fixture-source:e2']);
+    expect(candidates.checkpoints[0]?.update).toMatchObject({ observationId: result.observation?.id, observedAt: '2026-08-20T10:00:00.000Z' });
+    expect(result.report).toMatchObject({ claims: 0, reobservedUnchanged: 2, projectionSkipped: 0, unchanged: 2 });
+  });
+
+  it('skips projection for a child-source event the diff calls added when its unchanged candidate was already projected', async () => {
+    const candidates = new FakeCandidates([
+      { candidateType: 'event', candidateKey: 'event:fixture-source:g1', sourceId: 'fixture-source', fingerprint: 'h1', projectedObservationId: 'obs-old' },
+    ]);
+    const fx = fixtureDependencies(false, {}, { prior: [event('other', 'x')], current: [event('g1', 'h1')], candidates });
+
+    const result = await runSource({ sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z' }, fx.deps);
+
+    expect(result.diff?.added.map((item) => item.sourceEventKey)).toEqual(['g1']);
+    expect(fx.claims).toHaveLength(0);
+    expect(fx.projection).toHaveLength(0);
+    expect(result.report).toMatchObject({ reobservedUnchanged: 1, projectionSkipped: 1 });
+  });
+
+  it('still projects a re-observed candidate that was never projected, then records the projection on its checkpoint', async () => {
+    const candidates = new FakeCandidates([
+      { candidateType: 'event', candidateKey: 'event:fixture-source:g1', sourceId: 'fixture-source', fingerprint: 'h1' },
+    ]);
+    const fx = fixtureDependencies(false, {}, { prior: [], current: [event('g1', 'h1')], candidates });
+
+    const result = await runSource({ sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z' }, fx.deps);
+
+    expect(fx.claims).toHaveLength(0);
+    expect(fx.projection).toHaveLength(1);
+    expect(candidates.checkpoints[0]?.update).toMatchObject({ projectedObservationId: result.observation?.id });
+  });
+
+  it('stores the fingerprint and projected observation on first sight', async () => {
+    const candidates = new FakeCandidates([]);
+    const fx = fixtureDependencies(true, {}, { prior: [], current: [event('e9', 'fresh')], candidates });
+
+    const result = await runSource({ sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z' }, fx.deps);
+
+    expect(fx.claims.length).toBeGreaterThan(0);
+    const stored = candidates.puts.flat().find((item) => item.candidateKey === 'event:fixture-source:e9') as EventCandidate | undefined;
+    expect(stored).toMatchObject({ fingerprint: 'fresh', projectedObservationId: result.observation?.id });
+    expect(candidates.checkpoints).toHaveLength(0);
+  });
+});
 
 describe('target Source Runner', () => {
   it('produces Observation, Claims, diff, parity artifact, one ProjectionWorkItem per change and a report', async () => {

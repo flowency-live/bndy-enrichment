@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { PutCommand, QueryCommand, UpdateCommand, type GetCommand } from '@aws-sdk/lib-dynamodb';
+import { BatchGetCommand, PutCommand, QueryCommand, UpdateCommand, type GetCommand } from '@aws-sdk/lib-dynamodb';
 import type { GigSource, KnowledgeClaim, SourceObservation, Tombstone } from '../src/knowledge/types.js';
 import {
+  CandidateStore,
   ClaimStore,
   ObservationStore,
   SourceRegistryStore,
   SourceStateStore,
   TombstoneStore,
+  candidateItems,
   type DynamoStoreClient,
   type DynamoStoreCommand,
   type DynamoStoreResponse,
@@ -103,6 +105,52 @@ function tombstone(): Tombstone {
     createdAt: '2026-08-20T22:00:00.000Z',
   };
 }
+
+describe('CandidateStore testimony checkpoints', () => {
+  it('reads checkpoints in one batch and keys them by candidate type and key', async () => {
+    const ddb = new FakeDynamo();
+    ddb.responses.push({ Responses: { StateTable: [
+      { pk: 'CANDIDATE#event#event:src:e1', sk: 'META', candidateType: 'event', candidateKey: 'event:src:e1', sourceId: 'src', fingerprint: 'same', projectedObservationId: 'obs-old', observedAt: '2026-09-01T00:00:00.000Z', confidence: 1 },
+    ] } } as unknown as DynamoStoreResponse);
+    const store = new CandidateStore('StateTable', ddb);
+
+    const result = await store.getCheckpoints([
+      { candidateType: 'event', candidateKey: 'event:src:e1' },
+      { candidateType: 'event', candidateKey: 'event:src:e2' },
+    ]);
+
+    expect(ddb.commands).toHaveLength(1);
+    const input = (ddb.commands[0] as BatchGetCommand).input;
+    expect(input.RequestItems?.StateTable?.Keys).toHaveLength(2);
+    expect(result.get('event#event:src:e1')).toMatchObject({ sourceId: 'src', fingerprint: 'same', projectedObservationId: 'obs-old' });
+    expect(result.has('event#event:src:e2')).toBe(false);
+  });
+
+  it('records a re-observation as one update that never touches index keys', async () => {
+    const ddb = new FakeDynamo();
+    const store = new CandidateStore('StateTable', ddb);
+
+    await store.checkpoint({ candidateType: 'event', candidateKey: 'event:src:e1' }, {
+      observationId: 'obs-2', observedAt: '2026-09-04T13:00:00.000Z',
+    });
+
+    expect(ddb.commands).toHaveLength(1);
+    const input = (ddb.commands[0] as UpdateCommand).input;
+    expect(input.Key).toEqual({ pk: 'CANDIDATE#event#event:src:e1', sk: 'META' });
+    expect(input.UpdateExpression).toContain('observationCount');
+    expect(input.UpdateExpression).not.toContain('GSI');
+    expect(input.ExpressionAttributeValues).toMatchObject({ ':observationId': 'obs-2', ':observedAt': '2026-09-04T13:00:00.000Z' });
+  });
+
+  it('stores the fingerprint and projected observation on a fresh event candidate', () => {
+    const items = candidateItems({
+      candidateKey: 'event:src:e1', sourceId: 'src', sourceEventKey: 'e1', artistName: 'A', venueName: 'V', date: '2026-09-20',
+      supportingClaimIds: ['c1'], confidence: 1, observedAt: '2026-09-04T13:00:00.000Z',
+      fingerprint: 'abc', projectedObservationId: 'obs-1',
+    });
+    expect(items[0]).toMatchObject({ pk: 'CANDIDATE#event#event:src:e1', fingerprint: 'abc', projectedObservationId: 'obs-1' });
+  });
+});
 
 describe('SourceRegistryStore', () => {
   it('writes executable source config with due-source GSI keys', async () => {

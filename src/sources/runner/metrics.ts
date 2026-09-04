@@ -49,6 +49,8 @@ export class DynamoSourceRunMetricStore implements SourceRunMetricStore {
       withdrawn: report.withdrawn,
       unchanged: report.unchanged,
       projectionWorkItems: report.projectionWorkItems,
+      reobservedUnchanged: report.reobservedUnchanged,
+      projectionSkipped: report.projectionSkipped,
       fanoutQueued: report.fanoutQueued,
       fanoutDuplicates: report.fanoutDuplicates,
       warnings: report.warnings.length,
