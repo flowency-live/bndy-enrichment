@@ -1,4 +1,4 @@
-import { BatchWriteCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { BatchGetCommand, BatchWriteCommand, GetCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import {
   EntityCandidateSchema,
   EventCandidateSchema,
@@ -21,7 +21,26 @@ export type IndexedCandidate = {
   observedAt: string;
   supportingClaimIds: string[];
   confidence: number;
+  fingerprint?: string;
+  projectedObservationId?: string;
+  lastObservationId?: string;
+  lastObservedAt?: string;
+  observationCount?: number;
 };
+
+export type CandidateRef = { candidateType: EntityCandidateType; candidateKey: string };
+
+// What a source last asserted about a candidate, reduced to the fields needed
+// to decide whether a new observation is fresh testimony or a re-observation.
+export type TestimonyCheckpoint = CandidateRef & {
+  sourceId: string;
+  fingerprint?: string;
+  projectedObservationId?: string;
+};
+
+export function checkpointKey(ref: CandidateRef): string {
+  return `${ref.candidateType}#${ref.candidateKey}`;
+}
 
 export function normaliseIdentityText(value: string): string {
   return value
@@ -74,6 +93,8 @@ function sourceRecord(candidate: EntityCandidate | EventCandidate): IndexedCandi
     observedAt: parsed.observedAt,
     supportingClaimIds: parsed.supportingClaimIds,
     confidence: parsed.confidence,
+    ...(parsed.fingerprint ? { fingerprint: parsed.fingerprint } : {}),
+    ...(parsed.projectedObservationId ? { projectedObservationId: parsed.projectedObservationId } : {}),
   };
 }
 
@@ -137,6 +158,11 @@ function fromItem(item: Record<string, unknown>): IndexedCandidate {
       ? item.supportingClaimIds.filter((value): value is string => typeof value === 'string')
       : [],
     confidence: Number(item.confidence ?? 0),
+    ...(typeof item.fingerprint === 'string' ? { fingerprint: item.fingerprint } : {}),
+    ...(typeof item.projectedObservationId === 'string' ? { projectedObservationId: item.projectedObservationId } : {}),
+    ...(typeof item.lastObservationId === 'string' ? { lastObservationId: item.lastObservationId } : {}),
+    ...(typeof item.lastObservedAt === 'string' ? { lastObservedAt: item.lastObservedAt } : {}),
+    ...(typeof item.observationCount === 'number' ? { observationCount: item.observationCount } : {}),
   };
 }
 
@@ -177,6 +203,52 @@ export class CandidateStore {
       }
       if (pending.length > 0) throw new Error(`Candidate index left ${pending.length} unprocessed writes`);
     }
+  }
+
+  async getCheckpoints(refs: CandidateRef[]): Promise<Map<string, TestimonyCheckpoint>> {
+    const out = new Map<string, TestimonyCheckpoint>();
+    const unique = [...new Map(refs.map((ref) => [checkpointKey(ref), ref] as const)).values()];
+    for (const group of chunks(unique, 100)) {
+      const response = await this.client.send(new BatchGetCommand({
+        RequestItems: {
+          [this.tableName]: {
+            Keys: group.map((ref) => ({ pk: `CANDIDATE#${ref.candidateType}#${ref.candidateKey}`, sk: 'META' })),
+            ProjectionExpression: 'candidateType, candidateKey, sourceId, fingerprint, projectedObservationId',
+          },
+        },
+      }));
+      for (const item of response.Responses?.[this.tableName] ?? []) {
+        if (typeof item.candidateType !== 'string' || typeof item.candidateKey !== 'string' || typeof item.sourceId !== 'string') continue;
+        const checkpoint: TestimonyCheckpoint = {
+          candidateType: item.candidateType as EntityCandidateType,
+          candidateKey: item.candidateKey,
+          sourceId: item.sourceId,
+          ...(typeof item.fingerprint === 'string' ? { fingerprint: item.fingerprint } : {}),
+          ...(typeof item.projectedObservationId === 'string' ? { projectedObservationId: item.projectedObservationId } : {}),
+        };
+        out.set(checkpointKey(checkpoint), checkpoint);
+      }
+    }
+    return out;
+  }
+
+  async checkpoint(
+    ref: CandidateRef,
+    update: { observationId: string; observedAt: string; projectedObservationId?: string },
+  ): Promise<void> {
+    const projected = update.projectedObservationId ? ', projectedObservationId = :projected' : '';
+    await this.client.send(new UpdateCommand({
+      TableName: this.tableName,
+      Key: { pk: `CANDIDATE#${ref.candidateType}#${ref.candidateKey}`, sk: 'META' },
+      UpdateExpression: `SET lastObservationId = :observationId, lastObservedAt = :observedAt, observationCount = if_not_exists(observationCount, :zero) + :one${projected}`,
+      ExpressionAttributeValues: {
+        ':observationId': update.observationId,
+        ':observedAt': update.observedAt,
+        ':zero': 0,
+        ':one': 1,
+        ...(update.projectedObservationId ? { ':projected': update.projectedObservationId } : {}),
+      },
+    }));
   }
 
   async get(candidateType: EntityCandidateType, candidateKey: string): Promise<IndexedCandidate | null> {

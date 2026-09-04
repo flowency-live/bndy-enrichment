@@ -127,6 +127,8 @@ export type SourceRunReport = {
   withdrawn: number;
   unchanged: number;
   projectionWorkItems: number;
+  reobservedUnchanged: number;
+  projectionSkipped: number;
   fanoutQueued: number;
   fanoutDuplicates: number;
   shadow: boolean;

@@ -8,7 +8,7 @@ function report(overrides: Partial<SourceRunReport> = {}): SourceRunReport {
     startedAt: '2026-08-27T10:00:00.000Z', completedAt: '2026-08-27T10:00:02.500Z',
     status: 'completed', reason: 'scheduled', observationId: 'obs-1', complete: true,
     rawItems: 8, validEvents: 5, entityProfiles: 2, parked: 1, claims: 30,
-    added: 2, updated: 1, withdrawn: 0, unchanged: 2, projectionWorkItems: 0,
+    added: 2, updated: 1, withdrawn: 0, unchanged: 2, projectionWorkItems: 0, reobservedUnchanged: 0, projectionSkipped: 0,
     fanoutQueued: 3, fanoutDuplicates: 1, shadow: true, writerAuthority: 'aws',
     warnings: ['fixture warning'], errors: [], artifacts: { report: 'runs/report.json' },
     ...overrides,

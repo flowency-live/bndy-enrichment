@@ -276,6 +276,8 @@ export const EventCandidateSchema = z.object({
   supportingClaimIds: z.array(z.string()).default([]),
   confidence: ConfidenceSchema,
   observedAt: IsoTimestampSchema,
+  fingerprint: z.string().optional(),
+  projectedObservationId: z.string().optional(),
 });
 export type EventCandidate = z.infer<typeof EventCandidateSchema>;
 
