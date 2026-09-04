@@ -105,6 +105,29 @@ export class ClaimStore {
     return items.map((item) => KnowledgeClaimSchema.parse(item));
   }
 
+  async listLatestBySubject(
+    subjectType: ClaimSubjectType,
+    subjectKey: string,
+    limit = 300,
+  ): Promise<KnowledgeClaim[]> {
+    const items: Record<string, unknown>[] = [];
+    let exclusiveStartKey: Record<string, unknown> | undefined;
+    do {
+      const response = await this.client.send(new QueryCommand({
+        TableName: this.tableName,
+        IndexName: CLAIM_BY_SUBJECT_INDEX,
+        KeyConditionExpression: 'GSI2PK = :pk',
+        ExpressionAttributeValues: { ':pk': `SUBJECT#${subjectType}#${subjectKey}` },
+        ScanIndexForward: false,
+        Limit: limit - items.length,
+        ExclusiveStartKey: exclusiveStartKey,
+      }));
+      items.push(...(response.Items ?? []));
+      exclusiveStartKey = response.LastEvaluatedKey;
+    } while (exclusiveStartKey && items.length < limit);
+    return items.slice(0, limit).map((item) => KnowledgeClaimSchema.parse(item));
+  }
+
   async latestSourceStateBySubject(
     subjectType: ClaimSubjectType,
     subjectKey: string,

@@ -261,6 +261,26 @@ describe('ClaimStore', () => {
     expect((ddb.commands[1] as QueryCommand).input.ExclusiveStartKey).toBeDefined();
   });
 
+  it('reads the newest subject claims first and bounds deep histories without throwing', async () => {
+    const ddb = new FakeDynamo();
+    const pk = 'SUBJECT#event-candidate#event:klma:123';
+    const newest = { ...claim(), id: 'claim-new', observedAt: '2026-09-04T13:00:00.000Z', GSI2PK: pk, GSI2SK: '2026-09-04T13:00:00.000Z#claim-new' };
+    const older = { ...claim(), id: 'claim-old', GSI2PK: pk, GSI2SK: '2026-08-20T22:00:00.000Z#claim-old' };
+    ddb.responses.push(
+      { Items: [newest], LastEvaluatedKey: { GSI2PK: pk, GSI2SK: newest.GSI2SK } },
+      { Items: [older], LastEvaluatedKey: { GSI2PK: pk, GSI2SK: older.GSI2SK } },
+    );
+    const store = new ClaimStore('StateTable', ddb);
+
+    const result = await store.listLatestBySubject('event-candidate', 'event:klma:123', 2);
+
+    expect(result.map((entry) => entry.id)).toEqual(['claim-new', 'claim-old']);
+    expect(ddb.commands).toHaveLength(2);
+    expect((ddb.commands[0] as QueryCommand).input.ScanIndexForward).toBe(false);
+    expect((ddb.commands[0] as QueryCommand).input.Limit).toBe(2);
+    expect((ddb.commands[1] as QueryCommand).input.Limit).toBe(1);
+  });
+
   it('finds the latest source-specific canonical hash and removal state without scanning', async () => {
     const ddb = new FakeDynamo();
     ddb.responses.push({ Items: [
