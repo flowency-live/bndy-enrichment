@@ -8,6 +8,7 @@ import type { SourceRunArtifactStore } from '../src/sources/runner/storage.js';
 import type { NormalisedSourceEvent, SourceEventDiff, SourceRunContext, SourceRunReport } from '../src/sources/runner/types.js';
 import type { EntityCandidate, EventCandidate } from '../src/knowledge/types.js';
 import { checkpointKey, type CandidateRef, type TestimonyCheckpoint } from '../src/sources/runner/testimony.js';
+import { ProjectionWorkItemSchema } from '../src/knowledge/types.js';
 
 class FakeCandidates {
   readonly puts: Array<Array<EntityCandidate | EventCandidate>> = [];
@@ -134,7 +135,7 @@ function fixtureDependencies(
     claims: { async put(claim) { claims.push(claim); } },
     candidates: options.candidates,
     artifacts,
-    projection: { async publish(item) { projection.push(item); } },
+    projection: { async publish(item) { projection.push(ProjectionWorkItemSchema.parse(item)); } },
     metrics: { async put(report) { metrics.push(structuredClone(report)); } },
     acquisition: { async acquire() { throw new Error('adapter should not call acquisition in fixture'); } },
     loadAdapter: () => adapter,
@@ -181,7 +182,7 @@ describe('testimony checkpoints', () => {
 
   it('still projects a re-observed candidate that was never projected, then records the projection on its checkpoint', async () => {
     const candidates = new FakeCandidates([
-      { candidateType: 'event', candidateKey: 'event:fixture-source:g1', sourceId: 'fixture-source', fingerprint: 'h1' },
+      { candidateType: 'event', candidateKey: 'event:fixture-source:g1', sourceId: 'fixture-source', fingerprint: 'h1', supportingClaimIds: ['c-old-1', 'c-old-2'] },
     ]);
     const fx = fixtureDependencies(false, {}, { prior: [], current: [event('g1', 'h1')], candidates });
 
@@ -189,6 +190,7 @@ describe('testimony checkpoints', () => {
 
     expect(fx.claims).toHaveLength(0);
     expect(fx.projection).toHaveLength(1);
+    expect(fx.projection[0]?.claimIds).toEqual(['c-old-1', 'c-old-2']);
     expect(candidates.checkpoints[0]?.update).toMatchObject({ projectedObservationId: result.observation?.id });
   });
 

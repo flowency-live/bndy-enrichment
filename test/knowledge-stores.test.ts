@@ -110,7 +110,7 @@ describe('CandidateStore testimony checkpoints', () => {
   it('reads checkpoints in one batch and keys them by candidate type and key', async () => {
     const ddb = new FakeDynamo();
     ddb.responses.push({ Responses: { StateTable: [
-      { pk: 'CANDIDATE#event#event:src:e1', sk: 'META', candidateType: 'event', candidateKey: 'event:src:e1', sourceId: 'src', fingerprint: 'same', projectedObservationId: 'obs-old', observedAt: '2026-09-01T00:00:00.000Z', confidence: 1 },
+      { pk: 'CANDIDATE#event#event:src:e1', sk: 'META', candidateType: 'event', candidateKey: 'event:src:e1', sourceId: 'src', fingerprint: 'same', projectedObservationId: 'obs-old', supportingClaimIds: ['c1', 'c2'], observedAt: '2026-09-01T00:00:00.000Z', confidence: 1 },
     ] } } as unknown as DynamoStoreResponse);
     const store = new CandidateStore('StateTable', ddb);
 
@@ -122,7 +122,8 @@ describe('CandidateStore testimony checkpoints', () => {
     expect(ddb.commands).toHaveLength(1);
     const input = (ddb.commands[0] as BatchGetCommand).input;
     expect(input.RequestItems?.StateTable?.Keys).toHaveLength(2);
-    expect(result.get('event#event:src:e1')).toMatchObject({ sourceId: 'src', fingerprint: 'same', projectedObservationId: 'obs-old' });
+    expect(result.get('event#event:src:e1')).toMatchObject({ sourceId: 'src', fingerprint: 'same', projectedObservationId: 'obs-old', supportingClaimIds: ['c1', 'c2'] });
+    expect(input.RequestItems?.StateTable?.ProjectionExpression).toContain('supportingClaimIds');
     expect(result.has('event#event:src:e2')).toBe(false);
   });
 

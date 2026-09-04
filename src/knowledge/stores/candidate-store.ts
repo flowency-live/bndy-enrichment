@@ -36,6 +36,7 @@ export type TestimonyCheckpoint = CandidateRef & {
   sourceId: string;
   fingerprint?: string;
   projectedObservationId?: string;
+  supportingClaimIds?: string[];
 };
 
 export function checkpointKey(ref: CandidateRef): string {
@@ -213,7 +214,7 @@ export class CandidateStore {
         RequestItems: {
           [this.tableName]: {
             Keys: group.map((ref) => ({ pk: `CANDIDATE#${ref.candidateType}#${ref.candidateKey}`, sk: 'META' })),
-            ProjectionExpression: 'candidateType, candidateKey, sourceId, fingerprint, projectedObservationId',
+            ProjectionExpression: 'candidateType, candidateKey, sourceId, fingerprint, projectedObservationId, supportingClaimIds',
           },
         },
       }));
@@ -225,6 +226,9 @@ export class CandidateStore {
           sourceId: item.sourceId,
           ...(typeof item.fingerprint === 'string' ? { fingerprint: item.fingerprint } : {}),
           ...(typeof item.projectedObservationId === 'string' ? { projectedObservationId: item.projectedObservationId } : {}),
+          ...(Array.isArray(item.supportingClaimIds)
+            ? { supportingClaimIds: item.supportingClaimIds.filter((value): value is string => typeof value === 'string') }
+            : {}),
         };
         out.set(checkpointKey(checkpoint), checkpoint);
       }
