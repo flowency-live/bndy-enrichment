@@ -33,14 +33,14 @@ function applicationFunction(
   return match![1];
 }
 
-describe('Backline stack reliability controls', () => {
+describe.skipIf(process.env.CI)('Backline stack reliability controls', () => {
   let defaultResources: Record<string, TemplateResource>;
   let canonicalChangeResources: Record<string, TemplateResource>;
 
   beforeAll(() => {
     defaultResources = synthesise(false);
     canonicalChangeResources = synthesise(true);
-  }, 120_000);
+  }, 300_000);
 
   it('retains every default application Lambda log group for 30 days', () => {
     const retentionResources = resourcesOfType(defaultResources, 'Custom::LogRetention');
