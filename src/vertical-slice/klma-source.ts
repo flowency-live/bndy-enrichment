@@ -444,7 +444,8 @@ export function normaliseKlmaRows(rows: KlmaRawRow[], today: string): KlmaNormal
       town: town.town,
       genre: row.genre || undefined,
       eventUrl,
-      rawRowRef: `row:${row.rowIndex}`,
+      // Content-addressed: a row's position in a shared sheet is not a fact about the gig.
+      rawRowRef: `${date}:${artistName}@${venueName}`,
       warnings,
     });
   }

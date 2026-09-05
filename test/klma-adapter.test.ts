@@ -3,6 +3,7 @@ import type { GigSource } from '../src/knowledge/types.js';
 import { KLMA_EXPORT_URL, KLMA_GVIZ_URL } from '../src/vertical-slice/klma-source.js';
 import { klmaAdapter } from '../src/sources/adapters/klma/index.js';
 import type { AcquisitionRouter } from '../src/sources/runner/acquisition.js';
+import { eventFingerprint } from '../src/sources/runner/diff.js';
 
 const config: GigSource = {
   id: 'klma-stoke-gig-list', name: 'KLMA Stoke Gig List', type: 'CURATED_SOURCE',
@@ -46,6 +47,22 @@ describe('KLMA generic SourceAdapter', () => {
     ]));
     expect(parsed.parked.map((item) => item.reason)).toEqual(['past_event', 'unparseable']);
     expect(parsed.warnings).toContain("No stage time in 'TBC'");
+  });
+
+  it('fingerprints a gig by its facts, so a new row above it does not make it look changed', async () => {
+    const shifted = csv.replace('28/08/2026,The Test Band', ['27/08/2026,New Top Band,"Top Arms, Stoke-on-Trent",8pm,Rock,', '28/08/2026,The Test Band'].join('\n'));
+    const parseCsv = async (body: string) => {
+      const acquisition: AcquisitionRouter = { async acquire(request) {
+        return { kind: 'csv', body, sourceUrl: request.url, fetchMethod: 'fixture', fetchedAt: run.startedAt, complete: true, httpStatus: 200, contentType: 'text/csv' };
+      } };
+      return klmaAdapter.parse(config, run, await klmaAdapter.fetch(config, run, acquisition));
+    };
+    const [before, after] = await Promise.all([parseCsv(csv), parseCsv(shifted)]);
+    const key = before.events[0]!.sourceEventKey;
+    const original = before.events.find((event) => event.sourceEventKey === key)!;
+    const moved = after.events.find((event) => event.sourceEventKey === key)!;
+    expect(eventFingerprint(moved)).toBe(eventFingerprint(original));
+    expect(JSON.stringify(moved)).not.toMatch(/row:\d+/);
   });
 
   it('falls back to gviz and realigns its leading row-number column', async () => {
