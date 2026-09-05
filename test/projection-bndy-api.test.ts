@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EntityResolutionReviewError, HttpProjectionBndyApi } from '../src/projection/bndy-api.js';
+import { EntityResolutionRejectedError, EntityResolutionReviewError, HttpProjectionBndyApi } from '../src/projection/bndy-api.js';
 import type { ProjectionEventCandidate } from '../src/projection/candidate.js';
 
 function candidate(): ProjectionEventCandidate {
@@ -59,5 +59,26 @@ describe('HttpProjectionBndyApi entity resolution', () => {
       entityType: 'venue', entityName: 'The Test Pub', reason: 'likely-new', candidates: [{ id: 'venue-9' }],
     });
     expect(sentBody(fetchImpl).canCreate).toBe(false);
+  });
+
+  it('raises a typed rejection when the canonical API refuses an artist name on data quality', async () => {
+    const fetchImpl = fetchReturning({ error: 'Artist name failed data-quality validation', code: 'DATA_QUALITY' }, 422);
+    const api = new HttpProjectionBndyApi('https://api.test', fetchImpl as unknown as typeof fetch);
+
+    const attempt = api.resolveArtist(candidate());
+
+    await expect(attempt).rejects.toBeInstanceOf(EntityResolutionRejectedError);
+    await expect(attempt).rejects.toMatchObject({
+      entityType: 'artist', entityName: 'The Test Band', code: 'DATA_QUALITY', detail: 'Artist name failed data-quality validation',
+    });
+  });
+
+  it('raises the same typed rejection when a venue fails the canonical place-type check without a code', async () => {
+    const fetchImpl = fetchReturning({ error: 'Place type "route" indicates a geographic area, not a building.' }, 422);
+    const api = new HttpProjectionBndyApi('https://api.test', fetchImpl as unknown as typeof fetch);
+
+    await expect(api.resolveVenue(candidate())).rejects.toMatchObject({
+      entityType: 'venue', entityName: 'The Test Pub', code: 'rejected', detail: 'Place type "route" indicates a geographic area, not a building.',
+    });
   });
 });

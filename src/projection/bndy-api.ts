@@ -23,6 +23,21 @@ export class EntityResolutionReviewError extends Error {
   }
 }
 
+// A 422 from find-or-create is canonical refusing the fact itself: a name that fails
+// data quality, a place that is a road rather than a building. Retrying cannot change
+// that answer, so it is an exception for a person, never a dead letter.
+export class EntityResolutionRejectedError extends Error {
+  constructor(
+    readonly entityType: 'artist' | 'venue',
+    readonly entityName: string,
+    readonly code: string,
+    readonly detail: string,
+  ) {
+    super(`${entityType} '${entityName}' rejected by canonical (${code}): ${detail}`);
+    this.name = 'EntityResolutionRejectedError';
+  }
+}
+
 export interface ProjectionBndyApi {
   resolveArtist(candidate: ProjectionEventCandidate, options?: ResolveEntityOptions): Promise<ResolvedArtist>;
   resolveVenue(candidate: ProjectionEventCandidate, options?: ResolveEntityOptions): Promise<ResolvedVenue>;
@@ -39,6 +54,11 @@ export interface ProjectionBndyApi {
 function reviewError(entityType: 'artist' | 'venue', name: string, body: Record<string, unknown>): EntityResolutionReviewError {
   const reason = typeof body.reason === 'string' && body.reason ? body.reason : 'review';
   return new EntityResolutionReviewError(entityType, name, reason, Array.isArray(body.candidates) ? body.candidates : []);
+}
+
+function rejectedError(entityType: 'artist' | 'venue', name: string, body: Record<string, unknown>): EntityResolutionRejectedError {
+  const detail = stringField(body.error) ?? stringField(body.message) ?? JSON.stringify(body);
+  return new EntityResolutionRejectedError(entityType, name, stringField(body.code) ?? 'rejected', detail);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -117,9 +137,7 @@ export class HttpProjectionBndyApi implements ProjectionBndyApi {
     }, [409, 422]);
     const body = asRecord(out.body);
     if (body.action === 'review') throw reviewError('artist', candidate.artistName, body);
-    if (out.status === 422) {
-      throw new Error(`Artist resolution rejected for '${candidate.artistName}': ${JSON.stringify(body)}`);
-    }
+    if (out.status === 422) throw rejectedError('artist', candidate.artistName, body);
     const artist = asRecord(body.artist);
     const id = stringField(artist.id) ?? stringField(body.existingArtistId);
     if (!id) throw new Error(`Unexpected artist resolution: ${JSON.stringify(body)}`);
@@ -140,9 +158,7 @@ export class HttpProjectionBndyApi implements ProjectionBndyApi {
     }, [409, 422]);
     const body = asRecord(out.body);
     if (body.action === 'review') throw reviewError('venue', candidate.venueName, body);
-    if (out.status === 422 || body.needsReview === true) {
-      throw new Error(`Venue resolution rejected for '${candidate.venueName}': ${JSON.stringify(body)}`);
-    }
+    if (out.status === 422 || body.needsReview === true) throw rejectedError('venue', candidate.venueName, body);
     const venue = asRecord(body.venue ?? body);
     const id = stringField(venue.id);
     if (!id) throw new Error(`Unexpected venue resolution: ${JSON.stringify(body)}`);
