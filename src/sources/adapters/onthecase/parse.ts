@@ -376,7 +376,7 @@ export function parseOnTheCase(html: string, sourceUrl: string, run: SourceRunCo
     throw new Error('On The Case fanoutMode=none is allowed only for a manual root gig-index acquisition');
   }
   if (kind === 'full-reconcile') return parseFullReconcile();
-  if (kind.endsWith('-inventory-control')) return { events: [], parked: [], warnings: [] };
+  if (kind.endsWith('-inventory-control')) return { events: [], parked: [], warnings: [], snapshot: false };
   assertExpectedPage(kind, html);
   const warnings: string[] = [];
   switch (kind) {
