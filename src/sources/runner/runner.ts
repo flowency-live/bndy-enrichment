@@ -18,6 +18,7 @@ import type {
   SourceRunContext,
   SourceRunnerResult,
   SourceRunReport,
+  SourceEventDiff,
 } from './types.js';
 
 export type SourceRunRequest = {
@@ -230,10 +231,13 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     const previousEvents = await deps.artifacts.loadNormalised(
       baselineKey(previousState, config, storedObservation.complete),
     );
-    const diff = diffSourceEvents(previousEvents, parsed.events, config, {
-      runDate: run.runDate,
-      captureComplete: storedObservation.complete,
-    });
+    const isSnapshot = parsed.snapshot !== false;
+    const diff: SourceEventDiff = isSnapshot
+      ? diffSourceEvents(previousEvents, parsed.events, config, {
+        runDate: run.runDate,
+        captureComplete: storedObservation.complete,
+      })
+      : { added: [], updated: [], unchanged: [], withdrawn: [], pastDropped: [], ignoredAbsences: [] };
     const diffKey = await deps.artifacts.writeDiff(config, run, diff);
     report.artifacts.diff = diffKey;
     report.added = diff.added.length;
@@ -363,18 +367,18 @@ export async function runSource(request: SourceRunRequest, deps: RunnerDependenc
     const priorMetadata = previousState?.metadata ?? {};
     const metadata: Record<string, unknown> = {
       ...priorMetadata,
-      lastNormalisedKey: normalisedKey,
       lastDiffKey: diffKey,
       lastParityKey: parityKey,
       lastTaskKey: request.taskKey,
     };
+    if (isSnapshot) metadata.lastNormalisedKey = normalisedKey;
     if (run.reconciliationId) metadata.lastReconciliationId = run.reconciliationId;
-    if (storedObservation.complete) metadata.lastCompleteNormalisedKey = normalisedKey;
+    if (isSnapshot && storedObservation.complete) metadata.lastCompleteNormalisedKey = normalisedKey;
 
     await deps.state.put({
       sourceId: config.id,
       lastObservationId: storedObservation.id,
-      lastCompleteObservationId: storedObservation.complete
+      lastCompleteObservationId: isSnapshot && storedObservation.complete
         ? storedObservation.id
         : previousState?.lastCompleteObservationId,
       lastRunAt: run.startedAt,

@@ -32,6 +32,18 @@ const bandPage = `
 <h2 style="font-size:19px;">Saturday 29 August 2026</h2><div class="name"><a href="/venues/6011/old-fat-ox-holywell">Old Fat Ox Holywell</a><div class="price">9:00 PM / FREE</div></div>
 </body></html>`;
 
+describe('On The Case control tasks', () => {
+  it('marks an inventory-control result as not a snapshot so it never becomes the diff baseline', () => {
+    const parsed = parseOnTheCase('<html><head><title>x</title></head><body></body></html>', 'https://onthecasemusic.co.uk/gigs', {
+      runId: 'run-1', sourceId: 'onthecase-gig-index', startedAt: '2026-09-05T00:53:00.000Z', runDate: '2026-09-05',
+      reason: 'manual', requestedAt: '2026-09-05T00:53:00.000Z',
+      task: { kind: 'gig-inventory-control', url: 'https://onthecasemusic.co.uk/gigs' },
+    });
+    expect(parsed.events).toEqual([]);
+    expect(parsed.snapshot).toBe(false);
+  });
+});
+
 describe('On The Case production adapter', () => {
   it('uses source-native numeric identities', () => {
     expect(bandRef('https://onthecasemusic.co.uk/bands/12550/3rd-stage-red')?.id).toBe('12550');

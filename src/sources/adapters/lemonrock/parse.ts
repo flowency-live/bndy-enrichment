@@ -598,7 +598,7 @@ function parseProfile(kind: 'artist' | 'venue', html: string, sourceUrl: string,
 export function parseLemonrock(html: string, sourceUrl: string, run: SourceRunContext): ParsedSource {
   const kind = taskKind(run);
   if (kind === 'artist-inventory-control' || kind === 'venue-inventory-control') {
-    return { events: [], nextRequests: [], parked: [], warnings: [] };
+    return { events: [], nextRequests: [], parked: [], warnings: [], snapshot: false };
   }
   if (kind === 'artist-index' || kind === 'artist-index-page') return artistIndex(html, sourceUrl, run);
   if (kind === 'venue-index' || kind === 'venue-index-page') return venueIndex(html, sourceUrl, run);

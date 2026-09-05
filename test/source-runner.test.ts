@@ -146,6 +146,29 @@ function fixtureDependencies(
   return { deps, artifacts, claims, projection, states, observations, metrics, candidates: options.candidates };
 }
 
+describe('non-snapshot runs', () => {
+  it('leaves the diff baseline and complete observation untouched when the adapter returns no snapshot', async () => {
+    const fx = fixtureDependencies(true, {}, { prior: [event('e1', 'old')], current: [] });
+    fx.deps.loadAdapter = () => ({
+      async fetch() {
+        return { kind: 'json' as const, body: '[]', sourceUrl: 'https://example.test/gigs', fetchMethod: 'fixture', fetchedAt: '2026-08-20T10:00:00.000Z', complete: true, contentType: 'application/json' };
+      },
+      async parse() { return { events: [], parked: [], warnings: [], snapshot: false }; },
+    });
+
+    const result = await runSource({ sourceId: 'fixture-source', reason: 'manual', requestedAt: '2026-08-20T10:00:00.000Z' }, fx.deps);
+
+    expect(result.report.status).toBe('completed');
+    expect(result.diff?.withdrawn).toEqual([]);
+    expect(result.diff?.added).toEqual([]);
+    expect(fx.projection).toHaveLength(0);
+    expect(fx.states.at(-1)?.metadata.lastNormalisedKey).toBe('runs/prior/normalised.json');
+    expect(fx.states.at(-1)?.metadata.lastCompleteNormalisedKey).toBe('runs/prior-complete/normalised.json');
+    expect(fx.states.at(-1)?.lastCompleteObservationId).toBe('obs-complete-prior');
+    expect(fx.states.at(-1)?.lastObservationId).toBe(result.observation?.id);
+  });
+});
+
 describe('testimony checkpoints', () => {
   it('writes no Claims and no projection work for events re-observed unchanged, only a checkpoint each', async () => {
     const same = [event('e1', 'same'), event('e2', 'same')];

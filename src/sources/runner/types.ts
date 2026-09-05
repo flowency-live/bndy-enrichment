@@ -77,6 +77,9 @@ export type ParsedSource = {
   nextRequests?: SourceFanoutRequest[];
   parked: Array<{ reason: string; raw?: unknown }>;
   warnings: string[];
+  // false for control or side tasks whose empty result is not a listing snapshot
+  // and must never become the next diff baseline.
+  snapshot?: boolean;
 };
 
 export type SourceRunContext = {
