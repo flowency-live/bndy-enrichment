@@ -8,6 +8,7 @@ function candidate(): ProjectionEventCandidate {
     sourceId: 'test-source',
     sourceEventKey: 'gig-1',
     artistName: 'The Test Band',
+    performers: [{ name: 'The Test Band', headliner: true }],
     venueName: 'The Test Pub',
     venueLocation: 'Stoke',
     date: '2026-09-20',
@@ -59,6 +60,16 @@ describe('HttpProjectionBndyApi entity resolution', () => {
       entityType: 'venue', entityName: 'The Test Pub', reason: 'likely-new', candidates: [{ id: 'venue-9' }],
     });
     expect(sentBody(fetchImpl).canCreate).toBe(false);
+  });
+
+  it('creates a multi-act event with artistIds headliner first and the primary artistId alongside', async () => {
+    const fetchImpl = fetchReturning({ event: { id: 'event-1' } }, 201);
+    const api = new HttpProjectionBndyApi('https://api.test', fetchImpl as unknown as typeof fetch);
+
+    const result = await api.ensureEvent(candidate(), ['artist-1', 'artist-2'], 'venue-1');
+
+    expect(result).toEqual({ id: 'event-1', created: true, duplicate: false });
+    expect(sentBody(fetchImpl)).toMatchObject({ artistId: 'artist-1', artistIds: ['artist-1', 'artist-2'], venueId: 'venue-1' });
   });
 
   it('raises a typed rejection when the canonical API refuses an artist name on data quality', async () => {

@@ -10,6 +10,15 @@ export class IncompleteProjectionCandidateError extends Error {
   }
 }
 
+// One act on a bill. The headliner is always first; artistName/artistExternalId on
+// the candidate mirror it so single-act consumers keep working (ADR-118).
+export type ProjectionPerformer = {
+  name: string;
+  externalId?: string;
+  location?: string;
+  headliner: boolean;
+};
+
 export type ProjectionEventCandidate = {
   candidateKey: string;
   sourceId: string;
@@ -17,6 +26,7 @@ export type ProjectionEventCandidate = {
   artistName: string;
   artistExternalId?: string;
   artistLocation?: string;
+  performers: ProjectionPerformer[];
   venueName: string;
   venueExternalId?: string;
   venueLocation: string;
@@ -36,18 +46,45 @@ export type ProjectionEventCandidate = {
 
 type ClaimMap = Map<string, KnowledgeClaim>;
 
+function claimOrder(claim: KnowledgeClaim): string {
+  return `${claim.observedAt}#${claim.assertedAt ?? claim.observedAt}#${claim.id}`;
+}
+
 function latestByPredicate(claims: KnowledgeClaim[]): ClaimMap {
   const out = new Map<string, KnowledgeClaim>();
   for (const claim of claims) {
     if (claim.status !== 'active') continue;
     const current = out.get(claim.predicate);
-    const claimOrder = `${claim.observedAt}#${claim.assertedAt ?? claim.observedAt}#${claim.id}`;
-    const currentOrder = current
-      ? `${current.observedAt}#${current.assertedAt ?? current.observedAt}#${current.id}`
-      : undefined;
-    if (!currentOrder || claimOrder > currentOrder) out.set(claim.predicate, claim);
+    if (!current || claimOrder(claim) > claimOrder(current)) out.set(claim.predicate, claim);
   }
   return out;
+}
+
+function ordinalOf(value: Record<string, unknown>): number {
+  return typeof value.ordinal === 'number' ? value.ordinal : Number.MAX_SAFE_INTEGER;
+}
+
+// One hasPerformer Claim per act (ADR-118). Acts are keyed by name so a re-observation
+// replaces rather than duplicates; the bill is ordered by position, headliner first.
+// A Claim without a position is a legacy one-act bill.
+function billFromClaims(claims: KnowledgeClaim[]): ProjectionPerformer[] {
+  const newest = new Map<string, { claim: KnowledgeClaim; value: Record<string, unknown>; name: string }>();
+  for (const claim of claims) {
+    if (claim.status !== 'active' || claim.predicate !== 'hasPerformer') continue;
+    const value = objectValue(claim);
+    const name = objectString(value, 'name');
+    if (!value || !name) continue;
+    const current = newest.get(name.toLowerCase());
+    if (!current || claimOrder(claim) > claimOrder(current.claim)) newest.set(name.toLowerCase(), { claim, value, name });
+  }
+  return [...newest.values()]
+    .sort((a, b) => (ordinalOf(a.value) - ordinalOf(b.value)) || claimOrder(a.claim).localeCompare(claimOrder(b.claim)))
+    .map(({ value, name }, index) => ({
+      name,
+      externalId: objectString(value, 'sourceNativeId'),
+      location: objectString(value, 'location'),
+      headliner: typeof value.headliner === 'boolean' ? value.headliner : index === 0,
+    }));
 }
 
 function stringValue(claim?: KnowledgeClaim): string | undefined {
@@ -76,10 +113,11 @@ export function materialiseEventCandidate(
   claims: KnowledgeClaim[],
 ): ProjectionEventCandidate {
   const latest = latestByPredicate(claims);
-  const performer = objectValue(latest.get('hasPerformer'));
+  const bill = billFromClaims(claims);
+  const headliner = bill[0];
   const venue = objectValue(latest.get('occursAt'));
 
-  const artistName = objectString(performer, 'name') ?? stringValue(latest.get('hasPerformerName'));
+  const artistName = headliner?.name ?? stringValue(latest.get('hasPerformerName'));
   const venueName = objectString(venue, 'name') ?? stringValue(latest.get('hasVenueName'));
   const venueLocation = objectString(venue, 'location');
   const date = stringValue(latest.get('occursOn'));
@@ -101,8 +139,9 @@ export function materialiseEventCandidate(
     sourceId,
     sourceEventKey: sourceEventKey(candidateKey, sourceId),
     artistName: artistName!,
-    artistExternalId: objectString(performer, 'sourceNativeId'),
-    artistLocation: objectString(performer, 'location'),
+    artistExternalId: headliner?.externalId,
+    artistLocation: headliner?.location,
+    performers: bill.length ? bill : [{ name: artistName!, headliner: true }],
     venueName: venueName!,
     venueExternalId: objectString(venue, 'sourceNativeId'),
     venueLocation: venueLocation!,

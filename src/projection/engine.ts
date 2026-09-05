@@ -139,19 +139,36 @@ function updatePayload(
   return payload;
 }
 
+// Canonical caps a gig at four acts; a bigger bill is a festival.
+const MAX_BILL_ACTS = 4;
+
+async function resolveBill(candidate: ProjectionEventCandidate, canCreate: boolean, deps: ProjectionDependencies): Promise<ResolvedArtist[]> {
+  const resolved: ResolvedArtist[] = [];
+  for (const performer of candidate.performers) {
+    resolved.push(await deps.api.resolveArtist({
+      ...candidate,
+      artistName: performer.name,
+      artistExternalId: performer.externalId,
+      artistLocation: performer.location,
+    }, { canCreate }));
+  }
+  return resolved;
+}
+
 function verifyEvent(
   event: Record<string, unknown> | null,
   eventId: string,
-  artistId: string,
+  artistIds: string[],
   venueId: string,
   date: string,
 ): void {
   if (!event || event.id !== eventId) throw new Error(`Read-back verification failed: event ${eventId} missing`);
   if (event.date !== date) throw new Error(`Read-back verification failed: event ${eventId} date mismatch`);
   if (event.venueId !== venueId) throw new Error(`Read-back verification failed: event ${eventId} venue mismatch`);
-  const artists = Array.isArray(event.artistIds) ? event.artistIds : [];
-  if (event.artistId !== artistId && !artists.includes(artistId)) {
-    throw new Error(`Read-back verification failed: event ${eventId} artist mismatch`);
+  const onBill = [event.artistId, ...(Array.isArray(event.artistIds) ? event.artistIds : [])];
+  const missingActs = artistIds.filter((id) => !onBill.includes(id));
+  if (missingActs.length) {
+    throw new Error(`Read-back verification failed: event ${eventId} artist mismatch (${missingActs.join(', ')} not on the bill)`);
   }
 }
 
@@ -474,7 +491,14 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
       return { status: 'success', sourceId: item.sourceId, candidateKey: item.candidateKey, action: item.action, eventId };
     }
 
-    let artist: ResolvedArtist;
+    if (candidate.performers.length > MAX_BILL_ACTS) {
+      return await handledException(item, `A gig carries at most ${MAX_BILL_ACTS} acts and this bill has ${candidate.performers.length}; a bigger bill is a festival`, deps, {
+        classification: 'bill-too-large',
+        acts: candidate.performers.length,
+      });
+    }
+
+    let artists: ResolvedArtist[];
     let venue: ResolvedVenue;
     try {
       // Venue first (ADR-117): an artist is only ever asked for, let alone created,
@@ -482,9 +506,12 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
       venue = previous?.venueId
         ? { id: previous.venueId, created: false } satisfies ResolvedVenue
         : await deps.api.resolveVenue(candidate, { canCreate: creation.venue });
-      artist = previous?.artistId
-        ? { id: previous.artistId, created: false } satisfies ResolvedArtist
-        : await deps.api.resolveArtist(candidate, { canCreate: creation.artist });
+      // Then every act on the bill, headliner first (ADR-118). A remembered mapping
+      // names only the headliner, so it stands in only for a one-act bill.
+      const remembered = candidate.performers.length === 1 ? previous?.artistId : undefined;
+      artists = remembered
+        ? [{ id: remembered, created: false }]
+        : await resolveBill(candidate, creation.artist, deps);
     } catch (error) {
       if (error instanceof EntityResolutionRejectedError) {
         return await handledException(item, error.message, deps, {
@@ -504,10 +531,12 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
         candidates: error.candidates,
       });
     }
-    if ((artist.created && !creation.artist) || (venue.created && !creation.venue)) {
+    const artist = artists[0]!;
+    const createdArtists = artists.filter((entry) => entry.created);
+    if ((createdArtists.length > 0 && !creation.artist) || (venue.created && !creation.venue)) {
       return await handledException(item, 'match-only policy: canonical API created an entity despite canCreate=false', deps, {
         classification: 'match-only-violation',
-        artistCreated: artist.created,
+        artistCreated: createdArtists.length > 0,
         venueCreated: venue.created,
       });
     }
@@ -533,7 +562,7 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
     let event = eventId ? await deps.api.getEvent(eventId) : null;
 
     if (!event) {
-      const ensured = await deps.api.ensureEvent(candidate, artist.id, venue.id);
+      const ensured = await deps.api.ensureEvent(candidate, artists.map((entry) => entry.id), venue.id);
       eventId = ensured.id;
       eventCreated = ensured.created;
       event = await deps.api.getEvent(eventId);
@@ -554,7 +583,7 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
         await deps.state.markSuccess(item, mappingFrom(artist, venue, eventId, previous), 'success', { protectedMatch: true });
         await deps.state.recordRunItem(item, {
           claims: claims.length,
-          artistsMatched: artist.created ? 0 : 1,
+          artistsMatched: artists.length - createdArtists.length,
           venuesMatched: venue.created ? 0 : 1,
         });
         return { status: 'success', sourceId: item.sourceId, candidateKey: item.candidateKey, action: item.action, artistId: artist.id, venueId: venue.id, eventId, message: mutationEvaluation.reason };
@@ -577,17 +606,19 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
       event = await deps.api.getEvent(eventId!);
     }
 
-    verifyEvent(event, eventId!, artist.id, venue.id, candidate.date);
+    verifyEvent(event, eventId!, artists.map((entry) => entry.id), venue.id, candidate.date);
     await linkSupport(claims, artist.id, venue.id, eventId!, deps.claims);
 
-    if (artist.created) await deps.enrichment.publish(enrichmentItem('artist', artist.id, item.sourceId, item.observationId, item.createdAt));
+    for (const created of createdArtists) {
+      await deps.enrichment.publish(enrichmentItem('artist', created.id, item.sourceId, item.observationId, item.createdAt));
+    }
     if (venue.created) await deps.enrichment.publish(enrichmentItem('venue', venue.id, item.sourceId, item.observationId, item.createdAt));
 
     await deps.state.markSuccess(item, mappingFrom(artist, venue, eventId, previous), 'success');
     const delta: ProjectionCountDelta = {
       claims: claims.length,
-      artistsCreated: artist.created ? 1 : 0,
-      artistsMatched: artist.created ? 0 : 1,
+      artistsCreated: createdArtists.length,
+      artistsMatched: artists.length - createdArtists.length,
       venuesCreated: venue.created ? 1 : 0,
       venuesMatched: venue.created ? 0 : 1,
       eventsCreated: eventCreated ? 1 : 0,

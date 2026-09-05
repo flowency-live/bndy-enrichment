@@ -329,6 +329,75 @@ describe('ProjectionEngine', () => {
     expect(mockApi.resolveArtist).toHaveBeenCalledWith(expect.anything(), { canCreate: false });
   });
 
+  it('projects a multi-act bill as one event: every act resolved, artistIds headliner first, all verified on read-back', async () => {
+    const bill = [
+      claim('c-p1', 'hasPerformer', { name: 'Riskee And The Ridicule', sourceNativeId: 'a-1', ordinal: 0, headliner: true }),
+      claim('c-p2', 'hasPerformer', { name: 'Deadwax', sourceNativeId: 'a-2', ordinal: 1, headliner: false }),
+      claim('c-venue-name', 'hasVenueName', 'The Rigger'),
+      claim('c-venue', 'occursAt', { name: 'The Rigger', sourceNativeId: 'venue-9', location: 'Newcastle-under-Lyme' }),
+      claim('c-date', 'occursOn', '2026-08-30'),
+      claim('c-time', 'startsAt', '19:30'),
+      claim('c-status', 'hasStatus', 'confirmed'),
+    ];
+    const ids: Record<string, string> = { 'Riskee And The Ridicule': 'artist-1', 'Deadwax': 'artist-2' };
+    const event = { id: 'event-1', artistId: 'artist-1', artistIds: ['artist-1', 'artist-2'], venueId: 'venue-1', date: '2026-08-30', isPublic: true, cancelled: false };
+    const mockApi = api({
+      resolveArtist: vi.fn(async (candidate: { artistName: string }) => ({ id: ids[candidate.artistName]!, created: candidate.artistName === 'Deadwax', name: candidate.artistName })),
+      resolveVenue: vi.fn(async () => ({ id: 'venue-1', created: false, name: 'The Rigger' })),
+      getEvent: vi.fn(async () => ({ ...event })),
+    });
+    const fx = deps({ claims: bill, api: mockApi });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('success');
+    expect(mockApi.resolveArtist).toHaveBeenCalledTimes(2);
+    expect(mockApi.ensureEvent).toHaveBeenCalledWith(expect.anything(), ['artist-1', 'artist-2'], 'venue-1');
+    expect(fx.enrichments).toHaveLength(1);
+    const [, delta] = fx.runItems[0] as [unknown, Record<string, unknown>];
+    expect(delta).toMatchObject({ artistsCreated: 1, artistsMatched: 1, eventsCreated: 1 });
+  });
+
+  it('fails the read-back when canonical dropped a support act from the bill', async () => {
+    const bill = [
+      claim('c-p1', 'hasPerformer', { name: 'Riskee And The Ridicule', ordinal: 0, headliner: true }),
+      claim('c-p2', 'hasPerformer', { name: 'Deadwax', ordinal: 1, headliner: false }),
+      claim('c-venue', 'occursAt', { name: 'The Rigger', location: 'Newcastle-under-Lyme' }),
+      claim('c-date', 'occursOn', '2026-08-30'),
+      claim('c-time', 'startsAt', '19:30'),
+      claim('c-status', 'hasStatus', 'confirmed'),
+    ];
+    const mockApi = api({
+      resolveArtist: vi.fn(async (candidate: { artistName: string }) => ({ id: candidate.artistName === 'Deadwax' ? 'artist-2' : 'artist-1', created: false })),
+      resolveVenue: vi.fn(async () => ({ id: 'venue-1', created: false })),
+      getEvent: vi.fn(async () => ({ id: 'event-1', artistId: 'artist-1', artistIds: ['artist-1'], venueId: 'venue-1', date: '2026-08-30', isPublic: true })),
+    });
+    const fx = deps({ claims: bill, api: mockApi });
+
+    await expect(projectWorkItem(item('create'), fx.dependencies)).rejects.toThrow(/artist mismatch \(artist-2 not on the bill\)/);
+    expect(fx.failures).toHaveLength(1);
+  });
+
+  it('refuses a bill of more than four acts as a handled exception before any canonical call', async () => {
+    const acts = ['One', 'Two', 'Three', 'Four', 'Five'];
+    const bill = [
+      ...acts.map((name, ordinal) => claim(`c-p${ordinal}`, 'hasPerformer', { name, ordinal, headliner: ordinal === 0 })),
+      claim('c-venue', 'occursAt', { name: 'The Rigger', location: 'Newcastle-under-Lyme' }),
+      claim('c-date', 'occursOn', '2026-08-30'),
+      claim('c-time', 'startsAt', '19:30'),
+      claim('c-status', 'hasStatus', 'confirmed'),
+    ];
+    const mockApi = api();
+    const fx = deps({ claims: bill, api: mockApi });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('exception');
+    expect(fx.exceptions).toContainEqual(expect.objectContaining({ details: expect.objectContaining({ classification: 'bill-too-large', acts: 5 }) }));
+    expect(mockApi.resolveVenue).not.toHaveBeenCalled();
+    expect(mockApi.resolveArtist).not.toHaveBeenCalled();
+  });
+
   it('default policy still allows entity creation', async () => {
     const mockApi = api();
     const fx = deps({ api: mockApi });

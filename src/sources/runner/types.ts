@@ -31,12 +31,21 @@ export type NormalisedSourceClaim = {
   evidenceText?: string;
 };
 
+// One act on a multi-act bill (ADR-118). When present, artistName names the headliner.
+export type NormalisedSourcePerformer = {
+  name: string;
+  externalId?: string;
+  location?: string;
+  headliner?: boolean;
+};
+
 export type NormalisedSourceEvent = {
   sourceEventKey: string;
   sourceNativeId?: string;
   artistName?: string;
   artistExternalId?: string;
   artistLocation?: string;
+  performers?: NormalisedSourcePerformer[];
   venueName?: string;
   venueExternalId?: string;
   venueLocation?: string;
