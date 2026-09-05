@@ -4,9 +4,13 @@
 **Supersedes:** the morning checkpoint of the same date, which misdescribed Lemonrock as disabled.
 **Scope:** Backline application, data, source acquisition, projection safety, Godmode visibility and the route to controlled canonical writes.
 
-## Position
+## Position, updated 5 September 2026
 
-Backline runs in shadow mode in production and the corrected pipeline is proven end to end on live data. Nothing writes to canonical bndy. The remaining work before a first canonical write is deployment of three merged changes, one repeat acquisition, and a human-approved pilot.
+Backline is the live writer of record for OnTheCase. Since 00:00 UTC on 5 September the global projection control is on and `onthecase-gig-index` runs additive-only, create-only, match-only with no allowlist (ADR-116). Every other source stays in shadow. The stop action is `python scripts/pilot-canonical-write.py close`.
+
+The first pilot window on 4 September (`onthecase-pilot-2026-09-04-v1`) ran the live path for ten named candidates: five matched Events Cowork had already imported, five were refused by the canonical near-tie artist guard, nothing was created, nothing failed. Canonical already held every OnTheCase gig at the verified venues, which is the decommission evidence for the Cowork OnTheCase importer. It is retired after 48 clean hours of Backline writes.
+
+Overnight 4 to 5 September: 15 hourly OnTheCase runs, zero Claims written, zero errors, no new gigs posted. Lemonrock dropped from 121 hydration runs and 1,893 Claims an hour to 2 runs and zero Claims from 18:15 UTC (ADR-115).
 
 ## What is live and verified today
 
