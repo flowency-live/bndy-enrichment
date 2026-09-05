@@ -58,15 +58,45 @@ function customEventClaim(observation: SourceObservation, event: NormalisedSourc
   return claimFor(observation, event, claim.predicate, claim.value, claim.confidence ?? 1, claim.evidenceText);
 }
 
-function eventClaims(observation: SourceObservation, event: NormalisedSourceEvent): KnowledgeClaim[] {
-  const claims: KnowledgeClaim[] = [];
-  if (event.artistName) {
-    claims.push(claimFor(observation, event, 'hasPerformerName', event.artistName));
-    claims.push(claimFor(observation, event, 'hasPerformer', {
+type BillAct = { name: string; externalId?: string; location?: string; value: Record<string, unknown> };
+
+// The acts on an event, headliner first (ADR-118). A multi-act bill carries its
+// position on every hasPerformer Claim; a single act keeps the legacy shape.
+function billOf(event: NormalisedSourceEvent): BillAct[] {
+  if (event.performers?.length) {
+    const ordered = [...event.performers].sort((a, b) => Number(b.headliner === true) - Number(a.headliner === true));
+    return ordered.map((performer, index) => ({
+      name: performer.name,
+      externalId: performer.externalId,
+      location: performer.location,
+      value: {
+        name: performer.name,
+        ...(performer.externalId ? { sourceNativeId: performer.externalId } : {}),
+        ...(performer.location ? { location: performer.location } : {}),
+        ordinal: index,
+        headliner: performer.headliner ?? index === 0,
+      },
+    }));
+  }
+  if (!event.artistName) return [];
+  return [{
+    name: event.artistName,
+    externalId: event.artistExternalId,
+    location: event.artistLocation,
+    value: {
       name: event.artistName,
       ...(event.artistExternalId ? { sourceNativeId: event.artistExternalId } : {}),
       ...(event.artistLocation ? { location: event.artistLocation } : {}),
-    }));
+    },
+  }];
+}
+
+function eventClaims(observation: SourceObservation, event: NormalisedSourceEvent): KnowledgeClaim[] {
+  const claims: KnowledgeClaim[] = [];
+  const bill = billOf(event);
+  if (bill.length) {
+    claims.push(claimFor(observation, event, 'hasPerformerName', bill[0]!.name));
+    for (const act of bill) claims.push(claimFor(observation, event, 'hasPerformer', act.value));
   }
   if (event.venueName) {
     claims.push(claimFor(observation, event, 'hasVenueName', event.venueName));
@@ -149,9 +179,10 @@ function entityKnowledge(observation: SourceObservation, entity: NormalisedSourc
 
 function entitiesReferencedByEvent(event: NormalisedSourceEvent): NormalisedSourceEntity[] {
   const entities: NormalisedSourceEntity[] = [];
-  if (event.artistName && event.artistExternalId) {
+  for (const act of billOf(event)) {
+    if (!act.externalId) continue;
     const claims: NormalisedSourceClaim[] = [];
-    if (event.artistLocation) claims.push({ predicate: 'hasLocation', value: event.artistLocation });
+    if (act.location) claims.push({ predicate: 'hasLocation', value: act.location });
     if (event.venueName || event.date) {
       claims.push({
         predicate: 'performsAt',
@@ -164,9 +195,9 @@ function entitiesReferencedByEvent(event: NormalisedSourceEvent): NormalisedSour
     }
     entities.push({
       entityType: 'artist',
-      sourceEntityKey: event.artistExternalId,
-      sourceNativeId: event.artistExternalId,
-      displayName: event.artistName,
+      sourceEntityKey: act.externalId,
+      sourceNativeId: act.externalId,
+      displayName: act.name,
       confidence: 1,
       claims,
     });

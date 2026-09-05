@@ -41,7 +41,8 @@ export class EntityResolutionRejectedError extends Error {
 export interface ProjectionBndyApi {
   resolveArtist(candidate: ProjectionEventCandidate, options?: ResolveEntityOptions): Promise<ResolvedArtist>;
   resolveVenue(candidate: ProjectionEventCandidate, options?: ResolveEntityOptions): Promise<ResolvedVenue>;
-  ensureEvent(candidate: ProjectionEventCandidate, artistId: string, venueId: string): Promise<EnsuredEvent>;
+  // artistIds is the bill, headliner first; canonical stores the first as the primary artist.
+  ensureEvent(candidate: ProjectionEventCandidate, artistIds: string[], venueId: string): Promise<EnsuredEvent>;
   getEvent(eventId: string): Promise<Record<string, unknown> | null>;
   findEventByExternalId(sourceId: string, externalId: string): Promise<Record<string, unknown> | null>;
   updateEvent(eventId: string, payload: Record<string, unknown>): Promise<Record<string, unknown>>;
@@ -169,9 +170,10 @@ export class HttpProjectionBndyApi implements ProjectionBndyApi {
     };
   }
 
-  async ensureEvent(candidate: ProjectionEventCandidate, artistId: string, venueId: string): Promise<EnsuredEvent> {
+  async ensureEvent(candidate: ProjectionEventCandidate, artistIds: string[], venueId: string): Promise<EnsuredEvent> {
     const payload: Record<string, unknown> = {
-      artistId,
+      artistId: artistIds[0],
+      artistIds,
       venueId,
       date: candidate.date,
       startTime: candidate.startTime,
