@@ -5,11 +5,16 @@ import { SourceProjectionPolicySchema } from '../src/knowledge/types.js';
 describe('KLMA projection policy', () => {
   const klma = waveOneSources(new Date('2026-09-05T12:00:00.000Z')).find((source) => source.id === 'klma-stoke-gig-list');
 
-  it('is live-safe by construction: additive-only, create-only, match-only entities', () => {
+  it('is live-safe by construction: additive-only, create-only, evidence-gated entities with no allowlist (ADR-117)', () => {
     const policy = SourceProjectionPolicySchema.parse(klma?.projectionPolicy);
     expect(policy.mode).toBe('additive-only');
     expect(policy.allowedActions).toEqual(['create']);
-    expect(policy.entityCreation).toBe('match-only');
+    expect(policy.entityCreation).toBe('evidence-gated');
+    expect(policy.pilotCandidateKeys).toBeUndefined();
+  });
+
+  it('is a curated source, which is the authority class the evidence gate requires before creating', () => {
+    expect(klma?.authorityClass).toBe('curated');
   });
 
   it('allows every predicate a KLMA event Claim set carries, including its derivedFrom provenance', () => {

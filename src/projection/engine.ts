@@ -16,7 +16,7 @@ import {
   ownerManagedEvent,
   type ProjectionEventCandidate,
 } from './candidate.js';
-import { EntityResolutionReviewError, mergeExternalIds, type ProjectionBndyApi, type ResolvedArtist, type ResolvedVenue } from './bndy-api.js';
+import { EntityResolutionRejectedError, EntityResolutionReviewError, mergeExternalIds, type ProjectionBndyApi, type ResolvedArtist, type ResolvedVenue } from './bndy-api.js';
 import { enrichmentItem, type EntityEnrichmentPublisher } from './enrichment-publisher.js';
 import type { ProjectionExceptionSink } from './exception-sink.js';
 import type { ProjectionCountDelta, ProjectionMapping } from './projection-store.js';
@@ -192,6 +192,24 @@ async function linkSupport(
       await store.linkCanonicalEntity('venue', venueId, claim.id);
     }
   }
+}
+
+type EntityCreationGate = { artist: boolean; venue: boolean };
+
+// ADR-117. 'match-only' never creates. 'evidence-gated' lets a curated source create:
+// the venue must pass canonical Places verification and the artist is only asked once
+// the venue is resolved. Any other authority class stays match-only under that policy.
+// Absent or 'allow' keeps the canonical API's own guards as the only limit.
+function entityCreationGate(
+  policy: 'allow' | 'match-only' | 'evidence-gated' | undefined,
+  authorityClass: string,
+): EntityCreationGate {
+  if (policy === 'match-only') return { artist: false, venue: false };
+  if (policy === 'evidence-gated') {
+    const curated = authorityClass === 'curated';
+    return { artist: curated, venue: curated };
+  }
+  return { artist: true, venue: true };
 }
 
 async function handledException(
@@ -379,7 +397,7 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
     return await shadowOutcome('candidate is outside the pilot allowlist');
   }
   const additiveOnly = projectionPolicy.mode === 'additive-only';
-  const matchOnly = projectionPolicy.entityCreation === 'match-only';
+  const creation = entityCreationGate(projectionPolicy.entityCreation, source.authorityClass);
   if (additiveOnly && item.action !== 'create') {
     return await handledException(item, `Additive-only projection blocks ${item.action}`, deps);
   }
@@ -459,13 +477,24 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
     let artist: ResolvedArtist;
     let venue: ResolvedVenue;
     try {
-      artist = previous?.artistId
-        ? { id: previous.artistId, created: false } satisfies ResolvedArtist
-        : await deps.api.resolveArtist(candidate, { canCreate: !matchOnly });
+      // Venue first (ADR-117): an artist is only ever asked for, let alone created,
+      // against a place canonical already knows or has just verified.
       venue = previous?.venueId
         ? { id: previous.venueId, created: false } satisfies ResolvedVenue
-        : await deps.api.resolveVenue(candidate, { canCreate: !matchOnly });
+        : await deps.api.resolveVenue(candidate, { canCreate: creation.venue });
+      artist = previous?.artistId
+        ? { id: previous.artistId, created: false } satisfies ResolvedArtist
+        : await deps.api.resolveArtist(candidate, { canCreate: creation.artist });
     } catch (error) {
+      if (error instanceof EntityResolutionRejectedError) {
+        return await handledException(item, error.message, deps, {
+          classification: 'rejected-by-canonical',
+          entityType: error.entityType,
+          entityName: error.entityName,
+          code: error.code,
+          detail: error.detail,
+        });
+      }
       if (!(error instanceof EntityResolutionReviewError)) throw error;
       return await handledException(item, error.message, deps, {
         classification: 'unresolved-entity',
@@ -475,7 +504,7 @@ export async function projectWorkItem(rawItem: ProjectionWorkItem, deps: Project
         candidates: error.candidates,
       });
     }
-    if (matchOnly && (artist.created || venue.created)) {
+    if ((artist.created && !creation.artist) || (venue.created && !creation.venue)) {
       return await handledException(item, 'match-only policy: canonical API created an entity despite canCreate=false', deps, {
         classification: 'match-only-violation',
         artistCreated: artist.created,

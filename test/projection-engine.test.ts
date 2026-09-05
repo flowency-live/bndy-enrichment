@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { GigSource, KnowledgeClaim, ProjectionWorkItem, Tombstone } from '../src/knowledge/types.js';
 import { AuthorityPolicy } from '../src/projection/authority-policy.js';
-import { EntityResolutionReviewError, type ProjectionBndyApi } from '../src/projection/bndy-api.js';
+import { EntityResolutionRejectedError, EntityResolutionReviewError, type ProjectionBndyApi } from '../src/projection/bndy-api.js';
 import { projectWorkItem, type ProjectionDependencies } from '../src/projection/engine.js';
 
 const candidateKey = 'event:test-source:gig-1';
@@ -253,6 +253,80 @@ describe('ProjectionEngine', () => {
     }));
     expect(fx.failures).toHaveLength(0);
     expect(mockApi.ensureEvent).not.toHaveBeenCalled();
+  });
+
+  it('a canonical rejection becomes a rejected-by-canonical exception, never a retryable failure', async () => {
+    const mockApi = api({
+      resolveArtist: vi.fn(async () => { throw new EntityResolutionRejectedError('artist', 'Troyen + Stonepit Drive', 'DATA_QUALITY', 'Artist name failed data-quality validation'); }),
+    });
+    const fx = deps({
+      source: source({ projectionPolicy: { ...projectionPolicy('additive-only'), entityCreation: 'match-only' } }),
+      api: mockApi,
+    });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result).toMatchObject({ status: 'exception', message: expect.stringContaining('Troyen + Stonepit Drive') });
+    expect(fx.exceptions).toContainEqual(expect.objectContaining({
+      details: expect.objectContaining({ classification: 'rejected-by-canonical', entityType: 'artist', code: 'DATA_QUALITY' }),
+    }));
+    expect(fx.failures).toHaveLength(0);
+    expect(mockApi.ensureEvent).not.toHaveBeenCalled();
+  });
+
+  it('evidence-gated policy on a curated source resolves the venue first and then lets the artist be created', async () => {
+    const mockApi = api({
+      resolveArtist: vi.fn(async () => ({ id: 'artist-1', created: true, name: 'The Test Band' })),
+      resolveVenue: vi.fn(async () => ({ id: 'venue-1', created: false, name: 'The Test Pub' })),
+    });
+    const fx = deps({
+      source: source({ authorityClass: 'curated', projectionPolicy: { ...projectionPolicy('additive-only'), entityCreation: 'evidence-gated' } }),
+      api: mockApi,
+    });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('success');
+    const venueOrder = (mockApi.resolveVenue as ReturnType<typeof vi.fn>).mock.invocationCallOrder[0];
+    const artistOrder = (mockApi.resolveArtist as ReturnType<typeof vi.fn>).mock.invocationCallOrder[0];
+    expect(venueOrder).toBeLessThan(artistOrder!);
+    expect(mockApi.resolveVenue).toHaveBeenCalledWith(expect.anything(), { canCreate: true });
+    expect(mockApi.resolveArtist).toHaveBeenCalledWith(expect.anything(), { canCreate: true });
+    expect(fx.enrichments).toHaveLength(1);
+    const [, delta] = fx.runItems[0] as [unknown, Record<string, unknown>];
+    expect(delta).toMatchObject({ artistsCreated: 1, venuesCreated: 0, eventsCreated: 1 });
+  });
+
+  it('evidence-gated policy never asks the artist while the venue is unresolved', async () => {
+    const mockApi = api({
+      resolveVenue: vi.fn(async () => { throw new EntityResolutionReviewError('venue', 'The Test Pub', 'likely-new', []); }),
+    });
+    const fx = deps({
+      source: source({ authorityClass: 'curated', projectionPolicy: { ...projectionPolicy('additive-only'), entityCreation: 'evidence-gated' } }),
+      api: mockApi,
+    });
+
+    const result = await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(result.status).toBe('exception');
+    expect(mockApi.resolveArtist).not.toHaveBeenCalled();
+    expect(fx.failures).toHaveLength(0);
+  });
+
+  it('evidence-gated policy behaves as match-only for a source that is not curated', async () => {
+    const mockApi = api({
+      resolveArtist: vi.fn(async () => ({ id: 'artist-1', created: false, name: 'The Test Band' })),
+      resolveVenue: vi.fn(async () => ({ id: 'venue-1', created: false, name: 'The Test Pub' })),
+    });
+    const fx = deps({
+      source: source({ authorityClass: 'aggregator', projectionPolicy: { ...projectionPolicy('additive-only'), entityCreation: 'evidence-gated' } }),
+      api: mockApi,
+    });
+
+    await projectWorkItem(item('create'), fx.dependencies);
+
+    expect(mockApi.resolveVenue).toHaveBeenCalledWith(expect.anything(), { canCreate: false });
+    expect(mockApi.resolveArtist).toHaveBeenCalledWith(expect.anything(), { canCreate: false });
   });
 
   it('default policy still allows entity creation', async () => {

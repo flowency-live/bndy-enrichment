@@ -70,8 +70,9 @@ export function waveOneSources(now = new Date()): GigSource[] {
           'occursOn', 'startsAt', 'endsAt', 'hasTitle', 'hasAdmissionStatus',
           'hasPrice', 'hasTicketUrl', 'hasEventUrl', 'hasStatus', 'derivedFrom', 'hasGenre',
         ],
-        // Live-safe by construction (ADR-113): entities are matched, never created.
-        entityCreation: 'match-only',
+        // ADR-117: a curated source may create an artist against a resolved venue.
+        // Near-ties, location conflicts and Places rejections still stop for a person.
+        entityCreation: 'evidence-gated',
         minAcceptedEventsPerRun: 50,
         maxAcceptedEventsPerRun: 500,
         maxProjectionActionsPerRun: 500,
