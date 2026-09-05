@@ -156,10 +156,10 @@ function deduplicateEvents(events: KlmaNormalisedEvent[]): {
     const signatures = new Set(group.map(eventSignature));
     if (signatures.size === 1) {
       accepted.push(group[0]!);
-      for (const duplicate of group.slice(1)) parkedByRowRef.set(duplicate.rawRowRef, 'duplicate_source_row');
+      for (const duplicate of group.slice(1)) parkedByRowRef.set(`row:${duplicate.rowIndex}`, 'duplicate_source_row');
       continue;
     }
-    for (const collision of group) parkedByRowRef.set(collision.rawRowRef, 'source_identity_collision');
+    for (const collision of group) parkedByRowRef.set(`row:${collision.rowIndex}`, 'source_identity_collision');
   }
   return { accepted, parkedByRowRef };
 }
@@ -174,7 +174,7 @@ export const klmaAdapter: SourceAdapter = {
     const rows = parseKlmaCsv(prepared);
     const normalised = normaliseKlmaRows(rows, run.runDate);
     const { accepted: events, parkedByRowRef } = deduplicateEvents(normalised);
-    const acceptedRows = new Set(events.map((event) => event.rawRowRef));
+    const acceptedRows = new Set(events.map((event) => `row:${event.rowIndex}`));
     const parked = rows
       .filter((row) => !acceptedRows.has(`row:${row.rowIndex}`))
       .map((row) => ({

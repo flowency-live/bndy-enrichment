@@ -47,6 +47,7 @@ export type KlmaNormalisedEvent = {
   genre?: string;
   eventUrl?: string;
   rawRowRef: string;
+  rowIndex: number;
   warnings: string[];
 };
 
@@ -446,6 +447,7 @@ export function normaliseKlmaRows(rows: KlmaRawRow[], today: string): KlmaNormal
       eventUrl,
       // Content-addressed: a row's position in a shared sheet is not a fact about the gig.
       rawRowRef: `${date}:${artistName}@${venueName}`,
+      rowIndex: row.rowIndex,
       warnings,
     });
   }
